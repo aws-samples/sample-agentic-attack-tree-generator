@@ -1,0 +1,7 @@
+Attack Step,Mitigation,Type,Description,TTC Reference
+pipeline_access_establishment,Pipeline Access Controls,Preventative,Implement strict access controls and approval processes for pipeline contributions,T1078.A001
+pipeline_access_establishment,Identity Verification,Preventative,Require verified identity and background checks for pipeline contributors,T1078.A001
+lora_adapter_compromise,Adapter Security Scanning,Detective,Implement automated security scanning of LoRA adapters before integration,N/A
+lora_adapter_compromise,Behavioral Testing,Detective,Conduct comprehensive behavioral testing of adapters in isolated environments,N/A
+adapter_integration,Staged Deployment,Preventative,Use staged deployment with monitoring for adapter integration,N/A
+adapter_integration,Runtime Monitoring,Detective,Monitor model behavior and outputs after adapter integration,N/A

@@ -1,0 +1,9 @@
+Attack Step,Mitigation,Type,Description,TTC Reference
+api_reconnaissance,API Gateway Rate Limiting,Preventative,Implement rate limiting and throttling on API Gateway to prevent reconnaissance activities,AT1667
+api_reconnaissance,API Monitoring and Logging,Detective,Enable comprehensive logging and monitoring of API access patterns using CloudTrail and CloudWatch,AT1667
+strategic_query_crafting,Input Validation and Filtering,Preventative,Implement robust input validation and content filtering to detect suspicious query patterns,T1059.009
+strategic_query_crafting,Anomaly Detection,Detective,Deploy machine learning-based anomaly detection to identify unusual query patterns,T1059.009
+response_harvesting,Response Rate Limiting,Preventative,Implement per-user response rate limiting and quota management,T1059.009
+response_harvesting,Usage Analytics,Detective,Monitor and analyze API usage patterns to detect systematic harvesting attempts,T1059.009
+model_distillation,Differential Privacy,Preventative,Implement differential privacy techniques to add noise to model responses,N/A
+model_distillation,Model Watermarking,Detective,Embed watermarks in model outputs to detect unauthorized replication attempts,N/A

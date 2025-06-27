@@ -1,0 +1,28 @@
+title: Attack Tree for LLM Model Distillation via API Abuse
+
+facts:
+- external_threat_actor_with_api_access: External threat actor with ability to issue strategic queries to LLM API
+  from:
+  - reality: Initial condition
+
+attacks:
+- api_reconnaissance: Discover LLM API endpoints and capabilities using AT1667 Application API Abuse
+  from:
+  - external_threat_actor_with_api_access
+- strategic_query_crafting: Craft strategic queries to extract model behavior patterns
+  from:
+  - api_reconnaissance
+- response_harvesting: Systematically harvest API responses using T1059.009 Cloud API
+  from:
+  - strategic_query_crafting
+- model_distillation: Replicate model functionality through distillation techniques
+  from:
+  - response_harvesting
+
+goals:
+- proprietary_algorithm_theft: Replicate model functionality reducing confidentiality of proprietary LLM algorithms and training data
+  from:
+  - model_distillation
+
+filter:
+- proprietary_algorithm_theft
