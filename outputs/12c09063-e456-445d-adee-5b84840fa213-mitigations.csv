@@ -1,0 +1,9 @@
+Attack Step,Mitigation,Type,Description,TTC Reference
+identify_knowledge_sources,Access Control Monitoring,Detective,Monitor and log access to knowledge base sources using AWS CloudTrail,T1087
+compromise_source_documents,Repository Security,Preventative,Implement strong access controls and encryption for document repositories using AWS IAM and S3 bucket policies,T1213
+inject_malicious_content,Content Validation,Preventative,Implement automated content validation and integrity checks before ingestion,N/A
+manipulate_vector_embeddings,Vector Database Security,Preventative,Secure vector database access with encryption and access controls using Amazon OpenSearch security features,T1484
+exploit_ingestion_pipeline,Pipeline Security,Preventative,Harden document ingestion pipeline with input validation and sandboxing,T1190
+poison_training_data,Data Integrity Monitoring,Detective,Monitor training data for anomalies and implement data provenance tracking,N/A
+bypass_content_validation,Multi-layer Validation,Preventative,Implement multiple layers of content validation including ML-based detection,T1562
+establish_persistence,Privilege Monitoring,Detective,Monitor for privilege escalation and persistent access attempts using AWS GuardDuty,T1078

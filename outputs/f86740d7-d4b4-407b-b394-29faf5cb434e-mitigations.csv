@@ -1,0 +1,9 @@
+Attack Step,Mitigation,Type,Description,TTC Reference
+enumerate_plugin_capabilities,Plugin Documentation Security,Preventative,Limit exposure of plugin capability documentation and implement plugin discovery controls,T1087
+identify_overprivileged_functions,Least Privilege Design,Preventative,Implement least privilege principle for all plugin functions using AWS IAM fine-grained permissions,N/A
+craft_malicious_plugin_calls,Input Validation,Preventative,Implement robust input validation and prompt injection detection for plugin calls,T1496.A007
+exploit_plugin_vulnerabilities,Plugin Security Testing,Preventative,Regular security testing and vulnerability scanning of plugin implementations,T1190
+chain_plugin_operations,Operation Monitoring,Detective,Monitor and analyze plugin operation chains for suspicious patterns using CloudWatch,N/A
+bypass_authorization_checks,Authorization Enforcement,Preventative,Implement strong authorization checks and validation at multiple layers,T1562
+escalate_system_privileges,Privilege Escalation Detection,Detective,Monitor for privilege escalation attempts using AWS GuardDuty and CloudTrail,T1098
+access_unauthorized_resources,Resource Access Controls,Preventative,Implement strict resource access controls and network segmentation,T1078

@@ -1,0 +1,43 @@
+title: Attack Tree for RAG Knowledge Base Corruption
+
+facts:
+- threat_actor_with_kb_access: Internal or external actor with access to the knowledge base or its source documents
+  from:
+  - reality: Initial condition
+
+attacks:
+- identify_knowledge_sources: T1087 Account Discovery - Identify knowledge base sources and access points (OpenSearch, document repositories)
+  from:
+  - threat_actor_with_kb_access
+- compromise_source_documents: T1213 Data from Information Repositories - Gain unauthorized access to source document repositories
+  from:
+  - identify_knowledge_sources
+- inject_malicious_content: Inject false or malicious information into source documents
+  from:
+  - compromise_source_documents
+- manipulate_vector_embeddings: T1484 Domain or Tenant Policy Modification - Directly manipulate vector embeddings in the knowledge base
+  from:
+  - identify_knowledge_sources
+- exploit_ingestion_pipeline: T1190 Exploit Public-Facing Application - Exploit vulnerabilities in the document ingestion pipeline
+  from:
+  - identify_knowledge_sources
+- poison_training_data: Systematically poison training or fine-tuning datasets
+  from:
+  - compromise_source_documents
+- bypass_content_validation: T1562 Impair Defenses - Bypass content validation and quality checks during ingestion
+  from:
+  - inject_malicious_content
+  - exploit_ingestion_pipeline
+- establish_persistence: T1078 Valid Accounts - Maintain persistent access to continue corruption activities
+  from:
+  - manipulate_vector_embeddings
+  - poison_training_data
+
+goals:
+- knowledge_base_corruption: AI system providing incorrect or malicious information
+  from:
+  - bypass_content_validation
+  - establish_persistence
+
+filter:
+- knowledge_base_corruption

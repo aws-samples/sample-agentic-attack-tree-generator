@@ -1,0 +1,10 @@
+Attack Step,Mitigation,Type,Description,TTC Reference
+map_artifact_repositories,Repository Access Monitoring,Detective,Monitor and log access to model repositories using AWS CloudTrail and VPC Flow Logs,T1087
+escalate_repository_access,Privilege Escalation Prevention,Preventative,Implement strict IAM policies and monitor for privilege escalation attempts,T1098
+identify_valuable_models,Asset Classification,Preventative,Implement data classification and labeling for high-value model artifacts,N/A
+extract_model_weights,Storage Encryption,Preventative,Encrypt model artifacts at rest using AWS KMS and implement access logging,T1530
+copy_training_datasets,Data Access Controls,Preventative,Implement fine-grained access controls and data masking for training datasets,T1213
+steal_model_configurations,Configuration Security,Preventative,Secure model configurations with encryption and access controls,N/A
+bypass_data_loss_prevention,Enhanced DLP,Detective,Deploy advanced DLP solutions with ML-based detection using AWS Macie,T1562
+establish_covert_channels,Network Monitoring,Detective,Monitor network traffic for unusual patterns and covert channels using AWS GuardDuty,T1071
+exfiltrate_to_external_systems,Data Exfiltration Detection,Detective,Implement data exfiltration detection and network egress monitoring,N/A

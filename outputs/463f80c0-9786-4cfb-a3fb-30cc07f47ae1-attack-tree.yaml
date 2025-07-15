@@ -1,0 +1,46 @@
+title: Attack Tree for Model Artifact Exfiltration
+
+facts:
+- malicious_internal_actor_with_repo_access: Malicious internal actor with access to model artifact repositories (fine tuning data, model stores)
+  from:
+  - reality: Initial condition
+
+attacks:
+- map_artifact_repositories: T1087 Account Discovery - Identify and map model artifact repositories and storage locations
+  from:
+  - malicious_internal_actor_with_repo_access
+- escalate_repository_access: T1098 Account Manipulation - Escalate permissions to access restricted model artifacts
+  from:
+  - map_artifact_repositories
+- identify_valuable_models: Identify high-value proprietary models and training datasets
+  from:
+  - map_artifact_repositories
+- extract_model_weights: T1530 Data from Cloud Storage - Extract model weights and parameters from storage
+  from:
+  - escalate_repository_access
+  - identify_valuable_models
+- copy_training_datasets: T1213 Data from Information Repositories - Copy proprietary training and fine-tuning datasets
+  from:
+  - escalate_repository_access
+- steal_model_configurations: Extract model configurations, hyperparameters, and architecture details
+  from:
+  - identify_valuable_models
+- bypass_data_loss_prevention: T1562 Impair Defenses - Bypass DLP controls and monitoring systems
+  from:
+  - extract_model_weights
+  - copy_training_datasets
+- establish_covert_channels: T1071 Application Layer Protocol - Establish covert channels for data exfiltration
+  from:
+  - bypass_data_loss_prevention
+- exfiltrate_to_external_systems: Transfer stolen artifacts to external systems or competitors
+  from:
+  - establish_covert_channels
+  - steal_model_configurations
+
+goals:
+- competitive_model_misuse: Competitive misuse or training of shadow models
+  from:
+  - exfiltrate_to_external_systems
+
+filter:
+- competitive_model_misuse

@@ -1,0 +1,41 @@
+title: Attack Tree for Overprivileged LLM Plugin Abuse
+
+facts:
+- external_threat_actor_with_plugin_access: External threat actor with access to overprivileged LLM plugins/tools
+  from:
+  - reality: Initial condition
+
+attacks:
+- enumerate_plugin_capabilities: T1087 Account Discovery - Discover available plugins and their permission levels
+  from:
+  - external_threat_actor_with_plugin_access
+- identify_overprivileged_functions: Identify functions with excessive permissions beyond intended scope
+  from:
+  - enumerate_plugin_capabilities
+- craft_malicious_plugin_calls: T1496.A007 Cloud Service Hijacking - Bedrock LLM Abuse - Craft LLM prompts to trigger overprivileged plugin functions
+  from:
+  - identify_overprivileged_functions
+- exploit_plugin_vulnerabilities: T1190 Exploit Public-Facing Application - Exploit security vulnerabilities in plugin implementations
+  from:
+  - enumerate_plugin_capabilities
+- chain_plugin_operations: Chain multiple plugin calls to achieve unauthorized access
+  from:
+  - craft_malicious_plugin_calls
+- bypass_authorization_checks: T1562 Impair Defenses - Bypass plugin authorization and validation mechanisms
+  from:
+  - exploit_plugin_vulnerabilities
+- escalate_system_privileges: T1098 Account Manipulation - Use plugin access to escalate privileges in connected systems
+  from:
+  - chain_plugin_operations
+  - bypass_authorization_checks
+- access_unauthorized_resources: T1078 Valid Accounts - Access resources and functionality beyond intended plugin scope
+  from:
+  - escalate_system_privileges
+
+goals:
+- privilege_escalation_success: Privilege escalation in connected systems
+  from:
+  - access_unauthorized_resources
+
+filter:
+- privilege_escalation_success

@@ -19,85 +19,55 @@ Process JSON threat statements with this syntax:
 - `impactedGoal` → [property] (confidentiality, integrity, availability)
 - `id` → Use for file naming
 
-### AWS TTC Techniques Reference
-Map threat actions to relevant TTC techniques. Key techniques include:
+## TTC Technique Mapping (Optional Enhancement)
 
-**Initial Access:**
-- T1190: Exploit Public-Facing Application
-- T1190.A016: EC2 Hosted Application Compromise
-- T1190.A019: Overly Permissive VPC Security Groups
-- T1199.A002: Role Assumption and Federated Access
+When generating attack steps, perform an analysis to identify potential alignments with AWS Threat Technique Catalog (TTC) techniques. This mapping should enhance rather than constrain the attack tree generation process.
 
-**Execution:**
-- T1059.009: Cloud API
-- AT1667: Application API Abuse
-- AT1667.001: API Gateway
+### TTC Mapping Guidelines:
 
-**Persistence:**
-- T1098.001: Additional Cloud Credentials
-- T1098.003: Additional Cloud Roles
-- T1136.003: Create Cloud Account
+**Analysis Process:**
+1. After generating each attack step, analyze its characteristics against available TTC techniques
+2. Look for semantic alignment between the attack step's purpose and TTC technique descriptions
+3. Only apply TTC mapping when there is a strong conceptual match (>80% alignment)
+4. Preserve the original attack step description while incorporating the TTC reference
 
-**Privilege Escalation:**
-- T1078.A001: IAM Users
-- T1078.A002: Account Root User
-- T1484.002: Trust Modification
-
-**Defense Evasion:**
-- T1070.A001: Delete IAM Entities
-- T1535: Unused/Unsupported Cloud Regions
-
-**Credential Access:**
-- T1552.001: Credentials In Files
-
-**Discovery:**
-- T1087.004: Cloud Account
-- T1538: Cloud Service Dashboard
-- AT1023: Cloud Database Discovery
-- AT1023.001: Query RDS
-
-**Collection:**
-- T1530.A001: S3 Object Collection
-- T1213.A013: RDS Instance Manipulation
-
-**Impact:**
-- T1485.A001: RDS Instances and Backups
-- T1485.A003: S3 Object and Bucket Deletion
-- T1486.A001: S3 Encryption - SSE-C Key Encryption
-- T1491.A001: Subdomain Takeover
-- T1496.A001: Cloud Service Hijacking - SES Messaging
-- T1496.A006: Compute Hijacking - ECS
-- T1496.A007: Cloud Service Hijacking - Bedrock LLM Abuse
-- T1496.A008: Compute Hijacking - EC2 Use
-- T1531: Account Access Removal
 
 ## Deciduous YAML Structure
 
 Generate attack trees following this exact format:
 
+When a strong TTC alignment is identified, format the attack step as:
+```yaml
+- attack_step_name: [TTC_ID] [TTC_Name] - [Original attack step description] 
+```
+
+
 ```yaml
 title: Attack Tree for [Threat Description]
 
 facts:
-- [threat_actor_with_prerequisites]: [Description of initial conditions]
+- [threat_actor_with_prerequisites]: [Description]
   from:
   - reality: Initial starting point
 
 attacks:
-- [attack_step_1]: [TTC Technique or descriptive action]
+- [attack_step_name]: [Descriptive action]
   from:
-  - [prerequisite_fact_or_step]
-- [attack_step_2]: [Next technique in attack chain]
+  - [prerequisite_fact_or_attackstep_or_reality]
+- [attack_step_name]: [Next technique in attack chain]
   from:
-  - [attack_step_1]
-- [attack_step_3]: [Subsequent technique]
+  - [prerequisite_fact_or_attackstep_or_reality]
+- [attack_step_name]: [Subsequent technique]
   from:
-  - [attack_step_2]
+  - [prerequisite_fact_or_attackstep_or_reality]
   - [alternative_prerequisite]:
     backwards: true  # Use when step enables prerequisite
+- [attack_step_name]: [new attack path]
+  from:
+  - [prerequisite_fact_or_step]
 
 goals:
-- [threat_impact_objective]: [Final impact description matching threat statement]
+- [threat_impact_objective]: [Final `threatImpact` property from matching threat statement]
   from:
   - [final_attack_step]
   - [alternative_final_step]
@@ -105,14 +75,17 @@ goals:
 filter:
 - [threat_impact_objective]
 ```
+**Mapping Format:**
+
 
 ### Structure Rules:
-1. **Facts Section**: Start with threat actor + prerequisites as initial condition
+1. **Reality Section**: Start with threat actor + prerequisites as initial condition
 2. **Attacks Section**: Chain attack steps using TTC techniques where applicable
-3. **Goals Section**: End with threat impact as the objective
+3. **Goals Section**: End with `threatImpact` only as the objective 
 4. **Dependencies**: Use `from:` to show logical attack flow
 5. **No Mitigations**: Exclude all mitigations from attack tree structure
 6. **Naming**: Use snake_case for identifiers, descriptive names for techniques
+7. **Paths**: Create at least two unique attack paths to get to the `threatImpact` 
 
 ## Mitigation Generation
 
@@ -144,10 +117,11 @@ For each individual threat statement, generate exactly two files:
 ### 1. Attack Tree YAML
 **Filename**: `{threat-id}-attack-tree.yaml`
 - Valid YAML syntax
-- Follow deciduous structure exactly
+- Follow deciduous structure 
 - Include title, facts, attacks, goals, filter sections
 - Use TTC technique names where applicable
 - Ensure logical attack flow with proper dependencies
+- Include at minimum two attack paths (unique attack steps) to get to the goal
 
 ### 2. Mitigations CSV
 **Filename**: `{threat-id}-mitigations.csv`
@@ -165,9 +139,9 @@ For each individual threat statement, generate exactly two files:
    - Use `id` for unique file naming
 
 2. **Generate Attack Tree**:
-   - Create facts section with threat actor + prerequisites
+   - Start with reality which contains threat actor + prerequisites
    - Map threat action to relevant TTC techniques
-   - Build logical attack chain leading to threat impact
+   - Build logical attack chains leading to threat impact
    - Structure as deciduous YAML format
 
 3. **Generate Mitigations**:
@@ -199,7 +173,7 @@ For each individual threat statement, generate exactly two files:
 - `e0dd8e30-ea1d-4337-839b-53dac4ebf3d8-attack-tree.yaml`
 - `e0dd8e30-ea1d-4337-839b-53dac4ebf3d8-mitigations.csv`
 
-**Attack Tree Structure:**
+<!-- **Attack Tree Structure:**
 ```yaml
 title: Attack Tree for LLM Model Distillation via API Abuse
 
@@ -230,6 +204,7 @@ goals:
 filter:
 - proprietary_algorithm_theft
 ```
+-->
 
 ## Final Instructions
 
@@ -238,7 +213,7 @@ filter:
 **Important**: 
 - Do NOT include mitigations in the attack tree YAML
 - Use TTC technique IDs and names where applicable
-- Ensure attack flow is logical and realistic
+- Ensure attack flows are logical and realistic
 - Focus on AWS cloud environment context
 - Generate both files for each individual threat statement
 - Use the threat `id` field for unique file naming
