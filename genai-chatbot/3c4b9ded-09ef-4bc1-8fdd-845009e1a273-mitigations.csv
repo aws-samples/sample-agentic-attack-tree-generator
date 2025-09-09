@@ -1,0 +1,13 @@
+Attack Step,Mitigation,Type,Description,TTC Reference
+Crafted prompt creation,Input validation and sanitization,Preventative,Implement thorough input validation and sanitization on prompts before sending to LLM,
+System prompt overwrite attempts,Segregate user prompts from system prompts,Preventative,Add instructions to prompts encouraging the model to be careful about what comes next in the prompt,
+Adversarial suffix injection,Restrict LLM capabilities through permissions,Preventative,Grant minimum permissions required following principle of least privilege for LLM system access,
+Obfuscated text techniques,Prompt filtering and detection,Preventative,Implement logical fallacy detection using LangChain to identify and filter malicious queries,
+Encoding manipulation,Input validation and sanitization,Preventative,Apply comprehensive validation and sanitization similar to validating untrusted user inputs,
+Filter bypass,Segregate external content,Preventative,Isolate external content from user prompts and run through sanitization processes,
+Multi-stage attack preparation,Implement system prompt protection,Preventative,Use multi-layered defenses combining techniques like context locking and input validation,
+Context manipulation,Segregate user prompts from system prompts,Preventative,Implement clear separation between user inputs and system instructions with validation,
+Instruction override,Restrict LLM capabilities through permissions,Preventative,Limit LLM access to other systems following principle of least privilege,
+Jailbreaking techniques,Enable content moderation,Preventative,Use Amazon Bedrock Guardrails for content filtering and responsible AI policy enforcement,
+Role-playing scenarios,Prompt filtering and detection,Preventative,Analyze prompts for suspicious patterns and role-playing attempts that may indicate attacks,
+Connected resource access,Limit LLM access to other systems,Preventative,Implement network segmentation and access controls to limit LLM system connectivity,

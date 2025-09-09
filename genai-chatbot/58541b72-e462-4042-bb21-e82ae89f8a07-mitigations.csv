@@ -1,0 +1,13 @@
+Attack Step,Mitigation,Type,Description,TTC Reference
+Hidden instruction embedding,Implement multimodal prompt injection detection,Preventative,Use Amazon Bedrock Guardrails multimodal toxicity detection with image support for comprehensive content filtering,
+Image-based prompt injection,Segregate external content,Preventative,Isolate and sanitize multimodal content before processing through separate validation pipelines,
+Text-based security bypass,Input validation and sanitization,Preventative,Apply thorough validation to all content types including extracted text from images and audio,
+Audio manipulation,Implement multimodal prompt injection detection,Preventative,Deploy content filters that analyze audio content for embedded malicious instructions,
+Steganographic techniques,Enable content moderation,Preventative,Use Amazon Bedrock Guardrails with HIGH prompt attack strength for enhanced protection against sophisticated attacks,
+Content filter evasion,Implement system prompt protection,Preventative,Implement multi-layered defenses with independent guardrails for different content modalities,
+Visual prompt crafting,Segregate user prompts from system prompts,Preventative,Maintain clear separation between user-provided visual content and system instructions,
+OCR exploitation,Input validation and sanitization,Preventative,Validate and sanitize all text extracted from images before processing,
+Adversarial image generation,Implement multimodal prompt injection detection,Preventative,Use advanced image analysis to detect adversarial patterns and manipulated visual content,
+Model perception manipulation,Enable content moderation,Preventative,Apply configurable thresholds for detecting and filtering undesirable content across visual modalities,
+Frequency domain hiding,Implement multimodal prompt injection detection,Preventative,Implement audio analysis techniques to detect hidden content in frequency domains,
+Audio processing bypass,Enable content moderation,Preventative,Use comprehensive audio content filtering with Amazon Bedrock Guardrails multimodal capabilities,
