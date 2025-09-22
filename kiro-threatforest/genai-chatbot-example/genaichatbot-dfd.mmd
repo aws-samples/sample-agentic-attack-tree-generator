@@ -1,0 +1,67 @@
+graph TD
+    %% External Entities
+    Users[👥 Chatbot users]
+    
+    %% Processes
+    Frontend((Frontend<br/>Web App))
+    Auth((User<br/>Authentication))
+    Gateway((API Gateway))
+    LLM((LLM<br/>Connect))
+    Agents((Agents/<br/>Tools))
+    
+    %% Data Stores
+    KB[(Knowledge Base<br/>E.g. OpenSearch<br/>Vector DB)]
+    Model[E.g. Bedrock<br/>Large Language Model]
+    History[(Chat history or logs<br/>E.g. DynamoDB)]
+    Policies[E.g. Bedrock Guardrails<br/>Content Moderation<br/>Policies]
+    
+    %% Data Flows
+    Users -->|User Interacts| Frontend
+    Frontend -->|User Authenticates| Auth
+    Auth -->|User Authentication| Frontend
+    Frontend -->|Serve user requests| Gateway
+    Gateway -->|Triggers| LLM
+    Gateway -->|Triggers| Agents
+    
+    %% AI/ML Processing
+    LLM -->|Retrieves Data| KB
+    Agents -->|Gets Response from model| Model
+    Model -->|Return Response from model| Agents
+    Agents -->|Chat History| History
+    LLM -->|Responsible AI Checks and PII Redact| Policies
+    
+    %% Trust Boundaries
+    subgraph TB1 [Trust Boundary 1]
+        Users
+    end
+    
+    subgraph TB2 [Trust Boundary 2]
+        Auth
+    end
+    
+    subgraph TB3 [Trust Boundary 3]
+        Gateway
+    end
+    
+    subgraph TB4 [Trust Boundary 4]
+        Policies
+    end
+    
+    subgraph TB5 [Trust Boundary 5]
+        KB
+    end
+    
+    subgraph TB6 [Trust Boundary 6]
+        Model
+        LLM
+        Agents
+    end
+    
+    %% Styling
+    classDef process fill:#90EE90,stroke:#006400,stroke-width:3px
+    classDef datastore fill:#FFB6C1,stroke:#8B008B,stroke-width:2px
+    classDef external fill:#E6E6FA,stroke:#4B0082,stroke-width:2px
+    
+    class Frontend,Auth,Gateway,LLM,Agents process
+    class KB,Model,History,Policies datastore
+    class Users external
