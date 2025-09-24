@@ -1,0 +1,128 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "threatforest"
+version = "0.1.0"
+description = "Agentic AI application for automated attack tree generation"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "ThreatForest Team", email = "team@threatforest.ai"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Security",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "click>=8.0.0",
+    "pydantic>=2.0.0",
+    "boto3>=1.26.0",
+    "pyyaml>=6.0",
+    "stix2>=3.0.0",
+    "sentence-transformers>=2.2.0",
+    "numpy>=1.21.0",
+    "aiofiles>=23.0.0",
+    "rich>=13.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+]
+test = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+    "moto>=4.0.0",  # For mocking AWS services
+]
+
+[project.scripts]
+threatforest = "threatforest.cli:main"
+tf = "threatforest.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/threatforest/threatforest"
+Repository = "https://github.com/threatforest/threatforest"
+Documentation = "https://threatforest.readthedocs.io"
+"Bug Tracker" = "https://github.com/threatforest/threatforest/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["threatforest*"]
+
+[tool.black]
+line-length = 88
+target-version = ['py39']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short --strict-markers"
+asyncio_mode = "auto"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "asyncio: marks tests as async tests",
+]
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "stix2.*",
+    "sentence_transformers.*",
+    "boto3.*",
+    "botocore.*",
+]
+ignore_missing_imports = true
