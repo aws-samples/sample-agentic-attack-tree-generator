@@ -195,16 +195,16 @@ Let's get started with the setup!
         self.console.print(f"💡 {selected_model[2]}")
     
     def _select_project_path(self):
-        """Select project path"""
+        """Select project path with enhanced threat model discovery"""
         
         self.console.print("\n📁 Step 3: Project Path Selection", style="bold blue")
         self.console.print("ThreatForest analyzes your project files to understand the application.")
         
-        self.console.print("\n🔍 What ThreatForest looks for:")
-        self.console.print("• README files (project description, technologies)")
-        self.console.print("• Threat statement files (threats.md, security.md)")
-        self.console.print("• Architecture diagrams (.mmd, .drawio)")
-        self.console.print("• Documentation files")
+        self.console.print("\n🔍 Enhanced File Discovery:")
+        self.console.print("• 🎯 Threat Models (ThreatComposer .tc, threat.json, security.yaml)")
+        self.console.print("• 📖 README files (project description, technologies)")
+        self.console.print("• 🏗️  Architecture diagrams (.mmd, .drawio, .puml)")
+        self.console.print("• 📄 Documentation files")
         
         # Suggest current directory first
         current_dir = Path.cwd()
@@ -231,26 +231,63 @@ Let's get started with the setup!
         
         self.config["project_path"] = str(project_path)
         
-        # Quick preview of files
-        self.console.print(f"\n📋 Scanning {project_path}...")
+        # Enhanced file discovery preview
+        self.console.print(f"\n📋 Enhanced Scanning {project_path}...")
         
+        # Use enhanced discovery
+        threat_models = self._discover_threat_files_preview(str(project_path))
         readme_files = list(project_path.glob("**/README*")) + list(project_path.glob("**/readme*"))
-        threat_files = list(project_path.glob("**/*threat*")) + list(project_path.glob("**/*security*"))
-        diagram_files = list(project_path.glob("**/*.mmd")) + list(project_path.glob("**/*.drawio"))
+        diagram_files = list(project_path.glob("**/*.mmd")) + list(project_path.glob("**/*.drawio")) + list(project_path.glob("**/*.puml"))
         
-        self.console.print(f"✅ Found {len(readme_files)} README files")
-        self.console.print(f"✅ Found {len(threat_files)} threat/security files")
-        self.console.print(f"✅ Found {len(diagram_files)} diagram files")
+        # Show enhanced results
+        if threat_models:
+            self.console.print(f"🎯 Found {len(threat_models)} threat model files:")
+            for tm in threat_models[:3]:  # Show first 3
+                file_name = Path(tm).name
+                format_type = "ThreatComposer" if "threatcomposer" in tm.lower() or tm.endswith('.tc') else "Generic"
+                self.console.print(f"   • {file_name} ({format_type})")
+            if len(threat_models) > 3:
+                self.console.print(f"   • ... and {len(threat_models) - 3} more")
+        else:
+            self.console.print("⚠️  No threat model files found")
         
-        if len(readme_files) == 0:
-            self.console.print("⚠️  No README files found - project analysis may be limited")
-            if not Confirm.ask("Continue anyway?"):
-                self.console.print("💡 Add a README.md file with project description and try again.")
+        self.console.print(f"📖 Found {len(readme_files)} README files")
+        self.console.print(f"🏗️  Found {len(diagram_files)} diagram files")
+        
+        # Enhanced validation
+        if len(threat_models) == 0 and len(readme_files) == 0:
+            self.console.print("⚠️  No threat models or README files found")
+            self.console.print("💡 ThreatForest works best with:")
+            self.console.print("   • ThreatComposer workspace files (.tc)")
+            self.console.print("   • Threat statement files (threat.json, security.yaml)")
+            self.console.print("   • README files with project description")
+            
+            if not Confirm.ask("Continue with limited analysis?"):
+                self.console.print("💡 Add threat model files or README and try again.")
                 sys.exit(1)
+        elif len(threat_models) > 0:
+            self.console.print("✅ Threat models found - analysis will be comprehensive!")
+        else:
+            self.console.print("⚠️  No threat models found - using README-based analysis")
+    
+    def _discover_threat_files_preview(self, project_path: str) -> List[str]:
+        """Preview threat file discovery"""
+        threat_files = []
+        supported_formats = ['.json', '.tc', '.yaml', '.yml']
+        threat_keywords = ['threat', 'risk', 'vulnerability', 'attack', 'security']
         
-        if len(threat_files) == 0:
-            self.console.print("⚠️  No threat files found - using generic threat model")
-            self.console.print("💡 Consider adding a threats.md file with threat statements for better analysis")
+        for root, dirs, files in os.walk(project_path):
+            for file in files:
+                file_path = os.path.join(root, file)
+                
+                # Check by extension and keywords
+                if any(file.lower().endswith(ext) for ext in supported_formats):
+                    if any(keyword in file.lower() for keyword in threat_keywords):
+                        threat_files.append(file_path)
+                    elif 'threatcomposer' in file.lower() or file.endswith('.tc'):
+                        threat_files.append(file_path)
+        
+        return threat_files
     
     def _review_configuration(self):
         """Review configuration before execution"""
