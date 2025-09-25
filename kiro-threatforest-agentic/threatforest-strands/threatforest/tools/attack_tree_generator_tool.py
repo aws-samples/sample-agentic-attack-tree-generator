@@ -115,19 +115,15 @@ class AttackTreeGeneratorTool(Tool):
 - Deployment: {project_info.get('deployment_environment', 'Unknown')}
 
 **Requirements:**
-Create a Mermaid flowchart that shows:
-1. Main threat goal at the top
-2. Attack vectors and specific steps
-3. Technical paths relevant to the technologies used
-4. Use this exact format:
+Create a complete Mermaid flowchart with this EXACT format:
 
 ```mermaid
 graph TD
     goal["Main Threat Goal"]
     vector1["Attack Vector 1"]
     vector2["Attack Vector 2"]
-    step1["Specific Attack Step"]
-    step2["Another Attack Step"]
+    step1["Attack Step 1"]
+    step2["Attack Step 2"]
     
     goal --> vector1
     goal --> vector2
@@ -141,7 +137,14 @@ graph TD
     class vector1,vector2,step1,step2 attack
 ```
 
-Generate a comprehensive attack tree considering the specific technologies and architecture. Return ONLY the mermaid code block."""
+CRITICAL: 
+1. Start with "graph TD"
+2. Include ALL node connections
+3. End with classDef and class definitions
+4. Return ONLY the mermaid code block, nothing else
+5. Ensure all nodes referenced in connections are defined
+
+Generate a comprehensive attack tree considering the specific technologies."""
     
     def _load_mermaid_template(self) -> str:
         """Load Mermaid template from prompts directory"""
@@ -192,7 +195,24 @@ graph TD
         match = re.search(mermaid_pattern, content, re.DOTALL)
         
         if match:
-            return match.group(1).strip()
+            mermaid_code = match.group(1).strip()
+            
+            # Validate and fix common issues
+            lines = mermaid_code.split('\n')
+            
+            # Ensure it starts with graph TD
+            if not lines[0].strip().startswith('graph TD'):
+                mermaid_code = 'graph TD\n' + mermaid_code
+            
+            # Ensure it has class definitions
+            if 'classDef' not in mermaid_code:
+                mermaid_code += '\n\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99'
+            
+            # Ensure it has class assignments
+            if 'class ' not in mermaid_code:
+                mermaid_code += '\n    class goal goal'
+            
+            return mermaid_code
         
         # Fallback: look for graph TD patterns
         graph_pattern = r'(graph TD.*?)(?=\n\n|\n```|\Z)'
@@ -201,7 +221,12 @@ graph TD
         if match:
             return match.group(1).strip()
         
-        return content  # Return full content if no pattern found
+        # Last resort: create minimal valid mermaid
+        return f"""graph TD
+    goal["Threat: {content[:50]}..."]
+    
+    classDef goal fill:#ffcc99
+    class goal goal"""
     
     def _extract_attack_steps(self, mermaid_code: str) -> List[str]:
         """Extract attack step nodes from Mermaid code"""
