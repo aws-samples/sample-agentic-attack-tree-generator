@@ -48,7 +48,7 @@ class ThreatForestConfig:
     """Configuration for ThreatForest execution"""
     project_path: Path
     aws_profile: Optional[str] = None
-    bedrock_model: str = "anthropic.claude-3-haiku-20240307-v1:0"  # Updated to working model
+    bedrock_model: str = "us.anthropic.claude-opus-4-1-20250805-v1:0"  # Updated to Claude Opus 4.1
     output_dir: Optional[Path] = None
     ttc_threshold: float = 0.8
 

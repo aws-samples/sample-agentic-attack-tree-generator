@@ -20,9 +20,11 @@ class SetupTool(Tool):
     """Tool for setting up ThreatForest environment"""
     
     AVAILABLE_MODELS = [
+        "us.anthropic.claude-opus-4-1-20250805-v1:0",
         "anthropic.claude-3-5-sonnet-20241022-v2:0",
         "anthropic.claude-3-5-haiku-20241022-v1:0", 
         "anthropic.claude-3-opus-20240229-v1:0",
+        "anthropic.claude-3-haiku-20240307-v1:0",
         "amazon.titan-text-premier-v1:0",
         "amazon.titan-text-express-v1",
         "meta.llama3-2-90b-instruct-v1:0",
