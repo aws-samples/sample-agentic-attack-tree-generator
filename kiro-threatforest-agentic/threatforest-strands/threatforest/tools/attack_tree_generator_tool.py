@@ -114,39 +114,46 @@ class AttackTreeGeneratorTool(Tool):
 - Architecture: {project_info.get('architecture_type', 'Unknown')}
 - Deployment: {project_info.get('deployment_environment', 'Unknown')}
 
-**Requirements:**
-Use this EXACT Mermaid syntax (note: node IDs without quotes, descriptions in brackets):
+**Node Classification:**
+- **Facts**: Initial conditions, vulnerabilities, or starting points
+- **Attacks**: Malicious actions, exploits, or threat vectors
+- **Mitigations**: Security controls, defenses, or countermeasures
+- **Goals**: Ultimate objectives or outcomes (what attackers/defenders achieve)
+
+**Output Format:**
+1. Title as markdown header
+2. Mermaid code block with the diagram
+3. Apply color classes at the end
+
+**Required Mermaid Syntax:**
+
+# Attack Tree: [Threat Category]
 
 ```mermaid
 graph TD
     goal["Main Threat Goal"]
-    vector1["Attack Vector 1"]
-    vector2["Attack Vector 2"]
-    step1["Attack Step 1"]
-    step2["Attack Step 2"]
+    fact1["Initial Vulnerability"]
+    attack1["Attack Vector 1"]
+    attack2["Attack Step"]
+    mitigation1["Security Control"]
     
-    goal --> vector1
-    goal --> vector2
-    vector1 --> step1
-    vector2 --> step2
+    fact1 --> attack1
+    attack1 --> attack2
+    attack2 --> goal
+    mitigation1 --> attack1
     
     classDef attack fill:#ffcccc
     classDef mitigation fill:#ccffcc
     classDef goal fill:#ffcc99
     classDef fact fill:#ccccff
     
-    class vector1,vector2,step1,step2 attack
+    class attack1,attack2 attack
+    class mitigation1 mitigation
     class goal goal
+    class fact1 fact
 ```
 
-CRITICAL SYNTAX RULES:
-1. Node IDs are unquoted (goal, vector1, step1)
-2. Descriptions are in brackets ["text"]
-3. Connections use --> between unquoted IDs
-4. Class assignments use unquoted node IDs
-5. Return ONLY the mermaid code block
-
-Generate a comprehensive attack tree with proper node IDs and connections."""
+Generate a comprehensive attack tree with proper node classification and the exact output format above."""
     
     def _load_mermaid_template(self) -> str:
         """Load Mermaid template from prompts directory"""
@@ -206,13 +213,15 @@ graph TD
             if not lines[0].strip().startswith('graph TD'):
                 mermaid_code = 'graph TD\n' + mermaid_code
             
-            # Ensure it has class definitions
-            if 'classDef' not in mermaid_code:
-                mermaid_code += '\n\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99'
-            
-            # Ensure it has class assignments
-            if 'class ' not in mermaid_code:
-                mermaid_code += '\n    class goal goal'
+            # Ensure it has all class definitions
+            if 'classDef attack' not in mermaid_code:
+                mermaid_code += '\n\n    classDef attack fill:#ffcccc'
+            if 'classDef mitigation' not in mermaid_code:
+                mermaid_code += '\n    classDef mitigation fill:#ccffcc'
+            if 'classDef goal' not in mermaid_code:
+                mermaid_code += '\n    classDef goal fill:#ffcc99'
+            if 'classDef fact' not in mermaid_code:
+                mermaid_code += '\n    classDef fact fill:#ccccff'
             
             return mermaid_code
         
@@ -227,7 +236,11 @@ graph TD
         return f"""graph TD
     goal["Threat: {content[:50]}..."]
     
+    classDef attack fill:#ffcccc
+    classDef mitigation fill:#ccffcc
     classDef goal fill:#ffcc99
+    classDef fact fill:#ccccff
+    
     class goal goal"""
     
     def _extract_attack_steps(self, mermaid_code: str) -> List[str]:
