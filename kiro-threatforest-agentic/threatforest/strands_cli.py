@@ -13,7 +13,7 @@ console = Console()
 @click.command()
 @click.option("--project-path", "-p", default=".", help="Path to project directory")
 @click.option("--aws-profile", help="AWS profile to use")
-@click.option("--bedrock-model", default="anthropic.claude-3-5-sonnet-20241022-v2:0", help="Bedrock model ID")
+@click.option("--bedrock-model", default="anthropic.claude-3-haiku-20240307-v1:0", help="Bedrock model ID")
 @click.option("--output-dir", help="Output directory for generated files")
 @click.option("--ttc-threshold", default=0.8, help="TTC mapping threshold")
 def main(project_path: str, aws_profile: str, bedrock_model: str, output_dir: str, ttc_threshold: float):

@@ -126,19 +126,65 @@ class InformationExtractionTool(Tool):
         if not readme_content.strip():
             return {"error": "No README content found for analysis"}
         
-        # For testing, return mock data instead of calling Bedrock
-        return {
-            "application_name": "GenAI Chatbot",
-            "technologies": ["Python", "AWS Bedrock", "Streamlit", "LangChain"],
-            "sector": "Technology",
-            "security_objectives": {
-                "confidentiality": True,
-                "integrity": True,
-                "availability": True
-            },
-            "architecture_type": "serverless",
-            "deployment_environment": "AWS"
-        }
+        # Prepare prompt for information extraction
+        prompt = self._build_extraction_prompt(readme_content)
+        
+        try:
+            # Call Bedrock
+            session = boto3.Session(profile_name=aws_profile) if aws_profile else boto3.Session()
+            bedrock = session.client('bedrock-runtime', region_name='us-east-1')
+            
+            body = {
+                "anthropic_version": "bedrock-2023-05-31",
+                "max_tokens": 2000,
+                "messages": [{"role": "user", "content": prompt}]
+            }
+            
+            response = bedrock.invoke_model(
+                modelId=bedrock_model,
+                body=json.dumps(body)
+            )
+            
+            response_body = json.loads(response['body'].read())
+            extracted_text = response_body['content'][0]['text']
+            
+            # Parse JSON response
+            try:
+                return json.loads(extracted_text)
+            except json.JSONDecodeError:
+                # Try to extract JSON from markdown code blocks
+                import re
+                json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', extracted_text, re.DOTALL)
+                if json_match:
+                    return json.loads(json_match.group(1))
+                else:
+                    return {"error": f"Failed to parse JSON response: {extracted_text[:200]}..."}
+            
+        except Exception as e:
+            return {"error": f"Failed to extract project info: {str(e)}"}
+    
+    def _build_extraction_prompt(self, readme_content: str) -> str:
+        """Build prompt for project information extraction"""
+        return f"""Analyze the following project documentation and extract key information in JSON format:
+
+{readme_content}
+
+Extract the following information and return as valid JSON:
+{{
+    "application_name": "name of the application/project",
+    "technologies": ["list", "of", "technologies", "programming languages", "frameworks"],
+    "sector": "industry sector (e.g., finance, healthcare, e-commerce)",
+    "security_objectives": {{
+        "confidentiality": true/false,
+        "integrity": true/false, 
+        "availability": true/false
+    }},
+    "architecture_type": "type of architecture (e.g., microservices, monolith, serverless)",
+    "deployment_environment": "deployment target (e.g., AWS, on-premises, hybrid)"
+}}
+
+Focus on extracting factual information. If information is not available, use null or empty arrays.
+Return ONLY the JSON object, no additional text or markdown formatting."""
     
     def _validate_with_user(self, project_info: Dict[str, Any]) -> Dict[str, Any]:
         """Allow user to validate and modify extracted information"""
