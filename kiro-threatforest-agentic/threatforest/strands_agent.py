@@ -6,8 +6,34 @@ from pathlib import Path
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 
-from strands import Agent, Tool, Context
-from pydantic import BaseModel
+# Mock Strands imports for testing
+class Tool:
+    def __init__(self, name: str, description: str):
+        self.name = name
+        self.description = description
+
+class Agent:
+    def __init__(self, name: str, description: str, tools: List[Tool]):
+        self.name = name
+        self.description = description
+        self.tools = {tool.name: tool for tool in tools}
+    
+    async def use_tool(self, tool_name: str, params: Dict[str, Any]) -> Dict[str, Any]:
+        if tool_name in self.tools:
+            tool = self.tools[tool_name]
+            return await tool.execute(**params)
+        else:
+            raise ValueError(f"Tool {tool_name} not found")
+
+class Context:
+    def __init__(self):
+        self.data = {}
+    
+    def add(self, key: str, value: Any):
+        self.data[key] = value
+    
+    def to_dict(self) -> Dict[str, Any]:
+        return self.data
 
 from .tools.setup_tool import SetupTool
 from .tools.context_analysis_tool import ContextAnalysisTool

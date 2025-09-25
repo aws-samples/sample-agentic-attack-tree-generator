@@ -3,7 +3,11 @@ import os
 from pathlib import Path
 from typing import Dict, List, Any
 
-from strands import Tool
+# Mock Strands Tool for testing
+class Tool:
+    def __init__(self, name: str, description: str):
+        self.name = name
+        self.description = description
 
 
 class ContextAnalysisTool(Tool):

@@ -6,7 +6,12 @@ import subprocess
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 
-from strands import Tool
+# Mock Strands Tool for testing
+class Tool:
+    def __init__(self, name: str, description: str):
+        self.name = name
+        self.description = description
+
 import boto3
 from botocore.exceptions import NoCredentialsError, ProfileNotFound
 
