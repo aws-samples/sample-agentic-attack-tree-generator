@@ -4,6 +4,11 @@ The ThreatForest Wizard provides a user-friendly, step-by-step interface for run
 
 ## 🚀 Quick Start
 
+### Prerequisites
+- **AWS Account** with Bedrock access (us-east-1 region)
+- **AWS CLI** configured with appropriate credentials
+- **Python 3.8+** installed
+
 ### Step 1: Setup Virtual Environment
 
 ```bash
@@ -26,11 +31,66 @@ which python
 pip install -r requirements.txt
 ```
 
-### Step 2: Run the Wizard
+### Step 2: Prepare Your Project
+
+**Before running the wizard**, prepare your project directory with threat model files:
+
+#### Option A: Use ThreatComposer (Recommended)
+1. Visit https://awslabs.github.io/threat-composer/
+2. Create a new workspace with your application details
+3. Add threat statements with High/Medium/Low priorities
+4. Export workspace as `.tc` file to your project directory
+
+#### Option B: Create Custom Threat Model
+Create a `threats.json` file in your project directory:
+```json
+{
+  "application_info": {
+    "name": "My Application",
+    "technologies": ["AWS", "React", "Node.js"]
+  },
+  "threats": [
+    {"description": "SQL injection attack", "priority": "high"}
+  ]
+}
+```
+
+### Step 3: Run the Wizard
 
 ```bash
 # Make sure virtual environment is activated (you should see (venv) in your prompt)
 python threatforest_wizard.py
+```
+
+### Step 4: Follow the Interactive Steps
+
+The wizard will guide you through:
+1. **AWS Configuration** - Select profile and verify Bedrock access
+2. **Model Selection** - Choose AI model (Claude Sonnet 4 recommended)
+3. **Project Path** - Select directory with your threat model files
+4. **Review** - Confirm settings and discovered files
+5. **Analysis** - Run complete ThreatForest workflow
+
+## 📋 Expected Workflow
+
+### Typical Session
+```bash
+$ source venv/bin/activate
+$ python threatforest_wizard.py
+
+🌳 Welcome to ThreatForest!
+...
+📁 Step 3: Project Path Selection
+📋 Enhanced Scanning /path/to/your/project...
+🎯 Found 1 threat model files:
+   • ThreatComposer_Workspace_MyApp.tc (ThreatComposer)
+📖 Found 1 README files
+🏗️ Found 2 diagram files
+✅ Threat models found - analysis will be comprehensive!
+
+🚀 Ready to run ThreatForest analysis? [y/N]: y
+...
+✅ Analysis complete! Reports generated in outputs/
 ```
 
 ## 📁 Recommended Context Files
@@ -230,6 +290,50 @@ If you prefer JSON format, use this structure:
 # Get structured data for processing
 ./threatforest/tools/threat_jq.sh your-threats.tc extract
 ```
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+#### "No threat models found"
+```bash
+⚠️  No threat model files found
+💡 ThreatForest works best with:
+   • ThreatComposer workspace files (.tc)
+   • Threat statement files (threat.json, security.yaml)
+   • README files with project description
+```
+**Solution**: Add a ThreatComposer export or create `threats.json` in your project directory
+
+#### "Bedrock access failed"
+```bash
+❌ Bedrock access failed: UnauthorizedOperation
+💡 Make sure you have Bedrock permissions in us-east-1 region
+```
+**Solution**: 
+1. Check AWS credentials: `aws sts get-caller-identity`
+2. Verify Bedrock permissions in us-east-1
+3. Request Bedrock model access in AWS Console
+
+#### "externally-managed-environment"
+```bash
+error: externally-managed-environment
+```
+**Solution**: Always use virtual environment as shown in setup steps
+
+#### Virtual Environment Issues
+```bash
+# If venv activation fails, recreate it:
+rm -rf venv
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+### Getting Help
+- Check AWS credentials: `aws configure list`
+- Test Bedrock access: `aws bedrock list-foundation-models --region us-east-1`
+- Validate threat files: `./threatforest/tools/threat_jq.sh your-file.tc summary`
 
 ## 🌳 Ready to Start?
 
