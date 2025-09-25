@@ -103,30 +103,35 @@ Let's get started with the setup!
         self.console.print("\n📋 Step 1: AWS Configuration", style="bold blue")
         self.console.print("ThreatForest uses AWS Bedrock for AI analysis. Let's configure your AWS access.")
         
-        # Check existing AWS configuration
-        setup_tool = SetupTool()
-        setup_result = await setup_tool.execute()
-        
-        if setup_result.get("aws_configured"):
-            self.console.print("✅ AWS credentials already configured!")
-            
-            # Show available profiles
-            profiles = self._get_aws_profiles()
-            if profiles:
-                self.console.print(f"📋 Available AWS profiles: {', '.join(profiles)}")
+        # Check existing AWS configuration without SetupTool
+        try:
+            import boto3
+            session = boto3.Session()
+            # Try to get credentials
+            credentials = session.get_credentials()
+            if credentials:
+                self.console.print("✅ AWS credentials already configured!")
                 
-                if len(profiles) > 1:
-                    profile_choice = Prompt.ask(
-                        "Which AWS profile would you like to use?",
-                        choices=["default"] + [p for p in profiles if p != "default"],
-                        default="default"
-                    )
-                    self.config["aws_profile"] = profile_choice if profile_choice != "default" else None
+                # Show available profiles
+                profiles = self._get_aws_profiles()
+                if profiles:
+                    self.console.print(f"📋 Available AWS profiles: {', '.join(profiles)}")
+                    
+                    if len(profiles) > 1:
+                        profile_choice = Prompt.ask(
+                            "Which AWS profile would you like to use?",
+                            choices=["default"] + [p for p in profiles if p != "default"],
+                            default="default"
+                        )
+                        self.config["aws_profile"] = profile_choice if profile_choice != "default" else None
+                    else:
+                        self.config["aws_profile"] = None
                 else:
                     self.config["aws_profile"] = None
             else:
-                self.config["aws_profile"] = None
-        else:
+                raise Exception("No credentials found")
+                
+        except Exception:
             self.console.print("❌ AWS credentials not found.")
             self.console.print("\n🔧 To configure AWS credentials, you have several options:")
             self.console.print("1. Run: aws configure")
