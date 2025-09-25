@@ -1,6 +1,6 @@
 # ThreatForest Analysis Report
 
-**Generated on:** 2025-09-25 18:47:26
+**Generated on:** 2025-09-25 18:52:56
 
 ## Executive Summary
 
@@ -11,7 +11,7 @@ This report presents a comprehensive threat analysis for **Sample GenAI Chatbot*
 - **Application Name**: Sample GenAI Chatbot
 - **Architecture Type**: serverless
 - **Deployment Environment**: AWS
-- **Industry Sector**: None
+- **Industry Sector**: customer service
 
 ### Technology Stack
 - Amazon Bedrock
@@ -32,7 +32,6 @@ This report presents a comprehensive threat analysis for **Sample GenAI Chatbot*
 - Amazon VPC
 - Anthropic Claude Model
 - Titan Embedding Model
-- boto3
 
 ### Security Objectives
 - **Confidentiality**: ✅ Required
@@ -60,24 +59,24 @@ This report presents a comprehensive threat analysis for **Sample GenAI Chatbot*
 ## Attack Tree Analysis
 
 ### Generated Attack Trees
-- **T3**: LLM01 Prompt Injection / LLM06 Excessive Agency (14 TTC mappings)
+- **T3**: LLM01 Prompt Injection / LLM06 Excessive Agency (16 TTC mappings)
 - **T7**: LLM04 Data/Model Poisoning (12 TTC mappings)
-- **T9**: LLM04 Data/Model Poisoning (10 TTC mappings)
+- **T9**: LLM04 Data/Model Poisoning (15 TTC mappings)
 
 ## MITRE ATT&CK Mapping
 
 ### TTC Mapping Summary
 - **Techniques Loaded**: 229
-- **Total Mappings**: 36
-- **High Confidence Mappings**: 36
-- **Confidence Threshold**: 0.3
+- **Total Mappings**: 43
+- **High Confidence Mappings**: 43
+- **Confidence Threshold**: 0.5
 
 ### Top Mapped Techniques
-- **T1548.005**: Temporary Elevated Cloud Access (Confidence: 1.00)
-- **T1548.005**: Temporary Elevated Cloud Access (Confidence: 1.00)
-- **AT1024.002**: Additional Access Key (Confidence: 0.90)
-- **T1546**: Event Triggered Execution (Confidence: 0.90)
-- **T1212**: Exploitation for Credential Access (Confidence: 0.90)
+- **T1552.001**: Credentials In Files (Confidence: 0.95)
+- **T1565.001**: Stored Data Manipulation (Confidence: 0.95)
+- **T1565**: Data Manipulation (Confidence: 0.95)
+- **T1565.002**: Transmitted Data Manipulation (Confidence: 0.95)
+- **T1530**: Data from Cloud Storage (Confidence: 0.95)
 
 ## Recommendations
 

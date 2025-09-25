@@ -72,14 +72,18 @@ async def test_complete_workflow():
     print(f"   ❌ Failed: {len(failed_trees)}")
     
     # Step 4: TTC Mapping
-    print(f"\n🎯 Step 4: TTC Mapping to MITRE ATT&CK")
-    ttc_mapper = TTCMappingTool(threshold=0.3)
-    mapped_result = await ttc_mapper.execute(trees_result)
+    print(f"\n🎯 Step 4: Enhanced TTC Mapping with Bedrock")
+    ttc_mapper = TTCMappingTool(threshold=0.5)
+    mapped_result = await ttc_mapper.execute(
+        trees_result,
+        bedrock_model=model  # Use Bedrock for enhanced mapping
+    )
     
     mapping_summary = mapped_result['mapping_summary']
+    print(f"   ✅ Bedrock enhanced: {mapping_summary.get('bedrock_enhanced', False)}")
     print(f"   ✅ Techniques loaded: {mapping_summary.get('techniques_loaded', 0)}")
     print(f"   ✅ Total mappings: {mapping_summary.get('total_mappings', 0)}")
-    print(f"   ✅ Successful mappings: {mapping_summary.get('successful_mappings', 0)}")
+    print(f"   ✅ High confidence mappings: {mapping_summary.get('successful_mappings', 0)}")
     
     # Step 5: Summary Generation
     print(f"\n📄 Step 5: Summary Generation")

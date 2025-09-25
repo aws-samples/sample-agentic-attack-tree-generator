@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated_at": "2025-09-25T18:47:26.848212",
+    "generated_at": "2025-09-25T18:52:56.228722",
     "generator": "ThreatForest",
     "version": "1.0"
   },
@@ -24,10 +24,9 @@
       "Amazon DynamoDB",
       "Amazon VPC",
       "Anthropic Claude Model",
-      "Titan Embedding Model",
-      "boto3"
+      "Titan Embedding Model"
     ],
-    "sector": null,
+    "sector": "customer service",
     "security_objectives": {
       "confidentiality": true,
       "integrity": true,
@@ -39,7 +38,7 @@
   "extraction_summary": {
     "total_threats": 37,
     "high_severity_count": 9,
-    "technologies_identified": 19,
+    "technologies_identified": 18,
     "has_security_objectives": true,
     "user_validated": false
   },
@@ -422,55 +421,59 @@
       "threat_id": "T3",
       "threat_category": "LLM01 Prompt Injection / LLM06 Excessive Agency",
       "threat_description": "An external threat actor who enables compromised LLM plugins or agents in an LLM system can manipulate it via indirect or direct prompt injection, which leads to access unauthorized functionality or data, resulting in reduced confidentiality and/or integrity of connected and downstream systems and data",
-      "mermaid_code": "graph TD\n    goal[\"Compromise downstream systems and exfiltrate sensitive organizational data through LLM agent manipulation\"]\n    \n    fact1[\"LLM system lacks input validation and prompt sanitization mechanisms\"]\n    fact2[\"LLM agents have excessive permissions to access internal APIs and databases\"]\n    fact3[\"System implements insufficient output filtering for LLM-generated responses\"]\n    fact4[\"LLM training data contains malicious prompt patterns from compromised sources\"]\n    \n    attack1[\"Craft indirect prompt injection via poisoned training data or documents\"]\n    attack2[\"Execute direct prompt injection to bypass system instructions\"]\n    attack3[\"Manipulate LLM agent to access unauthorized API endpoints\"]\n    attack4[\"Chain multiple prompt injections to escalate privileges\"]\n    attack5[\"Exfiltrate data through LLM response manipulation and steganographic encoding\"]\n    attack6[\"Establish persistence by injecting malicious instructions into LLM memory\"]\n    \n    mitigation1[\"Implement robust input validation and prompt sanitization\"]\n    mitigation2[\"Apply principle of least privilege to LLM agent permissions\"]\n    mitigation3[\"Deploy output filtering and content security policies\"]\n    mitigation4[\"Establish secure LLM memory isolation and session management\"]\n    \n    fact1 --> attack1\n    fact1 --> attack2\n    fact2 --> attack3\n    fact3 --> attack5\n    fact4 --> attack1\n    \n    attack1 --> attack4\n    attack2 --> attack4\n    attack3 --> attack5\n    attack4 --> attack6\n    attack5 --> goal\n    attack6 --> goal\n    \n    mitigation1 -.-> attack1\n    mitigation1 -.-> attack2\n    mitigation2 -.-> attack3\n    mitigation3 -.-> attack5\n    mitigation4 -.-> attack6\n    \n    classDef attack fill:#ffcccc\n    classDef mitigation fill:#ccffcc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class attack1,attack2,attack3,attack4,attack5,attack6 attack\n    class mitigation1,mitigation2,mitigation3,mitigation4 mitigation\n    class goal goal\n    class fact1,fact2,fact3,fact4 fact",
+      "mermaid_code": "graph TD\n    goal[\"Gain unauthorized access to backend systems and exfiltrate sensitive data through compromised LLM agents\"]\n    \n    fact1[\"LLM plugins lack input validation and sanitization mechanisms\"]\n    fact2[\"LLM agents have excessive permissions to access downstream systems\"]\n    fact3[\"User inputs are directly passed to LLM without content filtering\"]\n    fact4[\"LLM system lacks proper session isolation between users\"]\n    \n    attack1[\"Craft malicious prompt with embedded system commands to bypass content filters\"]\n    attack2[\"Inject indirect prompt via poisoned training data or compromised data sources\"]\n    attack3[\"Use jailbreaking techniques to override LLM safety constraints\"]\n    attack4[\"Manipulate plugin parameters through prompt injection to access unauthorized APIs\"]\n    attack5[\"Chain multiple prompts to escalate privileges across connected systems\"]\n    attack6[\"Exploit agent's file system access to read configuration files and credentials\"]\n    attack7[\"Use prompt injection to modify agent behavior and establish persistence\"]\n    \n    mitigation1[\"Implement strict input validation and prompt sanitization\"]\n    mitigation2[\"Apply principle of least privilege to LLM agent permissions\"]\n    mitigation3[\"Deploy content filtering and anomaly detection for LLM inputs/outputs\"]\n    mitigation4[\"Implement proper session management and user context isolation\"]\n    \n    fact1 --> attack1\n    fact1 --> attack3\n    fact2 --> attack4\n    fact2 --> attack5\n    fact2 --> attack6\n    fact3 --> attack1\n    fact3 --> attack2\n    fact4 --> attack5\n    fact4 --> attack7\n    \n    attack1 --> attack4\n    attack2 --> attack5\n    attack3 --> attack6\n    attack4 --> attack6\n    attack5 --> goal\n    attack6 --> goal\n    attack7 --> goal\n    \n    mitigation1 -.-> attack1\n    mitigation1 -.-> attack2\n    mitigation2 -.-> attack4\n    mitigation2 -.-> attack5\n    mitigation2 -.-> attack6\n    mitigation3 -.-> attack1\n    mitigation3 -.-> attack3\n    mitigation4 -.-> attack5\n    mitigation4 -.-> attack7\n    \n    classDef attack fill:#ffcccc\n    classDef mitigation fill:#ccffcc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class attack1,attack2,attack3,attack4,attack5,attack6,attack7 attack\n    class mitigation1,mitigation2,mitigation3,mitigation4 mitigation\n    class goal goal\n    class fact1,fact2,fact3,fact4 fact",
       "attack_steps": [
         {
           "node_id": "goal",
-          "description": "Compromise downstream systems and exfiltrate sensitive organizational data through LLM agent manipulation"
+          "description": "Gain unauthorized access to backend systems and exfiltrate sensitive data through compromised LLM agents"
         },
         {
           "node_id": "fact1",
-          "description": "LLM system lacks input validation and prompt sanitization mechanisms"
+          "description": "LLM plugins lack input validation and sanitization mechanisms"
         },
         {
           "node_id": "fact2",
-          "description": "LLM agents have excessive permissions to access internal APIs and databases"
+          "description": "LLM agents have excessive permissions to access downstream systems"
         },
         {
           "node_id": "fact3",
-          "description": "System implements insufficient output filtering for LLM-generated responses"
+          "description": "User inputs are directly passed to LLM without content filtering"
         },
         {
           "node_id": "fact4",
-          "description": "LLM training data contains malicious prompt patterns from compromised sources"
+          "description": "LLM system lacks proper session isolation between users"
         },
         {
           "node_id": "attack1",
-          "description": "Craft indirect prompt injection via poisoned training data or documents"
+          "description": "Craft malicious prompt with embedded system commands to bypass content filters"
         },
         {
           "node_id": "attack2",
-          "description": "Execute direct prompt injection to bypass system instructions"
+          "description": "Inject indirect prompt via poisoned training data or compromised data sources"
         },
         {
           "node_id": "attack3",
-          "description": "Manipulate LLM agent to access unauthorized API endpoints"
+          "description": "Use jailbreaking techniques to override LLM safety constraints"
         },
         {
           "node_id": "attack4",
-          "description": "Chain multiple prompt injections to escalate privileges"
+          "description": "Manipulate plugin parameters through prompt injection to access unauthorized APIs"
         },
         {
           "node_id": "attack5",
-          "description": "Exfiltrate data through LLM response manipulation and steganographic encoding"
+          "description": "Chain multiple prompts to escalate privileges across connected systems"
         },
         {
           "node_id": "attack6",
-          "description": "Establish persistence by injecting malicious instructions into LLM memory"
+          "description": "Exploit agent's file system access to read configuration files and credentials"
+        },
+        {
+          "node_id": "attack7",
+          "description": "Use prompt injection to modify agent behavior and establish persistence"
         },
         {
           "node_id": "mitigation1",
-          "description": "Implement robust input validation and prompt sanitization"
+          "description": "Implement strict input validation and prompt sanitization"
         },
         {
           "node_id": "mitigation2",
@@ -478,14 +481,14 @@
         },
         {
           "node_id": "mitigation3",
-          "description": "Deploy output filtering and content security policies"
+          "description": "Deploy content filtering and anomaly detection for LLM inputs/outputs"
         },
         {
           "node_id": "mitigation4",
-          "description": "Establish secure LLM memory isolation and session management"
+          "description": "Implement proper session management and user context isolation"
         }
       ],
-      "generated_content": "# Attack Tree: LLM01 Prompt Injection / LLM06 Excessive Agency\n\n```mermaid\ngraph TD\n    goal[\"Compromise downstream systems and exfiltrate sensitive organizational data through LLM agent manipulation\"]\n    \n    fact1[\"LLM system lacks input validation and prompt sanitization mechanisms\"]\n    fact2[\"LLM agents have excessive permissions to access internal APIs and databases\"]\n    fact3[\"System implements insufficient output filtering for LLM-generated responses\"]\n    fact4[\"LLM training data contains malicious prompt patterns from compromised sources\"]\n    \n    attack1[\"Craft indirect prompt injection via poisoned training data or documents\"]\n    attack2[\"Execute direct prompt injection to bypass system instructions\"]\n    attack3[\"Manipulate LLM agent to access unauthorized API endpoints\"]\n    attack4[\"Chain multiple prompt injections to escalate privileges\"]\n    attack5[\"Exfiltrate data through LLM response manipulation and steganographic encoding\"]\n    attack6[\"Establish persistence by injecting malicious instructions into LLM memory\"]\n    \n    mitigation1[\"Implement robust input validation and prompt sanitization\"]\n    mitigation2[\"Apply principle of least privilege to LLM agent permissions\"]\n    mitigation3[\"Deploy output filtering and content security policies\"]\n    mitigation4[\"Establish secure LLM memory isolation and session management\"]\n    \n    fact1 --> attack1\n    fact1 --> attack2\n    fact2 --> attack3\n    fact3 --> attack5\n    fact4 --> attack1\n    \n    attack1 --> attack4\n    attack2 --> attack4\n    attack3 --> attack5\n    attack4 --> attack6\n    attack5 --> goal\n    attack6 --> goal\n    \n    mitigation1 -.-> attack1\n    mitigation1 -.-> attack2\n    mitigation2 -.-> attack3\n    mitigation3 -.-> attack5\n    mitigation4 -.-> attack6\n    \n    classDef attack fill:#ffcccc\n    classDef mitigation fill:#ccffcc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class attack1,attack2,attack3,attack4,attack5,attack6 attack\n    class mitigation1,mitigation2,mitigation3,mitigation4 mitigation\n    class goal goal\n    class fact1,fact2,fact3,fact4 fact\n```",
+      "generated_content": "# Attack Tree: LLM01 Prompt Injection / LLM06 Excessive Agency\n\n```mermaid\ngraph TD\n    goal[\"Gain unauthorized access to backend systems and exfiltrate sensitive data through compromised LLM agents\"]\n    \n    fact1[\"LLM plugins lack input validation and sanitization mechanisms\"]\n    fact2[\"LLM agents have excessive permissions to access downstream systems\"]\n    fact3[\"User inputs are directly passed to LLM without content filtering\"]\n    fact4[\"LLM system lacks proper session isolation between users\"]\n    \n    attack1[\"Craft malicious prompt with embedded system commands to bypass content filters\"]\n    attack2[\"Inject indirect prompt via poisoned training data or compromised data sources\"]\n    attack3[\"Use jailbreaking techniques to override LLM safety constraints\"]\n    attack4[\"Manipulate plugin parameters through prompt injection to access unauthorized APIs\"]\n    attack5[\"Chain multiple prompts to escalate privileges across connected systems\"]\n    attack6[\"Exploit agent's file system access to read configuration files and credentials\"]\n    attack7[\"Use prompt injection to modify agent behavior and establish persistence\"]\n    \n    mitigation1[\"Implement strict input validation and prompt sanitization\"]\n    mitigation2[\"Apply principle of least privilege to LLM agent permissions\"]\n    mitigation3[\"Deploy content filtering and anomaly detection for LLM inputs/outputs\"]\n    mitigation4[\"Implement proper session management and user context isolation\"]\n    \n    fact1 --> attack1\n    fact1 --> attack3\n    fact2 --> attack4\n    fact2 --> attack5\n    fact2 --> attack6\n    fact3 --> attack1\n    fact3 --> attack2\n    fact4 --> attack5\n    fact4 --> attack7\n    \n    attack1 --> attack4\n    attack2 --> attack5\n    attack3 --> attack6\n    attack4 --> attack6\n    attack5 --> goal\n    attack6 --> goal\n    attack7 --> goal\n    \n    mitigation1 -.-> attack1\n    mitigation1 -.-> attack2\n    mitigation2 -.-> attack4\n    mitigation2 -.-> attack5\n    mitigation2 -.-> attack6\n    mitigation3 -.-> attack1\n    mitigation3 -.-> attack3\n    mitigation4 -.-> attack5\n    mitigation4 -.-> attack7\n    \n    classDef attack fill:#ffcccc\n    classDef mitigation fill:#ccffcc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class attack1,attack2,attack3,attack4,attack5,attack6,attack7 attack\n    class mitigation1,mitigation2,mitigation3,mitigation4 mitigation\n    class goal goal\n    class fact1,fact2,fact3,fact4 fact\n```",
       "validation": {
         "is_valid": true,
         "errors": [],
@@ -500,58 +503,38 @@
           "goal": 1,
           "fact": 1
         },
-        "connection_count": 11,
+        "connection_count": 16,
         "tech_mentions": 0
       },
       "ttc_mappings": [
         {
-          "attack_step": "compromise downstream systems and exfiltrate sensitive organizational data through llm agent manipulation",
+          "attack_step": "Gain unauthorized access to backend systems and exfiltrate sensitive data through compromised LLM agents",
           "node_id": "goal",
           "mapped_techniques": [
             {
-              "technique_id": "AT1027",
-              "technique_name": "Transfer Data out of Cloud Account",
-              "confidence": 0.7,
+              "technique_id": "T1199",
+              "technique_name": "Trusted Relationship",
+              "confidence": 0.9,
               "tactics": [
-                "exfiltration"
-              ],
-              "platforms": [
-                "IaaS",
-                "Amazon Simple Storage Service (S3)",
-                "Amazon Elastic File System (EFS)",
-                "Amazon FSx for Windows File Server",
-                "Amazon FSx for Lustre",
-                "AWS Storage Gateway",
-                "AWS Backup",
-                "Amazon Relational Database Service (RDS)",
-                "Amazon Redshift",
-                "Amazon DynamoDB",
-                "Amazon ElastiCache",
-                "Amazon Neptune",
-                "Amazon Quantum Ledger Database (QLDB)",
-                "Amazon DocumentDB (with MongoDB compatibility)",
-                "Amazon Keyspaces (for Apache Cassandra)",
-                "Amazon Timestream"
-              ]
-            },
-            {
-              "technique_id": "T1189",
-              "technique_name": "Drive-by Compromise",
-              "confidence": 0.7,
-              "tactics": [
+                "lateral-movement",
+                "persistence",
                 "initial-access"
               ],
               "platforms": [
                 "Windows",
+                "SaaS",
+                "IaaS",
                 "Linux",
                 "macOS",
-                "SaaS"
-              ]
+                "Office 365",
+                "AWS Identity and Access Management (IAM)"
+              ],
+              "reasoning": "LLM agents represent trusted relationships with backend systems, and compromising them enables lateral movement and initial access to downstream systems"
             },
             {
               "technique_id": "T1537",
               "technique_name": "Transfer Data to Cloud Account",
-              "confidence": 0.7,
+              "confidence": 0.85,
               "tactics": [
                 "exfiltration"
               ],
@@ -575,891 +558,123 @@
                 "Amazon DocumentDB (with MongoDB compatibility)",
                 "Amazon Keyspaces (for Apache Cassandra)",
                 "Amazon Timestream"
-              ]
+              ],
+              "reasoning": "The goal explicitly mentions data exfiltration, and compromised LLM agents would likely transfer sensitive data to attacker-controlled cloud accounts"
             }
           ],
-          "confidence": 0.7
+          "confidence": 0.9
         },
         {
-          "attack_step": "llm system lacks input validation and prompt sanitization mechanisms",
+          "attack_step": "LLM plugins lack input validation and sanitization mechanisms",
           "node_id": "fact1",
           "mapped_techniques": [
             {
-              "technique_id": "T1049",
-              "technique_name": "System Network Connections Discovery",
-              "confidence": 0.3,
-              "tactics": [
-                "discovery"
-              ],
-              "platforms": [
-                "Windows",
-                "IaaS",
-                "Linux",
-                "macOS",
-                "Amazon Elastic Compute Cloud (EC2)",
-                "Amazon Lightsail"
-              ]
-            },
-            {
-              "technique_id": "T1082",
-              "technique_name": "System Information Discovery",
-              "confidence": 0.3,
-              "tactics": [
-                "discovery"
-              ],
-              "platforms": [
-                "Windows",
-                "IaaS",
-                "Linux",
-                "macOS",
-                "Amazon Elastic Compute Cloud (EC2)",
-                "Amazon Lightsail"
-              ]
-            },
-            {
-              "technique_id": "T1614",
-              "technique_name": "System Location Discovery",
-              "confidence": 0.3,
-              "tactics": [
-                "discovery"
-              ],
-              "platforms": [
-                "Windows",
-                "Linux",
-                "macOS",
-                "IaaS",
-                "Amazon Elastic Compute Cloud (EC2)",
-                "Amazon Lightsail"
-              ]
-            }
-          ],
-          "confidence": 0.3
-        },
-        {
-          "attack_step": "llm agents have excessive permissions to access internal apis and databases",
-          "node_id": "fact2",
-          "mapped_techniques": [
-            {
-              "technique_id": "T1556.009",
-              "technique_name": "Conditional Access Policies",
-              "confidence": 0.6,
-              "tactics": [
-                "credential-access",
-                "defense-evasion",
-                "persistence"
-              ],
-              "platforms": [
-                "Azure AD",
-                "SaaS",
-                "IaaS"
-              ]
-            },
-            {
-              "technique_id": "T1108",
-              "technique_name": "Redundant Access",
-              "confidence": 0.5,
-              "tactics": [
-                "defense-evasion",
-                "persistence"
-              ],
-              "platforms": [
-                "Windows",
-                "Azure AD",
-                "Office 365",
-                "SaaS",
-                "IaaS",
-                "Linux",
-                "macOS"
-              ]
-            },
-            {
-              "technique_id": "T1525",
-              "technique_name": "Implant Internal Image",
-              "confidence": 0.5,
-              "tactics": [
-                "persistence"
-              ],
-              "platforms": [
-                "IaaS",
-                "Containers",
-                "Amazon Elastic Compute Cloud (EC2)",
-                "Amazon Elastic Container Registry (ECR)",
-                "Amazon Elastic Kubernetes Service (EKS)",
-                "Amazon Elastic Container Service (ECS)"
-              ]
-            }
-          ],
-          "confidence": 0.6
-        },
-        {
-          "attack_step": "system implements insufficient output filtering for llm-generated responses",
-          "node_id": "fact3",
-          "mapped_techniques": [
-            {
-              "technique_id": "T1049",
-              "technique_name": "System Network Connections Discovery",
-              "confidence": 0.3,
-              "tactics": [
-                "discovery"
-              ],
-              "platforms": [
-                "Windows",
-                "IaaS",
-                "Linux",
-                "macOS",
-                "Amazon Elastic Compute Cloud (EC2)",
-                "Amazon Lightsail"
-              ]
-            },
-            {
-              "technique_id": "T1082",
-              "technique_name": "System Information Discovery",
-              "confidence": 0.3,
-              "tactics": [
-                "discovery"
-              ],
-              "platforms": [
-                "Windows",
-                "IaaS",
-                "Linux",
-                "macOS",
-                "Amazon Elastic Compute Cloud (EC2)",
-                "Amazon Lightsail"
-              ]
-            },
-            {
-              "technique_id": "T1614",
-              "technique_name": "System Location Discovery",
-              "confidence": 0.3,
-              "tactics": [
-                "discovery"
-              ],
-              "platforms": [
-                "Windows",
-                "Linux",
-                "macOS",
-                "IaaS",
-                "Amazon Elastic Compute Cloud (EC2)",
-                "Amazon Lightsail"
-              ]
-            }
-          ],
-          "confidence": 0.3
-        },
-        {
-          "attack_step": "llm training data contains malicious prompt patterns from compromised sources",
-          "node_id": "fact4",
-          "mapped_techniques": [
-            {
-              "technique_id": "T1552.005",
-              "technique_name": "Cloud Instance Metadata API",
-              "confidence": 0.4,
-              "tactics": [
-                "credential-access"
-              ],
-              "platforms": [
-                "IaaS",
-                "Amazon Elastic Compute Cloud (EC2)"
-              ]
-            },
-            {
-              "technique_id": "T1204.003",
-              "technique_name": "Malicious Image",
-              "confidence": 0.4,
-              "tactics": [
-                "execution"
-              ],
-              "platforms": [
-                "IaaS",
-                "Containers",
-                "Amazon Elastic Compute Cloud (EC2)",
-                "Amazon Elastic Container Registry (ECR)",
-                "Amazon Elastic Kubernetes Service (EKS)",
-                "Amazon Elastic Container Service (ECS)"
-              ]
-            },
-            {
-              "technique_id": "T1070.008",
-              "technique_name": "Clear Mailbox Data",
-              "confidence": 0.4,
-              "tactics": [
-                "defense-evasion"
-              ],
-              "platforms": [
-                "Linux",
-                "macOS",
-                "Windows",
-                "Office 365",
-                "Google Workspace"
-              ]
-            }
-          ],
-          "confidence": 0.4
-        },
-        {
-          "attack_step": "craft indirect prompt injection via poisoned training data or documents",
-          "node_id": "attack1",
-          "mapped_techniques": [
-            {
-              "technique_id": "T1190.A018",
-              "technique_name": "API Gateway",
-              "confidence": 0.5,
-              "tactics": [
-                "initial-access"
-              ],
-              "platforms": [
-                "IaaS",
-                "Amazon API Gateway"
-              ]
-            },
-            {
-              "technique_id": "T1190.A010",
-              "technique_name": "Redshift Cluster",
-              "confidence": 0.5,
-              "tactics": [
-                "initial-access"
-              ],
-              "platforms": [
-                "IaaS",
-                "Amazon Redshift"
-              ]
-            },
-            {
-              "technique_id": "T1552.005",
-              "technique_name": "Cloud Instance Metadata API",
-              "confidence": 0.4,
-              "tactics": [
-                "credential-access"
-              ],
-              "platforms": [
-                "IaaS",
-                "Amazon Elastic Compute Cloud (EC2)"
-              ]
-            }
-          ],
-          "confidence": 0.5
-        },
-        {
-          "attack_step": "execute direct prompt injection to bypass system instructions",
-          "node_id": "attack2",
-          "mapped_techniques": [
-            {
-              "technique_id": "T1556.007",
-              "technique_name": "Hybrid Identity",
-              "confidence": 0.6000000000000001,
-              "tactics": [
-                "credential-access",
-                "defense-evasion",
-                "persistence"
-              ],
-              "platforms": [
-                "Windows",
-                "Azure AD",
-                "SaaS",
-                "Google Workspace",
-                "Office 365",
-                "IaaS"
-              ]
-            },
-            {
-              "technique_id": "T1539",
-              "technique_name": "Steal Web Session Cookie",
-              "confidence": 0.6000000000000001,
-              "tactics": [
-                "credential-access"
-              ],
-              "platforms": [
-                "Linux",
-                "macOS",
-                "Windows",
-                "Office 365",
-                "SaaS",
-                "Google Workspace"
-              ]
-            },
-            {
-              "technique_id": "T1583.001",
-              "technique_name": "Domains",
-              "confidence": 0.6000000000000001,
-              "tactics": [
-                "resource-development"
-              ],
-              "platforms": [
-                "SaaS",
-                "IaaS"
-              ]
-            }
-          ],
-          "confidence": 0.6000000000000001
-        },
-        {
-          "attack_step": "manipulate llm agent to access unauthorized api endpoints",
-          "node_id": "attack3",
-          "mapped_techniques": [
-            {
-              "technique_id": "T1556.009",
-              "technique_name": "Conditional Access Policies",
-              "confidence": 0.6,
-              "tactics": [
-                "credential-access",
-                "defense-evasion",
-                "persistence"
-              ],
-              "platforms": [
-                "Azure AD",
-                "SaaS",
-                "IaaS"
-              ]
-            },
-            {
-              "technique_id": "T1108",
-              "technique_name": "Redundant Access",
-              "confidence": 0.5,
-              "tactics": [
-                "defense-evasion",
-                "persistence"
-              ],
-              "platforms": [
-                "Windows",
-                "Azure AD",
-                "Office 365",
-                "SaaS",
-                "IaaS",
-                "Linux",
-                "macOS"
-              ]
-            },
-            {
-              "technique_id": "AT1024.002",
-              "technique_name": "Additional Access Key",
-              "confidence": 0.5,
-              "tactics": [
-                "persistence"
-              ],
-              "platforms": [
-                "IaaS",
-                "AWS Identity and Access Management (IAM)"
-              ]
-            }
-          ],
-          "confidence": 0.6
-        },
-        {
-          "attack_step": "chain multiple prompt injections to escalate privileges",
-          "node_id": "attack4",
-          "mapped_techniques": [
-            {
-              "technique_id": "T1556.007",
-              "technique_name": "Hybrid Identity",
+              "technique_id": "T1212",
+              "technique_name": "Exploitation for Credential Access",
               "confidence": 0.8,
               "tactics": [
-                "credential-access",
-                "defense-evasion",
-                "persistence"
+                "credential-access"
               ],
               "platforms": [
-                "Windows",
-                "Azure AD",
-                "SaaS",
-                "Google Workspace",
-                "Office 365",
-                "IaaS"
-              ]
-            },
-            {
-              "technique_id": "T1548.005",
-              "technique_name": "Temporary Elevated Cloud Access",
-              "confidence": 0.8,
-              "tactics": [
-                "privilege-escalation",
-                "defense-evasion"
-              ],
-              "platforms": [
-                "IaaS",
-                "Azure AD",
-                "Office 365",
-                "Google Workspace"
-              ]
-            },
-            {
-              "technique_id": "T1082",
-              "technique_name": "System Information Discovery",
-              "confidence": 0.6000000000000001,
-              "tactics": [
-                "discovery"
-              ],
-              "platforms": [
-                "Windows",
-                "IaaS",
                 "Linux",
+                "Windows",
                 "macOS",
-                "Amazon Elastic Compute Cloud (EC2)",
-                "Amazon Lightsail"
-              ]
+                "Azure AD"
+              ],
+              "reasoning": "Lack of input validation creates exploitation opportunities for credential access, similar to injection attacks that bypass security controls"
             }
           ],
           "confidence": 0.8
         },
         {
-          "attack_step": "exfiltrate data through llm response manipulation and steganographic encoding",
-          "node_id": "attack5",
+          "attack_step": "LLM agents have excessive permissions to access downstream systems",
+          "node_id": "fact2",
           "mapped_techniques": [
             {
-              "technique_id": "AT1027",
-              "technique_name": "Transfer Data out of Cloud Account",
-              "confidence": 0.7,
+              "technique_id": "T1550.001",
+              "technique_name": "Application Access Token",
+              "confidence": 0.85,
               "tactics": [
-                "exfiltration"
-              ],
-              "platforms": [
-                "IaaS",
-                "Amazon Simple Storage Service (S3)",
-                "Amazon Elastic File System (EFS)",
-                "Amazon FSx for Windows File Server",
-                "Amazon FSx for Lustre",
-                "AWS Storage Gateway",
-                "AWS Backup",
-                "Amazon Relational Database Service (RDS)",
-                "Amazon Redshift",
-                "Amazon DynamoDB",
-                "Amazon ElastiCache",
-                "Amazon Neptune",
-                "Amazon Quantum Ledger Database (QLDB)",
-                "Amazon DocumentDB (with MongoDB compatibility)",
-                "Amazon Keyspaces (for Apache Cassandra)",
-                "Amazon Timestream"
-              ]
-            },
-            {
-              "technique_id": "T1537",
-              "technique_name": "Transfer Data to Cloud Account",
-              "confidence": 0.7,
-              "tactics": [
-                "exfiltration"
-              ],
-              "platforms": [
-                "IaaS",
-                "SaaS",
-                "Google Workspace",
-                "Office 365",
-                "Amazon Simple Storage Service (S3)",
-                "Amazon Elastic File System (EFS)",
-                "Amazon FSx for Windows File Server",
-                "Amazon FSx for Lustre",
-                "AWS Storage Gateway",
-                "AWS Backup",
-                "Amazon Relational Database Service (RDS)",
-                "Amazon Redshift",
-                "Amazon DynamoDB",
-                "Amazon ElastiCache",
-                "Amazon Neptune",
-                "Amazon Quantum Ledger Database (QLDB)",
-                "Amazon DocumentDB (with MongoDB compatibility)",
-                "Amazon Keyspaces (for Apache Cassandra)",
-                "Amazon Timestream"
-              ]
-            },
-            {
-              "technique_id": "T1213.A013",
-              "technique_name": "RDS Instance Manipulation",
-              "confidence": 0.7,
-              "tactics": [
-                "initial-access"
-              ],
-              "platforms": [
-                "IaaS",
-                "Amazon Relational Database Service (RDS)"
-              ]
-            }
-          ],
-          "confidence": 0.7
-        },
-        {
-          "attack_step": "establish persistence by injecting malicious instructions into llm memory",
-          "node_id": "attack6",
-          "mapped_techniques": [
-            {
-              "technique_id": "T1204.003",
-              "technique_name": "Malicious Image",
-              "confidence": 0.5,
-              "tactics": [
-                "execution"
-              ],
-              "platforms": [
-                "IaaS",
-                "Containers",
-                "Amazon Elastic Compute Cloud (EC2)",
-                "Amazon Elastic Container Registry (ECR)",
-                "Amazon Elastic Kubernetes Service (EKS)",
-                "Amazon Elastic Container Service (ECS)"
-              ]
-            },
-            {
-              "technique_id": "T1556.007",
-              "technique_name": "Hybrid Identity",
-              "confidence": 0.4,
-              "tactics": [
-                "credential-access",
                 "defense-evasion",
-                "persistence"
+                "lateral-movement"
               ],
               "platforms": [
-                "Windows",
-                "Azure AD",
+                "Office 365",
                 "SaaS",
                 "Google Workspace",
-                "Office 365",
-                "IaaS"
-              ]
+                "Containers",
+                "IaaS",
+                "Azure AD"
+              ],
+              "reasoning": "Excessive permissions likely involve application access tokens that can be abused for lateral movement and defense evasion across multiple systems"
             },
             {
-              "technique_id": "T1583.001",
-              "technique_name": "Domains",
-              "confidence": 0.4,
-              "tactics": [
-                "resource-development"
-              ],
-              "platforms": [
-                "SaaS",
-                "IaaS"
-              ]
-            }
-          ],
-          "confidence": 0.5
-        },
-        {
-          "attack_step": "apply principle of least privilege to llm agent permissions",
-          "node_id": "mitigation2",
-          "mapped_techniques": [
-            {
-              "technique_id": "T1098.002",
-              "technique_name": "Additional Email Delegate Permissions",
-              "confidence": 0.5,
+              "technique_id": "T1098.003",
+              "technique_name": "Additional Cloud Roles",
+              "confidence": 0.75,
               "tactics": [
                 "persistence",
                 "privilege-escalation"
               ],
               "platforms": [
-                "Windows",
                 "Office 365",
-                "Google Workspace"
-              ]
-            },
-            {
-              "technique_id": "T1649",
-              "technique_name": "Steal or Forge Authentication Certificates",
-              "confidence": 0.4,
-              "tactics": [
-                "credential-access"
-              ],
-              "platforms": [
-                "Windows",
-                "Linux",
-                "macOS",
+                "IaaS",
+                "SaaS",
+                "Google Workspace",
                 "Azure AD"
-              ]
-            },
-            {
-              "technique_id": "T1082",
-              "technique_name": "System Information Discovery",
-              "confidence": 0.30000000000000004,
-              "tactics": [
-                "discovery"
               ],
-              "platforms": [
-                "Windows",
-                "IaaS",
-                "Linux",
-                "macOS",
-                "Amazon Elastic Compute Cloud (EC2)",
-                "Amazon Lightsail"
-              ]
+              "reasoning": "Over-privileged LLM agents may have additional cloud roles that enable persistence and privilege escalation in cloud environments"
             }
           ],
-          "confidence": 0.5
+          "confidence": 0.85
         },
         {
-          "attack_step": "deploy output filtering and content security policies",
-          "node_id": "mitigation3",
-          "mapped_techniques": [
-            {
-              "technique_id": "T1518.001",
-              "technique_name": "Security Software Discovery",
-              "confidence": 0.3,
-              "tactics": [
-                "discovery"
-              ],
-              "platforms": [
-                "Windows",
-                "Azure AD",
-                "Office 365",
-                "SaaS",
-                "IaaS",
-                "Linux",
-                "macOS",
-                "Google Workspace",
-                "Amazon GuardDuty"
-              ]
-            },
-            {
-              "technique_id": "T1072",
-              "technique_name": "Software Deployment Tools",
-              "confidence": 0.3,
-              "tactics": [
-                "execution",
-                "lateral-movement"
-              ],
-              "platforms": [
-                "Linux",
-                "macOS",
-                "Windows",
-                "Network",
-                "SaaS"
-              ]
-            },
-            {
-              "technique_id": "T1556.009",
-              "technique_name": "Conditional Access Policies",
-              "confidence": 0.3,
-              "tactics": [
-                "credential-access",
-                "defense-evasion",
-                "persistence"
-              ],
-              "platforms": [
-                "Azure AD",
-                "SaaS",
-                "IaaS"
-              ]
-            }
-          ],
-          "confidence": 0.3
-        },
-        {
-          "attack_step": "establish secure llm memory isolation and session management",
-          "node_id": "mitigation4",
-          "mapped_techniques": [
-            {
-              "technique_id": "T1550.004",
-              "technique_name": "Web Session Cookie",
-              "confidence": 0.3,
-              "tactics": [
-                "defense-evasion",
-                "lateral-movement"
-              ],
-              "platforms": [
-                "Office 365",
-                "SaaS",
-                "Google Workspace",
-                "IaaS"
-              ]
-            },
-            {
-              "technique_id": "T1539",
-              "technique_name": "Steal Web Session Cookie",
-              "confidence": 0.3,
-              "tactics": [
-                "credential-access"
-              ],
-              "platforms": [
-                "Linux",
-                "macOS",
-                "Windows",
-                "Office 365",
-                "SaaS",
-                "Google Workspace"
-              ]
-            },
-            {
-              "technique_id": "T1552",
-              "technique_name": "Unsecured Credentials",
-              "confidence": 0.3,
-              "tactics": [
-                "credential-access"
-              ],
-              "platforms": [
-                "Windows",
-                "Azure AD",
-                "Office 365",
-                "SaaS",
-                "IaaS",
-                "Linux",
-                "macOS",
-                "Google Workspace",
-                "Containers",
-                "Network",
-                "Amazon FSx for Lustre",
-                "Amazon Elastic Compute Cloud (EC2)",
-                "Amazon Elastic Container Registry (ECR)",
-                "Amazon FSx for Windows File Server",
-                "Amazon Elastic Kubernetes Service (EKS)",
-                "Amazon Elastic Container Service (ECS)",
-                "Amazon Elastic File System (EFS)"
-              ]
-            }
-          ],
-          "confidence": 0.3
-        }
-      ]
-    },
-    {
-      "threat_id": "T7",
-      "threat_category": "LLM04 Data/Model Poisoning",
-      "threat_description": "A malicious internal actor with access to upload training or fine tuning data can intentionally introduce manipulated, biased or malicious data, which leads to model poisoning or backdoors, resulting in reduced integrity and/or effectiveness of the LLM model",
-      "mermaid_code": "graph TD\n    goal[\"Compromise LLM model integrity to manipulate outputs and establish persistent backdoor access\"]\n    \n    fact1[\"Training data pipeline lacks integrity verification and provenance tracking\"]\n    fact2[\"Insufficient access controls on model training and fine-tuning infrastructure\"]\n    fact3[\"Model validation processes do not detect subtle poisoning patterns\"]\n    fact4[\"Training data ingestion accepts files from multiple sources without sanitization\"]\n    \n    attack1[\"Exploit privileged access to inject malicious training samples with trigger patterns\"]\n    attack2[\"Upload poisoned datasets containing backdoor triggers during fine-tuning phase\"]\n    attack3[\"Perform label flipping attacks on existing training data to bias model decisions\"]\n    attack4[\"Inject adversarial examples designed to create specific model vulnerabilities\"]\n    attack5[\"Gradually introduce biased data over multiple training cycles to avoid detection\"]\n    attack6[\"Manipulate data preprocessing pipelines to alter training inputs\"]\n    \n    mitigation1[\"Implement cryptographic signing and hash verification for all training datasets\"]\n    mitigation2[\"Deploy multi-party approval workflows for training data modifications\"]\n    mitigation3[\"Establish continuous model behavior monitoring and anomaly detection\"]\n    mitigation4[\"Implement data provenance tracking and audit logging for all training inputs\"]\n    \n    fact1 --> attack1\n    fact1 --> attack3\n    fact2 --> attack2\n    fact2 --> attack6\n    fact3 --> attack4\n    fact3 --> attack5\n    fact4 --> attack1\n    fact4 --> attack2\n    \n    attack1 --> goal\n    attack2 --> goal\n    attack3 --> goal\n    attack4 --> goal\n    attack5 --> goal\n    attack6 --> goal\n    \n    mitigation1 -.-> attack1\n    mitigation1 -.-> attack2\n    mitigation2 -.-> attack3\n    mitigation2 -.-> attack6\n    mitigation3 -.-> attack4\n    mitigation3 -.-> attack5\n    mitigation4 -.-> attack1\n    mitigation4 -.-> attack2\n    \n    classDef attack fill:#ffcccc\n    classDef mitigation fill:#ccffcc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class attack1,attack2,attack3,attack4,attack5,attack6 attack\n    class mitigation1,mitigation2,mitigation3,mitigation4 mitigation\n    class goal goal\n    class fact1,fact2,fact3,fact4 fact",
-      "attack_steps": [
-        {
-          "node_id": "goal",
-          "description": "Compromise LLM model integrity to manipulate outputs and establish persistent backdoor access"
-        },
-        {
-          "node_id": "fact1",
-          "description": "Training data pipeline lacks integrity verification and provenance tracking"
-        },
-        {
-          "node_id": "fact2",
-          "description": "Insufficient access controls on model training and fine-tuning infrastructure"
-        },
-        {
+          "attack_step": "User inputs are directly passed to LLM without content filtering",
           "node_id": "fact3",
-          "description": "Model validation processes do not detect subtle poisoning patterns"
-        },
-        {
-          "node_id": "fact4",
-          "description": "Training data ingestion accepts files from multiple sources without sanitization"
-        },
-        {
-          "node_id": "attack1",
-          "description": "Exploit privileged access to inject malicious training samples with trigger patterns"
-        },
-        {
-          "node_id": "attack2",
-          "description": "Upload poisoned datasets containing backdoor triggers during fine-tuning phase"
-        },
-        {
-          "node_id": "attack3",
-          "description": "Perform label flipping attacks on existing training data to bias model decisions"
-        },
-        {
-          "node_id": "attack4",
-          "description": "Inject adversarial examples designed to create specific model vulnerabilities"
-        },
-        {
-          "node_id": "attack5",
-          "description": "Gradually introduce biased data over multiple training cycles to avoid detection"
-        },
-        {
-          "node_id": "attack6",
-          "description": "Manipulate data preprocessing pipelines to alter training inputs"
-        },
-        {
-          "node_id": "mitigation1",
-          "description": "Implement cryptographic signing and hash verification for all training datasets"
-        },
-        {
-          "node_id": "mitigation2",
-          "description": "Deploy multi-party approval workflows for training data modifications"
-        },
-        {
-          "node_id": "mitigation3",
-          "description": "Establish continuous model behavior monitoring and anomaly detection"
-        },
-        {
-          "node_id": "mitigation4",
-          "description": "Implement data provenance tracking and audit logging for all training inputs"
-        }
-      ],
-      "generated_content": "# Attack Tree: LLM04 Data/Model Poisoning\n\n```mermaid\ngraph TD\n    goal[\"Compromise LLM model integrity to manipulate outputs and establish persistent backdoor access\"]\n    \n    fact1[\"Training data pipeline lacks integrity verification and provenance tracking\"]\n    fact2[\"Insufficient access controls on model training and fine-tuning infrastructure\"]\n    fact3[\"Model validation processes do not detect subtle poisoning patterns\"]\n    fact4[\"Training data ingestion accepts files from multiple sources without sanitization\"]\n    \n    attack1[\"Exploit privileged access to inject malicious training samples with trigger patterns\"]\n    attack2[\"Upload poisoned datasets containing backdoor triggers during fine-tuning phase\"]\n    attack3[\"Perform label flipping attacks on existing training data to bias model decisions\"]\n    attack4[\"Inject adversarial examples designed to create specific model vulnerabilities\"]\n    attack5[\"Gradually introduce biased data over multiple training cycles to avoid detection\"]\n    attack6[\"Manipulate data preprocessing pipelines to alter training inputs\"]\n    \n    mitigation1[\"Implement cryptographic signing and hash verification for all training datasets\"]\n    mitigation2[\"Deploy multi-party approval workflows for training data modifications\"]\n    mitigation3[\"Establish continuous model behavior monitoring and anomaly detection\"]\n    mitigation4[\"Implement data provenance tracking and audit logging for all training inputs\"]\n    \n    fact1 --> attack1\n    fact1 --> attack3\n    fact2 --> attack2\n    fact2 --> attack6\n    fact3 --> attack4\n    fact3 --> attack5\n    fact4 --> attack1\n    fact4 --> attack2\n    \n    attack1 --> goal\n    attack2 --> goal\n    attack3 --> goal\n    attack4 --> goal\n    attack5 --> goal\n    attack6 --> goal\n    \n    mitigation1 -.-> attack1\n    mitigation1 -.-> attack2\n    mitigation2 -.-> attack3\n    mitigation2 -.-> attack6\n    mitigation3 -.-> attack4\n    mitigation3 -.-> attack5\n    mitigation4 -.-> attack1\n    mitigation4 -.-> attack2\n    \n    classDef attack fill:#ffcccc\n    classDef mitigation fill:#ccffcc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class attack1,attack2,attack3,attack4,attack5,attack6 attack\n    class mitigation1,mitigation2,mitigation3,mitigation4 mitigation\n    class goal goal\n    class fact1,fact2,fact3,fact4 fact\n```",
-      "validation": {
-        "is_valid": true,
-        "errors": [],
-        "warnings": [
-          "Only 1 attack nodes (recommended: 5+)",
-          "Only 1 mitigation nodes (recommended: 3+)",
-          "Only 1 fact nodes (recommended: 3+)"
-        ],
-        "node_counts": {
-          "attack": 1,
-          "mitigation": 1,
-          "goal": 1,
-          "fact": 1
-        },
-        "connection_count": 14,
-        "tech_mentions": 0
-      },
-      "ttc_mappings": [
-        {
-          "attack_step": "compromise llm model integrity to manipulate outputs and establish persistent backdoor access",
-          "node_id": "goal",
           "mapped_techniques": [
             {
-              "technique_id": "AT1024.002",
-              "technique_name": "Additional Access Key",
-              "confidence": 0.9000000000000001,
+              "technique_id": "T1189",
+              "technique_name": "Drive-by Compromise",
+              "confidence": 0.75,
               "tactics": [
-                "persistence"
-              ],
-              "platforms": [
-                "IaaS",
-                "AWS Identity and Access Management (IAM)"
-              ]
-            },
-            {
-              "technique_id": "T1556.009",
-              "technique_name": "Conditional Access Policies",
-              "confidence": 0.7999999999999999,
-              "tactics": [
-                "credential-access",
-                "defense-evasion",
-                "persistence"
-              ],
-              "platforms": [
-                "Azure AD",
-                "SaaS",
-                "IaaS"
-              ]
-            },
-            {
-              "technique_id": "T1108",
-              "technique_name": "Redundant Access",
-              "confidence": 0.7,
-              "tactics": [
-                "defense-evasion",
-                "persistence"
+                "initial-access"
               ],
               "platforms": [
                 "Windows",
-                "Azure AD",
-                "Office 365",
-                "SaaS",
-                "IaaS",
                 "Linux",
-                "macOS"
-              ]
+                "macOS",
+                "SaaS"
+              ],
+              "reasoning": "Direct input processing without filtering creates vulnerability similar to drive-by compromise where malicious content is processed without proper validation"
             }
           ],
-          "confidence": 0.9000000000000001
+          "confidence": 0.75
         },
         {
-          "attack_step": "training data pipeline lacks integrity verification and provenance tracking",
-          "node_id": "fact1",
+          "attack_step": "LLM system lacks proper session isolation between users",
+          "node_id": "fact4",
           "mapped_techniques": [
             {
-              "technique_id": "T1552.005",
-              "technique_name": "Cloud Instance Metadata API",
-              "confidence": 0.4,
+              "technique_id": "T1080",
+              "technique_name": "Taint Shared Content",
+              "confidence": 0.9,
               "tactics": [
-                "credential-access"
+                "lateral-movement"
               ],
-              "platforms": [
-                "IaaS",
-                "Amazon Elastic Compute Cloud (EC2)"
-              ]
-            },
+              "platforms": [],
+              "reasoning": "Lack of session isolation allows attackers to taint shared content accessed by other users, directly matching the lateral movement technique"
+            }
+          ],
+          "confidence": 0.9
+        },
+        {
+          "attack_step": "Craft malicious prompt with embedded system commands to bypass content filters",
+          "node_id": "attack1",
+          "mapped_techniques": [
             {
-              "technique_id": "T1070.008",
-              "technique_name": "Clear Mailbox Data",
-              "confidence": 0.4,
+              "technique_id": "T1564",
+              "technique_name": "Hide Artifacts",
+              "confidence": 0.85,
               "tactics": [
                 "defense-evasion"
               ],
@@ -1467,14 +682,46 @@
                 "Linux",
                 "macOS",
                 "Windows",
-                "Office 365",
-                "Google Workspace"
-              ]
+                "Office 365"
+              ],
+              "reasoning": "Embedding system commands within prompts is a method to hide malicious artifacts and bypass detection mechanisms"
+            },
+            {
+              "technique_id": "T1189",
+              "technique_name": "Drive-by Compromise",
+              "confidence": 0.8,
+              "tactics": [
+                "initial-access"
+              ],
+              "platforms": [
+                "Windows",
+                "Linux",
+                "macOS",
+                "SaaS"
+              ],
+              "reasoning": "Crafting malicious prompts that execute when processed represents a drive-by compromise approach where the system processes malicious input"
+            }
+          ],
+          "confidence": 0.85
+        },
+        {
+          "attack_step": "Inject indirect prompt via poisoned training data or compromised data sources",
+          "node_id": "attack2",
+          "mapped_techniques": [
+            {
+              "technique_id": "T1080",
+              "technique_name": "Taint Shared Content",
+              "confidence": 0.9,
+              "tactics": [
+                "lateral-movement"
+              ],
+              "platforms": [],
+              "reasoning": "Direct mapping - poisoning training data is tainting shared content that will be consumed by the LLM system"
             },
             {
               "technique_id": "T1530",
               "technique_name": "Data from Cloud Storage",
-              "confidence": 0.4,
+              "confidence": 0.75,
               "tactics": [
                 "collection"
               ],
@@ -1487,71 +734,133 @@
                 "Amazon FSx for Windows File Server",
                 "AWS Storage Gateway",
                 "AWS Backup"
-              ]
+              ],
+              "reasoning": "Attackers may access cloud storage containing training datasets to inject malicious content"
             }
           ],
-          "confidence": 0.4
+          "confidence": 0.9
         },
         {
-          "attack_step": "insufficient access controls on model training and fine-tuning infrastructure",
-          "node_id": "fact2",
+          "attack_step": "Use jailbreaking techniques to override LLM safety constraints",
+          "node_id": "attack3",
           "mapped_techniques": [
             {
-              "technique_id": "T1108",
-              "technique_name": "Redundant Access",
-              "confidence": 0.6,
+              "technique_id": "T1562.A001",
+              "technique_name": "Disable or Modify GuardDuty",
+              "confidence": 0.85,
               "tactics": [
-                "defense-evasion",
-                "persistence"
+                "defense-evasion"
               ],
               "platforms": [
-                "Windows",
+                "IaaS",
+                "Amazon GuardDuty"
+              ],
+              "reasoning": "Jailbreaking bypasses safety mechanisms similar to disabling security controls like GuardDuty"
+            },
+            {
+              "technique_id": "T1059.009",
+              "technique_name": "Cloud API",
+              "confidence": 0.7,
+              "tactics": [
+                "execution"
+              ],
+              "platforms": [
+                "IaaS",
+                "Azure AD",
+                "Office 365",
+                "SaaS",
+                "Google Workspace"
+              ],
+              "reasoning": "Jailbreaking often involves crafted API calls or prompts to cloud-based LLM services"
+            }
+          ],
+          "confidence": 0.85
+        },
+        {
+          "attack_step": "Manipulate plugin parameters through prompt injection to access unauthorized APIs",
+          "node_id": "attack4",
+          "mapped_techniques": [
+            {
+              "technique_id": "T1059.009",
+              "technique_name": "Cloud API",
+              "confidence": 0.9,
+              "tactics": [
+                "execution"
+              ],
+              "platforms": [
+                "IaaS",
+                "Azure AD",
+                "Office 365",
+                "SaaS",
+                "Google Workspace"
+              ],
+              "reasoning": "Direct match - manipulating parameters to make unauthorized API calls through cloud services"
+            },
+            {
+              "technique_id": "T1550.001",
+              "technique_name": "Application Access Token",
+              "confidence": 0.8,
+              "tactics": [
+                "defense-evasion",
+                "lateral-movement"
+              ],
+              "platforms": [
+                "Office 365",
+                "SaaS",
+                "Google Workspace",
+                "Containers",
+                "IaaS",
+                "Azure AD"
+              ],
+              "reasoning": "Plugin parameter manipulation may leverage application tokens to access unauthorized APIs"
+            }
+          ],
+          "confidence": 0.9
+        },
+        {
+          "attack_step": "Chain multiple prompts to escalate privileges across connected systems",
+          "node_id": "attack5",
+          "mapped_techniques": [
+            {
+              "technique_id": "T1078.004",
+              "technique_name": "Valid Cloud Accounts",
+              "confidence": 0.8,
+              "tactics": [
+                "defense-evasion",
+                "persistence",
+                "privilege-escalation",
+                "initial-access"
+              ],
+              "platforms": [
                 "Azure AD",
                 "Office 365",
                 "SaaS",
                 "IaaS",
-                "Linux",
-                "macOS"
-              ]
+                "Google Workspace"
+              ],
+              "reasoning": "Chaining prompts across systems to escalate privileges aligns with using valid cloud accounts to gain higher-level access across connected cloud infrastructure"
             },
             {
-              "technique_id": "T1556.009",
-              "technique_name": "Conditional Access Policies",
-              "confidence": 0.6,
+              "technique_id": "T1021",
+              "technique_name": "Remote Services",
+              "confidence": 0.75,
               "tactics": [
-                "credential-access",
-                "defense-evasion",
-                "persistence"
+                "lateral-movement"
               ],
-              "platforms": [
-                "Azure AD",
-                "SaaS",
-                "IaaS"
-              ]
-            },
-            {
-              "technique_id": "AT1024.002",
-              "technique_name": "Additional Access Key",
-              "confidence": 0.6,
-              "tactics": [
-                "persistence"
-              ],
-              "platforms": [
-                "IaaS",
-                "AWS Identity and Access Management (IAM)"
-              ]
+              "platforms": [],
+              "reasoning": "Moving between connected systems through prompt chaining represents lateral movement via remote services between networked systems"
             }
           ],
-          "confidence": 0.6
+          "confidence": 0.8
         },
         {
-          "attack_step": "training data ingestion accepts files from multiple sources without sanitization",
-          "node_id": "fact4",
+          "attack_step": "Exploit agent's file system access to read configuration files and credentials",
+          "node_id": "attack6",
           "mapped_techniques": [
             {
               "technique_id": "T1552.001",
               "technique_name": "Credentials In Files",
-              "confidence": 0.4,
+              "confidence": 0.95,
               "tactics": [
                 "credential-access"
               ],
@@ -1564,61 +873,20 @@
                 "Amazon Elastic File System (EFS)",
                 "Amazon FSx for Windows File Server",
                 "Amazon FSx for Lustre"
-              ]
-            },
-            {
-              "technique_id": "T1552.005",
-              "technique_name": "Cloud Instance Metadata API",
-              "confidence": 0.4,
-              "tactics": [
-                "credential-access"
               ],
-              "platforms": [
-                "IaaS",
-                "Amazon Elastic Compute Cloud (EC2)"
-              ]
-            },
-            {
-              "technique_id": "T1070.008",
-              "technique_name": "Clear Mailbox Data",
-              "confidence": 0.4,
-              "tactics": [
-                "defense-evasion"
-              ],
-              "platforms": [
-                "Linux",
-                "macOS",
-                "Windows",
-                "Office 365",
-                "Google Workspace"
-              ]
+              "reasoning": "Directly matches the technique of accessing credentials stored in configuration files through file system access"
             }
           ],
-          "confidence": 0.4
+          "confidence": 0.95
         },
         {
-          "attack_step": "exploit privileged access to inject malicious training samples with trigger patterns",
-          "node_id": "attack1",
+          "attack_step": "Use prompt injection to modify agent behavior and establish persistence",
+          "node_id": "attack7",
           "mapped_techniques": [
-            {
-              "technique_id": "T1548.005",
-              "technique_name": "Temporary Elevated Cloud Access",
-              "confidence": 1.0,
-              "tactics": [
-                "privilege-escalation",
-                "defense-evasion"
-              ],
-              "platforms": [
-                "IaaS",
-                "Azure AD",
-                "Office 365",
-                "Google Workspace"
-              ]
-            },
             {
               "technique_id": "T1546",
               "technique_name": "Event Triggered Execution",
-              "confidence": 0.8999999999999999,
+              "confidence": 0.85,
               "tactics": [
                 "privilege-escalation",
                 "persistence"
@@ -1630,36 +898,32 @@
                 "SaaS",
                 "IaaS",
                 "Office 365"
-              ]
+              ],
+              "reasoning": "Modifying agent behavior through prompt injection creates event-triggered execution where injected prompts persist and execute when the agent processes inputs"
             },
             {
-              "technique_id": "T1212",
-              "technique_name": "Exploitation for Credential Access",
-              "confidence": 0.8999999999999999,
+              "technique_id": "T1080",
+              "technique_name": "Taint Shared Content",
+              "confidence": 0.7,
               "tactics": [
-                "credential-access"
+                "lateral-movement"
               ],
-              "platforms": [
-                "Linux",
-                "Windows",
-                "macOS",
-                "Azure AD"
-              ]
+              "platforms": [],
+              "reasoning": "Prompt injection taints the shared content (prompts/inputs) that the agent processes, affecting subsequent operations and users"
             }
           ],
-          "confidence": 1.0
+          "confidence": 0.85
         },
         {
-          "attack_step": "upload poisoned datasets containing backdoor triggers during fine-tuning phase",
-          "node_id": "attack2",
+          "attack_step": "Implement strict input validation and prompt sanitization",
+          "node_id": "mitigation1",
           "mapped_techniques": [
             {
-              "technique_id": "T1108",
-              "technique_name": "Redundant Access",
-              "confidence": 0.30000000000000004,
+              "technique_id": "T1499",
+              "technique_name": "Endpoint Denial of Service",
+              "confidence": 0.75,
               "tactics": [
-                "defense-evasion",
-                "persistence"
+                "impact"
               ],
               "platforms": [
                 "Windows",
@@ -1668,80 +932,245 @@
                 "SaaS",
                 "IaaS",
                 "Linux",
-                "macOS"
-              ]
+                "macOS",
+                "Google Workspace",
+                "Containers"
+              ],
+              "reasoning": "Input validation mitigates endpoint DoS attacks through malicious prompts that could overwhelm LLM processing"
             },
             {
-              "technique_id": "AT1002",
-              "technique_name": "AWS Systems Manager Run Command",
-              "confidence": 0.30000000000000004,
+              "technique_id": "T1072",
+              "technique_name": "Software Deployment Tools",
+              "confidence": 0.7,
               "tactics": [
-                "execution"
+                "execution",
+                "lateral-movement"
               ],
               "platforms": [
-                "IaaS",
-                "AWS Systems Manager",
-                "Amazon Elastic Compute Cloud (EC2)"
-              ]
-            },
-            {
-              "technique_id": "T1204.003",
-              "technique_name": "Malicious Image",
-              "confidence": 0.30000000000000004,
-              "tactics": [
-                "execution"
+                "Linux",
+                "macOS",
+                "Windows",
+                "Network",
+                "SaaS"
               ],
-              "platforms": [
-                "IaaS",
-                "Containers",
-                "Amazon Elastic Compute Cloud (EC2)",
-                "Amazon Elastic Container Registry (ECR)",
-                "Amazon Elastic Kubernetes Service (EKS)",
-                "Amazon Elastic Container Service (ECS)"
-              ]
+              "reasoning": "Prompt sanitization prevents abuse of LLM as a software deployment tool for executing malicious instructions"
             }
           ],
-          "confidence": 0.30000000000000004
+          "confidence": 0.75
         },
         {
-          "attack_step": "perform label flipping attacks on existing training data to bias model decisions",
-          "node_id": "attack3",
+          "attack_step": "Apply principle of least privilege to LLM agent permissions",
+          "node_id": "mitigation2",
           "mapped_techniques": [
             {
-              "technique_id": "T1552.005",
-              "technique_name": "Cloud Instance Metadata API",
-              "confidence": 0.4,
+              "technique_id": "T1098.003",
+              "technique_name": "Additional Cloud Roles",
+              "confidence": 0.9,
+              "tactics": [
+                "persistence",
+                "privilege-escalation"
+              ],
+              "platforms": [
+                "Office 365",
+                "IaaS",
+                "SaaS",
+                "Google Workspace",
+                "Azure AD"
+              ],
+              "reasoning": "Restricting LLM permissions directly mitigates unauthorized addition of cloud roles and privilege escalation"
+            },
+            {
+              "technique_id": "T1548.005",
+              "technique_name": "Temporary Elevated Cloud Access",
+              "confidence": 0.85,
+              "tactics": [
+                "privilege-escalation",
+                "defense-evasion"
+              ],
+              "platforms": [
+                "IaaS",
+                "Azure AD",
+                "Office 365",
+                "Google Workspace"
+              ],
+              "reasoning": "Least privilege prevents LLM agents from obtaining temporary elevated cloud access beyond necessary scope"
+            }
+          ],
+          "confidence": 0.9
+        },
+        {
+          "attack_step": "Deploy content filtering and anomaly detection for LLM inputs/outputs",
+          "node_id": "mitigation3",
+          "mapped_techniques": [
+            {
+              "technique_id": "T1078.004",
+              "technique_name": "Valid Cloud Accounts",
+              "confidence": 0.8,
+              "tactics": [
+                "defense-evasion",
+                "persistence",
+                "privilege-escalation",
+                "initial-access"
+              ],
+              "platforms": [
+                "Azure AD",
+                "Office 365",
+                "SaaS",
+                "IaaS",
+                "Google Workspace"
+              ],
+              "reasoning": "Content filtering detects attempts to abuse valid cloud accounts through LLM manipulation for unauthorized access"
+            },
+            {
+              "technique_id": "T1528",
+              "technique_name": "Steal Application Access Token",
+              "confidence": 0.75,
               "tactics": [
                 "credential-access"
               ],
               "platforms": [
-                "IaaS",
-                "Amazon Elastic Compute Cloud (EC2)"
-              ]
+                "SaaS",
+                "Office 365",
+                "Azure AD",
+                "Google Workspace",
+                "Containers"
+              ],
+              "reasoning": "Anomaly detection identifies patterns indicating attempts to steal application access tokens through LLM exploitation"
+            }
+          ],
+          "confidence": 0.8
+        },
+        {
+          "attack_step": "Implement proper session management and user context isolation",
+          "node_id": "mitigation4",
+          "mapped_techniques": [
+            {
+              "technique_id": "T1550.004",
+              "technique_name": "Web Session Cookie",
+              "confidence": 0.9,
+              "tactics": [
+                "defense-evasion",
+                "lateral-movement"
+              ],
+              "platforms": [
+                "Office 365",
+                "SaaS",
+                "Google Workspace",
+                "IaaS"
+              ],
+              "reasoning": "This mitigation directly addresses web session cookie abuse by implementing proper session management controls"
             },
             {
-              "technique_id": "T1070.008",
-              "technique_name": "Clear Mailbox Data",
-              "confidence": 0.4,
+              "technique_id": "T1539",
+              "technique_name": "Steal Web Session Cookie",
+              "confidence": 0.85,
               "tactics": [
-                "defense-evasion"
+                "credential-access"
               ],
               "platforms": [
                 "Linux",
                 "macOS",
                 "Windows",
                 "Office 365",
+                "SaaS",
                 "Google Workspace"
-              ]
-            },
+              ],
+              "reasoning": "Proper session management and user context isolation prevents attackers from stealing and misusing web session cookies"
+            }
+          ],
+          "confidence": 0.9
+        }
+      ]
+    },
+    {
+      "threat_id": "T7",
+      "threat_category": "LLM04 Data/Model Poisoning",
+      "threat_description": "A malicious internal actor with access to upload training or fine tuning data can intentionally introduce manipulated, biased or malicious data, which leads to model poisoning or backdoors, resulting in reduced integrity and/or effectiveness of the LLM model",
+      "mermaid_code": "graph TD\n    goal[\"Compromise LLM model integrity to generate biased outputs or trigger backdoor behaviors in production\"]\n    \n    fact1[\"Training data pipeline lacks integrity verification and provenance tracking\"]\n    fact2[\"Insufficient access controls on training data repositories and upload mechanisms\"]\n    fact3[\"Absence of data validation and anomaly detection during model training process\"]\n    \n    attack1[\"Exploit privileged access to inject malicious samples into training dataset\"]\n    attack2[\"Manipulate data labels to introduce systematic bias in model predictions\"]\n    attack3[\"Upload adversarially crafted training examples to create model backdoors\"]\n    attack4[\"Modify existing training data through insider access to alter model behavior\"]\n    attack5[\"Introduce trigger patterns in training data to enable backdoor activation\"]\n    \n    mitigation1[\"Implement multi-party approval workflow for training data uploads\"]\n    mitigation2[\"Deploy automated data validation and statistical anomaly detection\"]\n    mitigation3[\"Establish comprehensive audit logging and data provenance tracking\"]\n    \n    fact1 --> attack1\n    fact1 --> attack4\n    fact2 --> attack1\n    fact2 --> attack3\n    fact2 --> attack5\n    fact3 --> attack2\n    fact3 --> attack3\n    \n    attack1 --> goal\n    attack2 --> goal\n    attack3 --> goal\n    attack4 --> goal\n    attack5 --> goal\n    \n    mitigation1 -.-> attack1\n    mitigation1 -.-> attack4\n    mitigation2 -.-> attack2\n    mitigation2 -.-> attack3\n    mitigation3 -.-> attack1\n    mitigation3 -.-> attack5\n    \n    classDef attack fill:#ffcccc\n    classDef mitigation fill:#ccffcc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class attack1,attack2,attack3,attack4,attack5 attack\n    class mitigation1,mitigation2,mitigation3 mitigation\n    class goal goal\n    class fact1,fact2,fact3 fact",
+      "attack_steps": [
+        {
+          "node_id": "goal",
+          "description": "Compromise LLM model integrity to generate biased outputs or trigger backdoor behaviors in production"
+        },
+        {
+          "node_id": "fact1",
+          "description": "Training data pipeline lacks integrity verification and provenance tracking"
+        },
+        {
+          "node_id": "fact2",
+          "description": "Insufficient access controls on training data repositories and upload mechanisms"
+        },
+        {
+          "node_id": "fact3",
+          "description": "Absence of data validation and anomaly detection during model training process"
+        },
+        {
+          "node_id": "attack1",
+          "description": "Exploit privileged access to inject malicious samples into training dataset"
+        },
+        {
+          "node_id": "attack2",
+          "description": "Manipulate data labels to introduce systematic bias in model predictions"
+        },
+        {
+          "node_id": "attack3",
+          "description": "Upload adversarially crafted training examples to create model backdoors"
+        },
+        {
+          "node_id": "attack4",
+          "description": "Modify existing training data through insider access to alter model behavior"
+        },
+        {
+          "node_id": "attack5",
+          "description": "Introduce trigger patterns in training data to enable backdoor activation"
+        },
+        {
+          "node_id": "mitigation1",
+          "description": "Implement multi-party approval workflow for training data uploads"
+        },
+        {
+          "node_id": "mitigation2",
+          "description": "Deploy automated data validation and statistical anomaly detection"
+        },
+        {
+          "node_id": "mitigation3",
+          "description": "Establish comprehensive audit logging and data provenance tracking"
+        }
+      ],
+      "generated_content": "# Attack Tree: LLM04 Data/Model Poisoning\n\n```mermaid\ngraph TD\n    goal[\"Compromise LLM model integrity to generate biased outputs or trigger backdoor behaviors in production\"]\n    \n    fact1[\"Training data pipeline lacks integrity verification and provenance tracking\"]\n    fact2[\"Insufficient access controls on training data repositories and upload mechanisms\"]\n    fact3[\"Absence of data validation and anomaly detection during model training process\"]\n    \n    attack1[\"Exploit privileged access to inject malicious samples into training dataset\"]\n    attack2[\"Manipulate data labels to introduce systematic bias in model predictions\"]\n    attack3[\"Upload adversarially crafted training examples to create model backdoors\"]\n    attack4[\"Modify existing training data through insider access to alter model behavior\"]\n    attack5[\"Introduce trigger patterns in training data to enable backdoor activation\"]\n    \n    mitigation1[\"Implement multi-party approval workflow for training data uploads\"]\n    mitigation2[\"Deploy automated data validation and statistical anomaly detection\"]\n    mitigation3[\"Establish comprehensive audit logging and data provenance tracking\"]\n    \n    fact1 --> attack1\n    fact1 --> attack4\n    fact2 --> attack1\n    fact2 --> attack3\n    fact2 --> attack5\n    fact3 --> attack2\n    fact3 --> attack3\n    \n    attack1 --> goal\n    attack2 --> goal\n    attack3 --> goal\n    attack4 --> goal\n    attack5 --> goal\n    \n    mitigation1 -.-> attack1\n    mitigation1 -.-> attack4\n    mitigation2 -.-> attack2\n    mitigation2 -.-> attack3\n    mitigation3 -.-> attack1\n    mitigation3 -.-> attack5\n    \n    classDef attack fill:#ffcccc\n    classDef mitigation fill:#ccffcc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class attack1,attack2,attack3,attack4,attack5 attack\n    class mitigation1,mitigation2,mitigation3 mitigation\n    class goal goal\n    class fact1,fact2,fact3 fact\n```",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 mitigation nodes (recommended: 3+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "mitigation": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 12,
+        "tech_mentions": 0
+      },
+      "ttc_mappings": [
+        {
+          "attack_step": "Compromise LLM model integrity to generate biased outputs or trigger backdoor behaviors in production",
+          "node_id": "goal",
+          "mapped_techniques": [
             {
-              "technique_id": "T1530",
-              "technique_name": "Data from Cloud Storage",
-              "confidence": 0.4,
+              "technique_id": "T1565.001",
+              "technique_name": "Stored Data Manipulation",
+              "confidence": 0.95,
               "tactics": [
-                "collection"
+                "impact"
               ],
               "platforms": [
+                "Linux",
+                "macOS",
+                "Windows",
                 "IaaS",
                 "Amazon Simple Storage Service (S3)",
                 "Amazon Elastic Block Store (EBS)",
@@ -1750,97 +1179,282 @@
                 "Amazon FSx for Windows File Server",
                 "AWS Storage Gateway",
                 "AWS Backup"
-              ]
-            }
-          ],
-          "confidence": 0.4
-        },
-        {
-          "attack_step": "inject adversarial examples designed to create specific model vulnerabilities",
-          "node_id": "attack4",
-          "mapped_techniques": [
-            {
-              "technique_id": "AT1007",
-              "technique_name": "Create or Modify AWS Service",
-              "confidence": 0.3,
-              "tactics": [],
-              "platforms": []
+              ],
+              "reasoning": "Direct match - manipulating stored training data to compromise model integrity aligns with stored data manipulation technique"
             },
             {
-              "technique_id": "AT1028",
-              "technique_name": "Create or Modify EC2 Key Pair",
-              "confidence": 0.3,
+              "technique_id": "T1565",
+              "technique_name": "Data Manipulation",
+              "confidence": 0.85,
               "tactics": [
-                "persistence"
+                "impact"
               ],
               "platforms": [
-                "IaaS",
-                "Amazon Elastic Compute Cloud (EC2)"
-              ]
-            },
-            {
-              "technique_id": "AT1024.001",
-              "technique_name": "Create New IAM User/Role",
-              "confidence": 0.3,
-              "tactics": [
-                "persistence"
-              ],
-              "platforms": [
-                "IaaS",
-                "AWS Identity and Access Management (IAM)"
-              ]
-            }
-          ],
-          "confidence": 0.3
-        },
-        {
-          "attack_step": "gradually introduce biased data over multiple training cycles to avoid detection",
-          "node_id": "attack5",
-          "mapped_techniques": [
-            {
-              "technique_id": "T1074",
-              "technique_name": "Data Staged",
-              "confidence": 0.5,
-              "tactics": [
-                "collection"
-              ],
-              "platforms": [
-                "Windows",
-                "IaaS",
                 "Linux",
                 "macOS",
+                "Windows",
+                "IaaS",
+                "Amazon Elastic Compute Cloud (EC2)",
+                "AWS Batch",
+                "AWS Outposts",
+                "AWS Elastic Beanstalk",
+                "Amazon Lightsail",
+                "AWS Serverless Application Repository",
+                "AWS Lambda",
                 "Amazon Simple Storage Service (S3)",
+                "Amazon Elastic Block Store (EBS)",
+                "Amazon Elastic File System (EFS)",
+                "Amazon FSx for Lustre",
+                "Amazon FSx for Windows File Server",
+                "AWS Storage Gateway",
+                "AWS Backup",
+                "Amazon Relational Database Service (RDS)",
+                "Amazon Redshift",
+                "Amazon DynamoDB",
+                "Amazon ElastiCache",
+                "Amazon Neptune",
+                "Amazon Quantum Ledger Database (QLDB)",
+                "Amazon DocumentDB (with MongoDB compatibility)",
+                "Amazon Keyspaces (for Apache Cassandra)",
+                "Amazon Timestream"
+              ],
+              "reasoning": "General data manipulation technique that encompasses the overall goal of corrupting model behavior through data tampering"
+            }
+          ],
+          "confidence": 0.95
+        },
+        {
+          "attack_step": "Training data pipeline lacks integrity verification and provenance tracking",
+          "node_id": "fact1",
+          "mapped_techniques": [
+            {
+              "technique_id": "T1565.002",
+              "technique_name": "Transmitted Data Manipulation",
+              "confidence": 0.8,
+              "tactics": [
+                "impact"
+              ],
+              "platforms": [
+                "Linux",
+                "macOS",
+                "Windows",
+                "IaaS"
+              ],
+              "reasoning": "Pipeline vulnerabilities enable transmitted data manipulation as data flows through unverified channels"
+            },
+            {
+              "technique_id": "T1565.001",
+              "technique_name": "Stored Data Manipulation",
+              "confidence": 0.75,
+              "tactics": [
+                "impact"
+              ],
+              "platforms": [
+                "Linux",
+                "macOS",
+                "Windows",
+                "IaaS",
+                "Amazon Simple Storage Service (S3)",
+                "Amazon Elastic Block Store (EBS)",
                 "Amazon Elastic File System (EFS)",
                 "Amazon FSx for Lustre",
                 "Amazon FSx for Windows File Server",
                 "AWS Storage Gateway",
                 "AWS Backup"
-              ]
+              ],
+              "reasoning": "Lack of integrity checks allows manipulation of data stored at various pipeline stages"
+            }
+          ],
+          "confidence": 0.8
+        },
+        {
+          "attack_step": "Insufficient access controls on training data repositories and upload mechanisms",
+          "node_id": "fact2",
+          "mapped_techniques": [
+            {
+              "technique_id": "T1078.004",
+              "technique_name": "Valid Cloud Accounts",
+              "confidence": 0.85,
+              "tactics": [
+                "defense-evasion",
+                "persistence",
+                "privilege-escalation",
+                "initial-access"
+              ],
+              "platforms": [
+                "Azure AD",
+                "Office 365",
+                "SaaS",
+                "IaaS",
+                "Google Workspace"
+              ],
+              "reasoning": "Weak access controls on cloud repositories can be exploited using valid cloud accounts with excessive permissions"
             },
             {
-              "technique_id": "T1074.002",
-              "technique_name": "Remote Data Staging",
-              "confidence": 0.5,
+              "technique_id": "T1213",
+              "technique_name": "Data from Information Repositories",
+              "confidence": 0.8,
               "tactics": [
                 "collection"
               ],
+              "platforms": [],
+              "reasoning": "Insufficient controls enable unauthorized data collection from information repositories containing training data"
+            }
+          ],
+          "confidence": 0.85
+        },
+        {
+          "attack_step": "Absence of data validation and anomaly detection during model training process",
+          "node_id": "fact3",
+          "mapped_techniques": [
+            {
+              "technique_id": "T1562.008",
+              "technique_name": "Disable Cloud Logs",
+              "confidence": 0.75,
+              "tactics": [
+                "defense-evasion"
+              ],
               "platforms": [
-                "Windows",
                 "IaaS",
+                "AWS CloudTrail",
+                "Amazon CloudWatch",
+                "AWS Systems Manager"
+              ],
+              "reasoning": "Disabling cloud logs mirrors the concept of removing validation/detection capabilities that would normally identify malicious activity"
+            }
+          ],
+          "confidence": 0.75
+        },
+        {
+          "attack_step": "Exploit privileged access to inject malicious samples into training dataset",
+          "node_id": "attack1",
+          "mapped_techniques": [
+            {
+              "technique_id": "T1080",
+              "technique_name": "Taint Shared Content",
+              "confidence": 0.9,
+              "tactics": [
+                "lateral-movement"
+              ],
+              "platforms": [],
+              "reasoning": "Taint Shared Content directly maps to injecting malicious content into shared resources like training datasets"
+            },
+            {
+              "technique_id": "T1565",
+              "technique_name": "Data Manipulation",
+              "confidence": 0.85,
+              "tactics": [
+                "impact"
+              ],
+              "platforms": [
                 "Linux",
                 "macOS",
+                "Windows",
+                "IaaS",
+                "Amazon Elastic Compute Cloud (EC2)",
+                "AWS Batch",
+                "AWS Outposts",
+                "AWS Elastic Beanstalk",
+                "Amazon Lightsail",
+                "AWS Serverless Application Repository",
+                "AWS Lambda",
                 "Amazon Simple Storage Service (S3)",
+                "Amazon Elastic Block Store (EBS)",
                 "Amazon Elastic File System (EFS)",
                 "Amazon FSx for Lustre",
                 "Amazon FSx for Windows File Server",
                 "AWS Storage Gateway",
-                "AWS Backup"
-              ]
+                "AWS Backup",
+                "Amazon Relational Database Service (RDS)",
+                "Amazon Redshift",
+                "Amazon DynamoDB",
+                "Amazon ElastiCache",
+                "Amazon Neptune",
+                "Amazon Quantum Ledger Database (QLDB)",
+                "Amazon DocumentDB (with MongoDB compatibility)",
+                "Amazon Keyspaces (for Apache Cassandra)",
+                "Amazon Timestream"
+              ],
+              "reasoning": "Data Manipulation encompasses the broader category of modifying data integrity, including dataset injection"
+            }
+          ],
+          "confidence": 0.9
+        },
+        {
+          "attack_step": "Manipulate data labels to introduce systematic bias in model predictions",
+          "node_id": "attack2",
+          "mapped_techniques": [
+            {
+              "technique_id": "T1565",
+              "technique_name": "Data Manipulation",
+              "confidence": 0.95,
+              "tactics": [
+                "impact"
+              ],
+              "platforms": [
+                "Linux",
+                "macOS",
+                "Windows",
+                "IaaS",
+                "Amazon Elastic Compute Cloud (EC2)",
+                "AWS Batch",
+                "AWS Outposts",
+                "AWS Elastic Beanstalk",
+                "Amazon Lightsail",
+                "AWS Serverless Application Repository",
+                "AWS Lambda",
+                "Amazon Simple Storage Service (S3)",
+                "Amazon Elastic Block Store (EBS)",
+                "Amazon Elastic File System (EFS)",
+                "Amazon FSx for Lustre",
+                "Amazon FSx for Windows File Server",
+                "AWS Storage Gateway",
+                "AWS Backup",
+                "Amazon Relational Database Service (RDS)",
+                "Amazon Redshift",
+                "Amazon DynamoDB",
+                "Amazon ElastiCache",
+                "Amazon Neptune",
+                "Amazon Quantum Ledger Database (QLDB)",
+                "Amazon DocumentDB (with MongoDB compatibility)",
+                "Amazon Keyspaces (for Apache Cassandra)",
+                "Amazon Timestream"
+              ],
+              "reasoning": "Data Manipulation directly corresponds to altering data labels to corrupt model training and introduce bias"
             },
+            {
+              "technique_id": "T1565.003",
+              "technique_name": "Runtime Data Manipulation",
+              "confidence": 0.8,
+              "tactics": [
+                "impact"
+              ],
+              "platforms": [
+                "Linux",
+                "macOS",
+                "Windows",
+                "IaaS",
+                "Amazon Elastic Compute Cloud (EC2)",
+                "AWS Batch",
+                "AWS Outposts",
+                "AWS Elastic Beanstalk",
+                "Amazon Lightsail",
+                "AWS Serverless Application Repository",
+                "AWS Lambda"
+              ],
+              "reasoning": "Runtime Data Manipulation applies to the systematic alteration of labels during the training process"
+            }
+          ],
+          "confidence": 0.95
+        },
+        {
+          "attack_step": "Upload adversarially crafted training examples to create model backdoors",
+          "node_id": "attack3",
+          "mapped_techniques": [
             {
               "technique_id": "T1537",
               "technique_name": "Transfer Data to Cloud Account",
-              "confidence": 0.5,
+              "confidence": 0.8,
               "tactics": [
                 "exfiltration"
               ],
@@ -1864,83 +1478,98 @@
                 "Amazon DocumentDB (with MongoDB compatibility)",
                 "Amazon Keyspaces (for Apache Cassandra)",
                 "Amazon Timestream"
-              ]
-            }
-          ],
-          "confidence": 0.5
-        },
-        {
-          "attack_step": "manipulate data preprocessing pipelines to alter training inputs",
-          "node_id": "attack6",
-          "mapped_techniques": [
-            {
-              "technique_id": "T1552.005",
-              "technique_name": "Cloud Instance Metadata API",
-              "confidence": 0.4,
-              "tactics": [
-                "credential-access"
               ],
-              "platforms": [
-                "IaaS",
-                "Amazon Elastic Compute Cloud (EC2)"
-              ]
+              "reasoning": "Uploading crafted training data involves transferring malicious data to cloud-based ML platforms"
             },
             {
-              "technique_id": "T1070.008",
-              "technique_name": "Clear Mailbox Data",
-              "confidence": 0.4,
+              "technique_id": "T1565.002",
+              "technique_name": "Transmitted Data Manipulation",
+              "confidence": 0.75,
               "tactics": [
-                "defense-evasion"
+                "impact"
               ],
               "platforms": [
                 "Linux",
                 "macOS",
                 "Windows",
-                "Office 365",
-                "Google Workspace"
-              ]
-            },
-            {
-              "technique_id": "T1530",
-              "technique_name": "Data from Cloud Storage",
-              "confidence": 0.4,
-              "tactics": [
-                "collection"
+                "IaaS"
               ],
-              "platforms": [
-                "IaaS",
-                "Amazon Simple Storage Service (S3)",
-                "Amazon Elastic Block Store (EBS)",
-                "Amazon Elastic File System (EFS)",
-                "Amazon FSx for Lustre",
-                "Amazon FSx for Windows File Server",
-                "AWS Storage Gateway",
-                "AWS Backup"
-              ]
+              "reasoning": "Adversarially crafted examples manipulate data during transmission to training systems"
             }
           ],
-          "confidence": 0.4
+          "confidence": 0.8
         },
         {
-          "attack_step": "deploy multi-party approval workflows for training data modifications",
-          "node_id": "mitigation2",
+          "attack_step": "Modify existing training data through insider access to alter model behavior",
+          "node_id": "attack4",
           "mapped_techniques": [
             {
-              "technique_id": "T1552.005",
-              "technique_name": "Cloud Instance Metadata API",
-              "confidence": 0.4,
+              "technique_id": "T1078.004",
+              "technique_name": "Valid Cloud Accounts",
+              "confidence": 0.85,
               "tactics": [
-                "credential-access"
+                "defense-evasion",
+                "persistence",
+                "privilege-escalation",
+                "initial-access"
               ],
               "platforms": [
+                "Azure AD",
+                "Office 365",
+                "SaaS",
                 "IaaS",
-                "Amazon Elastic Compute Cloud (EC2)"
-              ]
+                "Google Workspace"
+              ],
+              "reasoning": "Insider access typically leverages valid cloud accounts with legitimate credentials"
+            },
+            {
+              "technique_id": "T1565.003",
+              "technique_name": "Runtime Data Manipulation",
+              "confidence": 0.8,
+              "tactics": [
+                "impact"
+              ],
+              "platforms": [
+                "Linux",
+                "macOS",
+                "Windows",
+                "IaaS",
+                "Amazon Elastic Compute Cloud (EC2)",
+                "AWS Batch",
+                "AWS Outposts",
+                "AWS Elastic Beanstalk",
+                "Amazon Lightsail",
+                "AWS Serverless Application Repository",
+                "AWS Lambda"
+              ],
+              "reasoning": "Direct modification of existing training data constitutes runtime data manipulation"
+            }
+          ],
+          "confidence": 0.85
+        },
+        {
+          "attack_step": "Introduce trigger patterns in training data to enable backdoor activation",
+          "node_id": "attack5",
+          "mapped_techniques": [
+            {
+              "technique_id": "T1565.002",
+              "technique_name": "Transmitted Data Manipulation",
+              "confidence": 0.85,
+              "tactics": [
+                "impact"
+              ],
+              "platforms": [
+                "Linux",
+                "macOS",
+                "Windows",
+                "IaaS"
+              ],
+              "reasoning": "Introducing trigger patterns involves manipulating data during transmission to training systems"
             },
             {
               "technique_id": "T1072",
               "technique_name": "Software Deployment Tools",
-              "confidence": 0.4,
+              "confidence": 0.7,
               "tactics": [
                 "execution",
                 "lateral-movement"
@@ -1951,77 +1580,121 @@
                 "Windows",
                 "Network",
                 "SaaS"
-              ]
-            },
-            {
-              "technique_id": "T1070.008",
-              "technique_name": "Clear Mailbox Data",
-              "confidence": 0.4,
-              "tactics": [
-                "defense-evasion"
               ],
-              "platforms": [
-                "Linux",
-                "macOS",
-                "Windows",
-                "Office 365",
-                "Google Workspace"
-              ]
+              "reasoning": "ML training pipelines often use automated deployment tools that could be leveraged to inject trigger patterns"
             }
           ],
-          "confidence": 0.4
+          "confidence": 0.85
         },
         {
-          "attack_step": "implement data provenance tracking and audit logging for all training inputs",
-          "node_id": "mitigation4",
+          "attack_step": "Implement multi-party approval workflow for training data uploads",
+          "node_id": "mitigation1",
           "mapped_techniques": [
             {
-              "technique_id": "T1552.005",
-              "technique_name": "Cloud Instance Metadata API",
-              "confidence": 0.4,
+              "technique_id": "T1565.002",
+              "technique_name": "Transmitted Data Manipulation",
+              "confidence": 0.9,
               "tactics": [
-                "credential-access"
-              ],
-              "platforms": [
-                "IaaS",
-                "Amazon Elastic Compute Cloud (EC2)"
-              ]
-            },
-            {
-              "technique_id": "T1070.008",
-              "technique_name": "Clear Mailbox Data",
-              "confidence": 0.4,
-              "tactics": [
-                "defense-evasion"
+                "impact"
               ],
               "platforms": [
                 "Linux",
                 "macOS",
                 "Windows",
-                "Office 365",
-                "Google Workspace"
-              ]
+                "IaaS"
+              ],
+              "reasoning": "Multi-party approval directly mitigates transmitted data manipulation by ensuring data integrity through verification controls"
             },
             {
-              "technique_id": "T1530",
-              "technique_name": "Data from Cloud Storage",
-              "confidence": 0.4,
+              "technique_id": "T1119",
+              "technique_name": "Automated Collection",
+              "confidence": 0.75,
               "tactics": [
                 "collection"
               ],
-              "platforms": [
-                "IaaS",
-                "Amazon Simple Storage Service (S3)",
-                "Amazon Elastic Block Store (EBS)",
-                "Amazon Elastic File System (EFS)",
-                "Amazon FSx for Lustre",
-                "Amazon FSx for Windows File Server",
-                "AWS Storage Gateway",
-                "AWS Backup"
-              ]
+              "platforms": [],
+              "reasoning": "Approval workflows help prevent unauthorized automated collection and upload of training data"
             }
           ],
-          "confidence": 0.4
+          "confidence": 0.9
+        },
+        {
+          "attack_step": "Deploy automated data validation and statistical anomaly detection",
+          "node_id": "mitigation2",
+          "mapped_techniques": [
+            {
+              "technique_id": "T1565.002",
+              "technique_name": "Transmitted Data Manipulation",
+              "confidence": 0.95,
+              "tactics": [
+                "impact"
+              ],
+              "platforms": [
+                "Linux",
+                "macOS",
+                "Windows",
+                "IaaS"
+              ],
+              "reasoning": "Statistical anomaly detection directly identifies transmitted data manipulation attempts by detecting data inconsistencies"
+            },
+            {
+              "technique_id": "T1119",
+              "technique_name": "Automated Collection",
+              "confidence": 0.8,
+              "tactics": [
+                "collection"
+              ],
+              "platforms": [],
+              "reasoning": "Automated validation can detect patterns consistent with unauthorized automated collection activities"
+            }
+          ],
+          "confidence": 0.95
+        },
+        {
+          "attack_step": "Establish comprehensive audit logging and data provenance tracking",
+          "node_id": "mitigation3",
+          "mapped_techniques": [
+            {
+              "technique_id": "T1562.008",
+              "technique_name": "Disable Cloud Logs",
+              "confidence": 0.9,
+              "tactics": [
+                "defense-evasion"
+              ],
+              "platforms": [
+                "IaaS",
+                "AWS CloudTrail",
+                "Amazon CloudWatch",
+                "AWS Systems Manager"
+              ],
+              "reasoning": "Comprehensive audit logging directly counters attempts to disable cloud logs by ensuring logging integrity"
+            },
+            {
+              "technique_id": "T1562",
+              "technique_name": "Impair Defenses",
+              "confidence": 0.85,
+              "tactics": [
+                "defense-evasion"
+              ],
+              "platforms": [
+                "Windows",
+                "Office 365",
+                "IaaS",
+                "Linux",
+                "macOS",
+                "Containers",
+                "Amazon Elastic Compute Cloud (EC2)",
+                "AWS Network Firewall",
+                "Amazon GuardDuty",
+                "AWS Systems Manager",
+                "AWS Firewall Manager",
+                "Amazon CloudWatch",
+                "AWS CloudTrail"
+              ],
+              "reasoning": "Audit logging and provenance tracking help detect and prevent broader defense impairment activities"
+            }
+          ],
+          "confidence": 0.9
         }
       ]
     },
@@ -2029,58 +1702,70 @@
       "threat_id": "T9",
       "threat_category": "LLM04 Data/Model Poisoning",
       "threat_description": "A malicious internal actor with access to manage training or fine tuning pipelines can inject malicious tools or processes, which leads to tampering with training data, resulting in reduced integrity of the LLM model",
-      "mermaid_code": "graph TD\n    goal[\"Compromise LLM model integrity to manipulate outputs for malicious purposes\"]\n    \n    fact1[\"Training pipeline lacks access controls and audit logging\"]\n    fact2[\"Model training data stored in accessible repositories without integrity checks\"]\n    fact3[\"Fine-tuning processes allow arbitrary data injection without validation\"]\n    \n    attack1[\"Exploit privileged access to inject malicious training samples\"]\n    attack2[\"Manipulate data preprocessing scripts to introduce bias\"]\n    attack3[\"Replace legitimate training datasets with poisoned versions\"]\n    attack4[\"Inject adversarial examples during fine-tuning process\"]\n    attack5[\"Modify model weights directly through training pipeline access\"]\n    \n    mitigation1[\"Implement role-based access controls with least privilege principle\"]\n    mitigation2[\"Deploy data integrity validation and cryptographic checksums\"]\n    mitigation3[\"Establish comprehensive audit logging and monitoring for all training activities\"]\n    \n    fact1 --> attack1\n    fact1 --> attack2\n    fact2 --> attack3\n    fact2 --> attack5\n    fact3 --> attack4\n    \n    attack1 --> goal\n    attack2 --> goal\n    attack3 --> goal\n    attack4 --> goal\n    attack5 --> goal\n    \n    mitigation1 -.-> attack1\n    mitigation1 -.-> attack2\n    mitigation2 -.-> attack3\n    mitigation2 -.-> attack5\n    mitigation3 -.-> attack4\n    \n    classDef attack fill:#ffcccc\n    classDef mitigation fill:#ccffcc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class attack1,attack2,attack3,attack4,attack5 attack\n    class mitigation1,mitigation2,mitigation3 mitigation\n    class goal goal\n    class fact1,fact2,fact3 fact",
+      "mermaid_code": "graph TD\n    goal[\"Compromise LLM model integrity to generate biased, harmful, or backdoored outputs in production\"]\n    \n    fact1[\"ML training pipelines often lack proper access controls and audit logging\"]\n    fact2[\"Training data repositories typically stored in cloud storage with broad internal access\"]\n    fact3[\"Model training processes run with elevated privileges to access GPU resources\"]\n    fact4[\"Training pipeline orchestration tools may have weak authentication mechanisms\"]\n    \n    attack1[\"Exploit weak RBAC in MLOps platform to gain training pipeline access\"]\n    attack2[\"Inject malicious data samples into training datasets via direct storage access\"]\n    attack3[\"Modify training scripts to introduce backdoor triggers during model fine-tuning\"]\n    attack4[\"Replace legitimate training data with adversarially crafted samples\"]\n    attack5[\"Compromise CI/CD pipeline to inject malicious preprocessing steps\"]\n    attack6[\"Leverage container escape from training job to access shared storage\"]\n    \n    mitigation1[\"Implement strict RBAC with MFA for ML pipeline access\"]\n    mitigation2[\"Deploy data integrity monitoring with cryptographic checksums\"]\n    mitigation3[\"Use immutable training environments with signed container images\"]\n    mitigation4[\"Implement comprehensive audit logging for all training operations\"]\n    \n    fact1 --> attack1\n    fact2 --> attack2\n    fact3 --> attack6\n    fact4 --> attack5\n    attack1 --> attack3\n    attack2 --> goal\n    attack3 --> goal\n    attack4 --> goal\n    attack5 --> attack4\n    attack6 --> attack2\n    \n    mitigation1 -.-> attack1\n    mitigation2 -.-> attack2\n    mitigation3 -.-> attack3\n    mitigation4 -.-> attack5\n    \n    classDef attack fill:#ffcccc\n    classDef mitigation fill:#ccffcc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class attack1,attack2,attack3,attack4,attack5,attack6 attack\n    class mitigation1,mitigation2,mitigation3,mitigation4 mitigation\n    class goal goal\n    class fact1,fact2,fact3,fact4 fact",
       "attack_steps": [
         {
           "node_id": "goal",
-          "description": "Compromise LLM model integrity to manipulate outputs for malicious purposes"
+          "description": "Compromise LLM model integrity to generate biased, harmful, or backdoored outputs in production"
         },
         {
           "node_id": "fact1",
-          "description": "Training pipeline lacks access controls and audit logging"
+          "description": "ML training pipelines often lack proper access controls and audit logging"
         },
         {
           "node_id": "fact2",
-          "description": "Model training data stored in accessible repositories without integrity checks"
+          "description": "Training data repositories typically stored in cloud storage with broad internal access"
         },
         {
           "node_id": "fact3",
-          "description": "Fine-tuning processes allow arbitrary data injection without validation"
+          "description": "Model training processes run with elevated privileges to access GPU resources"
+        },
+        {
+          "node_id": "fact4",
+          "description": "Training pipeline orchestration tools may have weak authentication mechanisms"
         },
         {
           "node_id": "attack1",
-          "description": "Exploit privileged access to inject malicious training samples"
+          "description": "Exploit weak RBAC in MLOps platform to gain training pipeline access"
         },
         {
           "node_id": "attack2",
-          "description": "Manipulate data preprocessing scripts to introduce bias"
+          "description": "Inject malicious data samples into training datasets via direct storage access"
         },
         {
           "node_id": "attack3",
-          "description": "Replace legitimate training datasets with poisoned versions"
+          "description": "Modify training scripts to introduce backdoor triggers during model fine-tuning"
         },
         {
           "node_id": "attack4",
-          "description": "Inject adversarial examples during fine-tuning process"
+          "description": "Replace legitimate training data with adversarially crafted samples"
         },
         {
           "node_id": "attack5",
-          "description": "Modify model weights directly through training pipeline access"
+          "description": "Compromise CI/CD pipeline to inject malicious preprocessing steps"
+        },
+        {
+          "node_id": "attack6",
+          "description": "Leverage container escape from training job to access shared storage"
         },
         {
           "node_id": "mitigation1",
-          "description": "Implement role-based access controls with least privilege principle"
+          "description": "Implement strict RBAC with MFA for ML pipeline access"
         },
         {
           "node_id": "mitigation2",
-          "description": "Deploy data integrity validation and cryptographic checksums"
+          "description": "Deploy data integrity monitoring with cryptographic checksums"
         },
         {
           "node_id": "mitigation3",
-          "description": "Establish comprehensive audit logging and monitoring for all training activities"
+          "description": "Use immutable training environments with signed container images"
+        },
+        {
+          "node_id": "mitigation4",
+          "description": "Implement comprehensive audit logging for all training operations"
         }
       ],
-      "generated_content": "# Attack Tree: LLM04 Data/Model Poisoning\n\n```mermaid\ngraph TD\n    goal[\"Compromise LLM model integrity to manipulate outputs for malicious purposes\"]\n    \n    fact1[\"Training pipeline lacks access controls and audit logging\"]\n    fact2[\"Model training data stored in accessible repositories without integrity checks\"]\n    fact3[\"Fine-tuning processes allow arbitrary data injection without validation\"]\n    \n    attack1[\"Exploit privileged access to inject malicious training samples\"]\n    attack2[\"Manipulate data preprocessing scripts to introduce bias\"]\n    attack3[\"Replace legitimate training datasets with poisoned versions\"]\n    attack4[\"Inject adversarial examples during fine-tuning process\"]\n    attack5[\"Modify model weights directly through training pipeline access\"]\n    \n    mitigation1[\"Implement role-based access controls with least privilege principle\"]\n    mitigation2[\"Deploy data integrity validation and cryptographic checksums\"]\n    mitigation3[\"Establish comprehensive audit logging and monitoring for all training activities\"]\n    \n    fact1 --> attack1\n    fact1 --> attack2\n    fact2 --> attack3\n    fact2 --> attack5\n    fact3 --> attack4\n    \n    attack1 --> goal\n    attack2 --> goal\n    attack3 --> goal\n    attack4 --> goal\n    attack5 --> goal\n    \n    mitigation1 -.-> attack1\n    mitigation1 -.-> attack2\n    mitigation2 -.-> attack3\n    mitigation2 -.-> attack5\n    mitigation3 -.-> attack4\n    \n    classDef attack fill:#ffcccc\n    classDef mitigation fill:#ccffcc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class attack1,attack2,attack3,attack4,attack5 attack\n    class mitigation1,mitigation2,mitigation3 mitigation\n    class goal goal\n    class fact1,fact2,fact3 fact\n```",
+      "generated_content": "# Attack Tree: LLM04 Data/Model Poisoning\n\n```mermaid\ngraph TD\n    goal[\"Compromise LLM model integrity to generate biased, harmful, or backdoored outputs in production\"]\n    \n    fact1[\"ML training pipelines often lack proper access controls and audit logging\"]\n    fact2[\"Training data repositories typically stored in cloud storage with broad internal access\"]\n    fact3[\"Model training processes run with elevated privileges to access GPU resources\"]\n    fact4[\"Training pipeline orchestration tools may have weak authentication mechanisms\"]\n    \n    attack1[\"Exploit weak RBAC in MLOps platform to gain training pipeline access\"]\n    attack2[\"Inject malicious data samples into training datasets via direct storage access\"]\n    attack3[\"Modify training scripts to introduce backdoor triggers during model fine-tuning\"]\n    attack4[\"Replace legitimate training data with adversarially crafted samples\"]\n    attack5[\"Compromise CI/CD pipeline to inject malicious preprocessing steps\"]\n    attack6[\"Leverage container escape from training job to access shared storage\"]\n    \n    mitigation1[\"Implement strict RBAC with MFA for ML pipeline access\"]\n    mitigation2[\"Deploy data integrity monitoring with cryptographic checksums\"]\n    mitigation3[\"Use immutable training environments with signed container images\"]\n    mitigation4[\"Implement comprehensive audit logging for all training operations\"]\n    \n    fact1 --> attack1\n    fact2 --> attack2\n    fact3 --> attack6\n    fact4 --> attack5\n    attack1 --> attack3\n    attack2 --> goal\n    attack3 --> goal\n    attack4 --> goal\n    attack5 --> attack4\n    attack6 --> attack2\n    \n    mitigation1 -.-> attack1\n    mitigation2 -.-> attack2\n    mitigation3 -.-> attack3\n    mitigation4 -.-> attack5\n    \n    classDef attack fill:#ffcccc\n    classDef mitigation fill:#ccffcc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class attack1,attack2,attack3,attack4,attack5,attack6 attack\n    class mitigation1,mitigation2,mitigation3,mitigation4 mitigation\n    class goal goal\n    class fact1,fact2,fact3,fact4 fact\n```",
       "validation": {
         "is_valid": true,
         "errors": [],
@@ -2100,123 +1785,95 @@
       },
       "ttc_mappings": [
         {
-          "attack_step": "compromise llm model integrity to manipulate outputs for malicious purposes",
+          "attack_step": "Compromise LLM model integrity to generate biased, harmful, or backdoored outputs in production",
           "node_id": "goal",
           "mapped_techniques": [
             {
-              "technique_id": "T1189",
-              "technique_name": "Drive-by Compromise",
-              "confidence": 0.3,
+              "technique_id": "T1080",
+              "technique_name": "Taint Shared Content",
+              "confidence": 0.9,
               "tactics": [
-                "initial-access"
+                "lateral-movement"
               ],
-              "platforms": [
-                "Windows",
-                "Linux",
-                "macOS",
-                "SaaS"
-              ]
+              "platforms": [],
+              "reasoning": "Directly maps to poisoning shared training data or model artifacts that will be consumed by the production system"
             },
             {
-              "technique_id": "T1204.003",
-              "technique_name": "Malicious Image",
-              "confidence": 0.3,
+              "technique_id": "T1578.004",
+              "technique_name": "Revert Cloud Instance",
+              "confidence": 0.75,
               "tactics": [
-                "execution"
+                "execution",
+                "defense-evasion",
+                "impact"
               ],
               "platforms": [
                 "IaaS",
-                "Containers",
                 "Amazon Elastic Compute Cloud (EC2)",
-                "Amazon Elastic Container Registry (ECR)",
-                "Amazon Elastic Kubernetes Service (EKS)",
-                "Amazon Elastic Container Service (ECS)"
-              ]
-            },
-            {
-              "technique_id": "T1586",
-              "technique_name": "Compromise Accounts",
-              "confidence": 0.3,
-              "tactics": [
-                "resource-development"
+                "AWS Batch",
+                "AWS Outposts",
+                "AWS Elastic Beanstalk",
+                "Amazon Lightsail",
+                "AWS Serverless Application Repository",
+                "AWS Lambda"
               ],
-              "platforms": []
+              "reasoning": "Could involve reverting cloud training instances to compromised states or manipulating model deployment infrastructure"
             }
           ],
-          "confidence": 0.3
+          "confidence": 0.9
         },
         {
-          "attack_step": "training pipeline lacks access controls and audit logging",
+          "attack_step": "ML training pipelines often lack proper access controls and audit logging",
           "node_id": "fact1",
           "mapped_techniques": [
             {
-              "technique_id": "T1108",
-              "technique_name": "Redundant Access",
-              "confidence": 0.6,
+              "technique_id": "T1078.004",
+              "technique_name": "Valid Cloud Accounts",
+              "confidence": 0.85,
               "tactics": [
                 "defense-evasion",
-                "persistence"
+                "persistence",
+                "privilege-escalation",
+                "initial-access"
               ],
               "platforms": [
-                "Windows",
                 "Azure AD",
                 "Office 365",
                 "SaaS",
                 "IaaS",
+                "Google Workspace"
+              ],
+              "reasoning": "Weak access controls enable abuse of valid cloud accounts to access training infrastructure without detection"
+            },
+            {
+              "technique_id": "T1070",
+              "technique_name": "Indicator Removal",
+              "confidence": 0.8,
+              "tactics": [
+                "defense-evasion"
+              ],
+              "platforms": [
                 "Linux",
-                "macOS"
-              ]
-            },
-            {
-              "technique_id": "T1556.009",
-              "technique_name": "Conditional Access Policies",
-              "confidence": 0.6,
-              "tactics": [
-                "credential-access",
-                "defense-evasion",
-                "persistence"
+                "macOS",
+                "Windows",
+                "Containers",
+                "Network",
+                "Office 365",
+                "Google Workspace"
               ],
-              "platforms": [
-                "Azure AD",
-                "SaaS",
-                "IaaS"
-              ]
-            },
-            {
-              "technique_id": "AT1024.002",
-              "technique_name": "Additional Access Key",
-              "confidence": 0.6,
-              "tactics": [
-                "persistence"
-              ],
-              "platforms": [
-                "IaaS",
-                "AWS Identity and Access Management (IAM)"
-              ]
+              "reasoning": "Lack of audit logging facilitates indicator removal and covering tracks during pipeline manipulation"
             }
           ],
-          "confidence": 0.6
+          "confidence": 0.85
         },
         {
-          "attack_step": "model training data stored in accessible repositories without integrity checks",
+          "attack_step": "Training data repositories typically stored in cloud storage with broad internal access",
           "node_id": "fact2",
           "mapped_techniques": [
             {
-              "technique_id": "T1552.005",
-              "technique_name": "Cloud Instance Metadata API",
-              "confidence": 0.6,
-              "tactics": [
-                "credential-access"
-              ],
-              "platforms": [
-                "IaaS",
-                "Amazon Elastic Compute Cloud (EC2)"
-              ]
-            },
-            {
               "technique_id": "T1530",
               "technique_name": "Data from Cloud Storage",
-              "confidence": 0.6,
+              "confidence": 0.95,
               "tactics": [
                 "collection"
               ],
@@ -2229,71 +1886,30 @@
                 "Amazon FSx for Windows File Server",
                 "AWS Storage Gateway",
                 "AWS Backup"
-              ]
+              ],
+              "reasoning": "Direct technique for accessing and potentially manipulating training data stored in cloud repositories"
             },
             {
-              "technique_id": "T1213.003",
-              "technique_name": "Code Repositories",
-              "confidence": 0.6,
+              "technique_id": "T1119",
+              "technique_name": "Automated Collection",
+              "confidence": 0.75,
               "tactics": [
                 "collection"
               ],
-              "platforms": []
+              "platforms": [],
+              "reasoning": "Broad access enables automated collection and exfiltration of training datasets for analysis or replacement"
             }
           ],
-          "confidence": 0.6
+          "confidence": 0.95
         },
         {
-          "attack_step": "fine-tuning processes allow arbitrary data injection without validation",
+          "attack_step": "Model training processes run with elevated privileges to access GPU resources",
           "node_id": "fact3",
-          "mapped_techniques": [
-            {
-              "technique_id": "T1190.A018",
-              "technique_name": "API Gateway",
-              "confidence": 0.5,
-              "tactics": [
-                "initial-access"
-              ],
-              "platforms": [
-                "IaaS",
-                "Amazon API Gateway"
-              ]
-            },
-            {
-              "technique_id": "T1190.A010",
-              "technique_name": "Redshift Cluster",
-              "confidence": 0.5,
-              "tactics": [
-                "initial-access"
-              ],
-              "platforms": [
-                "IaaS",
-                "Amazon Redshift"
-              ]
-            },
-            {
-              "technique_id": "T1552.005",
-              "technique_name": "Cloud Instance Metadata API",
-              "confidence": 0.3,
-              "tactics": [
-                "credential-access"
-              ],
-              "platforms": [
-                "IaaS",
-                "Amazon Elastic Compute Cloud (EC2)"
-              ]
-            }
-          ],
-          "confidence": 0.5
-        },
-        {
-          "attack_step": "exploit privileged access to inject malicious training samples",
-          "node_id": "attack1",
           "mapped_techniques": [
             {
               "technique_id": "T1548.005",
               "technique_name": "Temporary Elevated Cloud Access",
-              "confidence": 1.0,
+              "confidence": 0.9,
               "tactics": [
                 "privilege-escalation",
                 "defense-evasion"
@@ -2303,258 +1919,37 @@
                 "Azure AD",
                 "Office 365",
                 "Google Workspace"
-              ]
-            },
-            {
-              "technique_id": "T1212",
-              "technique_name": "Exploitation for Credential Access",
-              "confidence": 0.8999999999999999,
-              "tactics": [
-                "credential-access"
               ],
-              "platforms": [
-                "Linux",
-                "Windows",
-                "macOS",
-                "Azure AD"
-              ]
-            },
-            {
-              "technique_id": "T1528",
-              "technique_name": "Steal Application Access Token",
-              "confidence": 0.8999999999999999,
-              "tactics": [
-                "credential-access"
-              ],
-              "platforms": [
-                "SaaS",
-                "Office 365",
-                "Azure AD",
-                "Google Workspace",
-                "Containers"
-              ]
+              "reasoning": "Training processes requiring elevated cloud privileges to access specialized GPU resources directly maps to temporary elevated cloud access"
             }
           ],
-          "confidence": 1.0
+          "confidence": 0.9
         },
         {
-          "attack_step": "manipulate data preprocessing scripts to introduce bias",
-          "node_id": "attack2",
+          "attack_step": "Training pipeline orchestration tools may have weak authentication mechanisms",
+          "node_id": "fact4",
           "mapped_techniques": [
             {
-              "technique_id": "T1552.005",
-              "technique_name": "Cloud Instance Metadata API",
-              "confidence": 0.3,
+              "technique_id": "T1072",
+              "technique_name": "Software Deployment Tools",
+              "confidence": 0.85,
               "tactics": [
-                "credential-access"
-              ],
-              "platforms": [
-                "IaaS",
-                "Amazon Elastic Compute Cloud (EC2)"
-              ]
-            },
-            {
-              "technique_id": "AT1027",
-              "technique_name": "Transfer Data out of Cloud Account",
-              "confidence": 0.3,
-              "tactics": [
-                "exfiltration"
-              ],
-              "platforms": [
-                "IaaS",
-                "Amazon Simple Storage Service (S3)",
-                "Amazon Elastic File System (EFS)",
-                "Amazon FSx for Windows File Server",
-                "Amazon FSx for Lustre",
-                "AWS Storage Gateway",
-                "AWS Backup",
-                "Amazon Relational Database Service (RDS)",
-                "Amazon Redshift",
-                "Amazon DynamoDB",
-                "Amazon ElastiCache",
-                "Amazon Neptune",
-                "Amazon Quantum Ledger Database (QLDB)",
-                "Amazon DocumentDB (with MongoDB compatibility)",
-                "Amazon Keyspaces (for Apache Cassandra)",
-                "Amazon Timestream"
-              ]
-            },
-            {
-              "technique_id": "T1070.008",
-              "technique_name": "Clear Mailbox Data",
-              "confidence": 0.3,
-              "tactics": [
-                "defense-evasion"
-              ],
-              "platforms": [
-                "Linux",
-                "macOS",
-                "Windows",
-                "Office 365",
-                "Google Workspace"
-              ]
-            }
-          ],
-          "confidence": 0.3
-        },
-        {
-          "attack_step": "inject adversarial examples during fine-tuning process",
-          "node_id": "attack4",
-          "mapped_techniques": [
-            {
-              "technique_id": "T1556",
-              "technique_name": "Modify Authentication Process",
-              "confidence": 0.3,
-              "tactics": [
-                "credential-access",
-                "defense-evasion",
-                "persistence"
-              ],
-              "platforms": [
-                "Windows",
-                "Linux",
-                "macOS",
-                "Network",
-                "Azure AD",
-                "Google Workspace",
-                "IaaS",
-                "Office 365",
-                "SaaS"
-              ]
-            },
-            {
-              "technique_id": "T1189",
-              "technique_name": "Drive-by Compromise",
-              "confidence": 0.2,
-              "tactics": [
-                "initial-access"
-              ],
-              "platforms": [
-                "Windows",
-                "Linux",
-                "macOS",
-                "SaaS"
-              ]
-            },
-            {
-              "technique_id": "T1059",
-              "technique_name": "Command and Scripting Interpreter",
-              "confidence": 0.2,
-              "tactics": [
-                "execution"
+                "execution",
+                "lateral-movement"
               ],
               "platforms": [
                 "Linux",
                 "macOS",
                 "Windows",
                 "Network",
-                "Office 365",
-                "Azure AD",
-                "IaaS",
-                "Google Workspace"
-              ]
-            }
-          ],
-          "confidence": 0.3
-        },
-        {
-          "attack_step": "modify model weights directly through training pipeline access",
-          "node_id": "attack5",
-          "mapped_techniques": [
-            {
-              "technique_id": "T1108",
-              "technique_name": "Redundant Access",
-              "confidence": 0.6,
-              "tactics": [
-                "defense-evasion",
-                "persistence"
-              ],
-              "platforms": [
-                "Windows",
-                "Azure AD",
-                "Office 365",
-                "SaaS",
-                "IaaS",
-                "Linux",
-                "macOS"
-              ]
-            },
-            {
-              "technique_id": "T1556",
-              "technique_name": "Modify Authentication Process",
-              "confidence": 0.6,
-              "tactics": [
-                "credential-access",
-                "defense-evasion",
-                "persistence"
-              ],
-              "platforms": [
-                "Windows",
-                "Linux",
-                "macOS",
-                "Network",
-                "Azure AD",
-                "Google Workspace",
-                "IaaS",
-                "Office 365",
                 "SaaS"
-              ]
-            },
-            {
-              "technique_id": "T1556.009",
-              "technique_name": "Conditional Access Policies",
-              "confidence": 0.6,
-              "tactics": [
-                "credential-access",
-                "defense-evasion",
-                "persistence"
               ],
-              "platforms": [
-                "Azure AD",
-                "SaaS",
-                "IaaS"
-              ]
-            }
-          ],
-          "confidence": 0.6
-        },
-        {
-          "attack_step": "implement role-based access controls with least privilege principle",
-          "node_id": "mitigation1",
-          "mapped_techniques": [
-            {
-              "technique_id": "T1212",
-              "technique_name": "Exploitation for Credential Access",
-              "confidence": 0.7999999999999999,
-              "tactics": [
-                "credential-access"
-              ],
-              "platforms": [
-                "Linux",
-                "Windows",
-                "macOS",
-                "Azure AD"
-              ]
-            },
-            {
-              "technique_id": "T1528",
-              "technique_name": "Steal Application Access Token",
-              "confidence": 0.7999999999999999,
-              "tactics": [
-                "credential-access"
-              ],
-              "platforms": [
-                "SaaS",
-                "Office 365",
-                "Azure AD",
-                "Google Workspace",
-                "Containers"
-              ]
+              "reasoning": "MLOps orchestration tools are software deployment systems that can be exploited for execution and lateral movement when weakly authenticated"
             },
             {
               "technique_id": "T1550.001",
               "technique_name": "Application Access Token",
-              "confidence": 0.7999999999999999,
+              "confidence": 0.75,
               "tactics": [
                 "defense-evasion",
                 "lateral-movement"
@@ -2566,36 +1961,133 @@
                 "Containers",
                 "IaaS",
                 "Azure AD"
-              ]
+              ],
+              "reasoning": "Weak authentication in orchestration tools often involves compromised application access tokens for API-based ML platforms"
             }
           ],
-          "confidence": 0.7999999999999999
+          "confidence": 0.85
         },
         {
-          "attack_step": "deploy data integrity validation and cryptographic checksums",
-          "node_id": "mitigation2",
+          "attack_step": "Exploit weak RBAC in MLOps platform to gain training pipeline access",
+          "node_id": "attack1",
           "mapped_techniques": [
             {
-              "technique_id": "T1552.005",
-              "technique_name": "Cloud Instance Metadata API",
-              "confidence": 0.3,
+              "technique_id": "T1078.004",
+              "technique_name": "Valid Cloud Accounts",
+              "confidence": 0.92,
               "tactics": [
-                "credential-access"
+                "defense-evasion",
+                "persistence",
+                "privilege-escalation",
+                "initial-access"
               ],
               "platforms": [
+                "Azure AD",
+                "Office 365",
+                "SaaS",
                 "IaaS",
-                "Amazon Elastic Compute Cloud (EC2)"
-              ]
+                "Google Workspace"
+              ],
+              "reasoning": "Exploiting weak RBAC directly aligns with abusing valid cloud accounts to gain unauthorized access and escalate privileges"
+            }
+          ],
+          "confidence": 0.92
+        },
+        {
+          "attack_step": "Inject malicious data samples into training datasets via direct storage access",
+          "node_id": "attack2",
+          "mapped_techniques": [
+            {
+              "technique_id": "T1080",
+              "technique_name": "Taint Shared Content",
+              "confidence": 0.9,
+              "tactics": [
+                "lateral-movement"
+              ],
+              "platforms": [],
+              "reasoning": "Direct injection of malicious content into shared training datasets closely matches tainting shared content methodology"
             },
             {
-              "technique_id": "AT1027",
-              "technique_name": "Transfer Data out of Cloud Account",
-              "confidence": 0.3,
+              "technique_id": "T1021.008",
+              "technique_name": "Direct Cloud VM Connections",
+              "confidence": 0.75,
+              "tactics": [
+                "lateral-movement"
+              ],
+              "platforms": [],
+              "reasoning": "Direct storage access in cloud environments often involves direct connections to cloud resources where datasets are stored"
+            }
+          ],
+          "confidence": 0.9
+        },
+        {
+          "attack_step": "Modify training scripts to introduce backdoor triggers during model fine-tuning",
+          "node_id": "attack3",
+          "mapped_techniques": [
+            {
+              "technique_id": "T1546",
+              "technique_name": "Event Triggered Execution",
+              "confidence": 0.85,
+              "tactics": [
+                "privilege-escalation",
+                "persistence"
+              ],
+              "platforms": [
+                "Linux",
+                "macOS",
+                "Windows",
+                "SaaS",
+                "IaaS",
+                "Office 365"
+              ],
+              "reasoning": "Modifying training scripts to trigger backdoor behavior during specific events (fine-tuning) aligns with event-triggered execution patterns"
+            },
+            {
+              "technique_id": "T1072",
+              "technique_name": "Software Deployment Tools",
+              "confidence": 0.8,
+              "tactics": [
+                "execution",
+                "lateral-movement"
+              ],
+              "platforms": [
+                "Linux",
+                "macOS",
+                "Windows",
+                "Network",
+                "SaaS"
+              ],
+              "reasoning": "Training scripts are software deployment tools in ML pipelines, and modifying them affects the execution and deployment process"
+            }
+          ],
+          "confidence": 0.85
+        },
+        {
+          "attack_step": "Replace legitimate training data with adversarially crafted samples",
+          "node_id": "attack4",
+          "mapped_techniques": [
+            {
+              "technique_id": "T1080",
+              "technique_name": "Taint Shared Content",
+              "confidence": 0.95,
+              "tactics": [
+                "lateral-movement"
+              ],
+              "platforms": [],
+              "reasoning": "Replacing legitimate shared training data with malicious adversarial samples is a direct application of tainting shared content"
+            },
+            {
+              "technique_id": "T1537",
+              "technique_name": "Transfer Data to Cloud Account",
+              "confidence": 0.7,
               "tactics": [
                 "exfiltration"
               ],
               "platforms": [
                 "IaaS",
+                "SaaS",
+                "Google Workspace",
+                "Office 365",
                 "Amazon Simple Storage Service (S3)",
                 "Amazon Elastic File System (EFS)",
                 "Amazon FSx for Windows File Server",
@@ -2611,34 +2103,259 @@
                 "Amazon DocumentDB (with MongoDB compatibility)",
                 "Amazon Keyspaces (for Apache Cassandra)",
                 "Amazon Timestream"
-              ]
+              ],
+              "reasoning": "Replacement process may involve transferring adversarial data to cloud storage accounts where training datasets reside"
+            }
+          ],
+          "confidence": 0.95
+        },
+        {
+          "attack_step": "Compromise CI/CD pipeline to inject malicious preprocessing steps",
+          "node_id": "attack5",
+          "mapped_techniques": [
+            {
+              "technique_id": "T1080",
+              "technique_name": "Taint Shared Content",
+              "confidence": 0.9,
+              "tactics": [
+                "lateral-movement"
+              ],
+              "platforms": [],
+              "reasoning": "Injecting malicious preprocessing steps directly aligns with tainting shared content that will be used by downstream processes"
             },
             {
-              "technique_id": "T1072",
-              "technique_name": "Software Deployment Tools",
-              "confidence": 0.3,
+              "technique_id": "T1190",
+              "technique_name": "Exploit Public-Facing Application",
+              "confidence": 0.75,
               "tactics": [
-                "execution",
+                "initial-access"
+              ],
+              "platforms": [
+                "Windows",
+                "IaaS",
+                "Network",
+                "Linux",
+                "macOS",
+                "Containers",
+                "Amazon Elastic Compute Cloud (EC2)",
+                "Amazon Elastic Container Registry (ECR)",
+                "AWS Outposts",
+                "AWS Elastic Beanstalk",
+                "Amazon Elasticsearch Service",
+                "Amazon Simple Notification Service (SNS)",
+                "Amazon Relational Database Service (RDS)",
+                "AWS Fargate",
+                "AWS Lambda",
+                "Amazon CloudWatch",
+                "Amazon Virtual Private Cloud (VPC)",
+                "Amazon Simple Storage Service (S3)",
+                "Amazon Elastic MapReduce (EMR)",
+                "Amazon Redshift",
+                "Amazon Simple Queue Service (SQS)",
+                "Amazon Lightsail",
+                "Amazon CloudSearch"
+              ],
+              "reasoning": "CI/CD pipelines are often public-facing applications that can be exploited to gain initial access and inject malicious content"
+            }
+          ],
+          "confidence": 0.9
+        },
+        {
+          "attack_step": "Leverage container escape from training job to access shared storage",
+          "node_id": "attack6",
+          "mapped_techniques": [
+            {
+              "technique_id": "T1213",
+              "technique_name": "Data from Information Repositories",
+              "confidence": 0.85,
+              "tactics": [
+                "collection"
+              ],
+              "platforms": [],
+              "reasoning": "After container escape, accessing shared storage repositories is the primary objective for data collection"
+            },
+            {
+              "technique_id": "T1080",
+              "technique_name": "Taint Shared Content",
+              "confidence": 0.7,
+              "tactics": [
+                "lateral-movement"
+              ],
+              "platforms": [],
+              "reasoning": "Container escape can enable modification of shared storage content, tainting resources used by other processes"
+            }
+          ],
+          "confidence": 0.85
+        },
+        {
+          "attack_step": "Implement strict RBAC with MFA for ML pipeline access",
+          "node_id": "mitigation1",
+          "mapped_techniques": [
+            {
+              "technique_id": "T1078.004",
+              "technique_name": "Valid Cloud Accounts",
+              "confidence": 0.95,
+              "tactics": [
+                "defense-evasion",
+                "persistence",
+                "privilege-escalation",
+                "initial-access"
+              ],
+              "platforms": [
+                "Azure AD",
+                "Office 365",
+                "SaaS",
+                "IaaS",
+                "Google Workspace"
+              ],
+              "reasoning": "RBAC and MFA directly mitigate abuse of valid cloud accounts by enforcing proper authentication and authorization controls"
+            },
+            {
+              "technique_id": "T1550.001",
+              "technique_name": "Application Access Token",
+              "confidence": 0.8,
+              "tactics": [
+                "defense-evasion",
                 "lateral-movement"
               ],
               "platforms": [
-                "Linux",
-                "macOS",
-                "Windows",
-                "Network",
-                "SaaS"
-              ]
+                "Office 365",
+                "SaaS",
+                "Google Workspace",
+                "Containers",
+                "IaaS",
+                "Azure AD"
+              ],
+              "reasoning": "Strong authentication controls help prevent unauthorized use of application access tokens for lateral movement"
             }
           ],
-          "confidence": 0.3
+          "confidence": 0.95
+        },
+        {
+          "attack_step": "Deploy data integrity monitoring with cryptographic checksums",
+          "node_id": "mitigation2",
+          "mapped_techniques": [
+            {
+              "technique_id": "T1530",
+              "technique_name": "Data from Cloud Storage",
+              "confidence": 0.8,
+              "tactics": [
+                "collection"
+              ],
+              "platforms": [
+                "IaaS",
+                "Amazon Simple Storage Service (S3)",
+                "Amazon Elastic Block Store (EBS)",
+                "Amazon Elastic File System (EFS)",
+                "Amazon FSx for Lustre",
+                "Amazon FSx for Windows File Server",
+                "AWS Storage Gateway",
+                "AWS Backup"
+              ],
+              "reasoning": "Data integrity monitoring protects against unauthorized access and modification of data from cloud storage"
+            },
+            {
+              "technique_id": "T1485.001",
+              "technique_name": "Lifecycle-Triggered Deletion",
+              "confidence": 0.75,
+              "tactics": [
+                "impact"
+              ],
+              "platforms": [
+                "IaaS"
+              ],
+              "reasoning": "Cryptographic checksums help detect and prevent lifecycle-triggered deletion attacks by maintaining data integrity verification"
+            }
+          ],
+          "confidence": 0.8
+        },
+        {
+          "attack_step": "Use immutable training environments with signed container images",
+          "node_id": "mitigation3",
+          "mapped_techniques": [
+            {
+              "technique_id": "T1648",
+              "technique_name": "Serverless Execution",
+              "confidence": 0.85,
+              "tactics": [
+                "execution",
+                "persistence"
+              ],
+              "platforms": [
+                "SaaS",
+                "IaaS",
+                "Office 365"
+              ],
+              "reasoning": "Immutable environments and signed images prevent malicious serverless execution by ensuring container integrity"
+            },
+            {
+              "technique_id": "T1059.009",
+              "technique_name": "Cloud API",
+              "confidence": 0.7,
+              "tactics": [
+                "execution"
+              ],
+              "platforms": [
+                "IaaS",
+                "Azure AD",
+                "Office 365",
+                "SaaS",
+                "Google Workspace"
+              ],
+              "reasoning": "Signed container images help prevent unauthorized cloud API execution by validating image authenticity"
+            }
+          ],
+          "confidence": 0.85
+        },
+        {
+          "attack_step": "Implement comprehensive audit logging for all training operations",
+          "node_id": "mitigation4",
+          "mapped_techniques": [
+            {
+              "technique_id": "T1562.008",
+              "technique_name": "Disable Cloud Logs",
+              "confidence": 0.9,
+              "tactics": [
+                "defense-evasion"
+              ],
+              "platforms": [
+                "IaaS",
+                "AWS CloudTrail",
+                "Amazon CloudWatch",
+                "AWS Systems Manager"
+              ],
+              "reasoning": "Comprehensive audit logging directly counters attempts to disable cloud logs for defense evasion"
+            },
+            {
+              "technique_id": "T1078.004",
+              "technique_name": "Valid Cloud Accounts",
+              "confidence": 0.75,
+              "tactics": [
+                "defense-evasion",
+                "persistence",
+                "privilege-escalation",
+                "initial-access"
+              ],
+              "platforms": [
+                "Azure AD",
+                "Office 365",
+                "SaaS",
+                "IaaS",
+                "Google Workspace"
+              ],
+              "reasoning": "Audit logging helps detect misuse of valid cloud accounts across multiple tactics including privilege escalation and persistence"
+            }
+          ],
+          "confidence": 0.9
         }
       ]
     }
   ],
   "mapping_summary": {
-    "total_mappings": 36,
-    "successful_mappings": 36,
-    "threshold_used": 0.3,
-    "techniques_loaded": 229
+    "total_mappings": 43,
+    "successful_mappings": 43,
+    "threshold_used": 0.5,
+    "techniques_loaded": 229,
+    "bedrock_enhanced": true
   }
 }

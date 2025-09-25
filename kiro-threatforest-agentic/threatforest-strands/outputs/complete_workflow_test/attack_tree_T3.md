@@ -7,50 +7,60 @@
 
 ```mermaid
 graph TD
-    goal["Compromise downstream systems and exfiltrate sensitive organizational data through LLM agent manipulation"]
+    goal["Gain unauthorized access to backend systems and exfiltrate sensitive data through compromised LLM agents"]
     
-    fact1["LLM system lacks input validation and prompt sanitization mechanisms"]
-    fact2["LLM agents have excessive permissions to access internal APIs and databases"]
-    fact3["System implements insufficient output filtering for LLM-generated responses"]
-    fact4["LLM training data contains malicious prompt patterns from compromised sources"]
+    fact1["LLM plugins lack input validation and sanitization mechanisms"]
+    fact2["LLM agents have excessive permissions to access downstream systems"]
+    fact3["User inputs are directly passed to LLM without content filtering"]
+    fact4["LLM system lacks proper session isolation between users"]
     
-    attack1["Craft indirect prompt injection via poisoned training data or documents"]
-    attack2["Execute direct prompt injection to bypass system instructions"]
-    attack3["Manipulate LLM agent to access unauthorized API endpoints"]
-    attack4["Chain multiple prompt injections to escalate privileges"]
-    attack5["Exfiltrate data through LLM response manipulation and steganographic encoding"]
-    attack6["Establish persistence by injecting malicious instructions into LLM memory"]
+    attack1["Craft malicious prompt with embedded system commands to bypass content filters"]
+    attack2["Inject indirect prompt via poisoned training data or compromised data sources"]
+    attack3["Use jailbreaking techniques to override LLM safety constraints"]
+    attack4["Manipulate plugin parameters through prompt injection to access unauthorized APIs"]
+    attack5["Chain multiple prompts to escalate privileges across connected systems"]
+    attack6["Exploit agent's file system access to read configuration files and credentials"]
+    attack7["Use prompt injection to modify agent behavior and establish persistence"]
     
-    mitigation1["Implement robust input validation and prompt sanitization"]
+    mitigation1["Implement strict input validation and prompt sanitization"]
     mitigation2["Apply principle of least privilege to LLM agent permissions"]
-    mitigation3["Deploy output filtering and content security policies"]
-    mitigation4["Establish secure LLM memory isolation and session management"]
+    mitigation3["Deploy content filtering and anomaly detection for LLM inputs/outputs"]
+    mitigation4["Implement proper session management and user context isolation"]
     
     fact1 --> attack1
-    fact1 --> attack2
-    fact2 --> attack3
-    fact3 --> attack5
-    fact4 --> attack1
+    fact1 --> attack3
+    fact2 --> attack4
+    fact2 --> attack5
+    fact2 --> attack6
+    fact3 --> attack1
+    fact3 --> attack2
+    fact4 --> attack5
+    fact4 --> attack7
     
     attack1 --> attack4
-    attack2 --> attack4
-    attack3 --> attack5
+    attack2 --> attack5
+    attack3 --> attack6
     attack4 --> attack6
     attack5 --> goal
     attack6 --> goal
+    attack7 --> goal
     
     mitigation1 -.-> attack1
     mitigation1 -.-> attack2
-    mitigation2 -.-> attack3
-    mitigation3 -.-> attack5
-    mitigation4 -.-> attack6
+    mitigation2 -.-> attack4
+    mitigation2 -.-> attack5
+    mitigation2 -.-> attack6
+    mitigation3 -.-> attack1
+    mitigation3 -.-> attack3
+    mitigation4 -.-> attack5
+    mitigation4 -.-> attack7
     
     classDef attack fill:#ffcccc
     classDef mitigation fill:#ccffcc
     classDef goal fill:#ffcc99
     classDef fact fill:#ccccff
     
-    class attack1,attack2,attack3,attack4,attack5,attack6 attack
+    class attack1,attack2,attack3,attack4,attack5,attack6,attack7 attack
     class mitigation1,mitigation2,mitigation3,mitigation4 mitigation
     class goal goal
     class fact1,fact2,fact3,fact4 fact
@@ -58,108 +68,113 @@ graph TD
 
 ## MITRE ATT&CK Mappings
 
-### compromise downstream systems and exfiltrate sensitive organizational data through llm agent manipulation
-- **AT1027**: Transfer Data out of Cloud Account (Confidence: 0.70)
+### Gain unauthorized access to backend systems and exfiltrate sensitive data through compromised LLM agents
+- **T1199**: Trusted Relationship (Confidence: 0.90)
+  - Tactics: lateral-movement, persistence, initial-access
+- **T1537**: Transfer Data to Cloud Account (Confidence: 0.85)
   - Tactics: exfiltration
-- **T1189**: Drive-by Compromise (Confidence: 0.70)
-  - Tactics: initial-access
 
-### llm system lacks input validation and prompt sanitization mechanisms
-- **T1049**: System Network Connections Discovery (Confidence: 0.30)
-  - Tactics: discovery
-- **T1082**: System Information Discovery (Confidence: 0.30)
-  - Tactics: discovery
-
-### llm agents have excessive permissions to access internal apis and databases
-- **T1556.009**: Conditional Access Policies (Confidence: 0.60)
-  - Tactics: credential-access, defense-evasion, persistence
-- **T1108**: Redundant Access (Confidence: 0.50)
-  - Tactics: defense-evasion, persistence
-
-### system implements insufficient output filtering for llm-generated responses
-- **T1049**: System Network Connections Discovery (Confidence: 0.30)
-  - Tactics: discovery
-- **T1082**: System Information Discovery (Confidence: 0.30)
-  - Tactics: discovery
-
-### llm training data contains malicious prompt patterns from compromised sources
-- **T1552.005**: Cloud Instance Metadata API (Confidence: 0.40)
-  - Tactics: credential-access
-- **T1204.003**: Malicious Image (Confidence: 0.40)
-  - Tactics: execution
-
-### craft indirect prompt injection via poisoned training data or documents
-- **T1190.A018**: API Gateway (Confidence: 0.50)
-  - Tactics: initial-access
-- **T1190.A010**: Redshift Cluster (Confidence: 0.50)
-  - Tactics: initial-access
-
-### execute direct prompt injection to bypass system instructions
-- **T1556.007**: Hybrid Identity (Confidence: 0.60)
-  - Tactics: credential-access, defense-evasion, persistence
-- **T1539**: Steal Web Session Cookie (Confidence: 0.60)
+### LLM plugins lack input validation and sanitization mechanisms
+- **T1212**: Exploitation for Credential Access (Confidence: 0.80)
   - Tactics: credential-access
 
-### manipulate llm agent to access unauthorized api endpoints
-- **T1556.009**: Conditional Access Policies (Confidence: 0.60)
-  - Tactics: credential-access, defense-evasion, persistence
-- **T1108**: Redundant Access (Confidence: 0.50)
-  - Tactics: defense-evasion, persistence
-
-### chain multiple prompt injections to escalate privileges
-- **T1556.007**: Hybrid Identity (Confidence: 0.80)
-  - Tactics: credential-access, defense-evasion, persistence
-- **T1548.005**: Temporary Elevated Cloud Access (Confidence: 0.80)
-  - Tactics: privilege-escalation, defense-evasion
-
-### exfiltrate data through llm response manipulation and steganographic encoding
-- **AT1027**: Transfer Data out of Cloud Account (Confidence: 0.70)
-  - Tactics: exfiltration
-- **T1537**: Transfer Data to Cloud Account (Confidence: 0.70)
-  - Tactics: exfiltration
-
-### establish persistence by injecting malicious instructions into llm memory
-- **T1204.003**: Malicious Image (Confidence: 0.50)
-  - Tactics: execution
-- **T1556.007**: Hybrid Identity (Confidence: 0.40)
-  - Tactics: credential-access, defense-evasion, persistence
-
-### apply principle of least privilege to llm agent permissions
-- **T1098.002**: Additional Email Delegate Permissions (Confidence: 0.50)
+### LLM agents have excessive permissions to access downstream systems
+- **T1550.001**: Application Access Token (Confidence: 0.85)
+  - Tactics: defense-evasion, lateral-movement
+- **T1098.003**: Additional Cloud Roles (Confidence: 0.75)
   - Tactics: persistence, privilege-escalation
-- **T1649**: Steal or Forge Authentication Certificates (Confidence: 0.40)
+
+### User inputs are directly passed to LLM without content filtering
+- **T1189**: Drive-by Compromise (Confidence: 0.75)
+  - Tactics: initial-access
+
+### LLM system lacks proper session isolation between users
+- **T1080**: Taint Shared Content (Confidence: 0.90)
+  - Tactics: lateral-movement
+
+### Craft malicious prompt with embedded system commands to bypass content filters
+- **T1564**: Hide Artifacts (Confidence: 0.85)
+  - Tactics: defense-evasion
+- **T1189**: Drive-by Compromise (Confidence: 0.80)
+  - Tactics: initial-access
+
+### Inject indirect prompt via poisoned training data or compromised data sources
+- **T1080**: Taint Shared Content (Confidence: 0.90)
+  - Tactics: lateral-movement
+- **T1530**: Data from Cloud Storage (Confidence: 0.75)
+  - Tactics: collection
+
+### Use jailbreaking techniques to override LLM safety constraints
+- **T1562.A001**: Disable or Modify GuardDuty (Confidence: 0.85)
+  - Tactics: defense-evasion
+- **T1059.009**: Cloud API (Confidence: 0.70)
+  - Tactics: execution
+
+### Manipulate plugin parameters through prompt injection to access unauthorized APIs
+- **T1059.009**: Cloud API (Confidence: 0.90)
+  - Tactics: execution
+- **T1550.001**: Application Access Token (Confidence: 0.80)
+  - Tactics: defense-evasion, lateral-movement
+
+### Chain multiple prompts to escalate privileges across connected systems
+- **T1078.004**: Valid Cloud Accounts (Confidence: 0.80)
+  - Tactics: defense-evasion, persistence, privilege-escalation, initial-access
+- **T1021**: Remote Services (Confidence: 0.75)
+  - Tactics: lateral-movement
+
+### Exploit agent's file system access to read configuration files and credentials
+- **T1552.001**: Credentials In Files (Confidence: 0.95)
   - Tactics: credential-access
 
-### deploy output filtering and content security policies
-- **T1518.001**: Security Software Discovery (Confidence: 0.30)
-  - Tactics: discovery
-- **T1072**: Software Deployment Tools (Confidence: 0.30)
+### Use prompt injection to modify agent behavior and establish persistence
+- **T1546**: Event Triggered Execution (Confidence: 0.85)
+  - Tactics: privilege-escalation, persistence
+- **T1080**: Taint Shared Content (Confidence: 0.70)
+  - Tactics: lateral-movement
+
+### Implement strict input validation and prompt sanitization
+- **T1499**: Endpoint Denial of Service (Confidence: 0.75)
+  - Tactics: impact
+- **T1072**: Software Deployment Tools (Confidence: 0.70)
   - Tactics: execution, lateral-movement
 
-### establish secure llm memory isolation and session management
-- **T1550.004**: Web Session Cookie (Confidence: 0.30)
+### Apply principle of least privilege to LLM agent permissions
+- **T1098.003**: Additional Cloud Roles (Confidence: 0.90)
+  - Tactics: persistence, privilege-escalation
+- **T1548.005**: Temporary Elevated Cloud Access (Confidence: 0.85)
+  - Tactics: privilege-escalation, defense-evasion
+
+### Deploy content filtering and anomaly detection for LLM inputs/outputs
+- **T1078.004**: Valid Cloud Accounts (Confidence: 0.80)
+  - Tactics: defense-evasion, persistence, privilege-escalation, initial-access
+- **T1528**: Steal Application Access Token (Confidence: 0.75)
+  - Tactics: credential-access
+
+### Implement proper session management and user context isolation
+- **T1550.004**: Web Session Cookie (Confidence: 0.90)
   - Tactics: defense-evasion, lateral-movement
-- **T1539**: Steal Web Session Cookie (Confidence: 0.30)
+- **T1539**: Steal Web Session Cookie (Confidence: 0.85)
   - Tactics: credential-access
 
 
 ## Attack Steps Analysis
 
-1. **goal**: Compromise downstream systems and exfiltrate sensitive organizational data through LLM agent manipulation
-2. **fact1**: LLM system lacks input validation and prompt sanitization mechanisms
-3. **fact2**: LLM agents have excessive permissions to access internal APIs and databases
-4. **fact3**: System implements insufficient output filtering for LLM-generated responses
-5. **fact4**: LLM training data contains malicious prompt patterns from compromised sources
-6. **attack1**: Craft indirect prompt injection via poisoned training data or documents
-7. **attack2**: Execute direct prompt injection to bypass system instructions
-8. **attack3**: Manipulate LLM agent to access unauthorized API endpoints
-9. **attack4**: Chain multiple prompt injections to escalate privileges
-10. **attack5**: Exfiltrate data through LLM response manipulation and steganographic encoding
-11. **attack6**: Establish persistence by injecting malicious instructions into LLM memory
-12. **mitigation1**: Implement robust input validation and prompt sanitization
-13. **mitigation2**: Apply principle of least privilege to LLM agent permissions
-14. **mitigation3**: Deploy output filtering and content security policies
-15. **mitigation4**: Establish secure LLM memory isolation and session management
+1. **goal**: Gain unauthorized access to backend systems and exfiltrate sensitive data through compromised LLM agents
+2. **fact1**: LLM plugins lack input validation and sanitization mechanisms
+3. **fact2**: LLM agents have excessive permissions to access downstream systems
+4. **fact3**: User inputs are directly passed to LLM without content filtering
+5. **fact4**: LLM system lacks proper session isolation between users
+6. **attack1**: Craft malicious prompt with embedded system commands to bypass content filters
+7. **attack2**: Inject indirect prompt via poisoned training data or compromised data sources
+8. **attack3**: Use jailbreaking techniques to override LLM safety constraints
+9. **attack4**: Manipulate plugin parameters through prompt injection to access unauthorized APIs
+10. **attack5**: Chain multiple prompts to escalate privileges across connected systems
+11. **attack6**: Exploit agent's file system access to read configuration files and credentials
+12. **attack7**: Use prompt injection to modify agent behavior and establish persistence
+13. **mitigation1**: Implement strict input validation and prompt sanitization
+14. **mitigation2**: Apply principle of least privilege to LLM agent permissions
+15. **mitigation3**: Deploy content filtering and anomaly detection for LLM inputs/outputs
+16. **mitigation4**: Implement proper session management and user context isolation
 
 ---
 *Generated by ThreatForest*

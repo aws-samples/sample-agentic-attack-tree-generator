@@ -21,8 +21,10 @@ class TTCMappingTool(Tool):
         )
     
     async def execute(self, attack_trees: Dict[str, Any], 
-                     aaf_bundle_path: str = None) -> Dict[str, Any]:
-        """Execute TTC mapping"""
+                     aaf_bundle_path: str = None,
+                     bedrock_model: str = "us.anthropic.claude-sonnet-4-20250514-v1:0",
+                     aws_profile: Optional[str] = None) -> Dict[str, Any]:
+        """Execute TTC mapping with Bedrock enhancement"""
         
         # Load STIX data
         stix_data = self._load_stix_data(aaf_bundle_path)
@@ -40,14 +42,16 @@ class TTCMappingTool(Tool):
         # Extract techniques from STIX data
         techniques = self._extract_techniques(stix_data)
         
-        # Map attack trees
+        # Map attack trees with Bedrock enhancement
         mapped_trees = []
         total_mappings = 0
         successful_mappings = 0
         
         for tree in attack_trees.get("attack_trees", []):
             if "mermaid_code" in tree:
-                mapped_tree = self._map_attack_tree(tree, techniques)
+                mapped_tree = await self._map_attack_tree_with_bedrock(
+                    tree, techniques, bedrock_model, aws_profile
+                )
                 mapped_trees.append(mapped_tree)
                 
                 mappings = mapped_tree.get("ttc_mappings", [])
@@ -60,7 +64,8 @@ class TTCMappingTool(Tool):
                 "total_mappings": total_mappings,
                 "successful_mappings": successful_mappings,
                 "threshold_used": self.threshold,
-                "techniques_loaded": len(techniques)
+                "techniques_loaded": len(techniques),
+                "bedrock_enhanced": True
             }
         }
     
@@ -99,85 +104,242 @@ class TTCMappingTool(Tool):
         
         return techniques
     
-    def _map_attack_tree(self, tree: Dict[str, Any], techniques: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """Map attack tree steps to MITRE ATT&CK techniques"""
+    async def _map_attack_tree_with_bedrock(self, tree: Dict[str, Any], techniques: List[Dict[str, Any]],
+                                           bedrock_model: str, aws_profile: Optional[str] = None) -> Dict[str, Any]:
+        """Map attack tree steps to MITRE ATT&CK techniques using Bedrock"""
         
-        # Extract attack steps from mermaid code
         attack_steps = tree.get("attack_steps", [])
-        mermaid_code = tree.get("mermaid_code", "")
+        if not attack_steps:
+            return tree
         
-        # Enhanced keyword mapping
+        # Process in batches to manage context window
+        batch_size = 3  # Process 3 attack steps at a time
+        all_mappings = []
+        
+        for i in range(0, len(attack_steps), batch_size):
+            batch_steps = attack_steps[i:i + batch_size]
+            
+            # Get top candidate techniques for this batch (limit to manage context)
+            candidate_techniques = self._get_candidate_techniques(batch_steps, techniques, max_candidates=20)
+            
+            # Use Bedrock for enhanced mapping
+            batch_mappings = await self._bedrock_map_batch(
+                batch_steps, candidate_techniques, tree, bedrock_model, aws_profile
+            )
+            
+            all_mappings.extend(batch_mappings)
+        
+        # Add mappings to tree
+        mapped_tree = tree.copy()
+        mapped_tree["ttc_mappings"] = all_mappings
+        
+        return mapped_tree
+    
+    def _get_candidate_techniques(self, attack_steps: List[Dict[str, Any]], 
+                                 techniques: List[Dict[str, Any]], max_candidates: int = 20) -> List[Dict[str, Any]]:
+        """Get candidate techniques using keyword matching to reduce context size"""
+        
+        # Combine all attack step descriptions
+        combined_text = " ".join([step.get("description", "") for step in attack_steps]).lower()
+        
+        # Score techniques based on keyword overlap
+        scored_techniques = []
+        
+        for technique in techniques:
+            technique_text = f"{technique['name']} {technique['description']}".lower()
+            
+            # Simple scoring based on common words
+            words = set(combined_text.split())
+            tech_words = set(technique_text.split())
+            overlap = len(words.intersection(tech_words))
+            
+            if overlap > 0:
+                scored_techniques.append((overlap, technique))
+        
+        # Sort by score and return top candidates
+        scored_techniques.sort(key=lambda x: x[0], reverse=True)
+        return [tech for _, tech in scored_techniques[:max_candidates]]
+    
+    async def _bedrock_map_batch(self, attack_steps: List[Dict[str, Any]], 
+                               candidate_techniques: List[Dict[str, Any]],
+                               tree: Dict[str, Any], bedrock_model: str, 
+                               aws_profile: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Use Bedrock to map a batch of attack steps to techniques"""
+        
+        if not candidate_techniques:
+            return []
+        
+        # Build compact prompt
+        prompt = self._build_ttc_mapping_prompt(attack_steps, candidate_techniques, tree)
+        
+        try:
+            import boto3
+            import json
+            
+            session = boto3.Session(profile_name=aws_profile) if aws_profile else boto3.Session()
+            bedrock = session.client('bedrock-runtime', region_name='us-east-1')
+            
+            body = {
+                "anthropic_version": "bedrock-2023-05-31",
+                "max_tokens": 2000,
+                "messages": [{"role": "user", "content": prompt}]
+            }
+            
+            response = bedrock.invoke_model(
+                modelId=bedrock_model,
+                body=json.dumps(body)
+            )
+            
+            response_body = json.loads(response['body'].read())
+            generated_content = response_body['content'][0]['text']
+            
+            # Parse Bedrock response
+            return self._parse_bedrock_mappings(generated_content, attack_steps, candidate_techniques)
+            
+        except Exception as e:
+            print(f"Bedrock mapping error: {e}")
+            # Fallback to keyword-based mapping
+            return self._fallback_keyword_mapping(attack_steps, candidate_techniques)
+    
+    def _build_ttc_mapping_prompt(self, attack_steps: List[Dict[str, Any]], 
+                                 techniques: List[Dict[str, Any]], tree: Dict[str, Any]) -> str:
+        """Build compact prompt for TTC mapping"""
+        
+        # Format attack steps
+        steps_text = "\n".join([
+            f"- {step.get('node_id', 'unknown')}: {step.get('description', '')}"
+            for step in attack_steps
+        ])
+        
+        # Format techniques (compact)
+        techniques_text = "\n".join([
+            f"- {tech.get('technique_id', 'unknown')}: {tech.get('name', '')} ({', '.join(tech.get('tactics', []))})"
+            for tech in techniques[:15]  # Limit to top 15 to manage context
+        ])
+        
+        return f"""You are a cybersecurity expert. Map these attack steps to the most relevant MITRE ATT&CK techniques.
+
+**Attack Steps:**
+{steps_text}
+
+**Available MITRE ATT&CK Techniques:**
+{techniques_text}
+
+**Instructions:**
+For each attack step, identify the 1-2 most relevant techniques. Consider:
+- Attack method similarity
+- Tactic alignment
+- Technical implementation
+
+**Output Format (JSON):**
+```json
+[
+  {{
+    "attack_step": "step description",
+    "node_id": "step_id",
+    "techniques": [
+      {{
+        "technique_id": "T1234",
+        "confidence": 0.85,
+        "reasoning": "brief explanation"
+      }}
+    ]
+  }}
+]
+```
+
+Return only the JSON array."""
+    
+    def _parse_bedrock_mappings(self, content: str, attack_steps: List[Dict[str, Any]], 
+                               techniques: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Parse Bedrock response into mappings"""
+        
+        import re
+        import json
+        
+        try:
+            # Extract JSON from response
+            json_match = re.search(r'```json\s*(\[.*?\])\s*```', content, re.DOTALL)
+            if json_match:
+                mappings_data = json.loads(json_match.group(1))
+            else:
+                # Try to find JSON array directly
+                json_match = re.search(r'(\[.*?\])', content, re.DOTALL)
+                if json_match:
+                    mappings_data = json.loads(json_match.group(1))
+                else:
+                    raise ValueError("No JSON found")
+            
+            # Convert to standard format
+            result_mappings = []
+            technique_lookup = {tech['technique_id']: tech for tech in techniques}
+            
+            for mapping in mappings_data:
+                attack_step = mapping.get('attack_step', '')
+                node_id = mapping.get('node_id', '')
+                
+                mapped_techniques = []
+                for tech_mapping in mapping.get('techniques', []):
+                    tech_id = tech_mapping.get('technique_id', '')
+                    confidence = tech_mapping.get('confidence', 0.5)
+                    
+                    if tech_id in technique_lookup:
+                        tech_info = technique_lookup[tech_id]
+                        mapped_techniques.append({
+                            "technique_id": tech_id,
+                            "technique_name": tech_info.get('name', ''),
+                            "confidence": confidence,
+                            "tactics": tech_info.get('tactics', []),
+                            "platforms": tech_info.get('platforms', []),
+                            "reasoning": tech_mapping.get('reasoning', '')
+                        })
+                
+                if mapped_techniques:
+                    result_mappings.append({
+                        "attack_step": attack_step,
+                        "node_id": node_id,
+                        "mapped_techniques": mapped_techniques,
+                        "confidence": mapped_techniques[0]["confidence"]
+                    })
+            
+            return result_mappings
+            
+        except Exception as e:
+            print(f"Error parsing Bedrock mappings: {e}")
+            return self._fallback_keyword_mapping(attack_steps, techniques)
+    
+    def _fallback_keyword_mapping(self, attack_steps: List[Dict[str, Any]], 
+                                 techniques: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Fallback to keyword-based mapping if Bedrock fails"""
+        
         mappings = []
-        
-        # Define keyword patterns for common attack techniques
-        keyword_patterns = {
-            "injection": ["inject", "injection", "payload", "malicious input"],
-            "bypass": ["bypass", "circumvent", "evade", "avoid"],
-            "execution": ["execute", "run", "launch", "invoke", "command"],
-            "privilege_escalation": ["escalate", "elevate", "privilege", "admin", "root"],
-            "access": ["access", "retrieve", "obtain", "steal", "exfiltrate"],
-            "persistence": ["persist", "maintain", "backdoor", "implant"],
-            "discovery": ["discover", "enumerate", "scan", "reconnaissance"],
-            "lateral_movement": ["lateral", "pivot", "spread", "move"],
-            "collection": ["collect", "gather", "harvest", "capture"],
-            "exfiltration": ["exfiltrate", "steal", "copy", "transfer"]
-        }
         
         for step in attack_steps:
             step_desc = step.get("description", "").lower()
             best_matches = []
             
-            # Skip empty descriptions
-            if not step_desc.strip():
-                continue
-            
-            for technique in techniques:
-                technique_name = technique['name'].lower()
-                technique_desc = technique['description'].lower()
+            for technique in techniques[:10]:  # Limit for performance
+                technique_text = f"{technique['name']} {technique['description']}".lower()
                 
-                # Calculate confidence based on multiple factors
-                confidence = 0.0
-                
-                # Direct keyword matching
-                for pattern_type, keywords in keyword_patterns.items():
-                    step_matches = sum(1 for kw in keywords if kw in step_desc)
-                    tech_matches = sum(1 for kw in keywords if kw in technique_name or kw in technique_desc)
-                    
-                    if step_matches > 0 and tech_matches > 0:
-                        confidence += 0.2 * min(step_matches, tech_matches)
-                
-                # Direct name similarity
-                if any(word in technique_name for word in step_desc.split() if len(word) > 3):
-                    confidence += 0.3
-                
-                # Common cybersecurity terms
-                cyber_terms = ["prompt", "llm", "model", "ai", "injection", "validation", "command", "privilege"]
-                common_terms = sum(1 for term in cyber_terms if term in step_desc and term in technique_desc)
-                if common_terms > 0:
-                    confidence += 0.1 * common_terms
-                
-                if confidence >= 0.2:  # Lower threshold
+                # Simple keyword matching
+                common_words = set(step_desc.split()).intersection(set(technique_text.split()))
+                if len(common_words) > 0:
+                    confidence = min(len(common_words) * 0.2, 0.8)
                     best_matches.append({
                         "technique_id": technique["technique_id"],
                         "technique_name": technique["name"],
-                        "confidence": min(confidence, 1.0),
+                        "confidence": confidence,
                         "tactics": technique["tactics"],
                         "platforms": technique["platforms"]
                     })
             
-            # Sort by confidence and take top matches
-            best_matches.sort(key=lambda x: x["confidence"], reverse=True)
-            
             if best_matches:
+                best_matches.sort(key=lambda x: x["confidence"], reverse=True)
                 mappings.append({
                     "attack_step": step_desc,
                     "node_id": step.get("node_id"),
-                    "mapped_techniques": best_matches[:3],  # Top 3 matches
+                    "mapped_techniques": best_matches[:2],
                     "confidence": best_matches[0]["confidence"]
                 })
         
-        # Add mappings to tree
-        mapped_tree = tree.copy()
-        mapped_tree["ttc_mappings"] = mappings
-        
-        return mapped_tree
+        return mappings
