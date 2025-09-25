@@ -4,13 +4,28 @@ The ThreatForest Wizard provides a user-friendly, step-by-step interface for run
 
 ## 🚀 Quick Start
 
+### Step 1: Setup Virtual Environment
+
 ```bash
 # Navigate to the ThreatForest directory
 cd threatforest-strands
 
-# Activate virtual environment
-source ../venv/bin/activate
+# Create virtual environment
+python -m venv venv
 
+# Activate virtual environment
+# On macOS/Linux:
+source venv/bin/activate
+# On Windows:
+# venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### Step 2: Run the Wizard
+
+```bash
 # Run the interactive wizard
 python threatforest_wizard.py
 ```
