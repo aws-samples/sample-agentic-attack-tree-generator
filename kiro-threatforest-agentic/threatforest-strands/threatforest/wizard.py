@@ -201,21 +201,28 @@ Let's get started with the setup!
         self.console.print("• Architecture diagrams (.mmd, .drawio)")
         self.console.print("• Documentation files")
         
-        # Suggest current directory
+        # Suggest current directory first
         current_dir = Path.cwd()
         self.console.print(f"\n📂 Current directory: {current_dir}")
         
-        if Confirm.ask("Use current directory?"):
+        if Confirm.ask("Use current directory?", default=True):
             project_path = current_dir
         else:
+            # Ask for custom path
             while True:
-                path_input = Prompt.ask("Enter project path")
+                path_input = Prompt.ask(
+                    "Enter project path",
+                    default=str(current_dir)
+                )
                 project_path = Path(path_input).expanduser().resolve()
                 
                 if project_path.exists() and project_path.is_dir():
                     break
                 else:
                     self.console.print(f"❌ Path not found: {project_path}")
+                    if not Confirm.ask("Try again?"):
+                        self.console.print("❌ Valid project path is required. Exiting.")
+                        sys.exit(1)
         
         self.config["project_path"] = str(project_path)
         
@@ -232,9 +239,13 @@ Let's get started with the setup!
         
         if len(readme_files) == 0:
             self.console.print("⚠️  No README files found - project analysis may be limited")
+            if not Confirm.ask("Continue anyway?"):
+                self.console.print("💡 Add a README.md file with project description and try again.")
+                sys.exit(1)
         
         if len(threat_files) == 0:
             self.console.print("⚠️  No threat files found - using generic threat model")
+            self.console.print("💡 Consider adding a threats.md file with threat statements for better analysis")
     
     def _review_configuration(self):
         """Review configuration before execution"""

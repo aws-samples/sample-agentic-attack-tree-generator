@@ -33,22 +33,6 @@ pip install -r requirements.txt
 python threatforest_wizard.py
 ```
 
-### 🚨 Troubleshooting
-
-**❌ "externally-managed-environment" Error**
-This happens when trying to install packages globally on newer Python versions.
-
-**Solution**: Always use a virtual environment:
-```bash
-# If you get this error, create and activate a virtual environment first
-python3 -m venv venv
-source venv/bin/activate  # macOS/Linux
-# venv\Scripts\activate   # Windows
-
-# Then install dependencies
-pip install -r requirements.txt
-```
-
 ## 🎯 What the Wizard Does
 
 The wizard guides you through 5 simple steps:
