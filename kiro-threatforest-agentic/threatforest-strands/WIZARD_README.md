@@ -10,14 +10,17 @@ The ThreatForest Wizard provides a user-friendly, step-by-step interface for run
 # Navigate to the ThreatForest directory
 cd threatforest-strands
 
-# Create virtual environment
-python -m venv venv
+# Create virtual environment (required to avoid externally-managed-environment error)
+python3 -m venv venv
 
 # Activate virtual environment
 # On macOS/Linux:
 source venv/bin/activate
 # On Windows:
 # venv\Scripts\activate
+
+# Verify you're in the virtual environment (should show venv path)
+which python
 
 # Install dependencies
 pip install -r requirements.txt
@@ -26,8 +29,24 @@ pip install -r requirements.txt
 ### Step 2: Run the Wizard
 
 ```bash
-# Run the interactive wizard
+# Make sure virtual environment is activated (you should see (venv) in your prompt)
 python threatforest_wizard.py
+```
+
+### 🚨 Troubleshooting
+
+**❌ "externally-managed-environment" Error**
+This happens when trying to install packages globally on newer Python versions.
+
+**Solution**: Always use a virtual environment:
+```bash
+# If you get this error, create and activate a virtual environment first
+python3 -m venv venv
+source venv/bin/activate  # macOS/Linux
+# venv\Scripts\activate   # Windows
+
+# Then install dependencies
+pip install -r requirements.txt
 ```
 
 ## 🎯 What the Wizard Does
