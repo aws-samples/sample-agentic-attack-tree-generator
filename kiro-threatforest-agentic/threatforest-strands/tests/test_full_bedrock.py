@@ -5,8 +5,8 @@ import sys
 import asyncio
 from pathlib import Path
 
-# Add the threatforest package to path
-sys.path.insert(0, str(Path(__file__).parent))
+# Add the threatforest-strands package to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from threatforest.tools.context_analysis_tool import ContextAnalysisTool
 from threatforest.tools.information_extraction_tool import InformationExtractionTool
@@ -17,7 +17,7 @@ async def test_full_bedrock():
     print("🧪 Full Bedrock Integration Test")
     
     # Get context
-    test_project = Path(__file__).parent / "genai-chatbot-example"
+    test_project = Path(__file__).parent.parent.parent / "genai-chatbot-example"
     
     context_tool = ContextAnalysisTool()
     context_result = await context_tool.execute(str(test_project))
