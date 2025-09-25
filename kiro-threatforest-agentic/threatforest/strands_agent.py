@@ -62,6 +62,13 @@ class ThreatForestOrchestrator(Agent):
             })
             context.add("setup", setup_result)
             
+            if not setup_result.get("setup_complete", False):
+                return {
+                    "status": "setup_failed",
+                    "setup_result": setup_result,
+                    "message": "Setup validation failed. Please check AWS credentials and Bedrock access."
+                }
+            
             # Step 2: Context analysis
             context_result = await self.use_tool("context_analysis", {
                 "project_path": str(self.config.project_path)
@@ -71,15 +78,22 @@ class ThreatForestOrchestrator(Agent):
             # Step 3: Information extraction
             extraction_result = await self.use_tool("information_extraction", {
                 "context_files": context_result,
-                "bedrock_model": self.config.bedrock_model
+                "bedrock_model": self.config.bedrock_model,
+                "aws_profile": self.config.aws_profile
             })
             context.add("extracted_info", extraction_result)
+            
+            # Determine application name for output directory
+            app_name = extraction_result.get("project_info", {}).get("application_name", "unknown_app")
+            output_dir = self.config.project_path / "outputs" / app_name
+            output_dir.mkdir(parents=True, exist_ok=True)
             
             # Step 4: Generate attack trees (High severity only)
             attack_trees = await self.use_tool("attack_tree_generator", {
                 "threat_statements": extraction_result.get("threat_statements", []),
                 "extracted_info": extraction_result,
-                "bedrock_model": self.config.bedrock_model
+                "bedrock_model": self.config.bedrock_model,
+                "aws_profile": self.config.aws_profile
             })
             context.add("attack_trees", attack_trees)
             
@@ -94,14 +108,16 @@ class ThreatForestOrchestrator(Agent):
             summary = await self.use_tool("summary_generator", {
                 "attack_trees": ttc_mapped_trees,
                 "extracted_info": extraction_result,
-                "output_dir": str(self.config.output_dir or self.config.project_path / ".tf")
+                "output_dir": str(output_dir)
             })
             context.add("summary", summary)
             
             return {
                 "status": "success",
                 "context": context.to_dict(),
-                "output_files": summary.get("output_files", [])
+                "output_files": summary.get("output_files", []),
+                "output_directory": str(output_dir),
+                "application_name": app_name
             }
             
         except Exception as e:
