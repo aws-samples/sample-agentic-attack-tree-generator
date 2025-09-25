@@ -115,7 +115,7 @@ class AttackTreeGeneratorTool(Tool):
 - Deployment: {project_info.get('deployment_environment', 'Unknown')}
 
 **Requirements:**
-Create a complete Mermaid flowchart with this EXACT format:
+Use this EXACT Mermaid syntax (note: node IDs without quotes, descriptions in brackets):
 
 ```mermaid
 graph TD
@@ -131,20 +131,22 @@ graph TD
     vector2 --> step2
     
     classDef attack fill:#ffcccc
+    classDef mitigation fill:#ccffcc
     classDef goal fill:#ffcc99
+    classDef fact fill:#ccccff
     
-    class goal goal
     class vector1,vector2,step1,step2 attack
+    class goal goal
 ```
 
-CRITICAL: 
-1. Start with "graph TD"
-2. Include ALL node connections
-3. End with classDef and class definitions
-4. Return ONLY the mermaid code block, nothing else
-5. Ensure all nodes referenced in connections are defined
+CRITICAL SYNTAX RULES:
+1. Node IDs are unquoted (goal, vector1, step1)
+2. Descriptions are in brackets ["text"]
+3. Connections use --> between unquoted IDs
+4. Class assignments use unquoted node IDs
+5. Return ONLY the mermaid code block
 
-Generate a comprehensive attack tree considering the specific technologies."""
+Generate a comprehensive attack tree with proper node IDs and connections."""
     
     def _load_mermaid_template(self) -> str:
         """Load Mermaid template from prompts directory"""
