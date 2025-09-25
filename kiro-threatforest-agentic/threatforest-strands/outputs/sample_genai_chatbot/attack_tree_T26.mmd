@@ -1,0 +1,65 @@
+# Attack Tree: LLM09 Misinformation
+## Threat ID: T26
+## Description: An egitimate user who is overly dependent on LLM outputs can make unsupported decisions based on inc...
+
+```mermaid
+graph TD
+    goal["User Makes Critical Decisions Based on LLM Misinformation"]
+    
+    vector1["Exploit Training Data Vulnerabilities"]
+    vector2["Manipulate Input Context"]
+    vector3["Exploit Model Limitations"]
+    vector4["Social Engineering Through LLM"]
+    
+    step1a["Poison training data with false information"]
+    step1b["Exploit biased or outdated training datasets"]
+    step1c["Leverage data gaps in specialized domains"]
+    
+    step2a["Inject misleading context through prompt manipulation"]
+    step2b["Use adversarial prompts to generate false outputs"]
+    step2c["Chain multiple queries to build false narrative"]
+    step2d["Exploit context window limitations"]
+    
+    step3a["Trigger hallucinations on edge cases"]
+    step3b["Exploit model's inability to verify facts"]
+    step3c["Leverage confidence in incorrect answers"]
+    step3d["Abuse model's tendency to interpolate missing data"]
+    
+    step4a["Create authoritative-sounding false information"]
+    step4b["Generate plausible but incorrect technical advice"]
+    step4c["Produce misleading statistical interpretations"]
+    step4d["Craft convincing false citations and references"]
+    
+    goal --> vector1
+    goal --> vector2
+    goal --> vector3
+    goal --> vector4
+    
+    vector1 --> step1a
+    vector1 --> step1b
+    vector1 --> step1c
+    
+    vector2 --> step2a
+    vector2 --> step2b
+    vector2 --> step2c
+    vector2 --> step2d
+    
+    vector3 --> step3a
+    vector3 --> step3b
+    vector3 --> step3c
+    vector3 --> step3d
+    
+    vector4 --> step4a
+    vector4 --> step4b
+    vector4 --> step4c
+    vector4 --> step4d
+    
+    classDef attack fill:#ffcccc
+    classDef goal fill:#ffcc99
+    
+    class goal goal
+    class vector1,vector2,vector3,vector4,step1a,step1b,step1c,step2a,step2b,step2c,step2d,step3a,step3b,step3c,step3d,step4a,step4b,step4c,step4d attack
+```
+
+## Attack Steps
+20 attack steps identified.

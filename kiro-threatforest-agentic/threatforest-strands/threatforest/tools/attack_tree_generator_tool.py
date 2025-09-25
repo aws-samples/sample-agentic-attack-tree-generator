@@ -100,9 +100,6 @@ class AttackTreeGeneratorTool(Tool):
     def _build_attack_tree_prompt(self, threat: Dict[str, Any], project_info: Dict[str, Any]) -> str:
         """Build prompt for attack tree generation"""
         
-        # Load Mermaid prompt template
-        mermaid_template = self._load_mermaid_template()
-        
         return f"""Generate an attack tree for the following threat using Mermaid flowchart format.
 
 **Threat Information:**
@@ -114,21 +111,37 @@ class AttackTreeGeneratorTool(Tool):
 **Project Context:**
 - Application: {project_info.get('application_name', 'Unknown')}
 - Technologies: {', '.join(project_info.get('technologies', []))}
-- Sector: {project_info.get('sector', 'Unknown')}
 - Architecture: {project_info.get('architecture_type', 'Unknown')}
+- Deployment: {project_info.get('deployment_environment', 'Unknown')}
 
 **Requirements:**
-{mermaid_template}
+Create a Mermaid flowchart that shows:
+1. Main threat goal at the top
+2. Attack vectors and specific steps
+3. Technical paths relevant to the technologies used
+4. Use this exact format:
 
-Generate a comprehensive attack tree that:
-1. Shows the main threat goal at the top
-2. Breaks down into specific attack vectors and steps
-3. Includes both technical and non-technical attack paths
-4. Considers the project's specific technologies and context
-5. Uses proper Mermaid syntax with node IDs and connections
-6. Applies appropriate color coding (attack, mitigation, goal, fact)
+```mermaid
+graph TD
+    goal["Main Threat Goal"]
+    vector1["Attack Vector 1"]
+    vector2["Attack Vector 2"]
+    step1["Specific Attack Step"]
+    step2["Another Attack Step"]
+    
+    goal --> vector1
+    goal --> vector2
+    vector1 --> step1
+    vector2 --> step2
+    
+    classDef attack fill:#ffcccc
+    classDef goal fill:#ffcc99
+    
+    class goal goal
+    class vector1,vector2,step1,step2 attack
+```
 
-Provide the complete Mermaid code block and a brief explanation of the attack paths."""
+Generate a comprehensive attack tree considering the specific technologies and architecture. Return ONLY the mermaid code block."""
     
     def _load_mermaid_template(self) -> str:
         """Load Mermaid template from prompts directory"""
