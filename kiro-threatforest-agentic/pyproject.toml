@@ -34,6 +34,7 @@ dependencies = [
     "numpy>=1.21.0",
     "aiofiles>=23.0.0",
     "rich>=13.0.0",
+    "strands-sdk>=0.1.0",  # Strands framework for agentic AI
 ]
 
 [project.optional-dependencies]
