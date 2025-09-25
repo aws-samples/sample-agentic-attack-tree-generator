@@ -11,7 +11,8 @@ from threatforest.config import BedrockConfig
 from threatforest.utils.bedrock_client import (
     BedrockClient,
     BedrockResponse,
-    BedrockClientError
+    BedrockClientError,
+    ModelInfo
 )
 
 
@@ -394,3 +395,466 @@ class TestBedrockClient:
             # Test max delay cap
             delay_large = client._calculate_retry_delay(10)
             assert delay_large == client.max_delay
+
+
+class TestModelInfo:
+    """Test cases for ModelInfo dataclass."""
+    
+    def test_model_info_creation(self):
+        """Test basic ModelInfo creation."""
+        model_info = ModelInfo(
+            model_id="anthropic.claude-3-sonnet-20240229-v1:0",
+            model_name="Claude 3 Sonnet",
+            provider_name="Anthropic",
+            input_modalities=["TEXT"],
+            output_modalities=["TEXT"],
+            supported_inference_types=["ON_DEMAND"],
+            model_lifecycle_status="ACTIVE"
+        )
+        
+        assert model_info.model_id == "anthropic.claude-3-sonnet-20240229-v1:0"
+        assert model_info.model_name == "Claude 3 Sonnet"
+        assert model_info.provider_name == "Anthropic"
+        assert model_info.input_modalities == ["TEXT"]
+        assert model_info.output_modalities == ["TEXT"]
+        assert model_info.supported_inference_types == ["ON_DEMAND"]
+        assert model_info.model_lifecycle_status == "ACTIVE"
+
+
+class TestBedrockClientModelDiscovery:
+    """Test cases for model discovery methods in BedrockClient."""
+    
+    def setup_method(self):
+        """Set up test environment."""
+        self.config = BedrockConfig(
+            region="us-east-1",
+            model="anthropic.claude-3-sonnet-20240229-v1:0",
+            timeout_seconds=300
+        )
+    
+    @patch('boto3.Session')
+    def test_list_available_models_success(self, mock_session):
+        """Test successful model listing."""
+        mock_runtime_client = Mock()
+        mock_bedrock_client = Mock()
+        mock_session.return_value.client.side_effect = [mock_runtime_client, mock_bedrock_client]
+        
+        # Mock successful response
+        mock_response = {
+            'modelSummaries': [
+                {
+                    'modelId': 'anthropic.claude-3-sonnet-20240229-v1:0',
+                    'modelName': 'Claude 3 Sonnet',
+                    'providerName': 'Anthropic',
+                    'inputModalities': ['TEXT'],
+                    'outputModalities': ['TEXT'],
+                    'supportedInferenceTypes': ['ON_DEMAND'],
+                    'modelLifecycle': {'status': 'ACTIVE'},
+                    'customizationsSupported': [],
+                    'inferenceTypesSupported': ['ON_DEMAND']
+                },
+                {
+                    'modelId': 'amazon.titan-text-express-v1',
+                    'modelName': 'Titan Text G1 - Express',
+                    'providerName': 'Amazon',
+                    'inputModalities': ['TEXT'],
+                    'outputModalities': ['TEXT'],
+                    'supportedInferenceTypes': ['ON_DEMAND'],
+                    'modelLifecycle': {'status': 'ACTIVE'},
+                    'customizationsSupported': [],
+                    'inferenceTypesSupported': ['ON_DEMAND']
+                }
+            ]
+        }
+        
+        mock_bedrock_client.list_foundation_models.return_value = mock_response
+        
+        client = BedrockClient(self.config)
+        models = client.list_available_models()
+        
+        assert len(models) == 2
+        assert isinstance(models[0], ModelInfo)
+        assert models[0].model_id == 'anthropic.claude-3-sonnet-20240229-v1:0'
+        assert models[0].provider_name == 'Anthropic'
+        assert models[1].model_id == 'amazon.titan-text-express-v1'
+        assert models[1].provider_name == 'Amazon'
+        
+        mock_bedrock_client.list_foundation_models.assert_called_once_with()
+    
+    @patch('boto3.Session')
+    def test_list_available_models_with_provider_filter(self, mock_session):
+        """Test model listing with provider filter."""
+        mock_runtime_client = Mock()
+        mock_bedrock_client = Mock()
+        mock_session.return_value.client.side_effect = [mock_runtime_client, mock_bedrock_client]
+        
+        mock_response = {
+            'modelSummaries': [
+                {
+                    'modelId': 'anthropic.claude-3-sonnet-20240229-v1:0',
+                    'modelName': 'Claude 3 Sonnet',
+                    'providerName': 'Anthropic',
+                    'inputModalities': ['TEXT'],
+                    'outputModalities': ['TEXT'],
+                    'supportedInferenceTypes': ['ON_DEMAND'],
+                    'modelLifecycle': {'status': 'ACTIVE'},
+                    'customizationsSupported': [],
+                    'inferenceTypesSupported': ['ON_DEMAND']
+                }
+            ]
+        }
+        
+        mock_bedrock_client.list_foundation_models.return_value = mock_response
+        
+        client = BedrockClient(self.config)
+        models = client.list_available_models(by_provider="Anthropic")
+        
+        assert len(models) == 1
+        assert models[0].provider_name == 'Anthropic'
+        
+        mock_bedrock_client.list_foundation_models.assert_called_once_with(byProvider="Anthropic")
+    
+    @patch('boto3.Session')
+    def test_list_available_models_caching(self, mock_session):
+        """Test that model listing results are cached."""
+        mock_runtime_client = Mock()
+        mock_bedrock_client = Mock()
+        mock_session.return_value.client.side_effect = [mock_runtime_client, mock_bedrock_client]
+        
+        mock_response = {
+            'modelSummaries': [
+                {
+                    'modelId': 'anthropic.claude-3-sonnet-20240229-v1:0',
+                    'modelName': 'Claude 3 Sonnet',
+                    'providerName': 'Anthropic',
+                    'inputModalities': ['TEXT'],
+                    'outputModalities': ['TEXT'],
+                    'supportedInferenceTypes': ['ON_DEMAND'],
+                    'modelLifecycle': {'status': 'ACTIVE'},
+                    'customizationsSupported': [],
+                    'inferenceTypesSupported': ['ON_DEMAND']
+                }
+            ]
+        }
+        
+        mock_bedrock_client.list_foundation_models.return_value = mock_response
+        
+        client = BedrockClient(self.config)
+        
+        # First call should hit the API
+        models1 = client.list_available_models()
+        assert len(models1) == 1
+        
+        # Second call should use cache
+        models2 = client.list_available_models()
+        assert len(models2) == 1
+        
+        # API should only be called once due to caching
+        mock_bedrock_client.list_foundation_models.assert_called_once()
+    
+    @patch('boto3.Session')
+    def test_list_available_models_api_error(self, mock_session):
+        """Test model listing API error handling."""
+        mock_runtime_client = Mock()
+        mock_bedrock_client = Mock()
+        mock_session.return_value.client.side_effect = [mock_runtime_client, mock_bedrock_client]
+        
+        api_error = ClientError(
+            error_response={
+                'Error': {
+                    'Code': 'AccessDeniedException',
+                    'Message': 'Access denied'
+                }
+            },
+            operation_name='ListFoundationModels'
+        )
+        
+        mock_bedrock_client.list_foundation_models.side_effect = api_error
+        
+        client = BedrockClient(self.config)
+        
+        with pytest.raises(BedrockClientError, match="Failed to list available models"):
+            client.list_available_models()
+    
+    @patch('boto3.Session')
+    def test_validate_model_region_compatibility_success(self, mock_session):
+        """Test successful model region compatibility validation."""
+        mock_runtime_client = Mock()
+        mock_bedrock_client = Mock()
+        mock_session.return_value.client.side_effect = [mock_runtime_client, mock_bedrock_client]
+        
+        mock_response = {
+            'modelDetails': {
+                'modelId': 'anthropic.claude-3-sonnet-20240229-v1:0',
+                'modelLifecycle': {'status': 'ACTIVE'}
+            }
+        }
+        
+        mock_bedrock_client.get_foundation_model.return_value = mock_response
+        
+        client = BedrockClient(self.config)
+        is_compatible = client.validate_model_region_compatibility(
+            'anthropic.claude-3-sonnet-20240229-v1:0'
+        )
+        
+        assert is_compatible is True
+        mock_bedrock_client.get_foundation_model.assert_called_once_with(
+            modelIdentifier='anthropic.claude-3-sonnet-20240229-v1:0'
+        )
+    
+    @patch('boto3.Session')
+    def test_validate_model_region_compatibility_inactive_model(self, mock_session):
+        """Test validation with inactive model."""
+        mock_runtime_client = Mock()
+        mock_bedrock_client = Mock()
+        mock_session.return_value.client.side_effect = [mock_runtime_client, mock_bedrock_client]
+        
+        mock_response = {
+            'modelDetails': {
+                'modelId': 'anthropic.claude-3-sonnet-20240229-v1:0',
+                'modelLifecycle': {'status': 'LEGACY'}
+            }
+        }
+        
+        mock_bedrock_client.get_foundation_model.return_value = mock_response
+        
+        client = BedrockClient(self.config)
+        is_compatible = client.validate_model_region_compatibility(
+            'anthropic.claude-3-sonnet-20240229-v1:0'
+        )
+        
+        assert is_compatible is False
+    
+    @patch('boto3.Session')
+    def test_validate_model_region_compatibility_not_found(self, mock_session):
+        """Test validation with model not found in region."""
+        mock_runtime_client = Mock()
+        mock_bedrock_client = Mock()
+        mock_session.return_value.client.side_effect = [mock_runtime_client, mock_bedrock_client]
+        
+        not_found_error = ClientError(
+            error_response={
+                'Error': {
+                    'Code': 'ResourceNotFoundException',
+                    'Message': 'Model not found'
+                }
+            },
+            operation_name='GetFoundationModel'
+        )
+        
+        mock_bedrock_client.get_foundation_model.side_effect = not_found_error
+        
+        client = BedrockClient(self.config)
+        is_compatible = client.validate_model_region_compatibility(
+            'nonexistent.model'
+        )
+        
+        assert is_compatible is False
+    
+    @patch('boto3.Session')
+    def test_validate_model_region_compatibility_different_region(self, mock_session):
+        """Test validation with different region."""
+        mock_runtime_client = Mock()
+        mock_bedrock_client = Mock()
+        mock_temp_bedrock_client = Mock()
+        
+        # First two calls for initialization, third for temp client
+        mock_session.return_value.client.side_effect = [
+            mock_runtime_client, 
+            mock_bedrock_client,
+            mock_temp_bedrock_client
+        ]
+        
+        mock_response = {
+            'modelDetails': {
+                'modelId': 'anthropic.claude-3-sonnet-20240229-v1:0',
+                'modelLifecycle': {'status': 'ACTIVE'}
+            }
+        }
+        
+        mock_temp_bedrock_client.get_foundation_model.return_value = mock_response
+        
+        client = BedrockClient(self.config)
+        is_compatible = client.validate_model_region_compatibility(
+            'anthropic.claude-3-sonnet-20240229-v1:0',
+            region='us-west-2'
+        )
+        
+        assert is_compatible is True
+        # Should use temp client for different region
+        mock_temp_bedrock_client.get_foundation_model.assert_called_once()
+        # Original client should not be called
+        mock_bedrock_client.get_foundation_model.assert_not_called()
+    
+    @patch('boto3.Session')
+    def test_get_model_recommendations_general(self, mock_session):
+        """Test model recommendations for general use case."""
+        mock_runtime_client = Mock()
+        mock_bedrock_client = Mock()
+        mock_session.return_value.client.side_effect = [mock_runtime_client, mock_bedrock_client]
+        
+        mock_response = {
+            'modelSummaries': [
+                {
+                    'modelId': 'anthropic.claude-3-sonnet-20240229-v1:0',
+                    'modelName': 'Claude 3 Sonnet',
+                    'providerName': 'Anthropic',
+                    'inputModalities': ['TEXT'],
+                    'outputModalities': ['TEXT'],
+                    'supportedInferenceTypes': ['ON_DEMAND'],
+                    'modelLifecycle': {'status': 'ACTIVE'},
+                    'customizationsSupported': [],
+                    'inferenceTypesSupported': ['ON_DEMAND']
+                },
+                {
+                    'modelId': 'amazon.titan-text-express-v1',
+                    'modelName': 'Titan Text G1 - Express',
+                    'providerName': 'Amazon',
+                    'inputModalities': ['TEXT'],
+                    'outputModalities': ['TEXT'],
+                    'supportedInferenceTypes': ['ON_DEMAND'],
+                    'modelLifecycle': {'status': 'ACTIVE'},
+                    'customizationsSupported': [],
+                    'inferenceTypesSupported': ['ON_DEMAND']
+                },
+                {
+                    'modelId': 'ai21.j2-ultra-v1',
+                    'modelName': 'Jurassic-2 Ultra',
+                    'providerName': 'AI21 Labs',
+                    'inputModalities': ['TEXT'],
+                    'outputModalities': ['TEXT'],
+                    'supportedInferenceTypes': ['ON_DEMAND'],
+                    'modelLifecycle': {'status': 'ACTIVE'},
+                    'customizationsSupported': [],
+                    'inferenceTypesSupported': ['ON_DEMAND']
+                }
+            ]
+        }
+        
+        mock_bedrock_client.list_foundation_models.return_value = mock_response
+        
+        client = BedrockClient(self.config)
+        recommendations = client.get_model_recommendations("general")
+        
+        # Should return models, with Anthropic and Amazon preferred
+        assert len(recommendations) > 0
+        assert all(isinstance(model, ModelInfo) for model in recommendations)
+        
+        # Claude should be first due to higher scoring
+        claude_models = [m for m in recommendations if 'claude' in m.model_id.lower()]
+        assert len(claude_models) > 0
+    
+    @patch('boto3.Session')
+    def test_get_model_recommendations_analysis(self, mock_session):
+        """Test model recommendations for analysis use case."""
+        mock_runtime_client = Mock()
+        mock_bedrock_client = Mock()
+        mock_session.return_value.client.side_effect = [mock_runtime_client, mock_bedrock_client]
+        
+        mock_response = {
+            'modelSummaries': [
+                {
+                    'modelId': 'anthropic.claude-3-sonnet-20240229-v1:0',
+                    'modelName': 'Claude 3 Sonnet',
+                    'providerName': 'Anthropic',
+                    'inputModalities': ['TEXT'],
+                    'outputModalities': ['TEXT'],
+                    'supportedInferenceTypes': ['ON_DEMAND'],
+                    'modelLifecycle': {'status': 'ACTIVE'},
+                    'customizationsSupported': [],
+                    'inferenceTypesSupported': ['ON_DEMAND']
+                }
+            ]
+        }
+        
+        mock_bedrock_client.list_foundation_models.return_value = mock_response
+        
+        client = BedrockClient(self.config)
+        recommendations = client.get_model_recommendations("analysis")
+        
+        assert len(recommendations) > 0
+        # Should prefer Anthropic models for analysis
+        assert all(model.provider_name == 'Anthropic' for model in recommendations)
+    
+    @patch('boto3.Session')
+    def test_get_model_recommendations_filters_inactive(self, mock_session):
+        """Test that recommendations filter out inactive models."""
+        mock_runtime_client = Mock()
+        mock_bedrock_client = Mock()
+        mock_session.return_value.client.side_effect = [mock_runtime_client, mock_bedrock_client]
+        
+        mock_response = {
+            'modelSummaries': [
+                {
+                    'modelId': 'anthropic.claude-3-sonnet-20240229-v1:0',
+                    'modelName': 'Claude 3 Sonnet',
+                    'providerName': 'Anthropic',
+                    'inputModalities': ['TEXT'],
+                    'outputModalities': ['TEXT'],
+                    'supportedInferenceTypes': ['ON_DEMAND'],
+                    'modelLifecycle': {'status': 'ACTIVE'},
+                    'customizationsSupported': [],
+                    'inferenceTypesSupported': ['ON_DEMAND']
+                },
+                {
+                    'modelId': 'legacy.model-v1',
+                    'modelName': 'Legacy Model',
+                    'providerName': 'Anthropic',
+                    'inputModalities': ['TEXT'],
+                    'outputModalities': ['TEXT'],
+                    'supportedInferenceTypes': ['ON_DEMAND'],
+                    'modelLifecycle': {'status': 'LEGACY'},  # Inactive
+                    'customizationsSupported': [],
+                    'inferenceTypesSupported': ['ON_DEMAND']
+                }
+            ]
+        }
+        
+        mock_bedrock_client.list_foundation_models.return_value = mock_response
+        
+        client = BedrockClient(self.config)
+        recommendations = client.get_model_recommendations("general")
+        
+        # Should only return active models
+        assert len(recommendations) == 1
+        assert recommendations[0].model_id == 'anthropic.claude-3-sonnet-20240229-v1:0'
+    
+    @patch('boto3.Session')
+    def test_clear_model_cache(self, mock_session):
+        """Test clearing the model cache."""
+        mock_runtime_client = Mock()
+        mock_bedrock_client = Mock()
+        mock_session.return_value.client.side_effect = [mock_runtime_client, mock_bedrock_client]
+        
+        client = BedrockClient(self.config)
+        
+        # Add something to cache
+        client._model_cache['test'] = ['data']
+        client._cache_expiry = Mock()
+        
+        # Clear cache
+        client.clear_model_cache()
+        
+        assert len(client._model_cache) == 0
+        assert client._cache_expiry is None
+    
+    @patch('boto3.Session')
+    def test_cache_expiry_logic(self, mock_session):
+        """Test cache expiry logic."""
+        mock_runtime_client = Mock()
+        mock_bedrock_client = Mock()
+        mock_session.return_value.client.side_effect = [mock_runtime_client, mock_bedrock_client]
+        
+        client = BedrockClient(self.config)
+        
+        # Test with no cache expiry
+        assert client._is_cache_valid() is False
+        
+        # Test with future expiry
+        from datetime import datetime, timedelta
+        client._cache_expiry = datetime.now() + timedelta(minutes=30)
+        assert client._is_cache_valid() is True
+        
+        # Test with past expiry
+        client._cache_expiry = datetime.now() - timedelta(minutes=30)
+        assert client._is_cache_valid() is False

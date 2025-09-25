@@ -1,252 +1,724 @@
 # ThreatForest
 
-ThreatForest (TF) is an agentic AI application that automatically generates attack trees from threat statements using the Strand framework. The application analyzes application context files, extracts key security information, and produces Mermaid-formatted attack trees enhanced with STIX-formatted threat intelligence from the AAF bundle.
+ThreatForest is an advanced agentic AI application that automatically generates comprehensive attack trees from threat statements using AWS Bedrock models. The application analyzes application context files, extracts key security information, and produces Mermaid-formatted attack trees enhanced with STIX-formatted threat intelligence.
 
-## Features
+## 🚀 Features
 
-- **Automated Context Analysis**: Scans directories for README files, architecture diagrams, and threat statements
-- **AI-Powered Information Extraction**: Uses Amazon Bedrock to extract security-relevant information
-- **Attack Tree Generation**: Creates Mermaid-formatted attack trees for high-severity threats
-- **STIX Enhancement**: Integrates AWS Threat Technique Catalog (TTC) mappings
-- **Multi-Agent Architecture**: Built on the Strand framework for scalable processing
+- **🤖 Enhanced AI Integration**: Advanced AWS Bedrock model support with intelligent model selection and validation
+- **📊 Automated Context Analysis**: Scans directories for README files, architecture diagrams, and threat statements
+- **🧠 AI-Powered Information Extraction**: Uses state-of-the-art language models for security analysis
+- **🌳 Attack Tree Generation**: Creates detailed Mermaid-formatted attack trees for threat visualization
+- **🛡️ STIX Enhancement**: Integrates AWS Threat Technique Catalog (TTC) mappings for comprehensive threat intelligence
+- **⚙️ Interactive Setup Wizard**: Guided configuration with automatic AWS credential detection and model recommendations
+- **🔧 Comprehensive CLI**: Enhanced command-line interface with detailed help, examples, and troubleshooting guidance
+- **📈 Advanced Configuration**: Flexible configuration system with validation, multiple sources, and real-time testing
+- **🔍 Intelligent Diagnostics**: Built-in system health checks, connectivity testing, and configuration validation
 
-## Installation
+## 📦 Installation
 
 ### Prerequisites
 
-Before installing ThreatForest, ensure you have:
+- **Python 3.9+**: Required for modern language features and AWS SDK compatibility
+- **AWS Account**: With Amazon Bedrock service access enabled
+- **AWS Credentials**: Configured via AWS CLI, environment variables, or IAM roles
+- **Network Access**: Internet connectivity for AWS Bedrock API calls
+- **System Resources**: Minimum 2GB RAM, 1GB free disk space
 
-- Python 3.9 or higher
-- AWS account with Amazon Bedrock access
-- AWS CLI configured or AWS credentials available
-- At least 2GB of available RAM
+### 🔒 Virtual Environment (Strongly Recommended)
 
-### From PyPI (when available)
+Using a virtual environment isolates ThreatForest's dependencies from your system Python, preventing conflicts:
+
+**Benefits:**
+- ✅ **Dependency isolation**: Prevents conflicts with other Python projects
+- ✅ **Clean uninstall**: Easy to remove by deleting the virtual environment
+- ✅ **Version control**: Lock specific dependency versions for reproducibility
+- ✅ **System protection**: Keeps your system Python installation clean
+
+**Quick Setup:**
 ```bash
-pip install threatforest
+# Create virtual environment
+python -m venv threatforest-env
+
+# Activate it
+source threatforest-env/bin/activate  # Linux/macOS
+# OR
+threatforest-env\Scripts\activate     # Windows
+
+# Install ThreatForest
+python install.py
+
+# Deactivate when done (optional)
+deactivate
 ```
 
-### From Source
+### Installation Methods
+
+#### Option 1: Quick Installation with Virtual Environment (Recommended)
+
+Use the included installation script with a virtual environment for isolated setup:
+
 ```bash
+# Clone or extract the ThreatForest package
 git clone https://github.com/threatforest/threatforest.git
 cd threatforest
+
+# Create and activate virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Run the quick installer
+python install.py
+```
+
+The `install.py` script will:
+- ✅ Check Python version compatibility
+- ✅ Create virtual environment if not already active
+- ✅ Install ThreatForest in development mode
+- ✅ Install development dependencies (optional)
+- ✅ Verify the installation works
+- ✅ Provide next steps guidance
+
+#### Option 2: Manual Virtual Environment Setup
+
+For users who prefer manual control over the installation process:
+
+```bash
+# Create virtual environment
+python -m venv threatforest-env
+source threatforest-env/bin/activate  # On Windows: threatforest-env\Scripts\activate
+
+# Upgrade pip
+pip install --upgrade pip
+
+# Install ThreatForest
 pip install -e .
-```
 
-### Development Installation
-```bash
-git clone https://github.com/threatforest/threatforest.git
-cd threatforest
+# Or install with development dependencies
 pip install -e ".[dev]"
 ```
 
-### Docker Installation
+#### Option 3: Standard Python Installation
+
+Using the setup.py script (virtual environment still recommended):
+
 ```bash
-# Pull the image
+# Create and activate virtual environment (recommended)
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install from source
+python setup.py install
+
+# Or install in development mode
+python setup.py develop
+```
+
+#### Option 4: System-wide Installation (Not Recommended)
+
+For advanced users who prefer system-wide installation:
+
+```bash
+# Direct pip installation (may require sudo/admin privileges)
+pip install -e .
+
+# Install with development dependencies
+pip install -e ".[dev]"
+
+# Install with test dependencies only
+pip install -e ".[test]"
+```
+
+#### Option 4: Docker Installation
+
+```bash
+# Pull and run with Docker
 docker pull threatforest/tf:latest
-
-# Run with mounted directory
-docker run -v $(pwd):/workspace -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY threatforest/tf analyze /workspace
+docker run -v $(pwd):/workspace \
+  -e AWS_ACCESS_KEY_ID \
+  -e AWS_SECRET_ACCESS_KEY \
+  -e AWS_DEFAULT_REGION \
+  threatforest/tf analyze /workspace
 ```
 
-## Quick Start
+### Installation Scripts
 
-### 1. Set up AWS Credentials
+#### `install.py` - Quick Installer (Recommended)
+Automated installation script that handles the complete setup process:
 
-Choose one of the following methods:
+- ✅ **Automatic setup**: Handles all installation steps
+- ✅ **Virtual environment detection**: Checks for and offers to create virtual environments
+- ✅ **Dependency management**: Installs required and optional dependencies  
+- ✅ **Validation**: Verifies installation works correctly
+- ✅ **Guidance**: Provides clear next steps after installation
+- ✅ **Error handling**: Shows helpful messages if issues occur
 
-**Option A: Environment Variables**
 ```bash
-export AWS_ACCESS_KEY_ID=your_key
-export AWS_SECRET_ACCESS_KEY=your_secret
-export AWS_DEFAULT_REGION=us-east-1
+# Recommended: Use with virtual environment
+python -m venv threatforest-env
+source threatforest-env/bin/activate  # Linux/macOS
+python install.py
+
+# Or run directly (will prompt about virtual environment)
+python install.py
 ```
 
-**Option B: AWS CLI Configuration**
+#### `setup.py` - Standard Python Setup
+Traditional Python package installation following standard conventions:
+
+- ✅ **Standard compliance**: Follows Python packaging standards
+- ✅ **Flexible installation**: Supports various pip installation modes
+- ✅ **Dependency specification**: Defines all package dependencies
+- ✅ **Entry points**: Configures CLI commands (`tf`, `threatforest`)
+- ✅ **Distribution ready**: Suitable for PyPI and package managers
+
 ```bash
+# Standard installation
+python setup.py install
+
+# Development installation  
+python setup.py develop
+
+# Or with pip
+pip install .           # Standard mode
+pip install -e .        # Development mode
+```
+
+### Package Contents
+
+When you install ThreatForest, you get:
+
+```
+threatforest/
+├── 🐍 threatforest/           # Main application package
+├── 🧪 tests/                 # Comprehensive test suite  
+├── 🔧 scripts/               # Utility scripts
+│   ├── validation/           # Setup validation tools
+│   ├── testing/              # Test runners
+│   └── demo/                 # Feature demonstrations
+├── 📚 docs/                  # Documentation
+├── 🎯 examples/              # Example projects
+└── 📄 Configuration files    # Setup and project files
+```
+
+### Installation Verification
+
+After installation with any method, verify your setup:
+
+```bash
+# Check installation
+tf --version
+
+# Quick system status
+tf status
+
+# Comprehensive diagnostics
+tf config doctor
+
+# Run setup wizard
+tf setup
+```
+
+## 🚀 Quick Start
+
+### 1. Install ThreatForest
+
+**Recommended approach with virtual environment:**
+
+```bash
+# Create and activate virtual environment
+python -m venv threatforest-env
+source threatforest-env/bin/activate  # Linux/macOS
+# OR: threatforest-env\Scripts\activate  # Windows
+
+# Install ThreatForest
+python install.py
+```
+
+**Alternative:** Choose your preferred method from the [Installation](#-installation) section above.
+
+### 2. Configure AWS Credentials
+
+Set up your AWS credentials using one of these methods:
+
+```bash
+# Option A: AWS CLI (recommended)
 aws configure
+
+# Option B: Environment variables
+export AWS_ACCESS_KEY_ID=your_access_key
+export AWS_SECRET_ACCESS_KEY=your_secret_key
+export AWS_DEFAULT_REGION=us-east-1
+
+# Option C: IAM roles (when running on AWS)
+# No additional setup needed
 ```
 
-**Option C: IAM Roles (for EC2/ECS)**
-No additional configuration needed if running on AWS with appropriate IAM roles.
+### 3. Run Interactive Setup
 
-### 2. Prepare Your Project Directory
+Use the setup wizard for guided configuration:
 
-ThreatForest looks for specific files in your project directory:
+```bash
+# Basic setup wizard
+tf setup
 
-- `README.md` - Project description and architecture information
-- `threats.md` - Threat statements in the required format
-- `dataflow.mmd` or similar - Data flow diagrams (optional)
-- Architecture diagrams (PNG, SVG, or Mermaid files)
+# Verbose setup with detailed information
+tf setup --verbose
 
-### 3. Run ThreatForest
+# User-level configuration (personal settings)
+tf setup --user
+```
+
+The setup wizard will:
+- ✅ Detect and validate your AWS credentials
+- ✅ Test connectivity to AWS Bedrock service
+- ✅ Discover available models in your region
+- ✅ Help you select the optimal model for your use case
+- ✅ Configure processing and output settings
+- ✅ Validate the complete configuration
+
+### 4. Prepare Your Project
+
+Create or navigate to your project directory with these files:
+
+**Required Files:**
+- `README.md` - Project description, technologies, and architecture
+- `threats.md` - Structured threat statements
+
+**Optional Files:**
+- `architecture.*` - Architecture diagrams (PNG, SVG, Mermaid)
+- `dataflow.*` - Data flow diagrams
+
+**Example Project Structure:**
+```
+your-project/
+├── README.md              # Project overview and tech stack
+├── threats.md             # Threat statements
+├── architecture.png       # System architecture diagram
+└── dataflow.mmd          # Data flow in Mermaid format
+```
+
+### 5. Run Your First Analysis
 
 ```bash
 # Navigate to your project directory
 cd /path/to/your/project
 
-# Run analysis
-threatforest analyze
-# or use the short alias
+# Basic analysis
 tf analyze
+
+# With verbose output
+tf analyze --verbose
+
+# Custom output directory
+tf analyze --output ./security-analysis
 ```
 
-### 4. Review Results
+### 6. Review Results
 
-Check the `tf-output/` directory for:
-- `summary.md` - Analysis summary and file listings
-- `extracted_information.md` - Key information extracted from context files
-- `attack_tree_*.mmd` - Mermaid attack tree files for each high-severity threat
-- `enhanced_attack_tree_*.mmd` - Attack trees with STIX/TTC enhancements
+Check the generated files in your output directory (default: `./tf-output/`):
 
-## Usage Examples
+```
+tf-output/
+├── threat_analysis_summary.md    # Comprehensive analysis summary
+├── attack_tree_T001.mmd          # Attack tree for threat T001
+├── attack_tree_T002.mmd          # Attack tree for threat T002
+└── threatforest.log              # Detailed execution log
+```
 
-### Basic Analysis
+### 7. Verify Everything Works
+
 ```bash
-# Analyze current directory
+# Quick system health check
+tf status
+
+# Comprehensive validation
+tf config validate --verbose
+
+# View current configuration
+tf config show --detailed
+```
+
+## 💡 Usage Examples
+
+### Analysis Commands
+```bash
+# Basic analysis
 tf analyze
 
 # Analyze specific directory
-tf analyze /path/to/project
+tf analyze /path/to/project --output ./security-analysis
 
-# Specify custom output directory
-tf analyze --output ./security-analysis
+# Preview without execution
+tf analyze --dry-run
 
-# Use specific Bedrock region
-tf analyze --region us-west-2
-```
-
-### Advanced Configuration
-```bash
-# Set default Bedrock region
-tf config --set bedrock.region us-west-2
-
-# Set severity threshold (only process high-severity threats)
-tf config --set processing.severity_threshold high
-
-# Configure custom file patterns
-tf config --set files.threat_patterns "threat*.md,security*.json"
-
-# Set custom AAF bundle path
-tf config --set ttc.aaf_bundle_path ./custom-aaf-bundle.json
-
-# View current configuration
-tf config --show
-
-# Reset configuration to defaults
-tf config --reset
-```
-
-### Interactive Mode
-```bash
-# Run with interactive prompts for validation
-tf analyze --interactive
-
-# Skip user validation (batch mode)
-tf analyze --no-validation
-```
-
-### Debugging and Logging
-```bash
-# Enable verbose logging
+# Detailed progress output
 tf analyze --verbose
 
-# Enable debug mode
-tf analyze --debug
-
-# Save logs to file
-tf analyze --log-file ./tf-analysis.log
+# Automation mode
+tf analyze --non-interactive --auto-approve
 ```
 
-## Project Structure Requirements
+### Configuration Commands
+```bash
+# View configuration
+tf config show
+tf config show --detailed
 
-ThreatForest expects your project to follow this structure:
+# Set configuration values
+tf config set bedrock.region us-west-2
+tf config set processing.severity_threshold medium
+
+# Validate setup
+tf config validate --verbose
+tf config doctor
+```
+
+### Model Management
+```bash
+# List available models
+tf config model --list
+
+# Get recommendations
+tf config model --recommend analysis
+
+# Set specific model
+tf config model --set anthropic.claude-3-sonnet-20240229-v1:0
+
+# Test configuration
+tf config model --set claude-3-haiku --test
+```
+
+### Logging and Debugging
+```bash
+# Global verbose logging
+tf --verbose analyze
+
+# Specific log level
+tf --log-level DEBUG config validate
+
+# Log to file
+tf --log-file ./debug.log analyze
+```
+
+### Project Initialization
+```bash
+# Initialize new project
+tf init
+
+# With specific template
+tf init --template web-app
+
+# In custom directory
+tf init ./my-project --template microservices
+```
+
+## 📁 Project Structure and Configuration
+
+### Project Structure
+
+ThreatForest is flexible with project structures but looks for these files:
 
 ```
 your-project/
-├── README.md                    # Project description (required)
-├── threats.md                   # Threat statements (required)
-├── dataflow.mmd                 # Data flow diagram (optional)
-├── architecture.png             # Architecture diagram (optional)
-├── .tf/                         # ThreatForest configuration (auto-created)
-│   └── config.yaml
-└── tf-output/                   # Generated outputs (auto-created)
-    ├── summary.md
-    ├── extracted_information.md
-    └── attack_tree_*.mmd
+├── README.md                    # Project description and tech stack
+├── threats.md                   # Structured threat statements
+├── architecture.png             # System architecture (optional)
+├── dataflow.mmd                 # Data flow diagrams (optional)
+├── .tf/                         # ThreatForest configuration
+│   └── config.yaml              # Project-specific settings
+└── tf-output/                   # Generated analysis results
+    ├── threat_analysis_summary.md
+    ├── attack_tree_*.mmd
+    └── threatforest.log
 ```
 
-## System Requirements
+### Configuration Hierarchy
 
-- **Operating System**: Linux, macOS, or Windows
+ThreatForest loads configuration from multiple sources in order of precedence:
+
+1. **Command line arguments** (highest priority)
+2. **Project config** (`.tf/config.yaml`)
+3. **User config** (`~/.tf/config.yaml`)
+4. **Environment variables** (`TF_*`, `AWS_*`)
+5. **Built-in defaults** (lowest priority)
+
+### Configuration Examples
+
+**Project-level configuration** (`.tf/config.yaml`):
+```yaml
+bedrock:
+  region: us-east-1
+  model: anthropic.claude-3-sonnet-20240229-v1:0
+  temperature: 0.7
+  max_tokens: 4000
+
+processing:
+  severity_threshold: high
+  max_concurrent_agents: 4
+  timeout_seconds: 600
+
+output:
+  directory: ./tf-output
+  format: mermaid
+  include_summary: true
+
+logging:
+  level: INFO
+  file: ./tf-output/threatforest.log
+  include_console: true
+```
+
+**Environment variables**:
+```bash
+export TF_BEDROCK_REGION=us-west-2
+export TF_BEDROCK_MODEL=anthropic.claude-3-haiku-20240307-v1:0
+export TF_OUTPUT_DIRECTORY=./security-analysis
+export TF_LOG_LEVEL=DEBUG
+```
+
+## 🔧 CLI Commands Reference
+
+### Main Commands
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `tf setup` | Interactive setup wizard | `tf setup --verbose` |
+| `tf analyze` | Analyze project for threats | `tf analyze --verbose` |
+| `tf status` | Show system health status | `tf status --check-models` |
+| `tf init` | Initialize new project | `tf init --template web-app` |
+
+### Configuration Commands
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `tf config show` | Display current configuration | `tf config show --detailed` |
+| `tf config validate` | Test configuration and connectivity | `tf config validate --verbose` |
+| `tf config doctor` | Comprehensive system diagnostics | `tf config doctor --fix` |
+| `tf config model` | Manage Bedrock models | `tf config model --list --region us-west-2` |
+| `tf config set` | Update configuration values | `tf config set bedrock.region us-east-1` |
+
+### Global Options
+
+| Option | Description | Example |
+|--------|-------------|---------|
+| `--verbose, -v` | Enable verbose logging | `tf --verbose analyze` |
+| `--log-level` | Set logging level | `tf --log-level DEBUG config validate` |
+| `--log-file` | Log to specific file | `tf --log-file ./debug.log analyze` |
+
+### Getting Help
+
+```bash
+# Main help with quick start guide
+tf --help
+
+# Detailed command help
+tf analyze --help
+tf config model --help
+
+# Show comprehensive usage examples
+tf analyze --examples
+```
+
+## 🛠️ System Requirements
+
+### Minimum Requirements
+- **Operating System**: Linux, macOS, or Windows 10+
 - **Python**: 3.9 or higher
-- **Memory**: Minimum 2GB RAM (4GB recommended for large projects)
-- **Storage**: 1GB free space for models and cache
-- **Network**: Internet access for Amazon Bedrock API calls
-- **AWS**: Valid AWS credentials with Bedrock permissions
+- **Memory**: 2GB RAM available
+- **Storage**: 1GB free disk space
+- **Network**: Stable internet connection for AWS API calls
 
-## Supported File Formats
+### Recommended Specifications
+- **Python**: 3.11+ for optimal performance
+- **Memory**: 4GB+ RAM for large projects
+- **Storage**: 2GB+ for caching and logs
+- **AWS Region**: Choose region closest to your location for best performance
 
-### Context Files
-- **README files**: `README.md`, `README.txt`, `readme.*`
-- **Architecture diagrams**: `*.png`, `*.svg`, `*.mmd` (with architecture keywords)
-- **Data flow diagrams**: `dataflow.*`, `dfd.*`, files containing "data flow"
-- **Threat statements**: `threats.md`, `threat-*.json`
+### AWS Requirements
+- **AWS Account**: With Bedrock service enabled
+- **IAM Permissions**: `bedrock:*` actions (or specific permissions)
+- **Supported Regions**: us-east-1, us-west-2, eu-west-1, ap-southeast-1, etc.
+- **Model Access**: Request access to desired Bedrock models if needed
+
+## 📄 Supported File Formats
+
+### Input Files (Context Analysis)
+- **Documentation**: `README.md`, `README.txt`, `*.md`
+- **Architecture**: `architecture.*`, `arch.*`, `*.png`, `*.svg`, `*.mmd`
+- **Data Flow**: `dataflow.*`, `dfd.*`, flow diagrams
+- **Threats**: `threats.md`, `threat-*.md`, `security-*.json`
+- **Configuration**: `*.yaml`, `*.json`, `*.toml`
 
 ### Output Formats
-- **Attack Trees**: Mermaid (`.mmd`) format
-- **Reports**: Markdown (`.md`) format
-- **Configuration**: YAML (`.yaml`) format
+- **Attack Trees**: Mermaid (`.mmd`) format for visualization
+- **Reports**: Markdown (`.md`) with structured analysis
+- **Logs**: Structured logging in text format
+- **Configuration**: YAML format for settings
 
-## Documentation
+## 🚨 Troubleshooting
 
-### Core Documentation
-- **[API Reference](docs/API.md)** - Complete API documentation for all classes and methods
-- **[Troubleshooting Guide](TROUBLESHOOTING.md)** - Solutions for common issues and debugging
-- **[Examples](examples/README.md)** - Sample projects and usage examples
+### Quick Diagnostics
+
+```bash
+# Check system status
+tf status
+
+# Run comprehensive diagnostics
+tf config doctor --verbose
+
+# Validate configuration
+tf config validate
+```
+
+### Common Issues
+
+| Issue | Solution |
+|-------|----------|
+| **Package/Dependency Conflicts** | Use virtual environment: `python -m venv venv && source venv/bin/activate` |
+| **AWS Credentials Not Found** | Run `aws configure` or set environment variables |
+| **Bedrock Access Denied** | Check IAM permissions for `bedrock:*` actions |
+| **Model Not Available** | Use `tf config model --list` to see available models |
+| **Configuration Errors** | Run `tf setup --force` to reconfigure |
+| **Analysis Fails** | Use `tf analyze --verbose --log-file debug.log` |
+| **Command Not Found** | Ensure virtual environment is activated and ThreatForest is installed |
+
+### Getting Help
+
+- **Built-in Help**: `tf COMMAND --help` for detailed guidance
+- **System Diagnostics**: `tf config doctor --verbose` for troubleshooting
+- **Verbose Logging**: Add `--verbose` to any command for detailed output
+- **Examples**: `tf analyze --examples` for usage examples
+
+## 📚 Documentation and Examples
+
+### Quick References
+- **[CLI Command Reference](#-cli-commands-reference)** - Complete command documentation
+- **[Configuration Guide](#-project-structure-and-configuration)** - Setup and configuration options
+- **[Troubleshooting Guide](#-troubleshooting)** - Common issues and solutions
+- **[Virtual Environments Guide](docs/VIRTUAL_ENVIRONMENTS.md)** - Detailed virtual environment setup and management
 
 ### Example Projects
-- **[GenAI Chatbot](genai-chatbot-example/)** - AI chatbot with comprehensive threat analysis
-- **[E-commerce Platform](examples/ecommerce-platform/)** - Multi-tier web application security
-- **[IoT Device Management](examples/iot-device-management/)** - IoT platform security threats
-- **[Microservices API](examples/microservices-api/)** - Container and API security
+- **[GenAI Chatbot](genai-chatbot-example/)** - AI chatbot security analysis
+- **Web Application** - OWASP Top 10 threat analysis
+- **Microservices** - Container and API security
+- **IoT Platform** - Device and communication security
 
-### Configuration Files
-- **[Configuration Schema](docs/configuration.md)** - Complete configuration options
-- **[File Patterns](docs/file-patterns.md)** - Supported file types and naming conventions
+### Advanced Topics
+- **Model Selection**: Choosing the right Bedrock model for your use case
+- **Configuration Management**: Multi-environment setup and best practices
+- **CI/CD Integration**: Automated security analysis in pipelines
+- **Custom Templates**: Creating project-specific threat templates
+- **Virtual Environment Management**: Isolated Python environments for development
 
-## Contributing
+## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+We welcome contributions! Here's how to get started:
 
 ### Development Setup
 
 ```bash
-# Clone and setup development environment
-git clone https://github.com/threatforest/threatforest.git
+# Fork and clone the repository
+git clone https://github.com/your-username/threatforest.git
 cd threatforest
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install in development mode
 pip install -e ".[dev]"
 
-# Run tests
-python -m pytest tests/
-
-# Run linting
-black threatforest/
-flake8 threatforest/
+# Verify installation
+tf --version
+python -m pytest tests/ -v
 ```
 
-## License
+### Development Workflow
+
+1. **Fork** the repository on GitHub
+2. **Create** a feature branch: `git checkout -b feature/amazing-feature`
+3. **Make** your changes with tests
+4. **Test** your changes: `python -m pytest tests/ -v`
+5. **Lint** your code: `black threatforest/ && flake8 threatforest/`
+6. **Commit** your changes: `git commit -m 'Add amazing feature'`
+7. **Push** to your fork: `git push origin feature/amazing-feature`
+8. **Create** a Pull Request
+
+### Testing
+
+```bash
+# Run all tests
+python -m pytest tests/ -v
+
+# Run specific test categories
+python -m pytest tests/test_cli.py -v
+python -m pytest tests/test_config.py -v
+
+# Run with coverage
+python -m pytest tests/ --cov=threatforest --cov-report=html
+```
+
+### Code Quality
+
+```bash
+# Format code
+black threatforest/
+
+# Check style
+flake8 threatforest/
+
+# Type checking
+mypy threatforest/
+
+# Security scanning
+bandit -r threatforest/
+```
+
+## 📋 Recent Updates
+
+### Enhanced Model Provider Integration
+- ✅ **Advanced Bedrock Integration**: Intelligent model selection and validation
+- ✅ **Real-time Model Discovery**: Automatic detection of available models by region
+- ✅ **Model Recommendations**: AI-powered suggestions based on use case
+- ✅ **Configuration Validation**: Comprehensive testing of AWS connectivity and permissions
+- ✅ **Enhanced Error Handling**: Detailed error messages with troubleshooting guidance
+
+### Improved CLI Experience
+- ✅ **Interactive Setup Wizard**: Guided configuration with automatic detection
+- ✅ **Comprehensive Help System**: Detailed help text with examples and troubleshooting
+- ✅ **Advanced Logging**: Flexible logging levels and file output options
+- ✅ **System Diagnostics**: Built-in health checks and connectivity testing
+- ✅ **Configuration Management**: Multi-source configuration with validation
+
+### Enhanced User Experience
+- ✅ **Project Templates**: Pre-configured templates for different project types
+- ✅ **Verbose Progress Reporting**: Detailed progress indicators and status updates
+- ✅ **Automated Troubleshooting**: Self-diagnostic capabilities with fix suggestions
+- ✅ **CI/CD Integration**: Non-interactive modes for automation pipelines
+
+## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Support
+## 🆘 Support and Community
 
-- **[Troubleshooting Guide](TROUBLESHOOTING.md)** - Self-service debugging and solutions
-- **[API Documentation](docs/API.md)** - Complete technical reference
-- **[Examples](examples/)** - Working examples and tutorials
+### Self-Service Resources
+- **Built-in Help**: `tf --help` and `tf COMMAND --help` for comprehensive guidance
+- **System Diagnostics**: `tf config doctor --verbose` for troubleshooting
+- **Configuration Validation**: `tf config validate` to test your setup
+- **Status Monitoring**: `tf status` for quick health checks
+
+### Community Support
 - **[GitHub Issues](https://github.com/threatforest/threatforest/issues)** - Bug reports and feature requests
-- **[GitHub Discussions](https://github.com/threatforest/threatforest/discussions)** - Community support and questions
+- **[GitHub Discussions](https://github.com/threatforest/threatforest/discussions)** - Community Q&A and support
+- **[Documentation](docs/)** - Comprehensive guides and API reference
+- **[Examples](examples/)** - Working examples and tutorials
+
+### Professional Support
+For enterprise users and professional support options, please contact the ThreatForest team.
+
+---
+
+**🌳 ThreatForest** - Automated AI-powered threat analysis and attack tree generation.
+
+*Built with ❤️ for the security community*

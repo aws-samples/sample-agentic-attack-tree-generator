@@ -20,7 +20,11 @@ from ..models import (
     AnalysisResult,
     SeverityLevel
 )
-from ..agents.context_detection import DetectedFile, FileType
+
+# Import types for type hints only
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..agents.context_detection import DetectedFile, FileType
 
 
 logger = logging.getLogger(__name__)
@@ -170,7 +174,7 @@ class FileManager:
     
     def read_multiple_context_files(
         self, 
-        detected_files: List[DetectedFile]
+        detected_files: List["DetectedFile"]
     ) -> Dict[str, Tuple[str, Dict[str, Any]]]:
         """
         Read multiple context files.
@@ -186,11 +190,17 @@ class FileManager:
         
         for detected_file in detected_files:
             try:
-                if detected_file.is_valid() and detected_file.is_readable():
+                # Check if the detected_file has the expected methods
+                if hasattr(detected_file, 'is_valid') and hasattr(detected_file, 'is_readable'):
+                    if detected_file.is_valid() and detected_file.is_readable():
+                        content, metadata = self.read_context_file(detected_file.path)
+                        results[str(detected_file.path)] = (content, metadata)
+                    else:
+                        logger.warning(f"Skipping invalid/unreadable file: {detected_file.path}")
+                else:
+                    # Fallback for simple path objects
                     content, metadata = self.read_context_file(detected_file.path)
                     results[str(detected_file.path)] = (content, metadata)
-                else:
-                    logger.warning(f"Skipping invalid/unreadable file: {detected_file.path}")
             except FileManagerError as e:
                 error_msg = f"Error reading {detected_file.path}: {e}"
                 logger.error(error_msg)
