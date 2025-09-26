@@ -235,23 +235,22 @@ class ContextAnalysisTool(Tool):
         """Categorize non-threat files"""
         name_lower = file_path.name.lower()
         
+        # Generated threat statement files should be treated as threat models
+        if "generated_threat_statements" in name_lower:
+            context_files["threat_models"].append(str(file_path))
         # READMEs and markdown files
-        if name_lower.startswith("readme") or file_path.suffix.lower() == ".md":
+        elif name_lower.startswith("readme") or file_path.suffix.lower() == ".md":
             context_files["readmes"].append(str(file_path))
-        
         # Architecture diagrams - expanded image support
         elif any(keyword in name_lower for keyword in ["architecture", "arch", "design", "system", "diagram"]):
             if file_path.suffix.lower() in [".png", ".jpg", ".jpeg", ".pdf", ".svg", ".puml", ".md", ".mmd", ".drawio"]:
                 context_files["architecture_diagrams"].append(str(file_path))
-        
         # Data flow diagrams
         elif any(keyword in name_lower for keyword in ["dataflow", "data_flow", "dfd", "flow"]):
             context_files["data_flow_diagrams"].append(str(file_path))
-        
         # Any image files that might be diagrams
         elif file_path.suffix.lower() in [".png", ".jpg", ".jpeg", ".pdf"]:
             context_files["architecture_diagrams"].append(str(file_path))
-        
         # Other documentation
         elif file_path.suffix.lower() in [".md", ".txt", ".doc", ".docx", ".pdf"]:
             context_files["other_docs"].append(str(file_path))

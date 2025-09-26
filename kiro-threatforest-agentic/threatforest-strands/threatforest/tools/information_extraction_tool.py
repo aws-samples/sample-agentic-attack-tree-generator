@@ -431,8 +431,24 @@ Requirements:
             result = json.loads(response['body'].read())
             content = result['content'][0]['text']
             
-            # Parse the JSON response
-            threat_data = json.loads(content)
+            # Parse the JSON response with better error handling
+            try:
+                threat_data = json.loads(content)
+            except json.JSONDecodeError as e:
+                print(f"⚠️  JSON parsing failed: {e}")
+                print(f"Raw content: {content[:500]}...")
+                # Try to extract JSON from markdown code blocks
+                import re
+                json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', content, re.DOTALL)
+                if json_match:
+                    try:
+                        threat_data = json.loads(json_match.group(1))
+                    except json.JSONDecodeError:
+                        print("⚠️  Failed to parse JSON from code block, using fallback")
+                        return self._get_fallback_threats(project_info)
+                else:
+                    print("⚠️  No JSON found in response, using fallback")
+                    return self._get_fallback_threats(project_info)
             threats = []
             
             for threat in threat_data.get('threats', []):

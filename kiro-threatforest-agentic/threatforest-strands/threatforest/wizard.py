@@ -454,13 +454,21 @@ Let's get started with the setup!
                 task = progress.add_task("📄 Generating comprehensive reports...", total=None)
                 
                 summary_generator = SummaryGeneratorTool()
-                summary_result = await summary_generator.execute(
-                    attack_trees=mapped_result if mapped_result else {},
-                    extracted_info=extraction_result,
-                    output_dir=str(output_dir)
-                )
+                try:
+                    summary_result = await summary_generator.execute(
+                        attack_trees=mapped_result if mapped_result else {},
+                        extracted_info=extraction_result,
+                        output_dir=str(output_dir)
+                    )
+                except Exception as e:
+                    print(f"⚠️  Summary generation failed: {e}")
+                    summary_result = {'output_files': []}
                 
                 progress.update(task, description="✅ Report generation complete")
+            
+            # Handle None summary_result
+            if summary_result is None:
+                summary_result = {'output_files': []}
             
             # Success summary
             self._show_success_summary(output_dir, summary_result, extraction_result, mapping_summary)
