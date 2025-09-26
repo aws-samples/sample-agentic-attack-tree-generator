@@ -64,10 +64,34 @@ class InformationExtractionTool(Tool):
         """Parse threat statements from threat files"""
         threats = []
         
-        for threat_file in context_files.get("parsed_content", {}).get("threat_statements", []):
+        # Check both parsed_content and direct threat_models
+        threat_files = []
+        
+        # Legacy format from parsed_content
+        if "parsed_content" in context_files:
+            threat_files.extend(context_files["parsed_content"].get("threat_statements", []))
+        
+        # New format from threat_models (direct file paths)
+        for threat_file_path in context_files.get("threat_models", []):
+            try:
+                with open(threat_file_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                    threat_files.append({
+                        "content": content,
+                        "path": threat_file_path
+                    })
+                    print(f"📄 Reading threat statements from {threat_file_path}")
+            except Exception as e:
+                print(f"⚠️  Failed to read threat file {threat_file_path}: {e}")
+        
+        # Extract threats from all files
+        for threat_file in threat_files:
             content = threat_file.get("content", "")
             file_threats = self._extract_threats_from_content(content, threat_file["path"])
             threats.extend(file_threats)
+        
+        if threats:
+            print(f"✅ Found {len(threats)} existing threat statements")
         
         return threats
     
