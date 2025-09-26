@@ -440,40 +440,63 @@ Requirements:
                 
                 # Try to extract JSON from markdown code blocks with more flexible regex
                 import re
-                # Look for JSON in code blocks (```json or just ```)
-                json_patterns = [
-                    r'```(?:json)?\s*(\{.*?\})\s*```',  # Complete code blocks
-                    r'```(?:json)?\s*(\{.*)',           # Incomplete code blocks (truncated)
-                    r'(\{.*?\})',                       # Any JSON-like structure
-                ]
                 
-                for pattern in json_patterns:
-                    json_match = re.search(pattern, content, re.DOTALL)
-                    if json_match:
-                        try:
-                            json_text = json_match.group(1)
-                            
-                            # Handle truncated JSON by trying to complete it
-                            if not json_text.strip().endswith('}'):
-                                # Count braces to see how many are missing
-                                open_braces = json_text.count('{')
-                                close_braces = json_text.count('}')
-                                open_brackets = json_text.count('[')
-                                close_brackets = json_text.count(']')
-                                
-                                # Add missing closing characters
-                                if open_brackets > close_brackets:
-                                    json_text += ']' * (open_brackets - close_brackets)
-                                if open_braces > close_braces:
-                                    json_text += '}' * (open_braces - close_braces)
-                            
-                            threat_data = json.loads(json_text)
-                            print(f"✅ Successfully parsed JSON from pattern: {pattern[:20]}...")
-                            break
-                        except json.JSONDecodeError:
-                            continue
+                # First try to find JSON in code blocks
+                code_block_match = re.search(r'```(?:json)?\s*(.*?)```', content, re.DOTALL)
+                if code_block_match:
+                    json_candidate = code_block_match.group(1).strip()
                 else:
-                    print("⚠️  No valid JSON found in response, using fallback")
+                    # Look for JSON-like structure anywhere in content
+                    json_candidate = content.strip()
+                
+                # Find the start of JSON
+                json_start = json_candidate.find('{')
+                if json_start == -1:
+                    print("⚠️  No JSON structure found in response")
+                    return self._get_fallback_threats(project_info)
+                
+                # Extract JSON by counting braces to find the complete structure
+                json_text = ""
+                brace_count = 0
+                bracket_count = 0
+                in_string = False
+                escape_next = False
+                
+                for i, char in enumerate(json_candidate[json_start:], json_start):
+                    json_text += char
+                    
+                    if escape_next:
+                        escape_next = False
+                        continue
+                        
+                    if char == '\\':
+                        escape_next = True
+                        continue
+                        
+                    if char == '"' and not escape_next:
+                        in_string = not in_string
+                        continue
+                        
+                    if not in_string:
+                        if char == '{':
+                            brace_count += 1
+                        elif char == '}':
+                            brace_count -= 1
+                        elif char == '[':
+                            bracket_count += 1
+                        elif char == ']':
+                            bracket_count -= 1
+                            
+                        # If we've closed all braces and brackets, we have complete JSON
+                        if brace_count == 0 and bracket_count == 0 and json_text.strip().endswith('}'):
+                            break
+                
+                try:
+                    threat_data = json.loads(json_text)
+                    print(f"✅ Successfully extracted complete JSON structure")
+                except json.JSONDecodeError as e:
+                    print(f"⚠️  Failed to parse extracted JSON: {e}")
+                    print(f"Extracted JSON: {json_text[:200]}...")
                     return self._get_fallback_threats(project_info)
             threats = []
             
