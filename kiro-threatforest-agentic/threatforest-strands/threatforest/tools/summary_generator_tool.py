@@ -189,24 +189,43 @@ This report presents a comprehensive threat analysis for **{project_info.get('ap
     def _generate_ttc_report(self, output_path: Path, attack_trees: Dict[str, Any]) -> str:
         """Generate TTC mapping report"""
         
+        # Handle None or missing attack_trees
+        if not attack_trees:
+            attack_trees = {}
+        
         mapping_summary = attack_trees.get('mapping_summary', {})
         trees = attack_trees.get('ttc_mapped_trees', [])
         
-        # Collect all mappings
+        # Collect all mappings with error handling
         all_mappings = []
         for tree in trees:
-            for mapping in tree.get('ttc_mappings', []):
-                all_mappings.extend(mapping.get('mapped_techniques', []))
+            if not tree:
+                continue
+            ttc_mappings = tree.get('ttc_mappings', [])
+            if not ttc_mappings:
+                continue
+                
+            for mapping in ttc_mappings:
+                if not mapping:
+                    continue
+                # Handle different mapping structures
+                if 'mapped_techniques' in mapping:
+                    all_mappings.extend(mapping.get('mapped_techniques', []))
+                else:
+                    # Direct mapping structure
+                    all_mappings.append(mapping)
         
         # Count technique frequencies
         technique_counts = {}
         for technique in all_mappings:
+            if not technique:
+                continue
             tech_id = technique.get('technique_id', 'Unknown')
             if tech_id not in technique_counts:
                 technique_counts[tech_id] = {
                     'count': 0,
                     'name': technique.get('technique_name', 'Unknown'),
-                    'tactics': technique.get('tactics', [])
+                    'tactics': technique.get('tactics', technique.get('tactic', []))
                 }
             technique_counts[tech_id]['count'] += 1
         
