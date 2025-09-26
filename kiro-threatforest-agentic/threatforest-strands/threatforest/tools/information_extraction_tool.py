@@ -442,7 +442,7 @@ Requirements:
                 import re
                 # Look for JSON in code blocks (```json or just ```)
                 json_patterns = [
-                    r'```(?:json)?\s*(\{.*?\})\s*```',  # Standard code blocks
+                    r'```(?:json)?\s*(\{.*?\})\s*```',  # Complete code blocks
                     r'```(?:json)?\s*(\{.*)',           # Incomplete code blocks (truncated)
                     r'(\{.*?\})',                       # Any JSON-like structure
                 ]
@@ -452,10 +452,20 @@ Requirements:
                     if json_match:
                         try:
                             json_text = json_match.group(1)
-                            # Try to fix incomplete JSON by adding closing braces if needed
-                            if json_text.count('{') > json_text.count('}'):
-                                missing_braces = json_text.count('{') - json_text.count('}')
-                                json_text += '}' * missing_braces
+                            
+                            # Handle truncated JSON by trying to complete it
+                            if not json_text.strip().endswith('}'):
+                                # Count braces to see how many are missing
+                                open_braces = json_text.count('{')
+                                close_braces = json_text.count('}')
+                                open_brackets = json_text.count('[')
+                                close_brackets = json_text.count(']')
+                                
+                                # Add missing closing characters
+                                if open_brackets > close_brackets:
+                                    json_text += ']' * (open_brackets - close_brackets)
+                                if open_braces > close_braces:
+                                    json_text += '}' * (open_braces - close_braces)
                             
                             threat_data = json.loads(json_text)
                             print(f"✅ Successfully parsed JSON from pattern: {pattern[:20]}...")
