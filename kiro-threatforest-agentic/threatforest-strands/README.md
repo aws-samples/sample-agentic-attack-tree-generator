@@ -95,9 +95,9 @@ $ python threatforest_wizard.py
 
 ## 📁 Recommended Context Files
 
-ThreatForest works best with structured threat information. Here's what to include in your project directory:
+ThreatForest is flexible and works with various input combinations. **Threat models are recommended but not required** - ThreatForest can generate threats using AI analysis of your documentation and diagrams.
 
-### 🎯 **Threat Models (Highest Priority)**
+### 🎯 **Threat Models (Recommended, Not Required)**
 
 #### ThreatComposer Workspace Files ⭐ **RECOMMENDED**
 - **Create at**: https://awslabs.github.io/threat-composer/
@@ -126,28 +126,35 @@ ThreatForest works best with structured threat information. Here's what to inclu
 }
 ```
 
-### 📖 **Application Documentation**
+### 📖 **Minimal Required Files (AI Will Generate Threats)**
 
-#### README Files
-- **Files**: `README.md`, `README.txt`
+#### Architecture Diagrams ⭐ **HIGHLY VALUABLE**
+- **Files**: `*.png`, `*.pdf`, `*.jpg`, `*.jpeg`, `*.drawio`, `*.mmd`, `*.puml`
+- **Should include**: System components, data flows, network topology
+- **AI Analysis**: ThreatForest will analyze diagrams to identify attack surfaces
+
+#### Documentation Files
+- **Files**: Any `.md` files (doesn't have to be README), `*.txt`
 - **Should include**: 
   - Application description and purpose
   - Technology stack and dependencies
   - Architecture overview
-  - Security considerations
+  - Any security considerations
 
-#### Architecture Documentation
-- **Files**: `architecture.md`, `system-design.md`
-- **Diagrams**: `*.mmd` (Mermaid), `*.drawio`, `*.puml` (PlantUML)
-- **Should include**: System components, data flows, trust boundaries
-
-### 🏗️ **Architecture Diagrams**
+### 🏗️ **Architecture Diagrams (Expanded Support)**
 
 #### Supported Formats
+- **Images**: `*.png`, `*.pdf`, `*.jpg`, `*.jpeg` (any architecture diagrams)
 - **Mermaid**: `architecture.mmd`, `dataflow.mmd`
 - **Draw.io**: `system-diagram.drawio`
 - **PlantUML**: `architecture.puml`
-- **Images**: `*.png`, `*.jpg`, `*.svg` (with descriptive names)
+
+#### What ThreatForest Extracts from Diagrams
+- System components and services
+- Data flow patterns
+- Network boundaries and trust zones
+- External dependencies
+- Potential attack surfaces
 
 #### Recommended Diagram Types
 - System architecture diagrams
@@ -205,27 +212,46 @@ Choose from 4 Bedrock models:
 
 ## 📊 File Discovery Examples
 
-### Optimal Project Structure
+### Optimal Project Structure (With Threat Models)
 ```
 my-application/
 ├── README.md                                    # Application overview
-├── ThreatComposer_Workspace_MyApp.tc           # Threat model (priority)
-├── architecture.mmd                            # System diagram
+├── ThreatComposer_Workspace_MyApp.tc           # Threat model (optimal)
+├── architecture.png                            # System diagram
 ├── docs/
 │   ├── security-requirements.md               # Security context
 │   └── api-documentation.md                   # Technical details
 └── diagrams/
     ├── data-flow.drawio                       # Data flow diagram
-    └── deployment-architecture.png            # Deployment view
+    └── deployment-architecture.pdf            # Deployment view
+```
+
+### Minimal Project Structure (AI Will Generate Threats)
+```
+my-application/
+├── overview.md                                 # Any markdown with app info
+├── system-architecture.png                    # Architecture diagram
+└── network-diagram.pdf                        # Network layout
 ```
 
 ### What ThreatForest Discovers
+
+#### With Threat Models:
 ```
 🎯 Found 1 threat model files:
    • ThreatComposer_Workspace_MyApp.tc (ThreatComposer)
 📖 Found 1 README files
 🏗️ Found 3 diagram files
 ✅ Threat models found - analysis will be comprehensive!
+```
+
+#### Without Threat Models (AI Generation):
+```
+🤖 No threat models found - will generate threats using AI analysis
+📋 ThreatForest will analyze your diagrams and documentation to create threat models
+📖 Found 1 documentation files
+🏗️ Found 2 diagram files
+🤖 AI will generate threats based on available context
 ```
 
 ## 💡 Pro Tips

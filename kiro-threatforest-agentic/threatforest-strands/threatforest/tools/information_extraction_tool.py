@@ -24,13 +24,21 @@ class InformationExtractionTool(Tool):
     
     async def execute(self, context_files: Dict[str, Any], bedrock_model: str, 
                      aws_profile: Optional[str] = None, interactive: bool = False) -> Dict[str, Any]:
-        """Execute information extraction"""
+        """Execute information extraction with threat generation if needed"""
         
-        # Parse threat statements
+        # Parse existing threat statements
         threat_statements = self._parse_threat_statements(context_files)
         
         # Extract key project information using LLM
         project_info = await self._extract_project_info(context_files, bedrock_model, aws_profile)
+        
+        # If no threat statements found, generate them using Bedrock
+        if not threat_statements:
+            print("🤖 No threat statements found - generating threats using AI analysis...")
+            generated_threats = await self._generate_threats_with_bedrock(
+                context_files, project_info, bedrock_model, aws_profile
+            )
+            threat_statements.extend(generated_threats)
         
         # User validation if interactive
         if interactive and not project_info.get("error"):
@@ -241,6 +249,150 @@ Return ONLY the JSON object, no additional text or markdown formatting."""
         self._save_validated_info(project_info)
         
         return project_info
+    
+    async def _generate_threats_with_bedrock(self, context_files: Dict[str, Any], 
+                                           project_info: Dict[str, Any], bedrock_model: str, 
+                                           aws_profile: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Generate threat statements using Bedrock when none exist"""
+        
+        # Prepare context for threat generation
+        context_summary = self._prepare_threat_generation_context(context_files, project_info)
+        
+        prompt = f"""You are a cybersecurity expert analyzing an application for threat modeling.
+
+Based on the following information, generate 8-12 realistic threat statements with priorities:
+
+{context_summary}
+
+Generate threats in this JSON format:
+{{
+  "threats": [
+    {{
+      "id": "T001",
+      "statement": "Detailed threat description",
+      "severity": "High|Medium|Low",
+      "category": "category name",
+      "likelihood": "High|Medium|Low",
+      "impact": "impact description"
+    }}
+  ]
+}}
+
+Focus on:
+- Common attack vectors for the identified technologies
+- Architecture-specific vulnerabilities
+- Data protection concerns
+- Access control issues
+- Network security threats
+
+Ensure a mix of High (3-4), Medium (4-6), and Low (2-3) severity threats."""
+
+        try:
+            # Use Bedrock to generate threats
+            session = boto3.Session(profile_name=aws_profile) if aws_profile else boto3.Session()
+            bedrock = session.client('bedrock-runtime', region_name='us-east-1')
+            
+            response = bedrock.invoke_model(
+                modelId=bedrock_model,
+                body=json.dumps({
+                    "anthropic_version": "bedrock-2023-05-31",
+                    "max_tokens": 4000,
+                    "messages": [{"role": "user", "content": prompt}]
+                })
+            )
+            
+            result = json.loads(response['body'].read())
+            content = result['content'][0]['text']
+            
+            # Parse the JSON response
+            threat_data = json.loads(content)
+            threats = []
+            
+            for threat in threat_data.get('threats', []):
+                threats.append({
+                    "id": threat.get('id', ''),
+                    "statement": threat.get('statement', ''),
+                    "severity": threat.get('severity', 'Medium'),
+                    "category": threat.get('category', 'General'),
+                    "likelihood": threat.get('likelihood', 'Medium'),
+                    "impact": threat.get('impact', ''),
+                    "source": "AI Generated"
+                })
+            
+            print(f"✅ Generated {len(threats)} threat statements using AI analysis")
+            return threats
+            
+        except Exception as e:
+            print(f"⚠️  Failed to generate threats with Bedrock: {e}")
+            # Return basic fallback threats
+            return self._get_fallback_threats(project_info)
+    
+    def _prepare_threat_generation_context(self, context_files: Dict[str, Any], 
+                                         project_info: Dict[str, Any]) -> str:
+        """Prepare context summary for threat generation"""
+        context_parts = []
+        
+        # Application info
+        if project_info.get('application_name'):
+            context_parts.append(f"Application: {project_info['application_name']}")
+        
+        if project_info.get('technologies'):
+            context_parts.append(f"Technologies: {', '.join(project_info['technologies'])}")
+        
+        if project_info.get('architecture_type'):
+            context_parts.append(f"Architecture: {project_info['architecture_type']}")
+        
+        if project_info.get('deployment_environment'):
+            context_parts.append(f"Deployment: {project_info['deployment_environment']}")
+        
+        # Add documentation content (first 500 chars from each file)
+        parsed_content = context_files.get('parsed_content', {})
+        for category, files in parsed_content.items():
+            if files and category in ['readmes', 'other_docs']:
+                for file_info in files[:2]:  # Max 2 files per category
+                    content = file_info.get('content', '')[:500]
+                    if content:
+                        context_parts.append(f"{category.title()}: {content}...")
+        
+        # Note about diagrams
+        diagrams = parsed_content.get('architecture_diagrams', [])
+        if diagrams:
+            context_parts.append(f"Architecture diagrams available: {len(diagrams)} files")
+        
+        return '\n\n'.join(context_parts)
+    
+    def _get_fallback_threats(self, project_info: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Provide basic fallback threats when AI generation fails"""
+        return [
+            {
+                "id": "T001",
+                "statement": "Unauthorized access to application data through weak authentication",
+                "severity": "High",
+                "category": "Authentication",
+                "source": "Fallback"
+            },
+            {
+                "id": "T002", 
+                "statement": "Data breach through SQL injection or similar injection attacks",
+                "severity": "High",
+                "category": "Injection",
+                "source": "Fallback"
+            },
+            {
+                "id": "T003",
+                "statement": "Denial of service attacks affecting application availability",
+                "severity": "Medium",
+                "category": "Availability",
+                "source": "Fallback"
+            },
+            {
+                "id": "T004",
+                "statement": "Insecure data transmission exposing sensitive information",
+                "severity": "Medium",
+                "category": "Cryptography",
+                "source": "Fallback"
+            }
+        ]
     
     def _save_validated_info(self, project_info: Dict[str, Any]) -> None:
         """Save validated information to markdown file"""

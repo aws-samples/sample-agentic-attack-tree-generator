@@ -235,18 +235,22 @@ class ContextAnalysisTool(Tool):
         """Categorize non-threat files"""
         name_lower = file_path.name.lower()
         
-        # READMEs
-        if name_lower.startswith("readme"):
+        # READMEs and markdown files
+        if name_lower.startswith("readme") or file_path.suffix.lower() == ".md":
             context_files["readmes"].append(str(file_path))
         
-        # Architecture diagrams
-        elif any(keyword in name_lower for keyword in ["architecture", "arch", "design", "system"]):
-            if file_path.suffix.lower() in [".png", ".jpg", ".svg", ".puml", ".md", ".mmd"]:
+        # Architecture diagrams - expanded image support
+        elif any(keyword in name_lower for keyword in ["architecture", "arch", "design", "system", "diagram"]):
+            if file_path.suffix.lower() in [".png", ".jpg", ".jpeg", ".pdf", ".svg", ".puml", ".md", ".mmd", ".drawio"]:
                 context_files["architecture_diagrams"].append(str(file_path))
         
         # Data flow diagrams
         elif any(keyword in name_lower for keyword in ["dataflow", "data_flow", "dfd", "flow"]):
             context_files["data_flow_diagrams"].append(str(file_path))
+        
+        # Any image files that might be diagrams
+        elif file_path.suffix.lower() in [".png", ".jpg", ".jpeg", ".pdf"]:
+            context_files["architecture_diagrams"].append(str(file_path))
         
         # Other documentation
         elif file_path.suffix.lower() in [".md", ".txt", ".doc", ".docx", ".pdf"]:
@@ -287,14 +291,29 @@ class ContextAnalysisTool(Tool):
                 summary.append("🚨 Key High Priority Threats:")
                 for i, threat in enumerate(high_threats, 1):
                     summary.append(f"   {i}. {threat['statement']}...")
+        else:
+            # No threat models found - check for minimal viable inputs
+            has_diagrams = len(parsed_files.get('architecture_diagrams', [])) > 0
+            has_docs = len(parsed_files.get('readmes', [])) + len(parsed_files.get('other_docs', [])) > 0
+            
+            if has_diagrams or has_docs:
+                summary.append("🤖 No threat models found - will generate threats using AI analysis")
+                summary.append("📋 Available for analysis:")
+                if has_diagrams:
+                    summary.append(f"   • {len(parsed_files.get('architecture_diagrams', []))} architecture diagrams")
+                if has_docs:
+                    doc_count = len(parsed_files.get('readmes', [])) + len(parsed_files.get('other_docs', []))
+                    summary.append(f"   • {doc_count} documentation files")
+            else:
+                summary.append("⚠️  Limited inputs - analysis may be basic")
         
         # File counts
         file_counts = []
         for category, files in parsed_files.items():
-            if files:
+            if files and category != 'threat_models':
                 file_counts.append(f"{category}: {len(files)}")
         
         if file_counts:
-            summary.append(f"📄 Other Files: {', '.join(file_counts)}")
+            summary.append(f"📄 Files: {', '.join(file_counts)}")
         
         return '\n'.join(summary)

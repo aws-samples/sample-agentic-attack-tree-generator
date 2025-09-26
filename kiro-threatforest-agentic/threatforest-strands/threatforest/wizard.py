@@ -255,20 +255,23 @@ Let's get started with the setup!
         self.console.print(f"🏗️  Found {len(diagram_files)} diagram files")
         
         # Enhanced validation
-        if len(threat_models) == 0 and len(readme_files) == 0:
-            self.console.print("⚠️  No threat models or README files found")
-            self.console.print("💡 ThreatForest works best with:")
+        if len(threat_models) == 0 and len(readme_files) == 0 and len(diagram_files) == 0:
+            self.console.print("⚠️  No threat models, documentation, or diagrams found")
+            self.console.print("💡 ThreatForest needs at least one of:")
             self.console.print("   • ThreatComposer workspace files (.tc)")
-            self.console.print("   • Threat statement files (threat.json, security.yaml)")
-            self.console.print("   • README files with project description")
+            self.console.print("   • Architecture diagrams (.png, .pdf, .jpg, .drawio)")
+            self.console.print("   • Documentation files (.md, README)")
             
-            if not Confirm.ask("Continue with limited analysis?"):
-                self.console.print("💡 Add threat model files or README and try again.")
+            if not Confirm.ask("Continue with very limited analysis?"):
+                self.console.print("💡 Add some documentation or diagrams and try again.")
                 sys.exit(1)
         elif len(threat_models) > 0:
             self.console.print("✅ Threat models found - analysis will be comprehensive!")
+        elif len(diagram_files) > 0 or len(readme_files) > 0:
+            self.console.print("🤖 No threat models found - will generate threats using AI analysis")
+            self.console.print("📋 ThreatForest will analyze your diagrams and documentation to create threat models")
         else:
-            self.console.print("⚠️  No threat models found - using README-based analysis")
+            self.console.print("⚠️  Limited inputs - analysis will be basic")
     
     def _discover_threat_files_preview(self, project_path: str) -> List[str]:
         """Preview threat file discovery"""
