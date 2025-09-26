@@ -98,6 +98,7 @@ class AttackTreeGeneratorTool(Tool):
                 "threat_id": threat.get("id"),
                 "threat_category": threat.get("category"),
                 "threat_description": threat.get("description"),
+                "threat_statement": threat.get("statement", threat.get("description", "")),
                 "mermaid_code": mermaid_code,
                 "attack_steps": self._extract_attack_steps(mermaid_code),
                 "generated_content": generated_content,
