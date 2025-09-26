@@ -26,19 +26,32 @@ class InformationExtractionTool(Tool):
                      aws_profile: Optional[str] = None, interactive: bool = False) -> Dict[str, Any]:
         """Execute information extraction with threat generation if needed"""
         
+        # Add model_id to context_files for Bedrock operations
+        if bedrock_model:
+            context_files['model_id'] = bedrock_model
+        
         # Parse existing threat statements
         threat_statements = self._parse_threat_statements(context_files)
         
         # Extract key project information using LLM
         project_info = await self._extract_project_info(context_files, bedrock_model, aws_profile)
         
-        # If no threat statements found, generate them using Bedrock
+        # If no threat statements found, check if we have threat files without statements
         if not threat_statements:
-            print("🤖 No threat statements found - generating threat statements using AI analysis...")
-            generated_threats = await self._generate_threats_with_bedrock(
-                context_files, project_info, bedrock_model, aws_profile
-            )
-            threat_statements.extend(generated_threats)
+            threat_files_without_statements = context_files.get("threat_files_without_statements", [])
+            
+            if threat_files_without_statements:
+                print("🤖 Found threat model files but no proper threat statements - generating from existing content...")
+                generated_threats = await self._generate_threats_from_existing_content(
+                    threat_files_without_statements, project_info, bedrock_model, aws_profile
+                )
+                threat_statements.extend(generated_threats)
+            else:
+                print("🤖 No threat statements found - generating threat statements using AI analysis...")
+                generated_threats = await self._generate_threats_with_bedrock(
+                    context_files, project_info, bedrock_model, aws_profile
+                )
+                threat_statements.extend(generated_threats)
         
         # User validation if interactive
         if interactive and not project_info.get("error"):
@@ -46,6 +59,17 @@ class InformationExtractionTool(Tool):
         
         # Filter high severity threats
         high_severity_threats = [t for t in threat_statements if t.get("severity") == "High"]
+        
+        print(f"🔍 Debug: Total threats extracted: {len(threat_statements)}")
+        print(f"🔍 Debug: High severity threats: {len(high_severity_threats)}")
+        for threat in high_severity_threats:
+            print(f"  - {threat.get('id', 'Unknown')}: {threat.get('severity', 'Unknown')} priority")
+        
+        # Merge enhanced context into project_info
+        if context_files.get('enhanced_context'):
+            enhanced_context = context_files['enhanced_context']
+            project_info.update(enhanced_context)
+            print(f"🔍 Enhanced context merged: {list(enhanced_context.keys())}")
         
         return {
             "threat_statements": threat_statements,
@@ -61,47 +85,526 @@ class InformationExtractionTool(Tool):
         }
     
     def _parse_threat_statements(self, context_files: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Parse threat statements from threat files"""
+        """Parse threat statements from threat files with enhanced Bedrock processing"""
         threats = []
         
-        # Check both parsed_content and direct threat_models
-        threat_files = []
+        # Debug: Print context_files structure
+        print(f"🔍 Debug: context_files keys: {list(context_files.keys())}")
         
-        # Legacy format from parsed_content
-        if "parsed_content" in context_files:
-            threat_files.extend(context_files["parsed_content"].get("threat_statements", []))
+        # Get threat_models from the correct location
+        threat_models = []
+        if "threat_models" in context_files:
+            threat_models = context_files["threat_models"]
+        elif "discovered_files" in context_files and "threat_models" in context_files["discovered_files"]:
+            threat_models = context_files["discovered_files"]["threat_models"]
         
-        # New format from threat_models (direct file paths)
-        for threat_file_path in context_files.get("threat_models", []):
+        print(f"🔍 Debug: threat_models: {threat_models if threat_models else 'NOT FOUND'}")
+        
+        # Process threat files with new logic
+        for threat_file_path in threat_models:
             try:
-                with open(threat_file_path, 'r', encoding='utf-8') as f:
-                    content = f.read()
-                    threat_files.append({
-                        "content": content,
-                        "path": threat_file_path
-                    })
-                    print(f"📄 Reading threat statements from {threat_file_path}")
+                # Skip unsupported files
+                if not self._is_text_file(threat_file_path):
+                    print(f"⚠️  Skipping unsupported file: {Path(threat_file_path).name}")
+                    continue
+                
+                # Handle binary files (images, PDFs) - add to context for Bedrock
+                if self._is_binary_file(threat_file_path):
+                    print(f"📄 Adding binary file for Bedrock analysis: {Path(threat_file_path).name}")
+                    if 'binary_files' not in context_files:
+                        context_files['binary_files'] = []
+                    context_files['binary_files'].append(threat_file_path)
+                    continue
+                
+                # Process text files with threat content
+                if 'threat' in Path(threat_file_path).name.lower():
+                    file_threats = self._process_threat_file(threat_file_path, context_files)
+                    threats.extend(file_threats)
+                else:
+                    # Non-threat files - add to context for application overview
+                    print(f"📄 Adding context file for application analysis: {Path(threat_file_path).name}")
+                    if 'context_files' not in context_files:
+                        context_files['context_files'] = []
+                    context_files['context_files'].append(threat_file_path)
+                    
             except Exception as e:
-                print(f"⚠️  Failed to read threat file {threat_file_path}: {e}")
+                print(f"⚠️  Failed to process file {threat_file_path}: {e}")
         
-        # Extract threats from all files
-        for threat_file in threat_files:
-            content = threat_file.get("content", "")
-            file_threats = self._extract_threats_from_content(content, threat_file["path"])
-            threats.extend(file_threats)
+        print(f"🔍 Debug: Processing {len(threat_models)} files, found {len(threats)} threats")
         
         if threats:
             print(f"✅ Found {len(threats)} existing threat statements")
+        else:
+            print("📋 No properly formatted threat statements found")
         
         return threats
     
+    def _process_threat_file(self, threat_file_path: str, context_files: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Process a threat file and determine if it needs Bedrock reformatting"""
+        print(f"📄 Processing threat file: {Path(threat_file_path).name}")
+        
+        # Check if this is a ThreatComposer file (.tc.json)
+        file_path = Path(threat_file_path)
+        is_threatcomposer = file_path.name.lower().endswith('.tc.json')
+        
+        if is_threatcomposer:
+            print(f"🎯 Detected ThreatComposer file - using JQ parser")
+            return self._process_threatcomposer_file(threat_file_path)
+        
+        # Read the file content for non-ThreatComposer files
+        with open(threat_file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # Check if file already matches the correct format
+        if self._is_correct_format(content):
+            print(f"✅ File already in correct format - using directly")
+            return self._extract_threats_from_content(content, threat_file_path)
+        
+        # File needs reformatting via Bedrock
+        print(f"🤖 File needs reformatting - will reformat via Bedrock")
+        reformatted_file = self._reformat_threats_via_bedrock(threat_file_path, content, context_files)
+        if reformatted_file:
+            # Re-extract from reformatted file
+            with open(reformatted_file, 'r', encoding='utf-8') as f:
+                new_content = f.read()
+            return self._extract_threats_from_content(new_content, reformatted_file)
+        
+        return []
+    
+    def _process_threatcomposer_file(self, threat_file_path: str) -> List[Dict[str, Any]]:
+        """Process ThreatComposer file using JQ parser and create formatted output"""
+        import subprocess
+        import os
+        
+        try:
+            # Get the directory containing the threat_jq.sh script
+            tools_dir = Path(__file__).parent
+            jq_script = tools_dir / "threat_jq.sh"
+            
+            if not jq_script.exists():
+                print(f"❌ JQ script not found at {jq_script}")
+                return []
+            
+            # Make script executable
+            os.chmod(jq_script, 0o755)
+            
+            # Extract threat data using JQ parser
+            print(f"🔍 Extracting threats using JQ parser...")
+            result = subprocess.run(
+                [str(jq_script), threat_file_path, "extract"],
+                capture_output=True,
+                text=True,
+                check=False
+            )
+            
+            if result.returncode != 0:
+                print(f"❌ JQ extraction failed: {result.stderr}")
+                return []
+            
+            # Parse the extracted JSON data
+            try:
+                threat_data = json.loads(result.stdout)
+            except json.JSONDecodeError as e:
+                print(f"❌ Failed to parse JQ output: {e}")
+                return []
+            
+            # Create formatted output file
+            output_file = self._create_formatted_threat_file(threat_data, threat_file_path)
+            
+            if output_file:
+                print(f"✅ Created formatted threat file: {Path(output_file).name}")
+                # Extract threats from the formatted file
+                with open(output_file, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                return self._extract_threats_from_content(content, output_file)
+            
+        except Exception as e:
+            print(f"❌ Error processing ThreatComposer file: {e}")
+        
+        return []
+    
+    def _create_formatted_threat_file(self, threat_data: Dict[str, Any], source_file: str) -> Optional[str]:
+        """Create a formatted threat file from ThreatComposer data"""
+        try:
+            # Create output filename
+            source_path = Path(source_file)
+            output_file = source_path.parent / f"{source_path.stem}_generated_threat_statements.md"
+            
+            # Extract application context
+            app_context = threat_data.get('application_context', {})
+            app_name = app_context.get('name', 'Unknown Application')
+            app_description = app_context.get('description', '')
+            technologies = app_context.get('technologies', [])
+            
+            # Group threats by priority
+            threats = threat_data.get('threats', [])
+            high_threats = [t for t in threats if t.get('priority', '').lower() == 'high']
+            medium_threats = [t for t in threats if t.get('priority', '').lower() == 'medium']
+            low_threats = [t for t in threats if t.get('priority', '').lower() == 'low']
+            
+            # Generate formatted content
+            content = f"""# Generated Threat Statements
+
+*This file was automatically generated from ThreatComposer file: {source_path.name}*
+
+## Application Context
+
+**Application Name:** {app_name}
+
+**Description:** {app_description}
+
+**Technologies:** {', '.join(technologies) if technologies else 'Not specified'}
+
+**Total Threats:** {len(threats)}
+- **High Priority:** {len(high_threats)}
+- **Medium Priority:** {len(medium_threats)}  
+- **Low Priority:** {len(low_threats)}
+
+## Threat Statements
+
+"""
+            
+            # Add high priority threats
+            threat_counter = 1
+            if high_threats:
+                content += "### High Priority Threats\n\n"
+                for threat in high_threats:
+                    threat_id = f'T{threat_counter:03d}'
+                    threat_counter += 1
+                    
+                    # Extract category from original threat or use generic
+                    original_statement = threat.get('statement', 'No statement provided')
+                    category = self._extract_threat_category(original_statement)
+                    
+                    content += f"#### {threat_id} - {category}\n\n"
+                    content += f"**Threat Statement**: {original_statement}\n\n"
+                    
+                    if threat.get('source'):
+                        content += f"- **Threat Source**: {threat['source']}\n"
+                    if threat.get('prerequisites'):
+                        content += f"- **Prerequisites**: {threat['prerequisites']}\n"
+                    if threat.get('action'):
+                        content += f"- **Threat Action**: {threat['action']}\n"
+                    if threat.get('impact'):
+                        content += f"- **Threat Impact**: {threat['impact']}\n"
+                    if threat.get('reduced_goal'):
+                        content += f"- **Reduced Goal**: {threat['reduced_goal']}\n"
+                    if threat.get('impacted_assets'):
+                        content += f"- **Impacted Assets**: {threat['impacted_assets']}\n"
+                    content += f"- **Priority**: High\n"
+                    content += f"- **Category**: {category}\n\n"
+                    content += "---\n\n"
+            
+            # Add medium priority threats
+            if medium_threats:
+                content += "### Medium Priority Threats\n\n"
+                for threat in medium_threats:
+                    threat_id = f'T{threat_counter:03d}'
+                    threat_counter += 1
+                    
+                    # Extract category from original threat or use generic
+                    original_statement = threat.get('statement', 'No statement provided')
+                    category = self._extract_threat_category(original_statement)
+                    
+                    content += f"#### {threat_id} - {category}\n\n"
+                    content += f"**Threat Statement**: {original_statement}\n\n"
+                    
+                    if threat.get('source'):
+                        content += f"- **Threat Source**: {threat['source']}\n"
+                    if threat.get('prerequisites'):
+                        content += f"- **Prerequisites**: {threat['prerequisites']}\n"
+                    if threat.get('action'):
+                        content += f"- **Threat Action**: {threat['action']}\n"
+                    if threat.get('impact'):
+                        content += f"- **Threat Impact**: {threat['impact']}\n"
+                    if threat.get('reduced_goal'):
+                        content += f"- **Reduced Goal**: {threat['reduced_goal']}\n"
+                    if threat.get('impacted_assets'):
+                        content += f"- **Impacted Assets**: {threat['impacted_assets']}\n"
+                    content += f"- **Priority**: Medium\n"
+                    content += f"- **Category**: {category}\n\n"
+                    content += "---\n\n"
+            
+            # Add low priority threats
+            if low_threats:
+                content += "### Low Priority Threats\n\n"
+                for threat in low_threats:
+                    threat_id = f'T{threat_counter:03d}'
+                    threat_counter += 1
+                    
+                    # Extract category from original threat or use generic
+                    original_statement = threat.get('statement', 'No statement provided')
+                    category = self._extract_threat_category(original_statement)
+                    
+                    content += f"#### {threat_id} - {category}\n\n"
+                    content += f"**Threat Statement**: {original_statement}\n\n"
+                    
+                    if threat.get('source'):
+                        content += f"- **Threat Source**: {threat['source']}\n"
+                    if threat.get('prerequisites'):
+                        content += f"- **Prerequisites**: {threat['prerequisites']}\n"
+                    if threat.get('action'):
+                        content += f"- **Threat Action**: {threat['action']}\n"
+                    if threat.get('impact'):
+                        content += f"- **Threat Impact**: {threat['impact']}\n"
+                    if threat.get('reduced_goal'):
+                        content += f"- **Reduced Goal**: {threat['reduced_goal']}\n"
+                    if threat.get('impacted_assets'):
+                        content += f"- **Impacted Assets**: {threat['impacted_assets']}\n"
+                    content += f"- **Priority**: Low\n"
+                    content += f"- **Category**: {category}\n\n"
+                    content += "---\n\n"
+            
+            # Write the formatted file
+            with open(output_file, 'w', encoding='utf-8') as f:
+                f.write(content)
+            
+            return str(output_file)
+            
+        except Exception as e:
+            print(f"❌ Error creating formatted threat file: {e}")
+            return None
+    
+    def _extract_threat_category(self, threat_statement: str) -> str:
+        """Extract a meaningful category from a threat statement"""
+        statement_lower = threat_statement.lower()
+        
+        # Common threat categories based on keywords
+        if any(word in statement_lower for word in ['inject', 'sql', 'xss', 'script']):
+            return 'Injection Attack'
+        elif any(word in statement_lower for word in ['authentication', 'login', 'password', 'credential']):
+            return 'Authentication'
+        elif any(word in statement_lower for word in ['authorization', 'access control', 'privilege']):
+            return 'Authorization'
+        elif any(word in statement_lower for word in ['encrypt', 'decrypt', 'crypto', 'tls', 'ssl']):
+            return 'Cryptography'
+        elif any(word in statement_lower for word in ['data breach', 'data leak', 'exfiltrat', 'exposure']):
+            return 'Data Breach'
+        elif any(word in statement_lower for word in ['denial', 'dos', 'ddos', 'availability']):
+            return 'Availability'
+        elif any(word in statement_lower for word in ['malware', 'virus', 'trojan', 'backdoor']):
+            return 'Malware'
+        elif any(word in statement_lower for word in ['social engineering', 'phishing', 'spear']):
+            return 'Social Engineering'
+        elif any(word in statement_lower for word in ['insider', 'internal', 'employee']):
+            return 'Insider Threat'
+        elif any(word in statement_lower for word in ['network', 'man-in-the-middle', 'mitm', 'sniff']):
+            return 'Network Attack'
+        elif any(word in statement_lower for word in ['configuration', 'misconfigur', 'setup']):
+            return 'Configuration'
+        elif any(word in statement_lower for word in ['supply chain', 'third party', 'vendor']):
+            return 'Supply Chain'
+        elif any(word in statement_lower for word in ['ai', 'ml', 'model', 'llm', 'prompt']):
+            return 'AI/ML Security'
+        else:
+            return 'Security Threat'
+    
+    def _is_correct_format(self, content: str) -> bool:
+        """Check if the threat file already matches the correct format"""
+        # Check for key format indicators
+        format_indicators = [
+            r'# Generated Threat Statements',  # Header
+            r'## Application Context',         # Context section
+            r'### High Priority Threats',      # Priority grouping
+            r'#### T\d{3} - ',                # Standardized T### format (not UUID)
+            r'\*\*Threat Statement\*\*:',      # Threat statement marker (with colon)
+            r'- \*\*Threat Source\*\*:',       # Structured fields (with colon)
+            r'- \*\*Priority\*\*:',            # Priority field (with colon)
+        ]
+        
+        # File is in correct format if it has most of these indicators
+        matches = sum(1 for pattern in format_indicators if re.search(pattern, content))
+        return matches >= 5  # At least 5 out of 7 indicators present
+    
+    def _contains_threat_content(self, content: str) -> bool:
+        """Check if content contains threat-related information but not proper statements"""
+        threat_indicators = [
+            'threat', 'risk', 'vulnerability', 'attack', 'security',
+            'malicious', 'unauthorized', 'breach', 'compromise',
+            'confidentiality', 'integrity', 'availability'
+        ]
+        
+        content_lower = content.lower()
+        threat_count = sum(1 for indicator in threat_indicators if indicator in content_lower)
+        
+        # If it has multiple threat indicators, it's likely threat-related content
+        return threat_count >= 3
+    
+    def _is_text_file(self, file_path: str) -> bool:
+        """Check if file can be processed (text files, images, PDFs)"""
+        import os
+        
+        # Check file extension
+        supported_extensions = {
+            # Text files
+            '.json', '.tc', '.yaml', '.yml', '.md', '.txt', '.csv',
+            # Images for Bedrock analysis
+            '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp',
+            # Documents for Bedrock analysis
+            '.pdf'
+        }
+        _, ext = os.path.splitext(file_path.lower())
+        
+        # Special handling for .tc.json files
+        if file_path.lower().endswith('.tc.json'):
+            return True
+        
+        if ext in supported_extensions:
+            return True
+            
+        # For files without extension, try to detect if it's text
+        try:
+            with open(file_path, 'rb') as f:
+                chunk = f.read(1024)
+                if not chunk:
+                    return True  # Empty file
+                # Check if it's mostly text (no null bytes)
+                return b'\x00' not in chunk
+        except:
+            return False
+    
+    def _is_binary_file(self, file_path: str) -> bool:
+        """Check if file is binary (images, PDFs) that needs special handling"""
+        import os
+        
+        binary_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.pdf'}
+        _, ext = os.path.splitext(file_path.lower())
+        return ext in binary_extensions
+    
     def _extract_threats_from_content(self, content: str, file_path: str) -> List[Dict[str, Any]]:
-        """Extract individual threats from file content"""
+        """Extract individual threats from file content with simplified parsing"""
         threats = []
         
-        # Pattern: ## Threat N - Category
-        threat_pattern = r'^## Threat (\d+) - (.+?)$'
-        severity_pattern = r'^\[(\w+)\]$'
+        # Split content into threat sections by the #### pattern (handles both T### and UUID formats)
+        threat_sections = re.split(r'\n(?=#### [A-Za-z0-9\-]+ - )', content)
+        
+        for section in threat_sections:
+            if not section.strip() or '####' not in section:
+                continue
+                
+            # Extract threat ID and category (handles both T### and UUID formats)
+            threat_header_match = re.search(r'#### ([A-Za-z0-9\-]+) - (.+)', section)
+            if not threat_header_match:
+                continue
+                
+            threat_id = threat_header_match.group(1)
+            category = threat_header_match.group(2).strip()
+            
+            # Extract threat statement - simple line-by-line approach
+            lines = section.split('\n')
+            threat_statement = ""
+            capturing = False
+            
+            for line in lines:
+                if '**Threat Statement:**' in line:
+                    # Extract statement from this line
+                    threat_statement = line.split('**Threat Statement:**', 1)[1].strip()
+                    capturing = True
+                    continue
+                elif capturing and line.strip().startswith('- **'):
+                    # Hit the first bullet point, stop capturing
+                    break
+                elif capturing and line.strip():
+                    # Continue capturing multi-line statement
+                    threat_statement += " " + line.strip()
+            
+            if not threat_statement:
+                continue
+            
+            # Extract structured fields
+            fields = {}
+            field_patterns = {
+                'threat_source': r'- \*\*Threat Source\*\*:\s*(.+)',
+                'prerequisites': r'- \*\*Prerequisites\*\*:\s*(.+)',
+                'threat_action': r'- \*\*Threat Action\*\*:\s*(.+)',
+                'threat_impact': r'- \*\*Threat Impact\*\*:\s*(.+)',
+                'reduced_goal': r'- \*\*Reduced Goal\*\*:\s*(.+)',
+                'impacted_assets': r'- \*\*Impacted Assets\*\*:\s*(.+)',
+                'priority': r'- \*\*Priority\*\*:\s*(.+)',
+                'category_field': r'- \*\*Category\*\*:\s*(.+)'
+            }
+            
+            for field_name, pattern in field_patterns.items():
+                match = re.search(pattern, section)
+                if match:
+                    fields[field_name] = match.group(1).strip()
+            
+            # Determine priority/severity
+            priority = fields.get('priority', 'Medium')
+            severity = priority  # Use priority as severity
+            
+            # Determine which priority section this threat is in
+            if '### High Priority Threats' in content:
+                high_section_start = content.find('### High Priority Threats')
+                medium_section_start = content.find('### Medium Priority Threats')
+                low_section_start = content.find('### Low Priority Threats')
+                
+                threat_position = content.find(f'#### {threat_id}')
+                
+                if threat_position > high_section_start:
+                    if medium_section_start == -1 or threat_position < medium_section_start:
+                        severity = 'High'
+                        priority = 'High'
+                    elif low_section_start == -1 or threat_position < low_section_start:
+                        severity = 'Medium'
+                        priority = 'Medium'
+                    else:
+                        severity = 'Low'
+                        priority = 'Low'
+            
+            threat = {
+                "id": threat_id,
+                "description": threat_statement,
+                "statement": threat_statement,
+                "threat_source": fields.get('threat_source', ''),
+                "prerequisites": fields.get('prerequisites', ''),
+                "threat_action": fields.get('threat_action', ''),
+                "threat_impact": fields.get('threat_impact', ''),
+                "reduced_goal": fields.get('reduced_goal', ''),
+                "impacted_assets": fields.get('impacted_assets', ''),
+                "severity": severity,
+                "priority": priority,
+                "category": category,
+                "source_file": file_path
+            }
+            
+            threats.append(threat)
+            print(f"🔍 Extracted threat {threat_id} with priority: {priority}")
+        
+        # If no threats found with structured format, try legacy extraction
+        if not threats:
+            threats = self._extract_legacy_threats(content, file_path)
+        
+        return threats
+    
+    def _find_threat_context(self, content: str, threat_description: str) -> str:
+        """Find context around a threat statement to extract priority/category"""
+        lines = content.split('\n')
+        threat_line_idx = -1
+        
+        # Find the line containing the threat
+        for i, line in enumerate(lines):
+            if threat_description[:50] in line:
+                threat_line_idx = i
+                break
+        
+        if threat_line_idx >= 0:
+            # Get context (5 lines before and after)
+            start = max(0, threat_line_idx - 5)
+            end = min(len(lines), threat_line_idx + 5)
+            return '\n'.join(lines[start:end])
+        
+        return ""
+    
+    def _extract_legacy_threats(self, content: str, file_path: str) -> List[Dict[str, Any]]:
+        """Extract threats from legacy formats"""
+        threats = []
+        
+        # Support multiple patterns for different threat file formats
+        # Pattern 1: #### T001 - Category (generated format)
+        # Pattern 2: ## Threat N - Category (legacy format)
+        threat_pattern1 = r'^#### (T\d+) - (.+?)$'
+        threat_pattern2 = r'^## Threat (\d+) - (.+?)$'
         
         lines = content.split('\n')
         current_threat = None
@@ -109,33 +612,66 @@ class InformationExtractionTool(Tool):
         for i, line in enumerate(lines):
             line = line.strip()
             
-            # Check for threat header
-            threat_match = re.match(threat_pattern, line)
-            if threat_match:
+            # Check for threat header (generated format)
+            threat_match1 = re.match(threat_pattern1, line)
+            if threat_match1:
                 # Save previous threat if exists
                 if current_threat:
                     threats.append(current_threat)
                 
                 # Start new threat
-                threat_id = threat_match.group(1)
-                category = threat_match.group(2).strip()
+                threat_id = threat_match1.group(1)
+                category = threat_match1.group(2).strip()
                 
                 current_threat = {
-                    "id": f"T{threat_id}",
+                    "id": threat_id,
                     "category": category,
                     "severity": "Medium",  # Default
                     "description": "",
                     "source_file": file_path,
                     "line_number": i + 1
                 }
+                continue
             
-            # Check for severity on separate line
-            elif current_threat and re.match(severity_pattern, line):
-                severity_match = re.match(severity_pattern, line)
-                current_threat["severity"] = severity_match.group(1)
+            # Check for threat header (legacy format)
+            threat_match2 = re.match(threat_pattern2, line)
+            if threat_match2:
+                # Save previous threat if exists
+                if current_threat:
+                    threats.append(current_threat)
+                
+                # Start new threat
+                threat_id = f"T{threat_match2.group(1)}"
+                category = threat_match2.group(2).strip()
+                
+                current_threat = {
+                    "id": threat_id,
+                    "category": category,
+                    "severity": "Medium",  # Default
+                    "description": "",
+                    "source_file": file_path,
+                    "line_number": i + 1
+                }
+                continue
             
-            # Add to description (skip empty lines and headers)
-            elif current_threat and line and not line.startswith('#') and not re.match(severity_pattern, line):
+            # Extract priority/severity from generated format
+            if current_threat and line.startswith("- **Priority**:"):
+                priority = line.replace("- **Priority**:", "").strip()
+                current_threat["severity"] = priority
+                continue
+            
+            # Extract threat statement from generated format
+            if current_threat and line.startswith("**Threat Statement**:"):
+                statement = line.replace("**Threat Statement**:", "").strip()
+                current_threat["description"] = statement
+                continue
+            
+            # Add to description (skip empty lines, headers, and metadata)
+            elif (current_threat and line and 
+                  not line.startswith('#') and 
+                  not line.startswith('**') and 
+                  not line.startswith('- **') and
+                  not line.startswith('---')):
                 if current_threat["description"]:
                     current_threat["description"] += " "
                 current_threat["description"] += line
@@ -396,21 +932,132 @@ Focus on:
         
         return project_info
     
+    def _parse_json_response(self, content: str) -> dict:
+        """Parse JSON response with markdown code block handling"""
+        try:
+            return json.loads(content)
+        except json.JSONDecodeError:
+            # Remove markdown code block markers
+            cleaned_content = content.strip()
+            if cleaned_content.startswith('```'):
+                lines = cleaned_content.split('\n')
+                # Remove first line (```json or ```)
+                lines = lines[1:]
+                # Remove last line if it's ```
+                if lines and lines[-1].strip() == '```':
+                    lines = lines[:-1]
+                cleaned_content = '\n'.join(lines).strip()
+            
+            # Try parsing the cleaned content
+            try:
+                return json.loads(cleaned_content)
+            except json.JSONDecodeError:
+                # Find JSON structure manually
+                json_start = cleaned_content.find('{')
+                if json_start == -1:
+                    raise ValueError("No JSON structure found in response")
+                
+                # Find matching closing brace
+                brace_count = 0
+                json_end = json_start
+                for i, char in enumerate(cleaned_content[json_start:], json_start):
+                    if char == '{':
+                        brace_count += 1
+                    elif char == '}':
+                        brace_count -= 1
+                        if brace_count == 0:
+                            json_end = i + 1
+                            break
+                
+                json_str = cleaned_content[json_start:json_end]
+                return json.loads(json_str)
+    
+    async def _generate_threats_from_existing_content(self, threat_files_without_statements: List[Dict[str, Any]], 
+                                                    project_info: Dict[str, Any], bedrock_model: str, 
+                                                    aws_profile: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Generate threat statements from existing threat model content using Bedrock"""
+        
+        # Combine all threat model content
+        threat_model_content = ""
+        for file_info in threat_files_without_statements:
+            file_name = Path(file_info["path"]).name
+            content = file_info["content"]
+            threat_model_content += f"\n\n--- {file_name} ---\n{content}"
+        
+        prompt = f"""You are a cybersecurity expert analyzing existing threat model documentation.
+
+The following threat model files contain threat-related information but lack properly formatted threat statements.
+Please extract and convert this information into proper threat statements using this EXACT syntax:
+"A [threat source] with [pre-requisites], can [threat action], which leads to [threat impact], resulting in [reduced goal] of [impacted assets]."
+
+Application Context:
+- Application: {project_info.get('application_name', 'Unknown')}
+- Technologies: {', '.join(project_info.get('technologies', []))}
+
+Existing Threat Model Content:
+{threat_model_content}
+
+Generate 8-12 realistic threat statements in this JSON format:
+{{
+  "threats": [
+    {{
+      "id": "T001",
+      "statement": "A [threat source] with [pre-requisites], can [threat action], which leads to [threat impact], resulting in [reduced goal] of [impacted assets].",
+      "priority": "High|Medium|Low",
+      "category": "Data Breach|Privilege Escalation|etc"
+    }}
+  ]
+}}
+
+Focus on:
+1. Converting existing threat information into the required format
+2. Ensuring each statement follows the exact syntax
+3. Assigning appropriate priorities based on impact
+4. Using realistic threat sources and attack vectors"""
+
+        try:
+            response = await self._call_bedrock(prompt, bedrock_model, aws_profile)
+            threats_data = self._parse_json_response(response)
+            
+            generated_threats = []
+            for threat in threats_data.get("threats", []):
+                generated_threats.append({
+                    "id": threat.get("id", "T000"),
+                    "description": threat.get("statement", ""),
+                    "severity": threat.get("priority", "Medium"),
+                    "category": threat.get("category", "Unknown"),
+                    "source_file": "Generated from existing threat models"
+                })
+            
+            print(f"✅ Generated {len(generated_threats)} threat statements from existing threat model content")
+            return generated_threats
+            
+        except Exception as e:
+            print(f"⚠️  Failed to generate threats from existing content: {e}")
+            return []
+    
     async def _generate_threats_with_bedrock(self, context_files: Dict[str, Any], 
                                            project_info: Dict[str, Any], bedrock_model: str, 
                                            aws_profile: Optional[str] = None) -> List[Dict[str, Any]]:
         """Generate threat statements using Bedrock when none exist"""
         
-        # Prepare context for threat generation
-        context_summary = self._prepare_threat_generation_context(context_files, project_info)
+        # Prepare comprehensive context for threat generation including all content and images
+        content_summary = self._prepare_all_content_for_bedrock(context_files)
         
         prompt = f"""You are a cybersecurity expert analyzing an application for threat modeling.
 
-Based on the following information, generate 8-12 realistic threat statements using this EXACT syntax:
+Based on the following comprehensive information including documentation, configuration files, and architecture diagrams, generate 8-12 realistic threat statements using this EXACT syntax:
 "A [threat source] with [pre-requisites], can [threat action], which leads to [threat impact], resulting in [reduced goal] of [impacted assets]."
 
-Context:
-{context_summary}
+Application Context:
+- Application: {project_info.get('application_name', 'Unknown')}
+- Technologies: {', '.join(project_info.get('technologies', []))}
+- Architecture: {project_info.get('architecture_type', 'Unknown')}
+- Deployment: {project_info.get('deployment_environment', 'Unknown')}
+- Sector: {project_info.get('sector', 'Unknown')}
+
+Available Content and Documentation:
+{content_summary}
 
 Generate threats in this JSON format:
 {{
@@ -436,19 +1083,24 @@ Requirements:
 - Include 4-6 Medium priority threats (important but not critical)
 - Include 2-3 Low priority threats (minor security concerns)
 - Focus on realistic threats for the identified technologies and architecture
+- Consider threats visible in architecture diagrams and system components
+- Use information from documentation and configuration files to identify specific attack vectors
 - Ensure each threat has all required components: source, prerequisites, action, impact, goal, assets"""
 
         try:
-            # Use Bedrock to generate threats
+            # Use Bedrock with multimodal capabilities (text + images)
             session = boto3.Session(profile_name=aws_profile) if aws_profile else boto3.Session()
             bedrock = session.client('bedrock-runtime', region_name='us-east-1')
+            
+            # Prepare messages with text and images
+            messages = self._prepare_bedrock_messages(prompt, context_files)
             
             response = bedrock.invoke_model(
                 modelId=bedrock_model,
                 body=json.dumps({
                     "anthropic_version": "bedrock-2023-05-31",
                     "max_tokens": 65536,
-                    "messages": [{"role": "user", "content": prompt}]
+                    "messages": messages
                 })
             )
             
@@ -457,71 +1109,14 @@ Requirements:
             
             # Parse the JSON response with better error handling
             try:
-                threat_data = json.loads(content)
-            except json.JSONDecodeError as e:
+                threat_data = self._parse_json_response(content)
+                print("✅ Successfully extracted complete JSON structure")
+            except Exception as e:
                 print(f"⚠️  JSON parsing failed: {e}")
                 print(f"Raw content: {content[:500]}...")
-                
-                # Try to extract JSON from markdown code blocks with more flexible regex
-                import re
-                
-                # First try to find JSON in code blocks
-                code_block_match = re.search(r'```(?:json)?\s*(.*?)```', content, re.DOTALL)
-                if code_block_match:
-                    json_candidate = code_block_match.group(1).strip()
-                else:
-                    # Look for JSON-like structure anywhere in content
-                    json_candidate = content.strip()
-                
-                # Find the start of JSON
-                json_start = json_candidate.find('{')
-                if json_start == -1:
-                    print("⚠️  No JSON structure found in response")
-                    return self._get_fallback_threats(project_info)
-                
-                # Extract JSON by counting braces to find the complete structure
-                json_text = ""
-                brace_count = 0
-                bracket_count = 0
-                in_string = False
-                escape_next = False
-                
-                for i, char in enumerate(json_candidate[json_start:], json_start):
-                    json_text += char
-                    
-                    if escape_next:
-                        escape_next = False
-                        continue
-                        
-                    if char == '\\':
-                        escape_next = True
-                        continue
-                        
-                    if char == '"' and not escape_next:
-                        in_string = not in_string
-                        continue
-                        
-                    if not in_string:
-                        if char == '{':
-                            brace_count += 1
-                        elif char == '}':
-                            brace_count -= 1
-                        elif char == '[':
-                            bracket_count += 1
-                        elif char == ']':
-                            bracket_count -= 1
-                            
-                        # If we've closed all braces and brackets, we have complete JSON
-                        if brace_count == 0 and bracket_count == 0 and json_text.strip().endswith('}'):
-                            break
-                
-                try:
-                    threat_data = json.loads(json_text)
-                    print(f"✅ Successfully extracted complete JSON structure")
-                except json.JSONDecodeError as e:
-                    print(f"⚠️  Failed to parse extracted JSON: {e}")
-                    print(f"Extracted JSON: {json_text[:200]}...")
-                    return self._get_fallback_threats(project_info)
+                return self._get_fallback_threats(project_info)
+            
+            # Process the threat data
             threats = []
             
             for threat in threat_data.get('threats', []):
@@ -739,3 +1334,204 @@ You can edit this file to:
         json_file = tf_dir / "project_info.json"
         with open(json_file, 'w') as f:
             json.dump(project_info, f, indent=2)
+    
+    def _reformat_threats_via_bedrock(self, original_file: str, content: str, context_files: Dict[str, Any]) -> str:
+        """Reformat threat file via Bedrock when all threats are incorrectly formatted"""
+        try:
+            import boto3
+            import json
+            from pathlib import Path
+            
+            # Create new filename
+            original_path = Path(original_file)
+            new_filename = f"{original_path.stem}_reformatted_threat_statements.md"
+            new_file_path = original_path.parent / new_filename
+            
+            # Prepare Bedrock request
+            session = boto3.Session()  # Use default session like attack tree generator
+            bedrock = session.client('bedrock-runtime', region_name='us-east-1')
+            
+            # Use model from context or default
+            model_id = context_files.get('model_id', 'anthropic.claude-3-haiku-20240307-v1:0')
+            print(f"🔍 Debug: Using model ID: {model_id}")
+            
+            prompt = f"""You are a cybersecurity expert. I have a threat model document that contains threat information but not in the correct format.
+
+Please reformat ALL threats in this document to use this EXACT format structure:
+
+# Generated Threat Statements - [Application Name]
+
+*This file was automatically generated by ThreatForest AI analysis.*
+
+## Application Context
+- **Application**: [Application Name]
+- **Generated**: [Current timestamp]
+- **Total Threats**: [Number]
+- **High Priority**: [Number]
+- **Medium Priority**: [Number]
+- **Low Priority**: [Number]
+
+## Threat Statements
+
+### High Priority Threats
+
+#### T001 - [Descriptive Category Name]
+
+**Threat Statement**: A [threat source] with [prerequisites], can [threat action], which leads to [threat impact], resulting in [reduced goal] of [impacted assets].
+
+- **Threat Source**: [threat source]
+- **Prerequisites**: [prerequisites]
+- **Threat Action**: [threat action]
+- **Threat Impact**: [threat impact]
+- **Reduced Goal**: [reduced goal]
+- **Impacted Assets**: [impacted assets]
+- **Priority**: High
+- **Category**: [Descriptive Category Name]
+
+---
+
+#### T002 - [Next Category Name]
+
+[Same format for next threat]
+
+### Medium Priority Threats
+
+#### T00X - [Category Name]
+
+[Same format for Medium priority threats with sequential T numbers]
+
+### Low Priority Threats
+
+#### T00Y - [Category Name]
+
+[Same format for Low priority threats with sequential T numbers]
+
+CRITICAL REQUIREMENTS:
+1. Use SEQUENTIAL T001, T002, T003... identifiers (NOT UUIDs or original IDs)
+2. Use descriptive category names (e.g., "Data Breach", "Authentication", "Injection Attack") NOT generic ones
+3. Ensure threat statements follow the exact syntax: "A [source] with [prerequisites], can [action], which leads to [impact], resulting in [reduced goal] of [assets]"
+4. Group threats by priority (High, Medium, Low)
+5. Include all structured fields for each threat
+6. Use consistent markdown formatting with --- separators
+
+Original document content:
+{content}
+
+Return a complete markdown document with properly formatted threat statements using sequential T001, T002, etc. identifiers."""
+            
+            body = {
+                "anthropic_version": "bedrock-2023-05-31",
+                "max_tokens": 4000,
+                "messages": [{"role": "user", "content": prompt}]
+            }
+            
+            response = bedrock.invoke_model(
+                modelId=model_id,
+                body=json.dumps(body)
+            )
+            
+            response_body = json.loads(response['body'].read())
+            reformatted_content = response_body['content'][0]['text']
+            
+            # Save reformatted file
+            with open(new_file_path, 'w', encoding='utf-8') as f:
+                f.write(reformatted_content)
+            
+            print(f"💾 Created reformatted threat file: {new_filename}")
+            return str(new_file_path)
+            
+        except Exception as e:
+            print(f"⚠️  Failed to reformat threats via Bedrock: {e}")
+            return None
+    
+    def _reformat_mixed_threats_via_bedrock(self, original_file: str, content: str, correct_threats: List[Dict], context_files: Dict[str, Any]) -> str:
+        """Reformat threat file via Bedrock when there are mixed correct/incorrect threats"""
+        try:
+            import boto3
+            import json
+            from pathlib import Path
+            
+            # Create new filename
+            original_path = Path(original_file)
+            new_filename = f"{original_path.stem}_reformatted_threat_statements.md"
+            new_file_path = original_path.parent / new_filename
+            
+            # Prepare correct threats summary
+            correct_threats_summary = "\n".join([
+                f"- {threat.get('description', 'No description')}" for threat in correct_threats
+            ])
+            
+            # Prepare Bedrock request
+            session = boto3.Session()
+            bedrock = session.client('bedrock-runtime', region_name='us-east-1')
+            
+            # Use model from context or default
+            model_id = context_files.get('model_id', 'anthropic.claude-3-haiku-20240307-v1:0')
+            print(f"🔍 Debug: Using model ID: {model_id}")
+            
+            prompt = f"""You are a cybersecurity expert. I have a threat model document that contains some correctly formatted threats and some incorrectly formatted threats.
+
+PRESERVE these correctly formatted threats exactly as they are:
+{correct_threats_summary}
+
+Please reformat the document to use this EXACT format structure:
+
+# Generated Threat Statements - [Application Name]
+
+*This file was automatically generated by ThreatForest AI analysis.*
+
+## Application Context
+- **Application**: [Application Name]
+- **Generated**: [Current timestamp]
+- **Total Threats**: [Number]
+- **High Priority**: [Number]
+- **Medium Priority**: [Number]
+- **Low Priority**: [Number]
+
+## Threat Statements
+
+### High Priority Threats
+
+#### T001 - [Category Name]
+
+**Threat Statement**: A [threat source] with [prerequisites], can [threat action], which leads to [threat impact], resulting in [reduced goal] of [impacted assets].
+
+- **Threat Source**: [threat source]
+- **Prerequisites**: [prerequisites]
+- **Threat Action**: [threat action]
+- **Threat Impact**: [threat impact]
+- **Reduced Goal**: [reduced goal]
+- **Impacted Assets**: [impacted assets]
+- **Priority**: High
+- **Category**: [Category Name]
+
+---
+
+[Continue with all threats in this exact format]
+
+Return a complete markdown document with all threat statements properly formatted in the exact structure shown above."""
+            
+            body = {
+                "anthropic_version": "bedrock-2023-05-31",
+                "max_tokens": 4000,
+                "messages": [{"role": "user", "content": prompt}]
+            }
+            
+            response = bedrock.invoke_model(
+                modelId=model_id,
+                body=json.dumps(body)
+            )
+            
+            response_body = json.loads(response['body'].read())
+            reformatted_content = response_body['content'][0]['text']
+            
+            # Save reformatted file
+            with open(new_file_path, 'w', encoding='utf-8') as f:
+                f.write(reformatted_content)
+            
+            print(f"💾 Created reformatted threat file: {new_filename}")
+            return str(new_file_path)
+            
+        except Exception as e:
+            print(f"⚠️  Failed to reformat mixed threats via Bedrock: {e}")
+            return None

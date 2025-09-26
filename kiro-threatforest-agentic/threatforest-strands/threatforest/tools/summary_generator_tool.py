@@ -49,21 +49,26 @@ class SummaryGeneratorTool(Tool):
             
             # Generate individual attack tree files
             try:
+                # Handle both mapped and unmapped attack trees
+                trees_to_process = []
+                if attack_trees and isinstance(attack_trees, dict):
+                    trees_to_process = attack_trees.get('ttc_mapped_trees', [])
+                    if not trees_to_process:
+                        trees_to_process = attack_trees.get('attack_trees', [])
+                elif attack_trees and isinstance(attack_trees, list):
+                    trees_to_process = attack_trees
+                
                 tree_files = self._generate_attack_tree_files(
-                    output_path, attack_trees.get('ttc_mapped_trees', [])
+                    output_path, trees_to_process
                 )
             except Exception as e:
                 print(f"⚠️  Attack tree files generation failed: {e}")
+                import traceback
+                traceback.print_exc()
                 tree_files = []
             
-            # Generate TTC mapping report
-            try:
-                ttc_file = self._generate_ttc_report(
-                    output_path, attack_trees
-                )
-            except Exception as e:
-                print(f"⚠️  TTC report generation failed: {e}")
-                ttc_file = None
+            # Skip TTC mapping report generation
+            ttc_file = None
             
             # Generate JSON data export
             try:
@@ -104,9 +109,11 @@ class SummaryGeneratorTool(Tool):
         
         project_info = extracted_info.get('project_info', {})
         extraction_summary = extracted_info.get('extraction_summary', {})
-        mapping_summary = attack_trees.get('mapping_summary', {})
         
+        # Handle both mapped and unmapped attack trees
         trees = attack_trees.get('ttc_mapped_trees', [])
+        if not trees:
+            trees = attack_trees.get('attack_trees', [])
         successful_trees = [t for t in trees if 'mermaid_code' in t]
         
         summary_content = f"""# ThreatForest Analysis Report
@@ -115,7 +122,7 @@ class SummaryGeneratorTool(Tool):
 
 ## Executive Summary
 
-This report presents a comprehensive threat analysis for **{project_info.get('application_name', 'Unknown Application')}**, including attack tree modeling and MITRE ATT&CK technique mapping.
+This report presents a comprehensive threat analysis for **{project_info.get('application_name', 'Unknown Application')}**, including attack tree modeling.
 
 ## Project Information
 
@@ -145,23 +152,12 @@ This report presents a comprehensive threat analysis for **{project_info.get('ap
 ### Generated Attack Trees
 {self._format_attack_trees_summary(successful_trees)}
 
-## MITRE ATT&CK Mapping
-
-### TTC Mapping Summary
-- **Techniques Loaded**: {mapping_summary.get('techniques_loaded', 0)}
-- **Total Mappings**: {mapping_summary.get('total_mappings', 0)}
-- **High Confidence Mappings**: {mapping_summary.get('successful_mappings', 0)}
-- **Confidence Threshold**: {mapping_summary.get('threshold_used', 0.8)}
-
-### Top Mapped Techniques
-{self._format_top_techniques(trees)}
-
 ## Recommendations
 
 ### Immediate Actions
 1. **Address High Severity Threats**: Focus on the {extraction_summary.get('high_severity_count', 0)} high severity threats identified
 2. **Implement Security Controls**: Deploy mitigations identified in attack trees
-3. **Monitor Attack Patterns**: Set up detection for mapped MITRE ATT&CK techniques
+3. **Review Attack Paths**: Analyze generated attack trees for potential vulnerabilities
 
 ### Strategic Improvements
 1. **Architecture Review**: Consider security implications of {project_info.get('architecture_type', 'current')} architecture
@@ -173,7 +169,6 @@ This report presents a comprehensive threat analysis for **{project_info.get('ap
 ### Files Generated
 - Main Summary Report (this file)
 - Individual Attack Tree Files (.mmd format)
-- TTC Mapping Report
 - JSON Data Export
 
 ---
@@ -190,17 +185,39 @@ This report presents a comprehensive threat analysis for **{project_info.get('ap
         
         tree_files = []
         
+        if not trees:
+            return tree_files
+        
         for tree in trees:
-            if 'mermaid_code' in tree:
-                threat_id = tree.get('threat_id', 'unknown')
-                filename = f"attack_tree_{threat_id}.md"
-                file_path = output_path / filename
+            if not isinstance(tree, dict) or 'mermaid_code' not in tree:
+                continue
                 
-                # Create enhanced content with TTC mappings
-                content = f"""# Attack Tree: {tree.get('threat_category', 'Unknown')}
+            threat_id = tree.get('threat_id', tree.get('id', 'unknown'))
+            threat_statement = tree.get('threat_statement', tree.get('description', 'No description available'))
+            category = tree.get('threat_category', tree.get('category', 'Unknown'))
+            
+            # Create filename with threat name
+            if threat_statement:
+                import re
+                # Extract key words from threat statement for filename
+                words = re.findall(r'\b[A-Za-z]{3,}\b', threat_statement)
+                meaningful_words = [w for w in words[:4] if w.lower() not in 
+                                  ['can', 'the', 'and', 'which', 'leads', 'resulting', 'from', 'with']]
+                if meaningful_words:
+                    filename_base = '_'.join(meaningful_words)
+                    filename = f"attack_tree_{threat_id}_{filename_base}.md"
+                else:
+                    filename = f"attack_tree_{threat_id}.md"
+            else:
+                filename = f"attack_tree_{threat_id}.md"
+                
+            file_path = output_path / filename
+            
+            # Create content without TTC mappings
+            content = f"""# Attack Tree: {category}
 
 **Threat ID**: {threat_id}  
-**Description**: {tree.get('threat_description', 'No description available')[:200]}...
+**Description**: {threat_statement[:200]}{'...' if len(threat_statement) > 200 else ''}
 
 ## Attack Tree Diagram
 
@@ -208,20 +225,30 @@ This report presents a comprehensive threat analysis for **{project_info.get('ap
 {tree.get('mermaid_code', '')}
 ```
 
-## MITRE ATT&CK Mappings
+## Attack Path Analysis
 
-{self._format_tree_ttc_mappings(tree.get('ttc_mappings', []))}
+This attack tree represents the potential attack paths for the identified threat. Each node in the tree represents either:
+- **Attack Goal** (orange): The ultimate objective
+- **Attack Step** (red): Individual attack actions
+- **Fact/Condition** (blue): Prerequisites or conditions
+- **Mitigation** (green): Defensive measures
 
-## Attack Steps Analysis
-
-{self._format_attack_steps(tree.get('attack_steps', []))}
+Review this attack tree to:
+1. Identify critical attack paths
+2. Implement appropriate security controls
+3. Monitor for indicators of these attack patterns
+4. Develop incident response procedures
 
 ---
-*Generated by ThreatForest*
+*Generated by ThreatForest - Attack Tree Analysis*
 """
-                
-                file_path.write_text(content)
+            
+            try:
+                file_path.write_text(content, encoding='utf-8')
                 tree_files.append(str(file_path))
+                print(f"💾 Generated attack tree file: {filename}")
+            except Exception as e:
+                print(f"⚠️  Failed to write attack tree file {filename}: {e}")
         
         return tree_files
     
@@ -305,6 +332,15 @@ This report presents a comprehensive threat analysis for **{project_info.get('ap
                              extracted_info: Dict[str, Any]) -> str:
         """Generate JSON data export"""
         
+        # Handle None attack_trees
+        if not attack_trees:
+            attack_trees = {}
+        
+        # Get attack trees from the correct structure
+        trees = attack_trees.get('ttc_mapped_trees', [])
+        if not trees:
+            trees = attack_trees.get('attack_trees', [])
+        
         export_data = {
             "metadata": {
                 "generated_at": datetime.now().isoformat(),
@@ -317,7 +353,7 @@ This report presents a comprehensive threat analysis for **{project_info.get('ap
                 "all_threats": extracted_info.get('threat_statements', []),
                 "high_severity": extracted_info.get('high_severity_threats', [])
             },
-            "attack_trees": attack_trees.get('ttc_mapped_trees', []),
+            "attack_trees": trees,
             "mapping_summary": attack_trees.get('mapping_summary', {})
         }
         

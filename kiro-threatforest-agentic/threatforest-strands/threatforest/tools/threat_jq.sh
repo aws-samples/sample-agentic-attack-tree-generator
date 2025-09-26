@@ -78,8 +78,7 @@ case "$QUERY" in
         ;;
     
     "extract")
-        echo "🎯 STRUCTURED EXTRACTION"
-        jq -r '
+        jq '
         def get_priority(threat):
             if threat.metadata then
                 (threat.metadata[] | select(.key == "Priority") | .value) // "Medium"
@@ -88,7 +87,7 @@ case "$QUERY" in
             end;
         
         {
-            application: {
+            application_context: {
                 name: .applicationInfo.name,
                 description: .applicationInfo.description,
                 technologies: .applicationInfo.technologies

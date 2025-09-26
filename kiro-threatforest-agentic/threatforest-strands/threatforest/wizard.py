@@ -83,14 +83,15 @@ class ThreatForestWizard:
 🌳 Welcome to ThreatForest!
 
 ThreatForest is an AI-powered threat modeling tool that automatically generates 
-attack trees and maps them to MITRE ATT&CK techniques.
+attack trees and comprehensive security reports.
 
 What ThreatForest does:
-• 📁 Analyzes your project files (README, threat statements, diagrams)
-• 🤖 Extracts project information using AWS Bedrock
-• 🌳 Generates detailed attack trees for high-severity threats
-• 🎯 Maps attack steps to MITRE ATT&CK techniques
-• 📄 Creates comprehensive security reports
+• 📁 Analyzes ALL project content (docs, configs, images, threat models)
+• 👁️ Uses multimodal AI to analyze architecture diagrams and images
+• 🤖 Extracts project information using AWS Bedrock vision capabilities
+• 🎯 Generates standardized threat statements (T001, T002, T003...)
+• 🌳 Creates detailed attack trees for high-severity threats
+• 📄 Produces comprehensive security reports and documentation
 
 Let's get started with the setup!
         """
@@ -201,10 +202,11 @@ Let's get started with the setup!
         self.console.print("ThreatForest analyzes your project files to understand the application.")
         
         self.console.print("\n🔍 Enhanced File Discovery:")
-        self.console.print("• 🎯 Threat Models (ThreatComposer .tc, threat.json, security.yaml)")
-        self.console.print("• 📖 README files (project description, technologies)")
-        self.console.print("• 🏗️  Architecture diagrams (.mmd, .drawio, .puml)")
-        self.console.print("• 📄 Documentation files")
+        self.console.print("• 🎯 Threat Models (.tc.json, .md with threat content)")
+        self.console.print("• 📖 Documentation (README, config files, docker-compose)")
+        self.console.print("• 🏗️  Architecture diagrams (.png, .jpg, .pdf, .mmd, .drawio)")
+        self.console.print("• ⚙️  Configuration files (.json, .yaml, .yml)")
+        self.console.print("• 👁️ AI vision analysis of images and diagrams")
         
         # Suggest current directory first
         current_dir = Path.cwd()
@@ -258,9 +260,10 @@ Let's get started with the setup!
         if len(threat_models) == 0 and len(readme_files) == 0 and len(diagram_files) == 0:
             self.console.print("⚠️  No threat models, documentation, or diagrams found")
             self.console.print("💡 ThreatForest needs at least one of:")
-            self.console.print("   • ThreatComposer workspace files (.tc)")
-            self.console.print("   • Architecture diagrams (.png, .pdf, .jpg, .drawio)")
-            self.console.print("   • Documentation files (.md, README)")
+            self.console.print("   • ThreatComposer files (.tc.json)")
+            self.console.print("   • Architecture diagrams (.png, .jpg, .pdf)")
+            self.console.print("   • Documentation (README.md, config files)")
+            self.console.print("   • Any project files for AI analysis")
             
             if not Confirm.ask("Continue with very limited analysis?"):
                 self.console.print("💡 Add some documentation or diagrams and try again.")
@@ -269,22 +272,25 @@ Let's get started with the setup!
             self.console.print("✅ Threat models found - analysis will be comprehensive!")
         elif len(diagram_files) > 0 or len(readme_files) > 0:
             self.console.print("🤖 No threat models found - will generate threats using AI analysis")
-            self.console.print("📋 ThreatForest will analyze your diagrams and documentation to create threat models")
+            self.console.print("📋 ThreatForest will analyze your content and images to create standardized threat models")
         else:
             self.console.print("⚠️  Limited inputs - analysis will be basic")
     
     def _discover_threat_files_preview(self, project_path: str) -> List[str]:
         """Preview threat file discovery"""
         threat_files = []
-        supported_formats = ['.json', '.tc', '.yaml', '.yml']
+        supported_formats = ['.json', '.tc', '.yaml', '.yml', '.md', '.txt']
         threat_keywords = ['threat', 'risk', 'vulnerability', 'attack', 'security']
         
         for root, dirs, files in os.walk(project_path):
             for file in files:
                 file_path = os.path.join(root, file)
                 
+                # Check if file contains 'threat' in filename (any extension)
+                if 'threat' in file.lower():
+                    threat_files.append(file_path)
                 # Check by extension and keywords
-                if any(file.lower().endswith(ext) for ext in supported_formats):
+                elif any(file.lower().endswith(ext) for ext in supported_formats):
                     if any(keyword in file.lower() for keyword in threat_keywords):
                         threat_files.append(file_path)
                     elif 'threatcomposer' in file.lower() or file.endswith('.tc'):
@@ -430,40 +436,17 @@ Let's get started with the setup!
             # Save attack trees immediately after generation
             self._save_attack_trees(trees_result, output_dir)
             
-            # Step 4: TTC Mapping
+            # Skip TTC mapping but continue with summary generation
+            self.console.print("⏭️  Skipping MITRE ATT&CK mapping as requested")
+            
+            # Step 4: Summary Generation (without TTC mapping)
             with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}")) as progress:
-                task = progress.add_task("🎯 Mapping to MITRE ATT&CK techniques...", total=None)
-                
-                ttc_mapper = TTCMappingTool(threshold=0.5)
-                try:
-                    mapped_result = await ttc_mapper.execute(
-                        trees_result,
-                        bedrock_model=self.config["bedrock_model"],
-                        aws_profile=self.config.get("aws_profile")
-                    )
-                except Exception as e:
-                    print(f"⚠️  TTC mapping failed: {e}")
-                    mapped_result = None
-                
-                progress.update(task, description="✅ TTC mapping complete")
-            
-            # Handle potential None result
-            if mapped_result is None:
-                self.console.print("⚠️  TTC mapping returned no results")
-                mapping_summary = {'total_mappings': 0}
-            else:
-                mapping_summary = mapped_result.get('mapping_summary', {'total_mappings': 0})
-            
-            self.console.print(f"🎯 Mapped {mapping_summary.get('total_mappings', 0)} attack steps to MITRE ATT&CK")
-            
-            # Step 5: Summary Generation
-            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}")) as progress:
-                task = progress.add_task("📄 Generating comprehensive reports...", total=None)
+                task = progress.add_task("📄 Generating reports (without TTC mapping)...", total=None)
                 
                 summary_generator = SummaryGeneratorTool()
                 try:
                     summary_result = await summary_generator.execute(
-                        attack_trees=mapped_result if mapped_result else {},
+                        attack_trees=trees_result,  # Use unmapped attack trees
                         extracted_info=extraction_result,
                         output_dir=str(output_dir)
                     )
@@ -477,8 +460,8 @@ Let's get started with the setup!
             if summary_result is None:
                 summary_result = {'output_files': []}
             
-            # Success summary
-            self._show_success_summary(output_dir, summary_result, extraction_result, mapping_summary)
+            # Success summary without TTC mapping
+            self._show_success_summary_no_ttc(output_dir, summary_result, extraction_result)
             
         except Exception as e:
             self.console.print(f"\n❌ Analysis failed: {e}")
@@ -489,42 +472,98 @@ Let's get started with the setup!
         if not trees_result or 'attack_trees' not in trees_result:
             return
             
-        attack_trees = trees_result['attack_trees']
-        for i, tree in enumerate(attack_trees):
-            if 'mermaid_code' in tree:
-                threat_id = tree.get('threat_id', f'T{i+1:03d}')
-                
-                # Create a better filename from threat statement
-                threat_statement = tree.get('threat_statement', '')
-                if threat_statement:
-                    # Extract key words from threat statement for filename
-                    import re
-                    # Remove common words and keep meaningful terms
-                    words = re.findall(r'\b[A-Za-z]{3,}\b', threat_statement)
-                    meaningful_words = [w for w in words[:4] if w.lower() not in 
-                                      ['can', 'the', 'and', 'which', 'leads', 'resulting', 'from', 'with']]
-                    if meaningful_words:
-                        filename_base = '_'.join(meaningful_words)
-                        filename = f"attack_tree_{threat_id}_{filename_base}.mmd"
-                    else:
-                        filename = f"attack_tree_{threat_id}.mmd"
-                else:
-                    filename = f"attack_tree_{threat_id}.mmd"
-                
-                filepath = output_dir / filename
-                
-                try:
-                    with open(filepath, 'w', encoding='utf-8') as f:
-                        f.write(f"# Attack Tree for {threat_id}\n\n")
-                        f.write(f"**Threat**: {tree.get('threat_statement', 'Unknown')}\n\n")
-                        f.write("## Attack Tree Diagram\n\n")
-                        f.write("```mermaid\n")
-                        f.write(tree['mermaid_code'])
-                        f.write("\n```\n")
-                    
-                    print(f"💾 Saved attack tree: {filename}")
-                except Exception as e:
-                    print(f"⚠️  Failed to save attack tree {filename}: {e}")
+        # Attack trees are now handled by summary generator
+        successful_trees = [tree for tree in trees_result['attack_trees'] if 'mermaid_code' in tree]
+        print(f"🌳 Generated {len(successful_trees)} attack trees successfully")
+    
+    def _show_success_summary_no_ttc(self, output_dir: Path, summary_result: Dict[str, Any], 
+                                    extraction_result: Dict[str, Any]):
+        """Show success summary without TTC mapping"""
+        
+        if extraction_result is None:
+            self.console.print("⚠️  No extraction results available")
+            return
+            
+        project_info = extraction_result.get('project_info', {})
+        if not project_info:
+            self.console.print("⚠️  No project information available")
+            return
+        
+        # Handle None summary_result
+        if summary_result is None:
+            summary_result = {'output_files': []}
+        
+        # Count actual attack tree files in output directory
+        attack_tree_count = len(list(output_dir.glob("attack_tree_*.md")))
+        
+        success_panel = f"""
+🎉 ThreatForest Analysis Complete!
+
+📊 Results Summary:
+• Application: {project_info.get('application_name', 'Unknown')}
+• Technologies: {len(project_info.get('technologies', []))} identified
+• Threats analyzed: {len(extraction_result.get('high_severity_threats', []))}
+• Attack trees generated: {attack_tree_count}
+• MITRE ATT&CK mapping: Skipped
+
+📁 Output Directory: {output_dir}
+
+📄 Generated Files:
+{chr(10).join(f'• {Path(f).name}' for f in summary_result.get('output_files', []))}
+
+🔍 Next Steps:
+1. Review the main analysis report
+2. Examine individual attack trees
+3. Implement recommended security controls
+        """
+        
+        self.console.print(Panel(success_panel, title="✅ Analysis Complete", border_style="green"))
+        
+        if Confirm.ask("Open output directory?"):
+            import webbrowser
+            webbrowser.open(f"file://{output_dir}")
+    
+    def _show_success_summary_simple(self, output_dir: Path, trees_result: Dict[str, Any], 
+                                   extraction_result: Dict[str, Any]):
+        """Show simplified success summary without TTC mapping"""
+        
+        if extraction_result is None:
+            self.console.print("⚠️  No extraction results available")
+            return
+            
+        project_info = extraction_result.get('project_info', {})
+        if not project_info:
+            self.console.print("⚠️  No project information available")
+            return
+        
+        # Count actual attack tree files in output directory
+        attack_tree_count = len(list(output_dir.glob("attack_tree_*.md")))
+        
+        success_panel = f"""
+🎉 ThreatForest Attack Tree Generation Complete!
+
+📊 Results Summary:
+• Application: {project_info.get('application_name', 'Unknown')}
+• Technologies: {len(project_info.get('technologies', []))} identified
+• Threats analyzed: {len(extraction_result.get('high_severity_threats', []))}
+• Attack trees generated: {attack_tree_count}
+
+📁 Output Directory: {output_dir}
+
+📄 Generated Files:
+{chr(10).join(f'• {f.name}' for f in output_dir.glob("attack_tree_*.md"))}
+
+🔍 Next Steps:
+1. Review the generated attack trees
+2. Customize attack paths as needed
+3. Implement recommended security controls
+        """
+        
+        self.console.print(Panel(success_panel, title="✅ Attack Trees Generated", border_style="green"))
+        
+        if Confirm.ask("Open output directory?"):
+            import webbrowser
+            webbrowser.open(f"file://{output_dir}")
     
     def _show_success_summary(self, output_dir: Path, summary_result: Dict[str, Any], 
                              extraction_result: Dict[str, Any], mapping_summary: Dict[str, Any]):
@@ -549,7 +588,7 @@ Let's get started with the setup!
             mapping_summary = {'total_mappings': 0}
         
         # Count actual attack tree files in output directory
-        attack_tree_count = len(list(output_dir.glob("attack_tree_*.mmd")))
+        attack_tree_count = len(list(output_dir.glob("attack_tree_*.md")))
         
         success_panel = f"""
 🎉 ThreatForest Analysis Complete!

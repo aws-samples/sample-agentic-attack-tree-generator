@@ -172,13 +172,19 @@ class AttackTreeGeneratorTool(Tool):
         }
     
     def _build_attack_tree_prompt(self, threat: Dict[str, Any], project_info: Dict[str, Any]) -> str:
-        """Build prompt for attack tree generation using mermaid template"""
+        """Build prompt for attack tree generation using mermaid template with enhanced context"""
         
         # Load the mermaid template
         mermaid_template = self._load_mermaid_template()
         
+        # Build enhanced context from all available files
+        context_info = self._build_enhanced_context(project_info)
+        
         # Build the prompt using the template structure
         return f"""You are a cybersecurity expert creating attack trees. Convert the following threat into a detailed Mermaid flowchart diagram using this EXACT format:
+
+## Enhanced Context Information:
+{context_info}
 
 ## Structure Requirements:
 - Use `graph TD` (top-down direction)
@@ -229,6 +235,7 @@ Generate a comprehensive attack tree with:
 - Include potential mitigations
 - Use descriptive node labels
 - Apply proper color classifications
+- Consider the enhanced context for realistic attack vectors
 
 Return ONLY the Mermaid diagram in this format:
 
@@ -248,6 +255,43 @@ graph TD
     class [goal nodes] goal
     class [fact nodes] fact
 ```"""
+    
+    def _build_enhanced_context(self, project_info: Dict[str, Any]) -> str:
+        """Build enhanced context from all available files including images and PDFs"""
+        context_parts = []
+        
+        # Add application context
+        if project_info.get('application_name'):
+            context_parts.append(f"**Application**: {project_info['application_name']}")
+        
+        if project_info.get('description'):
+            context_parts.append(f"**Description**: {project_info['description']}")
+        
+        if project_info.get('industry'):
+            context_parts.append(f"**Industry**: {project_info['industry']}")
+        
+        # Add technology stack
+        technologies = project_info.get('technologies', [])
+        if technologies:
+            context_parts.append(f"**Technologies**: {', '.join(technologies[:15])}")
+        
+        # Add architecture information if available
+        if project_info.get('architecture_info'):
+            context_parts.append(f"**Architecture**: {project_info['architecture_info']}")
+        
+        # Add data flow information
+        if project_info.get('data_flows'):
+            context_parts.append(f"**Data Flows**: {project_info['data_flows']}")
+        
+        # Add security controls
+        if project_info.get('security_controls'):
+            context_parts.append(f"**Security Controls**: {project_info['security_controls']}")
+        
+        # Add component information
+        if project_info.get('components'):
+            context_parts.append(f"**Components**: {', '.join(project_info['components'][:10])}")
+        
+        return "\n".join(context_parts) if context_parts else "No additional context available"
     
     def _load_mermaid_template(self) -> str:
         """Load Mermaid template from prompts directory"""
@@ -299,43 +343,86 @@ graph TD
         
         if match:
             mermaid_code = match.group(1).strip()
-            
-            # Validate and fix common issues
-            lines = mermaid_code.split('\n')
-            
-            # Ensure it starts with graph TD
-            if not lines[0].strip().startswith('graph TD'):
-                mermaid_code = 'graph TD\n' + mermaid_code
-            
-            # Ensure it has all class definitions
-            if 'classDef attack' not in mermaid_code:
-                mermaid_code += '\n\n    classDef attack fill:#ffcccc'
-            if 'classDef mitigation' not in mermaid_code:
-                mermaid_code += '\n    classDef mitigation fill:#ccffcc'
-            if 'classDef goal' not in mermaid_code:
-                mermaid_code += '\n    classDef goal fill:#ffcc99'
-            if 'classDef fact' not in mermaid_code:
-                mermaid_code += '\n    classDef fact fill:#ccccff'
-            
-            return mermaid_code
+            return self._clean_mermaid_code(mermaid_code)
         
         # Fallback: look for graph TD patterns
         graph_pattern = r'(graph TD.*?)(?=\n\n|\n```|\Z)'
         match = re.search(graph_pattern, content, re.DOTALL)
         
         if match:
-            return match.group(1).strip()
+            return self._clean_mermaid_code(match.group(1).strip())
         
         # Last resort: create minimal valid mermaid
-        return f"""graph TD
-    goal["Threat: {content[:50]}..."]
+        return self._get_minimal_mermaid()
+    
+    def _clean_mermaid_code(self, mermaid_code: str) -> str:
+        """Clean and validate Mermaid code"""
+        import re
+        
+        if not mermaid_code.strip():
+            return self._get_minimal_mermaid()
+        
+        lines = mermaid_code.split('\n')
+        cleaned_lines = []
+        
+        # Ensure it starts with graph TD
+        if not lines[0].strip().startswith('graph TD'):
+            cleaned_lines.append('graph TD')
+        
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+                
+            # Skip duplicate graph TD declarations
+            if line.startswith('graph TD') and cleaned_lines and cleaned_lines[0] == 'graph TD':
+                continue
+                
+            # Clean node definitions - remove problematic characters
+            if '[' in line and ']' in line:
+                # Fix quotes and special characters that break Mermaid
+                line = re.sub(r'["""]', '"', line)  # Normalize quotes
+                line = re.sub(r'[^\w\s\[\]"().,;:!?\-\>]', '', line)  # Remove invalid chars
+                
+            cleaned_lines.append(line)
+        
+        # Rebuild with proper indentation
+        result_lines = [cleaned_lines[0]]  # graph TD
+        for line in cleaned_lines[1:]:
+            if line.startswith('classDef') or line.startswith('class '):
+                result_lines.append('    ' + line)
+            else:
+                result_lines.append('    ' + line)
+        
+        mermaid_code = '\n'.join(result_lines)
+        
+        # Ensure it has all class definitions
+        if 'classDef attack' not in mermaid_code:
+            mermaid_code += '\n\n    classDef attack fill:#ffcccc'
+        if 'classDef mitigation' not in mermaid_code:
+            mermaid_code += '\n    classDef mitigation fill:#ccffcc'
+        if 'classDef goal' not in mermaid_code:
+            mermaid_code += '\n    classDef goal fill:#ffcc99'
+        if 'classDef fact' not in mermaid_code:
+            mermaid_code += '\n    classDef fact fill:#ccccff'
+        
+        return mermaid_code
+    
+    def _get_minimal_mermaid(self) -> str:
+        """Get minimal valid Mermaid diagram"""
+        return """graph TD
+    goal["Attack Goal"]
+    step1["Attack Step"]
+    
+    goal --> step1
     
     classDef attack fill:#ffcccc
     classDef mitigation fill:#ccffcc
     classDef goal fill:#ffcc99
     classDef fact fill:#ccccff
     
-    class goal goal"""
+    class goal goal
+    class step1 attack"""
     
     def _extract_attack_steps(self, mermaid_code: str) -> List[str]:
         """Extract attack step nodes from Mermaid code"""

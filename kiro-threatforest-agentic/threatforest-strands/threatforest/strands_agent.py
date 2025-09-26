@@ -123,16 +123,10 @@ class ThreatForestOrchestrator(Agent):
             })
             context.add("attack_trees", attack_trees)
             
-            # Step 5: TTC mapping
-            ttc_mapped_trees = await self.use_tool("ttc_mapping", {
-                "attack_trees": attack_trees,
-                "aaf_bundle_path": self._find_aaf_bundle()
-            })
-            context.add("ttc_mapped_trees", ttc_mapped_trees)
-            
-            # Step 6: Generate summary
+            # Skip TTC mapping but generate summary
+            # Step 5: Generate summary (without TTC mapping)
             summary = await self.use_tool("summary_generator", {
-                "attack_trees": ttc_mapped_trees,
+                "attack_trees": attack_trees,  # Use unmapped attack trees
                 "extracted_info": extraction_result,
                 "output_dir": str(output_dir)
             })

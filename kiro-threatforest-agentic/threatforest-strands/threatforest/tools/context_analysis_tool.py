@@ -20,7 +20,7 @@ class ContextAnalysisTool(Tool):
             name="context_analysis",
             description="Discover and analyze context files including threat models, READMEs, and architecture diagrams"
         )
-        self.supported_formats = ['.json', '.tc', '.yaml', '.yml']
+        self.supported_formats = ['.json', '.tc', '.yaml', '.yml', '.md', '.txt']
         self.threat_keywords = ['threat', 'risk', 'vulnerability', 'attack', 'security']
     
     async def execute(self, project_path: str) -> Dict[str, Any]:
@@ -67,7 +67,8 @@ class ContextAnalysisTool(Tool):
             "discovered_files": context_files,
             "threat_analysis": threat_analysis,
             "parsed_content": parsed_files,
-            "summary": self._generate_enhanced_summary(threat_analysis, parsed_files, context_files)
+            "summary": self._generate_enhanced_summary(threat_analysis, parsed_files, context_files),
+            "enhanced_context": self._extract_enhanced_context_via_bedrock(context_files)
         }
     
     def _discover_threat_files(self, project_path: str) -> List[str]:
@@ -78,9 +79,11 @@ class ContextAnalysisTool(Tool):
             for file in files:
                 file_path = os.path.join(root, file)
                 
-                # Check by extension
-                if any(file.lower().endswith(ext) for ext in self.supported_formats):
-                    # Check by filename keywords
+                # Check if file contains 'threat' in filename (any extension)
+                if 'threat' in file.lower():
+                    threat_files.append(file_path)
+                # Check by extension and keywords
+                elif any(file.lower().endswith(ext) for ext in self.supported_formats):
                     if any(keyword in file.lower() for keyword in self.threat_keywords):
                         threat_files.append(file_path)
                     # Check ThreatComposer format
@@ -170,6 +173,19 @@ class ContextAnalysisTool(Tool):
     def _python_extract(self, file_path: str) -> Optional[Dict[str, Any]]:
         """Fallback Python extraction for ThreatComposer format"""
         try:
+            # Skip unsupported files
+            if not self._is_text_file(file_path):
+                return None
+            
+            # Handle binary files (images, PDFs) - mark for Bedrock processing
+            if self._is_binary_file(file_path):
+                return {
+                    'file_type': 'binary',
+                    'file_path': file_path,
+                    'requires_bedrock': True
+                }
+                
+            # Handle text files
             with open(file_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             
@@ -179,6 +195,43 @@ class ContextAnalysisTool(Tool):
             return None
         except:
             return None
+    
+    def _is_text_file(self, file_path: str) -> bool:
+        """Check if file can be processed (text files, images, PDFs)"""
+        import os
+        
+        # Check file extension
+        supported_extensions = {
+            # Text files
+            '.json', '.tc', '.yaml', '.yml', '.md', '.txt', '.csv',
+            # Images for Bedrock analysis
+            '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp',
+            # Documents for Bedrock analysis
+            '.pdf'
+        }
+        _, ext = os.path.splitext(file_path.lower())
+        
+        if ext in supported_extensions:
+            return True
+            
+        # For files without extension, try to detect if it's text
+        try:
+            with open(file_path, 'rb') as f:
+                chunk = f.read(1024)
+                if not chunk:
+                    return True  # Empty file
+                # Check if it's mostly text (no null bytes)
+                return b'\x00' not in chunk
+        except:
+            return False
+    
+    def _is_binary_file(self, file_path: str) -> bool:
+        """Check if file is binary (images, PDFs) that needs special handling"""
+        import os
+        
+        binary_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.pdf'}
+        _, ext = os.path.splitext(file_path.lower())
+        return ext in binary_extensions
     
     def _extract_threatcomposer(self, data: Dict) -> Dict[str, Any]:
         """Extract ThreatComposer format"""
@@ -235,6 +288,10 @@ class ContextAnalysisTool(Tool):
         """Categorize non-threat files"""
         name_lower = file_path.name.lower()
         
+        # Skip if already categorized as threat model
+        if str(file_path) in context_files["threat_models"]:
+            return
+        
         # Check if file has 'threat' in name and contains threat statements
         if "threat" in name_lower and file_path.suffix.lower() == ".md":
             if self._contains_threat_statements(file_path):
@@ -244,6 +301,7 @@ class ContextAnalysisTool(Tool):
         # Generated threat statement files should be treated as threat models
         if "generated_threat_statements" in name_lower:
             context_files["threat_models"].append(str(file_path))
+            return  # Don't categorize as README
         # READMEs and markdown files
         elif name_lower.startswith("readme") or file_path.suffix.lower() == ".md":
             context_files["readmes"].append(str(file_path))
@@ -364,3 +422,132 @@ class ContextAnalysisTool(Tool):
             summary.append(f"📄 Files: {', '.join(file_counts)}")
         
         return '\n'.join(summary)
+    
+    def _extract_enhanced_context_via_bedrock(self, context_files: Dict[str, Any]) -> Dict[str, Any]:
+        """Extract enhanced application context from images, PDFs, and markdown via Bedrock"""
+        try:
+            import boto3
+            import json
+            import base64
+            from pathlib import Path
+            
+            # Collect files for Bedrock analysis
+            files_to_analyze = []
+            
+            # Add images and PDFs
+            for category in ['architecture_diagrams', 'readmes']:
+                for file_path in context_files.get(category, []):
+                    if self._is_binary_file(file_path) or file_path.lower().endswith('.md'):
+                        files_to_analyze.append(file_path)
+            
+            if not files_to_analyze:
+                return {}
+            
+            print(f"🤖 Analyzing {len(files_to_analyze)} files via Bedrock for enhanced context")
+            
+            # Prepare Bedrock request with multimodal content
+            bedrock = boto3.client('bedrock-runtime', region_name='us-west-2')
+            
+            # Use model from context or default
+            model_id = context_files.get('model_id', 'anthropic.claude-3-haiku-20240307-v1:0')
+            
+            content_parts = []
+            
+            # Add text prompt
+            content_parts.append({
+                "type": "text",
+                "text": """Analyze the provided files to extract comprehensive application context information. 
+
+Extract and provide:
+1. **Application Name**: The name of the system/application
+2. **Industry**: Healthcare, Finance, E-commerce, etc.
+3. **Architecture Type**: Microservices, Monolithic, Serverless, etc.
+4. **Components**: List all system components, services, databases
+5. **Technologies**: Programming languages, frameworks, cloud services
+6. **Data Flows**: How data moves through the system
+7. **Security Controls**: Existing security measures
+8. **Deployment Environment**: Cloud provider, regions, etc.
+9. **Integration Points**: External systems, APIs, third-party services
+10. **Compliance Requirements**: Any regulatory requirements mentioned
+
+Provide a structured JSON response with these fields."""
+            })
+            
+            # Add file content
+            for file_path in files_to_analyze[:3]:  # Limit to 3 files for token management
+                try:
+                    if self._is_binary_file(file_path):
+                        # Handle images and PDFs
+                        with open(file_path, 'rb') as f:
+                            file_data = base64.b64encode(f.read()).decode('utf-8')
+                            
+                        if file_path.lower().endswith(('.jpg', '.jpeg', '.png')):
+                            content_parts.append({
+                                "type": "image",
+                                "source": {
+                                    "type": "base64",
+                                    "media_type": "image/jpeg" if file_path.lower().endswith(('.jpg', '.jpeg')) else "image/png",
+                                    "data": file_data
+                                }
+                            })
+                    else:
+                        # Handle text files
+                        with open(file_path, 'r', encoding='utf-8') as f:
+                            content = f.read()[:5000]  # Limit content size
+                            content_parts.append({
+                                "type": "text",
+                                "text": f"File: {Path(file_path).name}\n\n{content}"
+                            })
+                except Exception as e:
+                    print(f"⚠️  Failed to process {file_path}: {e}")
+            
+            request_body = {
+                "anthropic_version": "bedrock-2023-05-31",
+                "max_tokens": 2000,
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": content_parts
+                    }
+                ]
+            }
+            
+            response = bedrock.invoke_model(
+                modelId=model_id,
+                body=json.dumps(request_body)
+            )
+            
+            response_body = json.loads(response['body'].read())
+            enhanced_context_text = response_body['content'][0]['text']
+            
+            # Try to parse as JSON, fallback to text parsing
+            try:
+                enhanced_context = json.loads(enhanced_context_text)
+            except:
+                # Parse text response
+                enhanced_context = self._parse_context_from_text(enhanced_context_text)
+            
+            print(f"✅ Enhanced context extracted via Bedrock")
+            return enhanced_context
+            
+        except Exception as e:
+            print(f"⚠️  Failed to extract enhanced context via Bedrock: {e}")
+            return {}
+    
+    def _parse_context_from_text(self, text: str) -> Dict[str, Any]:
+        """Parse context information from text response"""
+        context = {}
+        
+        # Simple text parsing for key information
+        lines = text.split('\n')
+        
+        for line in lines:
+            line = line.strip()
+            if ':' in line and any(key in line.lower() for key in ['application', 'industry', 'architecture', 'components', 'technologies']):
+                parts = line.split(':', 1)
+                if len(parts) == 2:
+                    key = parts[0].strip().lower().replace(' ', '_')
+                    value = parts[1].strip()
+                    context[key] = value
+        
+        return context
