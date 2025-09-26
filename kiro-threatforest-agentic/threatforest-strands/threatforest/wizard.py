@@ -334,10 +334,16 @@ Let's get started with the setup!
             self.console.print(f"📊 Analysis complete:")
             self.console.print(context_result['summary'])
             
-            # Get threat count from threat_analysis
+            # Get threat count from threat_analysis or extraction result
             threat_count = context_result.get('threat_analysis', {}).get('total_threats', 0)
+            extraction_threats = extraction_result.get('threat_statements', [])
+            
             if threat_count > 0:
-                self.console.print(f"🎯 Found {threat_count} threats for analysis")
+                self.console.print(f"🎯 Found {threat_count} existing threats for analysis")
+            elif extraction_threats:
+                self.console.print(f"🤖 Generated {len(extraction_threats)} threats using AI analysis")
+                self.console.print(f"📄 Threat statements saved to generated_threats.md")
+                self.console.print(f"💡 Review and customize the generated threats as needed")
             
             # Step 2: Information Extraction
             with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}")) as progress:
