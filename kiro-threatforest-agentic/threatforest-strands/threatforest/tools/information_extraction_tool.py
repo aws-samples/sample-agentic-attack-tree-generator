@@ -437,17 +437,33 @@ Requirements:
             except json.JSONDecodeError as e:
                 print(f"⚠️  JSON parsing failed: {e}")
                 print(f"Raw content: {content[:500]}...")
-                # Try to extract JSON from markdown code blocks
+                
+                # Try to extract JSON from markdown code blocks with more flexible regex
                 import re
-                json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', content, re.DOTALL)
-                if json_match:
-                    try:
-                        threat_data = json.loads(json_match.group(1))
-                    except json.JSONDecodeError:
-                        print("⚠️  Failed to parse JSON from code block, using fallback")
-                        return self._get_fallback_threats(project_info)
+                # Look for JSON in code blocks (```json or just ```)
+                json_patterns = [
+                    r'```(?:json)?\s*(\{.*?\})\s*```',  # Standard code blocks
+                    r'```(?:json)?\s*(\{.*)',           # Incomplete code blocks (truncated)
+                    r'(\{.*?\})',                       # Any JSON-like structure
+                ]
+                
+                for pattern in json_patterns:
+                    json_match = re.search(pattern, content, re.DOTALL)
+                    if json_match:
+                        try:
+                            json_text = json_match.group(1)
+                            # Try to fix incomplete JSON by adding closing braces if needed
+                            if json_text.count('{') > json_text.count('}'):
+                                missing_braces = json_text.count('{') - json_text.count('}')
+                                json_text += '}' * missing_braces
+                            
+                            threat_data = json.loads(json_text)
+                            print(f"✅ Successfully parsed JSON from pattern: {pattern[:20]}...")
+                            break
+                        except json.JSONDecodeError:
+                            continue
                 else:
-                    print("⚠️  No JSON found in response, using fallback")
+                    print("⚠️  No valid JSON found in response, using fallback")
                     return self._get_fallback_threats(project_info)
             threats = []
             
