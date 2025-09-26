@@ -173,7 +173,7 @@ Focus on:
                 modelId=bedrock_model,
                 body=json.dumps({
                     "anthropic_version": "bedrock-2023-05-31",
-                    "max_tokens": 200000,
+                    "max_tokens": 65536,
                     "messages": messages
                 })
             )
@@ -423,7 +423,7 @@ Requirements:
                 modelId=bedrock_model,
                 body=json.dumps({
                     "anthropic_version": "bedrock-2023-05-31",
-                    "max_tokens": 200000,
+                    "max_tokens": 65536,
                     "messages": [{"role": "user", "content": prompt}]
                 })
             )
