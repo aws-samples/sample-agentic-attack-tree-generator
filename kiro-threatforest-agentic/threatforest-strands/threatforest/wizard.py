@@ -328,7 +328,13 @@ Let's get started with the setup!
                 
                 progress.update(task, description="✅ Context analysis complete")
             
-            self.console.print(f"📊 Found {context_result['summary']['total_files']} files, {context_result['summary']['threat_files_found']} threat files")
+            self.console.print(f"📊 Analysis complete:")
+            self.console.print(context_result['summary'])
+            
+            # Get threat count from threat_analysis
+            threat_count = context_result.get('threat_analysis', {}).get('total_threats', 0)
+            if threat_count > 0:
+                self.console.print(f"🎯 Found {threat_count} threats for analysis")
             
             # Step 2: Information Extraction
             with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}")) as progress:
