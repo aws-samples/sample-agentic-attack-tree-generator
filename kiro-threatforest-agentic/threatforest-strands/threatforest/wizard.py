@@ -548,6 +548,9 @@ Let's get started with the setup!
         if mapping_summary is None:
             mapping_summary = {'total_mappings': 0}
         
+        # Count actual attack tree files in output directory
+        attack_tree_count = len(list(output_dir.glob("attack_tree_*.mmd")))
+        
         success_panel = f"""
 🎉 ThreatForest Analysis Complete!
 
@@ -555,7 +558,7 @@ Let's get started with the setup!
 • Application: {project_info.get('application_name', 'Unknown')}
 • Technologies: {len(project_info.get('technologies', []))} identified
 • Threats analyzed: {len(extraction_result.get('high_severity_threats', []))}
-• Attack trees generated: {len([f for f in summary_result.get('output_files', []) if 'attack_tree' in f])}
+• Attack trees generated: {attack_tree_count}
 • MITRE ATT&CK mappings: {mapping_summary.get('total_mappings', 0)}
 
 📁 Output Directory: {output_dir}
