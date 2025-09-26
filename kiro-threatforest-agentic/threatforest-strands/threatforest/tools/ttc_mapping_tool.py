@@ -77,23 +77,53 @@ class TTCMappingTool(Tool):
         }
     
     def _load_stix_data(self, bundle_path: str) -> Optional[Dict[str, Any]]:
-        """Load STIX bundle data"""
-        if not bundle_path:
-            # Try default location
-            bundle_path = Path(__file__).parent.parent.parent.parent.parent / "genai-chatbot-2" / "aaf-bundle.json"
+        """Load STIX bundle data from stix-data folder or specified path"""
         
-        try:
-            bundle_file = Path(bundle_path)
-            if bundle_file.exists():
-                with open(bundle_file, 'r') as f:
-                    return json.load(f)
-            else:
-                print(f"⚠️  STIX bundle not found at {bundle_file}")
-                print("🤖 Will use Bedrock-only mapping without STIX data")
-        except Exception as e:
-            print(f"⚠️  Error loading STIX data: {e}")
-            print("🤖 Will use Bedrock-only mapping without STIX data")
+        # First try the stix-data folder (relative to this file)
+        stix_data_dir = Path(__file__).parent.parent.parent / "stix-data"
         
+        if stix_data_dir.exists():
+            print(f"📁 Loading STIX data from {stix_data_dir}")
+            combined_objects = []
+            files_loaded = 0
+            
+            # Load all JSON files in stix-data directory
+            for stix_file in stix_data_dir.glob("*.json"):
+                try:
+                    with open(stix_file, 'r') as f:
+                        data = json.load(f)
+                        if isinstance(data, dict) and "objects" in data:
+                            combined_objects.extend(data["objects"])
+                            files_loaded += 1
+                            print(f"  ✅ Loaded {len(data['objects'])} objects from {stix_file.name}")
+                        elif isinstance(data, list):
+                            combined_objects.extend(data)
+                            files_loaded += 1
+                            print(f"  ✅ Loaded {len(data)} objects from {stix_file.name}")
+                except Exception as e:
+                    print(f"  ⚠️  Failed to load {stix_file.name}: {e}")
+            
+            if combined_objects:
+                print(f"📊 Total STIX objects loaded: {len(combined_objects)} from {files_loaded} files")
+                return {
+                    "objects": combined_objects,
+                    "type": "bundle",
+                    "id": "bundle--combined-stix-data"
+                }
+        else:
+            print(f"⚠️  STIX data directory not found at {stix_data_dir}")
+        
+        # Fallback to specified bundle path
+        if bundle_path:
+            try:
+                bundle_file = Path(bundle_path)
+                if bundle_file.exists():
+                    with open(bundle_file, 'r') as f:
+                        return json.load(f)
+            except Exception as e:
+                print(f"⚠️  Error loading STIX data from {bundle_path}: {e}")
+        
+        print("⚠️  No STIX data found - will use Bedrock-only mapping")
         # Return empty STIX data structure for Bedrock-only mapping
         return {
             "objects": [],
