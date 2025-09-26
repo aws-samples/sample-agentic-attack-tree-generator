@@ -235,6 +235,12 @@ class ContextAnalysisTool(Tool):
         """Categorize non-threat files"""
         name_lower = file_path.name.lower()
         
+        # Check if file has 'threat' in name and contains threat statements
+        if "threat" in name_lower and file_path.suffix.lower() == ".md":
+            if self._contains_threat_statements(file_path):
+                context_files["threat_models"].append(str(file_path))
+                return
+        
         # Generated threat statement files should be treated as threat models
         if "generated_threat_statements" in name_lower:
             context_files["threat_models"].append(str(file_path))
@@ -254,6 +260,36 @@ class ContextAnalysisTool(Tool):
         # Other documentation
         elif file_path.suffix.lower() in [".md", ".txt", ".doc", ".docx", ".pdf"]:
             context_files["other_docs"].append(str(file_path))
+    
+    def _contains_threat_statements(self, file_path: Path) -> bool:
+        """Check if a file contains threat statements"""
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read().lower()
+                
+            # Look for threat statement indicators
+            threat_indicators = [
+                "threat statement",
+                "threat description",
+                "threat source",
+                "threat action",
+                "threat impact",
+                "high priority",
+                "medium priority", 
+                "low priority",
+                "severity",
+                "can perform",
+                "which leads to",
+                "resulting in"
+            ]
+            
+            # Check if file contains multiple threat indicators
+            indicator_count = sum(1 for indicator in threat_indicators if indicator in content)
+            return indicator_count >= 3  # Require at least 3 indicators to be confident
+            
+        except Exception as e:
+            print(f"⚠️  Could not read file {file_path}: {e}")
+            return False
     
     def _parse_file(self, file_path: Path) -> Optional[str]:
         """Parse file content"""
@@ -280,16 +316,21 @@ class ContextAnalysisTool(Tool):
         
         # Threat summary
         total_threats = threat_analysis.get('total_threats', 0)
-        if total_threats > 0:
-            priorities = threat_analysis.get('priority_summary', {})
-            summary.append(f"🎯 Threats: {total_threats} total (H:{priorities.get('high', 0)}, M:{priorities.get('medium', 0)}, L:{priorities.get('low', 0)})")
-            
-            # High priority threats preview
-            high_threats = threat_analysis.get('high_priority_threats', [])[:3]
-            if high_threats:
-                summary.append("🚨 Key High Priority Threats:")
-                for i, threat in enumerate(high_threats, 1):
-                    summary.append(f"   {i}. {threat['statement']}...")
+        discovered_threat_models = len(discovered_files.get('threat_models', [])) if discovered_files else 0
+        
+        if total_threats > 0 or discovered_threat_models > 0:
+            if total_threats > 0:
+                priorities = threat_analysis.get('priority_summary', {})
+                summary.append(f"🎯 Threats: {total_threats} total (H:{priorities.get('high', 0)}, M:{priorities.get('medium', 0)}, L:{priorities.get('low', 0)})")
+                
+                # High priority threats preview
+                high_threats = threat_analysis.get('high_priority_threats', [])[:3]
+                if high_threats:
+                    summary.append("🚨 Key High Priority Threats:")
+                    for i, threat in enumerate(high_threats, 1):
+                        summary.append(f"   {i}. {threat['statement']}...")
+            else:
+                summary.append(f"📄 Found {discovered_threat_models} threat model files")
         else:
             # No threat models found - check for minimal viable inputs
             # Use discovered_files for diagrams (includes images that can't be parsed)
