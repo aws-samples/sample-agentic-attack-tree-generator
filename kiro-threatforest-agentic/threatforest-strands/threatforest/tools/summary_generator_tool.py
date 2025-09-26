@@ -25,39 +25,78 @@ class SummaryGeneratorTool(Tool):
                      output_dir: str) -> Dict[str, Any]:
         """Execute summary generation"""
         
-        output_path = Path(output_dir)
-        output_path.mkdir(parents=True, exist_ok=True)
-        
-        project_info = extracted_info.get('project_info', {})
-        extraction_summary = extracted_info.get('extraction_summary', {})
-        
-        # Generate main summary report
-        summary_file = self._generate_main_summary(
-            output_path, attack_trees, extracted_info
-        )
-        
-        # Generate individual attack tree files
-        tree_files = self._generate_attack_tree_files(
-            output_path, attack_trees.get('ttc_mapped_trees', [])
-        )
-        
-        # Generate TTC mapping report
-        ttc_file = self._generate_ttc_report(
-            output_path, attack_trees
-        )
-        
-        # Generate JSON data export
-        json_file = self._generate_json_export(
-            output_path, attack_trees, extracted_info
-        )
-        
-        output_files = [summary_file, ttc_file, json_file] + tree_files
-        
-        return {
-            "output_files": output_files,
-            "summary_content": summary_file,
-            "message": f"Generated {len(output_files)} files in {output_path}"
-        }
+        try:
+            output_path = Path(output_dir)
+            output_path.mkdir(parents=True, exist_ok=True)
+            
+            # Handle None inputs
+            if attack_trees is None:
+                attack_trees = {}
+            if extracted_info is None:
+                extracted_info = {}
+            
+            project_info = extracted_info.get('project_info', {})
+            extraction_summary = extracted_info.get('extraction_summary', {})
+            
+            # Generate main summary report
+            try:
+                summary_file = self._generate_main_summary(
+                    output_path, attack_trees, extracted_info
+                )
+            except Exception as e:
+                print(f"⚠️  Main summary generation failed: {e}")
+                summary_file = None
+            
+            # Generate individual attack tree files
+            try:
+                tree_files = self._generate_attack_tree_files(
+                    output_path, attack_trees.get('ttc_mapped_trees', [])
+                )
+            except Exception as e:
+                print(f"⚠️  Attack tree files generation failed: {e}")
+                tree_files = []
+            
+            # Generate TTC mapping report
+            try:
+                ttc_file = self._generate_ttc_report(
+                    output_path, attack_trees
+                )
+            except Exception as e:
+                print(f"⚠️  TTC report generation failed: {e}")
+                ttc_file = None
+            
+            # Generate JSON data export
+            try:
+                json_file = self._generate_json_export(
+                    output_path, attack_trees, extracted_info
+                )
+            except Exception as e:
+                print(f"⚠️  JSON export generation failed: {e}")
+                json_file = None
+            
+            # Collect output files
+            output_files = []
+            if summary_file:
+                output_files.append(summary_file)
+            if ttc_file:
+                output_files.append(ttc_file)
+            if json_file:
+                output_files.append(json_file)
+            output_files.extend(tree_files)
+            
+            return {
+                'output_files': output_files,
+                'summary_file': summary_file,
+                'ttc_file': ttc_file,
+                'json_file': json_file,
+                'tree_files': tree_files
+            }
+            
+        except Exception as e:
+            print(f"⚠️  Summary generation execute failed: {e}")
+            import traceback
+            traceback.print_exc()
+            return {'output_files': []}
     
     def _generate_main_summary(self, output_path: Path, attack_trees: Dict[str, Any], 
                               extracted_info: Dict[str, Any]) -> str:
