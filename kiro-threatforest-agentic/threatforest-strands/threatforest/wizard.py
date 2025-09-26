@@ -342,7 +342,13 @@ Let's get started with the setup!
                 self.console.print(f"🎯 Found {threat_count} existing threats for analysis")
             elif extraction_threats:
                 self.console.print(f"🤖 Generated {len(extraction_threats)} threats using AI analysis")
-                self.console.print(f"📄 Threat statements saved to generated_threats.md")
+                
+                # Try to get application name for filename display
+                app_name = extraction_result.get('project_info', {}).get('application_name', 'Unknown')
+                clean_app_name = app_name.replace(' ', '_').replace('-', '_')
+                filename = f"{clean_app_name}_generated_threat_statements.md"
+                
+                self.console.print(f"📄 Threat statements saved to {filename}")
                 self.console.print(f"💡 Review and customize the generated threats as needed")
             
             # Step 2: Information Extraction
