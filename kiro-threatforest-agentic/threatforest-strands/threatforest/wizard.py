@@ -234,10 +234,10 @@ Let's get started with the setup!
         # Enhanced file discovery preview
         self.console.print(f"\n📋 Enhanced Scanning {project_path}...")
         
-        # Use enhanced discovery
+        # Use enhanced discovery that matches context analysis
         threat_models = self._discover_threat_files_preview(str(project_path))
-        readme_files = list(project_path.glob("**/README*")) + list(project_path.glob("**/readme*"))
-        diagram_files = list(project_path.glob("**/*.mmd")) + list(project_path.glob("**/*.drawio")) + list(project_path.glob("**/*.puml"))
+        readme_files = self._discover_readme_files_preview(str(project_path))
+        diagram_files = self._discover_diagram_files_preview(str(project_path))
         
         # Show enhanced results
         if threat_models:
@@ -291,6 +291,40 @@ Let's get started with the setup!
                         threat_files.append(file_path)
         
         return threat_files
+    
+    def _discover_readme_files_preview(self, project_path: str) -> List[str]:
+        """Preview README and markdown file discovery"""
+        readme_files = []
+        
+        for root, dirs, files in os.walk(project_path):
+            for file in files:
+                file_path = os.path.join(root, file)
+                name_lower = file.lower()
+                
+                # READMEs and markdown files
+                if name_lower.startswith("readme") or file.endswith('.md'):
+                    readme_files.append(file_path)
+        
+        return readme_files
+    
+    def _discover_diagram_files_preview(self, project_path: str) -> List[str]:
+        """Preview architecture diagram file discovery"""
+        diagram_files = []
+        
+        for root, dirs, files in os.walk(project_path):
+            for file in files:
+                file_path = os.path.join(root, file)
+                name_lower = file.lower()
+                
+                # Architecture diagrams - expanded image support
+                if any(keyword in name_lower for keyword in ["architecture", "arch", "design", "system", "diagram"]):
+                    if file.lower().endswith(('.png', '.jpg', '.jpeg', '.pdf', '.svg', '.puml', '.md', '.mmd', '.drawio')):
+                        diagram_files.append(file_path)
+                # Any image files that might be diagrams
+                elif file.lower().endswith(('.png', '.jpg', '.jpeg', '.pdf')):
+                    diagram_files.append(file_path)
+        
+        return diagram_files
     
     def _review_configuration(self):
         """Review configuration before execution"""
