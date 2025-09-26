@@ -440,7 +440,13 @@ Let's get started with the setup!
                 
                 progress.update(task, description="✅ TTC mapping complete")
             
-            mapping_summary = mapped_result['mapping_summary']
+            # Handle potential None result
+            if mapped_result is None:
+                self.console.print("⚠️  TTC mapping returned no results")
+                mapping_summary = {'total_mappings': 0}
+            else:
+                mapping_summary = mapped_result.get('mapping_summary', {'total_mappings': 0})
+            
             self.console.print(f"🎯 Mapped {mapping_summary.get('total_mappings', 0)} attack steps to MITRE ATT&CK")
             
             # Step 5: Summary Generation
@@ -449,7 +455,7 @@ Let's get started with the setup!
                 
                 summary_generator = SummaryGeneratorTool()
                 summary_result = await summary_generator.execute(
-                    attack_trees=mapped_result,
+                    attack_trees=mapped_result if mapped_result else {},
                     extracted_info=extraction_result,
                     output_dir=str(output_dir)
                 )
@@ -467,7 +473,23 @@ Let's get started with the setup!
                              extraction_result: Dict[str, Any], mapping_summary: Dict[str, Any]):
         """Show success summary"""
         
-        project_info = extraction_result['project_info']
+        # Handle potential None values
+        if extraction_result is None:
+            self.console.print("⚠️  No extraction results available")
+            return
+            
+        project_info = extraction_result.get('project_info', {})
+        if not project_info:
+            self.console.print("⚠️  No project information available")
+            return
+        
+        # Handle None summary_result
+        if summary_result is None:
+            summary_result = {'output_files': []}
+        
+        # Handle None mapping_summary
+        if mapping_summary is None:
+            mapping_summary = {'total_mappings': 0}
         
         success_panel = f"""
 🎉 ThreatForest Analysis Complete!
