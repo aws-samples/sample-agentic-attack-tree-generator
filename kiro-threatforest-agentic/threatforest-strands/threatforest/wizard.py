@@ -334,6 +334,20 @@ Let's get started with the setup!
             self.console.print(f"📊 Analysis complete:")
             self.console.print(context_result['summary'])
             
+            # Step 2: Information Extraction
+            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}")) as progress:
+                task = progress.add_task("🤖 Extracting project information with AI...", total=None)
+                
+                extraction_tool = InformationExtractionTool()
+                extraction_result = await extraction_tool.execute(
+                    context_files=context_result,
+                    bedrock_model=self.config["bedrock_model"],
+                    aws_profile=self.config.get("aws_profile"),
+                    interactive=False
+                )
+                
+                progress.update(task, description="✅ Information extraction complete")
+            
             # Get threat count from threat_analysis or extraction result
             threat_count = context_result.get('threat_analysis', {}).get('total_threats', 0)
             extraction_threats = extraction_result.get('threat_statements', [])
@@ -350,20 +364,6 @@ Let's get started with the setup!
                 
                 self.console.print(f"📄 Threat statements saved to {filename}")
                 self.console.print(f"💡 Review and customize the generated threats as needed")
-            
-            # Step 2: Information Extraction
-            with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}")) as progress:
-                task = progress.add_task("🤖 Extracting project information with AI...", total=None)
-                
-                extraction_tool = InformationExtractionTool()
-                extraction_result = await extraction_tool.execute(
-                    context_files=context_result,
-                    bedrock_model=self.config["bedrock_model"],
-                    aws_profile=self.config.get("aws_profile"),
-                    interactive=False
-                )
-                
-                progress.update(task, description="✅ Information extraction complete")
             
             project_info = extraction_result['project_info']
             high_threats = extraction_result['high_severity_threats']
