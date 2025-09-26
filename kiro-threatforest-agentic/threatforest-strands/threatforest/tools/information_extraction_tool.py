@@ -34,7 +34,7 @@ class InformationExtractionTool(Tool):
         
         # If no threat statements found, generate them using Bedrock
         if not threat_statements:
-            print("🤖 No threat statements found - generating threats using AI analysis...")
+            print("🤖 No threat statements found - generating threat statements using AI analysis...")
             generated_threats = await self._generate_threats_with_bedrock(
                 context_files, project_info, bedrock_model, aws_profile
             )
@@ -124,75 +124,159 @@ class InformationExtractionTool(Tool):
     
     async def _extract_project_info(self, context_files: Dict[str, Any], bedrock_model: str, 
                                    aws_profile: Optional[str] = None) -> Dict[str, Any]:
-        """Extract key project information using Bedrock LLM"""
+        """Extract project information using Bedrock with all discovered content including images"""
         
-        # Combine README content for analysis
-        readme_content = ""
-        for readme in context_files.get("parsed_content", {}).get("readmes", []):
-            readme_content += f"\n\n--- {readme['path']} ---\n{readme['content']}"
+        # Prepare all discovered content for Bedrock analysis
+        content_for_analysis = self._prepare_all_content_for_bedrock(context_files)
         
-        if not readme_content.strip():
-            return {"error": "No README content found for analysis"}
-        
-        # Prepare prompt for information extraction
-        prompt = self._build_extraction_prompt(readme_content)
-        
+        prompt = f"""You are a cybersecurity expert analyzing an application. Extract key information from the provided content including text documents and architecture diagrams.
+
+Content to analyze:
+{content_for_analysis}
+
+Extract and return information in this JSON format:
+{{
+  "application_name": "extracted application name",
+  "sector": "industry sector (e.g., Healthcare, Finance, E-commerce)",
+  "architecture_type": "architecture pattern (e.g., Microservices, Monolithic, Serverless)",
+  "deployment_environment": "deployment type (e.g., Cloud, On-premises, Hybrid)",
+  "technologies": ["list", "of", "technologies", "identified"],
+  "security_objectives": {{
+    "confidentiality": true/false,
+    "integrity": true/false,
+    "availability": true/false
+  }},
+  "data_types": ["types", "of", "data", "handled"],
+  "external_dependencies": ["external", "services", "or", "apis"],
+  "network_architecture": "network setup description from diagrams",
+  "key_components": ["main", "system", "components", "from", "diagrams"]
+}}
+
+Focus on:
+- Application name and purpose from documentation
+- Technology stack and frameworks mentioned
+- Architecture patterns and deployment model
+- Data types and security requirements
+- External integrations and dependencies
+- Network topology and components visible in architecture diagrams
+- System boundaries and data flows from diagrams
+"""
+
         try:
-            # Call Bedrock
             session = boto3.Session(profile_name=aws_profile) if aws_profile else boto3.Session()
             bedrock = session.client('bedrock-runtime', region_name='us-east-1')
             
-            body = {
-                "anthropic_version": "bedrock-2023-05-31",
-                "max_tokens": 2000,
-                "messages": [{"role": "user", "content": prompt}]
-            }
+            # Prepare messages with text and images
+            messages = self._prepare_bedrock_messages(prompt, context_files)
             
             response = bedrock.invoke_model(
                 modelId=bedrock_model,
-                body=json.dumps(body)
+                body=json.dumps({
+                    "anthropic_version": "bedrock-2023-05-31",
+                    "max_tokens": 3000,
+                    "messages": messages
+                })
             )
             
-            response_body = json.loads(response['body'].read())
-            extracted_text = response_body['content'][0]['text']
+            result = json.loads(response['body'].read())
+            content = result['content'][0]['text']
             
             # Parse JSON response
             try:
-                return json.loads(extracted_text)
+                project_info = json.loads(content)
+                return project_info
             except json.JSONDecodeError:
                 # Try to extract JSON from markdown code blocks
                 import re
-                json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', extracted_text, re.DOTALL)
+                json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', content, re.DOTALL)
                 if json_match:
                     return json.loads(json_match.group(1))
                 else:
-                    return {"error": f"Failed to parse JSON response: {extracted_text[:200]}..."}
+                    return {"error": f"Failed to parse JSON response: {content[:200]}..."}
             
         except Exception as e:
-            return {"error": f"Failed to extract project info: {str(e)}"}
+            print(f"⚠️  Bedrock extraction failed: {e}")
+            return {
+                "error": str(e),
+                "application_name": "Unknown Application",
+                "technologies": [],
+                "sector": "Unknown"
+            }
     
-    def _build_extraction_prompt(self, readme_content: str) -> str:
-        """Build prompt for project information extraction"""
-        return f"""Analyze the following project documentation and extract key information in JSON format:
-
-{readme_content}
-
-Extract the following information and return as valid JSON:
-{{
-    "application_name": "name of the application/project",
-    "technologies": ["list", "of", "technologies", "programming languages", "frameworks"],
-    "sector": "industry sector (e.g., finance, healthcare, e-commerce)",
-    "security_objectives": {{
-        "confidentiality": true/false,
-        "integrity": true/false, 
-        "availability": true/false
-    }},
-    "architecture_type": "type of architecture (e.g., microservices, monolith, serverless)",
-    "deployment_environment": "deployment target (e.g., AWS, on-premises, hybrid)"
-}}
-
-Focus on extracting factual information. If information is not available, use null or empty arrays.
-Return ONLY the JSON object, no additional text or markdown formatting."""
+    def _prepare_all_content_for_bedrock(self, context_files: Dict[str, Any]) -> str:
+        """Prepare all discovered content for Bedrock analysis"""
+        content_parts = []
+        
+        # Add parsed text content
+        parsed_content = context_files.get('parsed_content', {})
+        for category, files in parsed_content.items():
+            if files:
+                content_parts.append(f"\n=== {category.upper()} ===")
+                for file_info in files:
+                    file_path = file_info.get('path', 'unknown')
+                    file_content = file_info.get('content', '')
+                    content_parts.append(f"\nFile: {file_path}")
+                    content_parts.append(file_content[:2000])  # Limit content length
+        
+        # Note about images and PDFs (will be handled separately in messages)
+        discovered_files = context_files.get('discovered_files', {})
+        image_files = discovered_files.get('architecture_diagrams', [])
+        if image_files:
+            content_parts.append(f"\n=== ARCHITECTURE DIAGRAMS ===")
+            content_parts.append(f"Found {len(image_files)} architecture diagrams:")
+            for img_path in image_files:
+                content_parts.append(f"- {img_path}")
+            content_parts.append("(Diagram content will be analyzed from the images provided)")
+        
+        return '\n'.join(content_parts)
+    
+    def _prepare_bedrock_messages(self, prompt: str, context_files: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Prepare messages for Bedrock including images"""
+        import base64
+        
+        messages = []
+        content_blocks = []
+        
+        # Add text content
+        content_blocks.append({
+            "type": "text",
+            "text": prompt
+        })
+        
+        # Add images if any
+        discovered_files = context_files.get('discovered_files', {})
+        image_files = discovered_files.get('architecture_diagrams', [])
+        
+        for img_path in image_files[:3]:  # Limit to 3 images to avoid token limits
+            try:
+                if img_path.lower().endswith(('.jpg', '.jpeg', '.png')):
+                    with open(img_path, 'rb') as img_file:
+                        img_data = base64.b64encode(img_file.read()).decode('utf-8')
+                        
+                    # Determine media type
+                    if img_path.lower().endswith('.png'):
+                        media_type = "image/png"
+                    else:
+                        media_type = "image/jpeg"
+                    
+                    content_blocks.append({
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": media_type,
+                            "data": img_data
+                        }
+                    })
+                    print(f"📷 Added image to analysis: {img_path}")
+            except Exception as e:
+                print(f"⚠️  Failed to load image {img_path}: {e}")
+        
+        messages.append({
+            "role": "user",
+            "content": content_blocks
+        })
+        
+        return messages
     
     def _validate_with_user(self, project_info: Dict[str, Any]) -> Dict[str, Any]:
         """Allow user to validate and modify extracted information"""
