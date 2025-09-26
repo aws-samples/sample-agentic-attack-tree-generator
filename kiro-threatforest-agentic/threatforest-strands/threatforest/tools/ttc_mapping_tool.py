@@ -41,6 +41,10 @@ class TTCMappingTool(Tool):
         
         # Extract techniques from STIX data
         techniques = self._extract_techniques(stix_data)
+        use_bedrock_only = len(techniques) == 0
+        
+        if use_bedrock_only:
+            print("🤖 Using Bedrock-only MITRE ATT&CK mapping (no local STIX data)")
         
         # Map attack trees with Bedrock enhancement
         mapped_trees = []
@@ -49,9 +53,12 @@ class TTCMappingTool(Tool):
         
         for tree in attack_trees.get("attack_trees", []):
             if "mermaid_code" in tree:
-                mapped_tree = await self._map_attack_tree_with_bedrock(
-                    tree, techniques, bedrock_model, aws_profile
-                )
+                if use_bedrock_only:
+                    mapped_tree = await self._map_with_bedrock_only(tree, bedrock_model, aws_profile)
+                else:
+                    mapped_tree = await self._map_attack_tree_with_bedrock(
+                        tree, techniques, bedrock_model, aws_profile
+                    )
                 mapped_trees.append(mapped_tree)
                 
                 mappings = mapped_tree.get("ttc_mappings", [])
@@ -80,10 +87,19 @@ class TTCMappingTool(Tool):
             if bundle_file.exists():
                 with open(bundle_file, 'r') as f:
                     return json.load(f)
+            else:
+                print(f"⚠️  STIX bundle not found at {bundle_file}")
+                print("🤖 Will use Bedrock-only mapping without STIX data")
         except Exception as e:
-            print(f"Error loading STIX data: {e}")
+            print(f"⚠️  Error loading STIX data: {e}")
+            print("🤖 Will use Bedrock-only mapping without STIX data")
         
-        return None
+        # Return empty STIX data structure for Bedrock-only mapping
+        return {
+            "objects": [],
+            "type": "bundle",
+            "id": "bundle--bedrock-fallback"
+        }
     
     def _extract_techniques(self, stix_data: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Extract MITRE ATT&CK techniques from STIX data"""
@@ -343,3 +359,71 @@ Return only the JSON array."""
                 })
         
         return mappings
+    
+    async def _map_with_bedrock_only(self, tree: Dict[str, Any], bedrock_model: str, aws_profile: Optional[str]) -> Dict[str, Any]:
+        """Map attack tree to MITRE ATT&CK using only Bedrock (no STIX data)"""
+        
+        threat_statement = tree.get("threat_statement", "")
+        mermaid_code = tree.get("mermaid_code", "")
+        
+        prompt = f"""You are a cybersecurity expert. Analyze this attack tree and map each attack step to MITRE ATT&CK techniques.
+
+Threat Statement: {threat_statement}
+
+Attack Tree (Mermaid format):
+{mermaid_code}
+
+For each attack step in the tree, identify the most relevant MITRE ATT&CK technique. Return a JSON response:
+
+{{
+  "mappings": [
+    {{
+      "attack_step": "description of the attack step",
+      "technique_id": "T1234",
+      "technique_name": "Technique Name", 
+      "tactic": "Tactic Name",
+      "confidence": 0.9
+    }}
+  ]
+}}
+
+Focus on specific techniques with high confidence scores (0.7+)."""
+
+        try:
+            session = boto3.Session(profile_name=aws_profile) if aws_profile else boto3.Session()
+            bedrock = session.client('bedrock-runtime', region_name='us-east-1')
+            
+            response = bedrock.invoke_model(
+                modelId=bedrock_model,
+                body=json.dumps({
+                    "anthropic_version": "bedrock-2023-05-31",
+                    "max_tokens": 65536,
+                    "messages": [{"role": "user", "content": prompt}]
+                })
+            )
+            
+            result = json.loads(response['body'].read())
+            content = result['content'][0]['text']
+            
+            try:
+                mapping_data = json.loads(content)
+                mappings = mapping_data.get('mappings', [])
+                
+                tree_copy = tree.copy()
+                tree_copy['ttc_mappings'] = mappings
+                tree_copy['mapping_count'] = len(mappings)
+                return tree_copy
+                
+            except json.JSONDecodeError:
+                print(f"⚠️  Failed to parse Bedrock mapping response")
+                tree_copy = tree.copy()
+                tree_copy['ttc_mappings'] = []
+                tree_copy['mapping_count'] = 0
+                return tree_copy
+                
+        except Exception as e:
+            print(f"⚠️  Bedrock mapping failed: {e}")
+            tree_copy = tree.copy()
+            tree_copy['ttc_mappings'] = []
+            tree_copy['mapping_count'] = 0
+            return tree_copy
