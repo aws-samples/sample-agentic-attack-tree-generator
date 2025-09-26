@@ -5,7 +5,7 @@ import os
 import sys
 import asyncio
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 import subprocess
 
 try:
