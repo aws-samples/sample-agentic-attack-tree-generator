@@ -388,14 +388,28 @@ This report presents a comprehensive threat analysis for **{project_info.get('ap
         
         result = []
         for mapping in mappings:
+            if not mapping:
+                continue
+                
             attack_step = mapping.get('attack_step', 'Unknown')
             techniques = mapping.get('mapped_techniques', [])
             
             result.append(f"### {attack_step}")
             for tech in techniques[:2]:  # Top 2 techniques
-                result.append(f"- **{tech.get('technique_id')}**: {tech.get('technique_name')} (Confidence: {tech.get('confidence', 0):.2f})")
-                if tech.get('tactics'):
-                    result.append(f"  - Tactics: {', '.join(tech['tactics'])}")
+                if not tech:
+                    continue
+                    
+                tech_id = tech.get('technique_id', 'Unknown')
+                tech_name = tech.get('technique_name', 'Unknown')
+                confidence = tech.get('confidence', 0)
+                
+                result.append(f"- **{tech_id}**: {tech_name} (Confidence: {confidence:.2f})")
+                
+                tactics = tech.get('tactics', tech.get('tactic', []))
+                if tactics and isinstance(tactics, list):
+                    result.append(f"  - Tactics: {', '.join(tactics)}")
+                elif tactics and isinstance(tactics, str):
+                    result.append(f"  - Tactics: {tactics}")
             result.append("")
         
         return '\n'.join(result)
@@ -406,7 +420,11 @@ This report presents a comprehensive threat analysis for **{project_info.get('ap
         
         result = []
         for i, step in enumerate(steps, 1):
-            result.append(f"{i}. **{step.get('node_id', 'unknown')}**: {step.get('description', 'No description')}")
+            if not step:
+                continue
+            node_id = step.get('node_id', 'unknown')
+            description = step.get('description', 'No description')
+            result.append(f"{i}. **{node_id}**: {description}")
         return '\n'.join(result)
     
     def _format_technique_table(self, techniques: List[tuple]) -> str:
