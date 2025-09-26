@@ -493,7 +493,24 @@ Let's get started with the setup!
         for i, tree in enumerate(attack_trees):
             if 'mermaid_code' in tree:
                 threat_id = tree.get('threat_id', f'T{i+1:03d}')
-                filename = f"attack_tree_{threat_id}.mmd"
+                
+                # Create a better filename from threat statement
+                threat_statement = tree.get('threat_statement', '')
+                if threat_statement:
+                    # Extract key words from threat statement for filename
+                    import re
+                    # Remove common words and keep meaningful terms
+                    words = re.findall(r'\b[A-Za-z]{3,}\b', threat_statement)
+                    meaningful_words = [w for w in words[:4] if w.lower() not in 
+                                      ['can', 'the', 'and', 'which', 'leads', 'resulting', 'from', 'with']]
+                    if meaningful_words:
+                        filename_base = '_'.join(meaningful_words)
+                        filename = f"attack_tree_{threat_id}_{filename_base}.mmd"
+                    else:
+                        filename = f"attack_tree_{threat_id}.mmd"
+                else:
+                    filename = f"attack_tree_{threat_id}.mmd"
+                
                 filepath = output_dir / filename
                 
                 try:

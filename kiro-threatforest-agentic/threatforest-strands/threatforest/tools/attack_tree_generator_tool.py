@@ -231,7 +231,7 @@ Generate a comprehensive attack tree with:
 
 Return ONLY the Mermaid diagram in this format:
 
-# Attack Tree: {threat.get('id', threat.get('category', 'Unknown'))}
+# Attack Tree: {threat.get('statement', threat.get('description', threat.get('id', 'Unknown Threat')))}
 
 ```mermaid
 graph TD
