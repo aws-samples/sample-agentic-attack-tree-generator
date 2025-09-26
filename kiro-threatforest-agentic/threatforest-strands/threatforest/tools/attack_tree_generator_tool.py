@@ -171,77 +171,82 @@ class AttackTreeGeneratorTool(Tool):
         }
     
     def _build_attack_tree_prompt(self, threat: Dict[str, Any], project_info: Dict[str, Any]) -> str:
-        """Build prompt for attack tree generation"""
+        """Build prompt for attack tree generation using mermaid template"""
         
-        return f"""You are an expert cybersecurity analyst and threat modeling specialist. Your job is to create realistic and accurate attack steps from the following threat related to the application using the provided context.
+        # Load the mermaid template
+        mermaid_template = self._load_mermaid_template()
+        
+        # Build the prompt using the template structure
+        return f"""You are a cybersecurity expert creating attack trees. Convert the following threat into a detailed Mermaid flowchart diagram using this EXACT format:
 
-**Application Context:**
-- **Name**: {project_info.get('application_name', 'Unknown')}
-- **Architecture**: {project_info.get('architecture_type', 'Unknown')} 
-- **Deployment**: {project_info.get('deployment_environment', 'Unknown')}
-- **Technologies**: {', '.join(project_info.get('technologies', []))}
-- **Security Objectives**: 
-  - Confidentiality: {project_info.get('security_objectives', {}).get('confidentiality', 'Unknown')}
-  - Integrity: {project_info.get('security_objectives', {}).get('integrity', 'Unknown')}
-  - Availability: {project_info.get('security_objectives', {}).get('availability', 'Unknown')}
+## Structure Requirements:
+- Use `graph TD` (top-down direction)
+- Node format: `node_id["descriptive text"]`
+- Connection format: `parent --> child`
+- Include all relationships from the input data
 
-**Threat to Analyze:**
-- **ID**: {threat.get('id')}
-- **Category**: {threat.get('category')}
-- **Severity**: {threat.get('severity')}
-- **Description**: {threat.get('description')}
+## Color Coding (apply these exact CSS classes):
+```
+classDef attack fill:#ffcccc
+classDef mitigation fill:#ccffcc  
+classDef goal fill:#ffcc99
+classDef fact fill:#ccccff
 
-**Cybersecurity Domain Knowledge:**
-As a cybersecurity expert, consider:
-- MITRE ATT&CK framework tactics and techniques
-- OWASP Top 10 vulnerabilities and attack patterns
-- Cloud security risks specific to {project_info.get('deployment_environment', 'the deployment environment')}
-- Technology-specific attack vectors for: {', '.join(project_info.get('technologies', [])[:3])}
-- Real-world attack scenarios and threat actor behaviors
-- Defense evasion techniques and persistence mechanisms
+class node1,node2,node3 attack
+class node4,node5,node6 mitigation
+class node7,node8 goal
+class node9,node10 fact
+```
 
-**Node Classification Requirements:**
-- **Facts**: Vulnerabilities, system conditions, or attack prerequisites specific to the technologies used
-- **Attacks**: Realistic attack steps that exploit the identified facts, considering the application's tech stack
-- **Mitigations**: Concrete security controls relevant to the technologies and architecture
-- **Goals**: Specific outcomes an attacker would achieve against this application
+## Node Classification:
+- **Facts**: Initial conditions, vulnerabilities, or starting points
+- **Attacks**: Malicious actions, exploits, or threat vectors
+- **Mitigations**: Security controls, defenses, or countermeasures
+- **Goals**: Ultimate objectives or outcomes (what attackers/defenders achieve)
 
-**Output Format Requirements:**
-Generate EXACTLY this format:
+## Threat to Analyze:
+**ID**: {threat.get('id', 'Unknown')}
+**Statement**: {threat.get('statement', threat.get('description', 'No statement provided'))}
+**Priority**: {threat.get('priority', threat.get('severity', 'Unknown'))}
+**Category**: {threat.get('category', 'Unknown')}
 
-# Attack Tree: {threat.get('category')}
+## Context Information:
+**Application**: {project_info.get('application_name', 'Unknown Application')}
+**Technologies**: {', '.join(project_info.get('technologies', [])[:10])}
+**Architecture**: {project_info.get('architecture_type', 'Unknown')}
+**Deployment**: {project_info.get('deployment_environment', 'Unknown')}
+
+## Output Format:
+1. Title as markdown header
+2. Mermaid code block with the diagram
+3. Apply color classes at the end
+
+Generate a comprehensive attack tree with:
+- Root goal node (what the attacker wants to achieve)
+- Multiple attack paths with 3-5 steps each
+- Include facts (prerequisites/vulnerabilities)
+- Include potential mitigations
+- Use descriptive node labels
+- Apply proper color classifications
+
+Return ONLY the Mermaid diagram in this format:
+
+# Attack Tree: {threat.get('id', threat.get('category', 'Unknown'))}
 
 ```mermaid
 graph TD
-    goal["Specific attack outcome against {project_info.get('application_name', 'the application')}"]
-    
-    fact1["Technology-specific vulnerability or condition"]
-    attack1["Realistic attack step"]
-    mitigation1["Concrete security control"]
-    
-    fact1 --> attack1
-    attack1 --> goal
-    mitigation1 -.-> attack1
+    [your diagram here]
     
     classDef attack fill:#ffcccc
-    classDef mitigation fill:#ccffcc
+    classDef mitigation fill:#ccffcc  
     classDef goal fill:#ffcc99
     classDef fact fill:#ccccff
     
-    class attack1 attack
-    class mitigation1 mitigation
-    class goal goal
-    class fact1 fact
-```
-
-**Critical Requirements:**
-1. Include at least 3 facts, 5 attacks, 3 mitigations, and 1 main goal
-2. Make attack steps specific to the technologies: {', '.join(project_info.get('technologies', [])[:5])}
-3. Use realistic cybersecurity terminology and techniques
-4. Ensure all nodes are properly classified and connected
-5. Include the exact markdown title and mermaid code block format above
-
-Generate a comprehensive, realistic attack tree now."""
+    class [attack nodes] attack
+    class [mitigation nodes] mitigation
+    class [goal nodes] goal
+    class [fact nodes] fact
+```"""
     
     def _load_mermaid_template(self) -> str:
         """Load Mermaid template from prompts directory"""
