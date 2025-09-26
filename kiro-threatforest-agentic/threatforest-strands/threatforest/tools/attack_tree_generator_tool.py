@@ -70,7 +70,7 @@ class AttackTreeGeneratorTool(Tool):
             
             body = {
                 "anthropic_version": "bedrock-2023-05-31",
-                "max_tokens": 4000,
+                "max_tokens": 8192,
                 "messages": [{"role": "user", "content": prompt}]
             }
             
