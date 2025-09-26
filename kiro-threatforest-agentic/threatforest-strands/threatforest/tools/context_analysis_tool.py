@@ -67,7 +67,7 @@ class ContextAnalysisTool(Tool):
             "discovered_files": context_files,
             "threat_analysis": threat_analysis,
             "parsed_content": parsed_files,
-            "summary": self._generate_enhanced_summary(threat_analysis, parsed_files)
+            "summary": self._generate_enhanced_summary(threat_analysis, parsed_files, context_files)
         }
     
     def _discover_threat_files(self, project_path: str) -> List[str]:
@@ -266,7 +266,7 @@ class ContextAnalysisTool(Tool):
             pass
         return None
     
-    def _generate_enhanced_summary(self, threat_analysis: Dict[str, Any], parsed_files: Dict[str, Any]) -> str:
+    def _generate_enhanced_summary(self, threat_analysis: Dict[str, Any], parsed_files: Dict[str, Any], discovered_files: Dict[str, Any] = None) -> str:
         """Generate enhanced summary with threat model focus"""
         summary = []
         
@@ -293,25 +293,32 @@ class ContextAnalysisTool(Tool):
                     summary.append(f"   {i}. {threat['statement']}...")
         else:
             # No threat models found - check for minimal viable inputs
-            has_diagrams = len(parsed_files.get('architecture_diagrams', [])) > 0
+            # Use discovered_files for diagrams (includes images that can't be parsed)
+            has_diagrams = len(discovered_files.get('architecture_diagrams', [])) > 0 if discovered_files else False
             has_docs = len(parsed_files.get('readmes', [])) + len(parsed_files.get('other_docs', [])) > 0
             
             if has_diagrams or has_docs:
                 summary.append("🤖 No threat models found - will generate threats using AI analysis")
                 summary.append("📋 Available for analysis:")
                 if has_diagrams:
-                    summary.append(f"   • {len(parsed_files.get('architecture_diagrams', []))} architecture diagrams")
+                    diagram_count = len(discovered_files.get('architecture_diagrams', [])) if discovered_files else 0
+                    summary.append(f"   • {diagram_count} architecture diagrams")
                 if has_docs:
                     doc_count = len(parsed_files.get('readmes', [])) + len(parsed_files.get('other_docs', []))
                     summary.append(f"   • {doc_count} documentation files")
             else:
                 summary.append("⚠️  Limited inputs - analysis may be basic")
         
-        # File counts
+        # File counts - include architecture diagrams from discovered_files
         file_counts = []
-        for category, files in parsed_files.items():
-            if files and category != 'threat_models':
-                file_counts.append(f"{category}: {len(files)}")
+        if discovered_files:
+            for category, files in discovered_files.items():
+                if files and category != 'threat_models':
+                    file_counts.append(f"{category}: {len(files)}")
+        else:
+            for category, files in parsed_files.items():
+                if files:
+                    file_counts.append(f"{category}: {len(files)}")
         
         if file_counts:
             summary.append(f"📄 Files: {', '.join(file_counts)}")
