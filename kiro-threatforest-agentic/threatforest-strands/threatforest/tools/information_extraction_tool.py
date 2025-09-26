@@ -278,6 +278,44 @@ Focus on:
         
         return messages
     
+    def _prepare_threat_generation_context(self, context_files: Dict[str, Any], 
+                                         project_info: Dict[str, Any]) -> str:
+        """Prepare context summary for threat generation"""
+        context_parts = []
+        
+        # Application info
+        if project_info.get('application_name'):
+            context_parts.append(f"Application: {project_info['application_name']}")
+        
+        if project_info.get('technologies'):
+            context_parts.append(f"Technologies: {', '.join(project_info['technologies'])}")
+        
+        if project_info.get('architecture_type'):
+            context_parts.append(f"Architecture: {project_info['architecture_type']}")
+        
+        if project_info.get('deployment_environment'):
+            context_parts.append(f"Deployment: {project_info['deployment_environment']}")
+        
+        if project_info.get('sector'):
+            context_parts.append(f"Sector: {project_info['sector']}")
+        
+        # Add documentation content (first 500 chars from each file)
+        parsed_content = context_files.get('parsed_content', {})
+        for category, files in parsed_content.items():
+            if files and category in ['readmes', 'other_docs']:
+                for file_info in files[:2]:  # Max 2 files per category
+                    content = file_info.get('content', '')[:500]
+                    if content:
+                        context_parts.append(f"{category.title()}: {content}...")
+        
+        # Note about diagrams
+        discovered_files = context_files.get('discovered_files', {})
+        diagrams = discovered_files.get('architecture_diagrams', []) if discovered_files else []
+        if diagrams:
+            context_parts.append(f"Architecture diagrams available: {len(diagrams)} files")
+        
+        return '\n\n'.join(context_parts)
+    
     def _validate_with_user(self, project_info: Dict[str, Any]) -> Dict[str, Any]:
         """Allow user to validate and modify extracted information"""
         from rich.console import Console
