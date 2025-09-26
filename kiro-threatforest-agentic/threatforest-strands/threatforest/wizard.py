@@ -427,16 +427,23 @@ Let's get started with the setup!
             successful_trees = [t for t in trees_result['attack_trees'] if 'mermaid_code' in t]
             self.console.print(f"🌳 Generated {len(successful_trees)} attack trees successfully")
             
+            # Save attack trees immediately after generation
+            self._save_attack_trees(trees_result, output_dir)
+            
             # Step 4: TTC Mapping
             with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}")) as progress:
                 task = progress.add_task("🎯 Mapping to MITRE ATT&CK techniques...", total=None)
                 
                 ttc_mapper = TTCMappingTool(threshold=0.5)
-                mapped_result = await ttc_mapper.execute(
-                    trees_result,
-                    bedrock_model=self.config["bedrock_model"],
-                    aws_profile=self.config.get("aws_profile")
-                )
+                try:
+                    mapped_result = await ttc_mapper.execute(
+                        trees_result,
+                        bedrock_model=self.config["bedrock_model"],
+                        aws_profile=self.config.get("aws_profile")
+                    )
+                except Exception as e:
+                    print(f"⚠️  TTC mapping failed: {e}")
+                    mapped_result = None
                 
                 progress.update(task, description="✅ TTC mapping complete")
             
@@ -476,6 +483,31 @@ Let's get started with the setup!
         except Exception as e:
             self.console.print(f"\n❌ Analysis failed: {e}")
             self.console.print("💡 Check your AWS credentials and try again")
+    
+    def _save_attack_trees(self, trees_result: Dict[str, Any], output_dir: Path) -> None:
+        """Save attack trees to output directory"""
+        if not trees_result or 'attack_trees' not in trees_result:
+            return
+            
+        attack_trees = trees_result['attack_trees']
+        for i, tree in enumerate(attack_trees):
+            if 'mermaid_code' in tree:
+                threat_id = tree.get('threat_id', f'T{i+1:03d}')
+                filename = f"attack_tree_{threat_id}.mmd"
+                filepath = output_dir / filename
+                
+                try:
+                    with open(filepath, 'w', encoding='utf-8') as f:
+                        f.write(f"# Attack Tree for {threat_id}\n\n")
+                        f.write(f"**Threat**: {tree.get('threat_statement', 'Unknown')}\n\n")
+                        f.write("## Attack Tree Diagram\n\n")
+                        f.write("```mermaid\n")
+                        f.write(tree['mermaid_code'])
+                        f.write("\n```\n")
+                    
+                    print(f"💾 Saved attack tree: {filename}")
+                except Exception as e:
+                    print(f"⚠️  Failed to save attack tree {filename}: {e}")
     
     def _show_success_summary(self, output_dir: Path, summary_result: Dict[str, Any], 
                              extraction_result: Dict[str, Any], mapping_summary: Dict[str, Any]):
