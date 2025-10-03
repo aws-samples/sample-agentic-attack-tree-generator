@@ -3,6 +3,7 @@ import os
 import json
 import subprocess
 from pathlib import Path
+from threatforest.utils.logger import ThreatForestLogger
 from typing import Dict, List, Any, Optional
 
 # Mock Strands Tool for testing
@@ -20,6 +21,7 @@ class ContextAnalysisTool(Tool):
             name="context_analysis",
             description="Discover and analyze context files including threat models, READMEs, and architecture diagrams"
         )
+        self.logger = ThreatForestLogger.get_logger(self.__class__.__name__)
         self.supported_formats = ['.json', '.tc', '.yaml', '.yml', '.md', '.txt']
         self.threat_keywords = ['threat', 'risk', 'vulnerability', 'attack', 'security']
     
@@ -134,7 +136,7 @@ class ContextAnalysisTool(Tool):
                         analysis['application_context'] = threat_data['application_context']
                         
             except Exception as e:
-                print(f"⚠️  Failed to process {file_path}: {str(e)}")
+                self.logger.warning(f"Failed to process {file_path}: {str(e)}")
         
         return analysis
     
@@ -346,7 +348,7 @@ class ContextAnalysisTool(Tool):
             return indicator_count >= 3  # Require at least 3 indicators to be confident
             
         except Exception as e:
-            print(f"⚠️  Could not read file {file_path}: {e}")
+            self.logger.warning(f"Could not read file {file_path}: {e}")
             return False
     
     def _parse_file(self, file_path: Path) -> Optional[str]:
@@ -443,13 +445,13 @@ class ContextAnalysisTool(Tool):
             if not files_to_analyze:
                 return {}
             
-            print(f"🤖 Analyzing {len(files_to_analyze)} files via Bedrock for enhanced context")
+            self.logger.info(f"Analyzing {len(files_to_analyze)} files via Bedrock for enhanced context")
             
             # Prepare Bedrock request with multimodal content
-            bedrock = boto3.client('bedrock-runtime', region_name='us-west-2')
+            bedrock = boto3.client('bedrock-runtime', region_name='us-east-1')
             
-            # Use model from context or default
-            model_id = context_files.get('model_id', 'anthropic.claude-3-haiku-20240307-v1:0')
+            # Use model from context or default to Claude Sonnet 4
+            model_id = context_files.get('model_id', 'us.anthropic.claude-sonnet-4-20250514-v1:0')
             
             content_parts = []
             
@@ -499,7 +501,7 @@ Provide a structured JSON response with these fields."""
                                 "text": f"File: {Path(file_path).name}\n\n{content}"
                             })
                 except Exception as e:
-                    print(f"⚠️  Failed to process {file_path}: {e}")
+                    self.logger.warning(f"Failed to process {file_path}: {e}")
             
             request_body = {
                 "anthropic_version": "bedrock-2023-05-31",
@@ -527,11 +529,11 @@ Provide a structured JSON response with these fields."""
                 # Parse text response
                 enhanced_context = self._parse_context_from_text(enhanced_context_text)
             
-            print(f"✅ Enhanced context extracted via Bedrock")
+            self.logger.info(f"Enhanced context extracted via Bedrock")
             return enhanced_context
             
         except Exception as e:
-            print(f"⚠️  Failed to extract enhanced context via Bedrock: {e}")
+            self.logger.warning(f"Failed to extract enhanced context via Bedrock: {e}")
             return {}
     
     def _parse_context_from_text(self, text: str) -> Dict[str, Any]:

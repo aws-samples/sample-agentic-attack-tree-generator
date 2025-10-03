@@ -28,6 +28,7 @@ except ImportError:
 # Add current directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from threatforest.utils.logger import ThreatForestLogger
 from threatforest.tools.setup_tool import SetupTool
 from threatforest.tools.context_analysis_tool import ContextAnalysisTool
 from threatforest.tools.information_extraction_tool import InformationExtractionTool
@@ -42,15 +43,35 @@ class ThreatForestWizard:
     def __init__(self):
         self.console = Console()
         self.config = {}
+        self.logger = None
+        self.log_file_path = None
+        
+    def _setup_logging(self):
+        """Setup centralized logging"""
+        output_dir = Path.cwd() / "threatforest_output"
+        self.log_file_path = ThreatForestLogger.initialize(output_dir)
+        self.logger = ThreatForestLogger.get_logger('Wizard')
+        self.logger.info("Wizard initialized")
         
     def run(self):
         """Run the complete wizard"""
+        # Setup logging first
+        self._setup_logging()
+        
         try:
             asyncio.run(self._run_wizard())
+            self.console.print(f"\n✅ Analysis complete!")
+            self.console.print(f"📋 Detailed logs: {self.log_file_path}")
         except KeyboardInterrupt:
-            self.console.print("\n👋 Wizard cancelled by user. Goodbye!")
+            self.logger.warning("Wizard cancelled by user")
+            self.console.print("\n👋 Cancelled. Goodbye!")
+            self.console.print(f"📋 Logs: {self.log_file_path}")
         except Exception as e:
+            self.logger.error(f"Wizard failed: {e}", exc_info=True)
             self.console.print(f"\n❌ Error: {e}")
+            self.console.print(f"📋 Check logs: {self.log_file_path}")
+        finally:
+            ThreatForestLogger.close()
             
     async def _run_wizard(self):
         """Main wizard flow"""
@@ -67,10 +88,13 @@ class ThreatForestWizard:
         # Step 3: Project Path
         self._select_project_path()
         
-        # Step 4: Configuration Review
+        # Step 4: Threat Model Document
+        self._select_threat_model_document()
+        
+        # Step 5: Configuration Review
         self._review_configuration()
         
-        # Step 5: Execute Analysis
+        # Step 6: Execute Analysis
         if Confirm.ask("🚀 Ready to run ThreatForest analysis?"):
             await self._run_analysis()
         else:
@@ -91,7 +115,7 @@ What ThreatForest does:
 • 🤖 Extracts project information using AWS Bedrock vision capabilities
 • 🎯 Generates standardized threat statements (T001, T002, T003...)
 • 🌳 Creates detailed attack trees for high-severity threats
-• 📄 Produces comprehensive security reports and documentation
+• 📄 Aligns attack steps to known intelligence sources such as the AWS TTC, MITRE ATT&CK, or Wiz Cloud Security Framework
 
 Let's get started with the setup!
         """
@@ -103,6 +127,7 @@ Let's get started with the setup!
         
         self.console.print("\n📋 Step 1: AWS Configuration", style="bold blue")
         self.console.print("ThreatForest uses AWS Bedrock for AI analysis. Let's configure your AWS access.")
+        self.logger.info("Starting AWS credentials setup")
         
         # Check existing AWS configuration without SetupTool
         try:
@@ -111,11 +136,13 @@ Let's get started with the setup!
             # Try to get credentials
             credentials = session.get_credentials()
             if credentials:
+                self.logger.info("AWS credentials found")
                 self.console.print("✅ AWS credentials already configured!")
                 
                 # Show available profiles
                 profiles = self._get_aws_profiles()
                 if profiles:
+                    self.logger.debug(f"Available AWS profiles: {profiles}")
                     self.console.print(f"📋 Available AWS profiles: {', '.join(profiles)}")
                     
                     if len(profiles) > 1:
@@ -125,10 +152,13 @@ Let's get started with the setup!
                             default="default"
                         )
                         self.config["aws_profile"] = profile_choice if profile_choice != "default" else None
+                        self.logger.info(f"User selected AWS profile: {profile_choice}")
                     else:
                         self.config["aws_profile"] = None
+                        self.logger.info("Using default AWS profile")
                 else:
                     self.config["aws_profile"] = None
+                    self.logger.info("No AWS profiles found, using default")
             else:
                 raise Exception("No credentials found")
                 
@@ -161,39 +191,232 @@ Let's get started with the setup!
                 sys.exit(1)
     
     def _select_bedrock_model(self):
-        """Select Bedrock model"""
+        """Select Bedrock model dynamically from available models"""
         
         self.console.print("\n🤖 Step 2: AI Model Selection", style="bold blue")
-        self.console.print("Choose the AWS Bedrock model for analysis:")
+        self.console.print("Fetching available AWS Bedrock models...")
+        self.logger.info("Starting model selection process")
         
-        models = [
-            ("Claude Sonnet 4", "us.anthropic.claude-sonnet-4-20250514-v1:0", "⭐ Recommended - Best balance of speed and accuracy"),
-            ("Claude Opus 4.1", "us.anthropic.claude-opus-4-1-20250805-v1:0", "🚀 Most powerful - Highest accuracy, slower"),
-            ("Claude 3.5 Sonnet", "anthropic.claude-3-5-sonnet-20241022-v2:0", "⚡ Fast - Good for quick analysis"),
-            ("Claude 3 Haiku", "anthropic.claude-3-haiku-20240307-v1:0", "💨 Fastest - Basic analysis")
-        ]
+        # Fetch available models from Bedrock
+        try:
+            import boto3
+            session = boto3.Session(profile_name=self.config.get("aws_profile"))
+            bedrock = session.client('bedrock', region_name='us-east-1')
+            self.logger.debug(f"Created Bedrock client for region: us-east-1")
+            
+            response = bedrock.list_foundation_models()
+            self.logger.info(f"Retrieved {len(response.get('modelSummaries', []))} total models from Bedrock")
+            
+            # Try to get inference profiles for models that require them
+            inference_profiles = {}
+            try:
+                profiles_response = bedrock.list_inference_profiles()
+                self.logger.debug(f"Retrieved {len(profiles_response.get('inferenceProfileSummaries', []))} inference profiles")
+                
+                for profile in profiles_response.get('inferenceProfileSummaries', []):
+                    profile_arn = profile.get('inferenceProfileArn', '')
+                    # Map model IDs to their inference profile ARNs
+                    for model in profile.get('models', []):
+                        model_id = model.get('modelArn', '').split('/')[-1]
+                        if model_id and 'claude' in model_id.lower():
+                            inference_profiles[model_id] = profile_arn
+                            self.logger.debug(f"Mapped inference profile for {model_id}: {profile_arn}")
+                            
+                if inference_profiles:
+                    self.logger.info(f"Found {len(inference_profiles)} inference profiles for Claude models")
+            except Exception as e:
+                # Inference profiles might not be available in all regions
+                self.logger.warning(f"Could not fetch inference profiles: {e}")
+            
+            # Filter for Claude models with text generation capability
+            # Use a dict to deduplicate by model family, keeping the best version
+            model_families = {}
+            
+            for model in response.get('modelSummaries', []):
+                model_id = model.get('modelId', '')
+                model_name = model.get('modelName', '')
+                inference_profile_required = model.get('inferenceTypesSupported', [])
+                
+                # Only include Claude models that support text generation
+                if 'claude' in model_id.lower() and 'TEXT' in model.get('outputModalities', []):
+                    self.logger.debug(f"Processing model: {model_name} ({model_id})")
+                    
+                    # Skip models that require inference profiles but don't have one available
+                    if 'PROVISIONED' in inference_profile_required and model_id not in inference_profiles:
+                        self.logger.debug(f"Skipping {model_id} - requires inference profile but none available")
+                        continue
+                    
+                    # Determine model family key for deduplication
+                    family_key = self._get_model_family_key(model_id, model_name)
+                    
+                    # Get priority score (lower is better)
+                    priority = self._get_model_priority(model_id)
+                    
+                    # Use inference profile ARN if available, otherwise use model ID
+                    effective_id = inference_profiles.get(model_id, model_id)
+                    if effective_id != model_id:
+                        self.logger.debug(f"Using inference profile for {model_id}")
+                    
+                    # Keep the best version of each model family
+                    if family_key not in model_families or priority < model_families[family_key]['priority']:
+                        recommendation = self._get_model_recommendation(model_id, model_name)
+                        self.logger.debug(f"Selected {model_name} for family {family_key} (priority: {priority})")
+                        model_families[family_key] = {
+                            'name': model_name,
+                            'id': effective_id,
+                            'recommendation': recommendation,
+                            'priority': priority
+                        }
+            
+            # Convert to list
+            available_models = [
+                {'name': m['name'], 'id': m['id'], 'recommendation': m['recommendation']}
+                for m in model_families.values()
+            ]
+            
+            self.logger.info(f"Found {len(available_models)} unique Claude model families")
+            for model in available_models:
+                self.logger.debug(f"  - {model['name']}: {model['id']}")
+            
+            if not available_models:
+                self.logger.warning("No Claude models found, using fallback list")
+                self.console.print("⚠️  No Claude models found. Using fallback list.")
+                available_models = self._get_fallback_models()
+            
+            # Sort models by recommendation priority (recommended first)
+            available_models.sort(key=lambda x: (
+                0 if '⭐ Recommended' in x['recommendation'] else
+                1 if '🚀' in x['recommendation'] else
+                2 if '⚡' in x['recommendation'] else
+                3 if '🔬' in x['recommendation'] else
+                4 if '💨' in x['recommendation'] else 5
+            ))
+            
+        except Exception as e:
+            self.logger.error(f"Failed to fetch models from Bedrock: {e}", exc_info=True)
+            self.console.print(f"⚠️  Could not fetch models: {e}")
+            self.console.print("Using fallback model list...")
+            available_models = self._get_fallback_models()
+        
+        # Display available models
+        self.console.print("\nChoose the AWS Bedrock model for analysis:")
         
         table = Table(title="Available Models")
         table.add_column("Option", style="cyan")
         table.add_column("Model", style="green")
         table.add_column("Description", style="yellow")
         
-        for i, (name, model_id, desc) in enumerate(models, 1):
-            table.add_row(str(i), name, desc)
+        for i, model in enumerate(available_models, 1):
+            table.add_row(str(i), model['name'], model['recommendation'])
         
         self.console.print(table)
         
         choice = Prompt.ask(
             "Select model",
-            choices=[str(i) for i in range(1, len(models) + 1)],
+            choices=[str(i) for i in range(1, len(available_models) + 1)],
             default="1"
         )
         
-        selected_model = models[int(choice) - 1]
-        self.config["bedrock_model"] = selected_model[1]
+        selected_model = available_models[int(choice) - 1]
+        self.config["bedrock_model"] = selected_model['id']
         
-        self.console.print(f"✅ Selected: {selected_model[0]}")
-        self.console.print(f"💡 {selected_model[2]}")
+        self.logger.info(f"User selected model: {selected_model['name']} ({selected_model['id']})")
+        
+        self.console.print(f"✅ Selected: {selected_model['name']}")
+        self.console.print(f"💡 {selected_model['recommendation']}")
+    
+    def _get_model_family_key(self, model_id: str, model_name: str) -> str:
+        """Generate a family key for deduplication"""
+        model_id_lower = model_id.lower()
+        
+        # Create family keys based on model type - check more specific versions first
+        if 'sonnet-4-5' in model_id_lower or 'sonnet-4.5' in model_id_lower:
+            return 'sonnet-4.5'
+        elif 'sonnet-4' in model_id_lower and 'claude-3' not in model_id_lower:
+            return 'sonnet-4'
+        elif 'opus-4' in model_id_lower:
+            return 'opus-4'
+        elif 'sonnet' in model_id_lower and ('3-5' in model_id_lower or '3.5' in model_id_lower):
+            return 'sonnet-3.5'
+        elif 'haiku' in model_id_lower and 'claude-3' in model_id_lower:
+            return 'haiku-3'
+        elif 'opus' in model_id_lower and 'claude-3' in model_id_lower:
+            return 'opus-3'
+        elif 'sonnet' in model_id_lower and 'claude-3' in model_id_lower:
+            return 'sonnet-3'
+        elif 'instant' in model_id_lower:
+            return 'instant'
+        else:
+            # For other models, use the model name as key
+            return model_name.lower().replace(' ', '-')
+    
+    def _get_model_priority(self, model_id: str) -> int:
+        """Get priority score for model selection (lower is better)"""
+        model_id_lower = model_id.lower()
+        
+        # Prefer cross-region models (us. prefix) over regional models
+        priority = 0 if model_id.startswith('us.') else 10
+        
+        # Prefer newer versions (higher dates)
+        if '2025' in model_id:
+            priority += 0
+        elif '2024' in model_id:
+            priority += 5
+        else:
+            priority += 10
+        
+        return priority
+    
+    def _get_model_recommendation(self, model_id: str, model_name: str) -> str:
+        """Generate recommendation text based on model ID"""
+        model_id_lower = model_id.lower()
+        
+        # Sonnet 4.5 - Newest and most recommended
+        if 'sonnet-4-5' in model_id_lower or 'sonnet-4.5' in model_id_lower:
+            return "⭐ Recommended - Latest model with best performance"
+        # Sonnet 4 - Latest and recommended
+        elif 'sonnet-4' in model_id_lower and 'claude-3' not in model_id_lower:
+            return "⭐ Recommended - Best balance of speed and accuracy"
+        # Opus 4 - Most powerful
+        elif 'opus-4' in model_id_lower:
+            return "🚀 Most powerful - Highest accuracy, slower"
+        # Sonnet 3.5 - Fast and capable
+        elif 'sonnet' in model_id_lower and ('3-5' in model_id_lower or '3.5' in model_id_lower):
+            return "⚡ Fast - Good for quick analysis"
+        # Haiku - Fastest
+        elif 'haiku' in model_id_lower:
+            return "💨 Fastest - Basic analysis"
+        # Opus 3 - Powerful but older
+        elif 'opus' in model_id_lower:
+            return "🔬 Powerful - High accuracy"
+        # Default for other models
+        else:
+            return "📊 Available for analysis"
+    
+    def _get_fallback_models(self) -> List[Dict[str, str]]:
+        """Fallback model list if API call fails"""
+        return [
+            {
+                'name': 'Claude Sonnet 4',
+                'id': 'us.anthropic.claude-sonnet-4-20250514-v1:0',
+                'recommendation': '⭐ Recommended - Best balance of speed and accuracy'
+            },
+            {
+                'name': 'Claude Opus 4.1',
+                'id': 'us.anthropic.claude-opus-4-1-20250805-v1:0',
+                'recommendation': '🚀 Most powerful - Highest accuracy, slower'
+            },
+            {
+                'name': 'Claude 3.5 Sonnet',
+                'id': 'anthropic.claude-3-5-sonnet-20241022-v2:0',
+                'recommendation': '⚡ Fast - Good for quick analysis'
+            },
+            {
+                'name': 'Claude 3 Haiku',
+                'id': 'anthropic.claude-3-haiku-20240307-v1:0',
+                'recommendation': '💨 Fastest - Basic analysis'
+            }
+        ]
     
     def _select_project_path(self):
         """Select project path with enhanced threat model discovery"""
@@ -234,47 +457,73 @@ Let's get started with the setup!
         self.config["project_path"] = str(project_path)
         
         # Enhanced file discovery preview
-        self.console.print(f"\n📋 Enhanced Scanning {project_path}...")
+        self.console.print(f"\n📋 Scanning {project_path}...")
+        self.logger.info(f"Scanning project path: {project_path}")
         
         # Use enhanced discovery that matches context analysis
-        threat_models = self._discover_threat_files_preview(str(project_path))
         readme_files = self._discover_readme_files_preview(str(project_path))
         diagram_files = self._discover_diagram_files_preview(str(project_path))
         
-        # Show enhanced results
-        if threat_models:
-            self.console.print(f"🎯 Found {len(threat_models)} threat model files:")
-            for tm in threat_models[:3]:  # Show first 3
-                file_name = Path(tm).name
-                format_type = "ThreatComposer" if "threatcomposer" in tm.lower() or tm.endswith('.tc') else "Generic"
-                self.console.print(f"   • {file_name} ({format_type})")
-            if len(threat_models) > 3:
-                self.console.print(f"   • ... and {len(threat_models) - 3} more")
-        else:
-            self.console.print("⚠️  No threat model files found")
+        self.logger.debug(f"Found {len(readme_files)} readme files")
+        self.logger.debug(f"Found {len(diagram_files)} diagram files")
         
-        self.console.print(f"📖 Found {len(readme_files)} README files")
-        self.console.print(f"🏗️  Found {len(diagram_files)} diagram files")
+        # Convert to sets to avoid double-counting files that appear in multiple categories
+        readme_set = set(readme_files)
+        diagram_set = set(diagram_files)
         
-        # Enhanced validation
-        if len(threat_models) == 0 and len(readme_files) == 0 and len(diagram_files) == 0:
-            self.console.print("⚠️  No threat models, documentation, or diagrams found")
-            self.console.print("💡 ThreatForest needs at least one of:")
-            self.console.print("   • ThreatComposer files (.tc.json)")
-            self.console.print("   • Architecture diagrams (.png, .jpg, .pdf)")
+        # Remove diagrams from readme count (images shouldn't be counted as docs)
+        readme_only = readme_set - diagram_set
+        
+        # Calculate total unique files
+        all_files = readme_set | diagram_set
+        total_files = len(all_files)
+        
+        self.logger.info(f"Total unique files found: {total_files} ({len(readme_only)} docs, {len(diagram_set)} diagrams)")
+        for file in sorted(all_files):
+            self.logger.debug(f"  - {file}")
+        
+        # Show simplified results
+        self.console.print(f"✅ Found {total_files} files for analysis:")
+        self.console.print(f"   • 📖 {len(readme_only)} documentation files")
+        self.console.print(f"   • 🏗️  {len(diagram_set)} diagram files")
+        
+        # Simplified validation
+        if total_files == 0:
+            self.console.print("\n⚠️  No project files found for analysis")
+            self.console.print("💡 ThreatForest works best with:")
             self.console.print("   • Documentation (README.md, config files)")
-            self.console.print("   • Any project files for AI analysis")
+            self.console.print("   • Architecture diagrams (.png, .jpg, .pdf)")
+            self.console.print("   • ThreatComposer files (.tc.json)")
             
             if not Confirm.ask("Continue with very limited analysis?"):
                 self.console.print("💡 Add some documentation or diagrams and try again.")
                 sys.exit(1)
-        elif len(threat_models) > 0:
-            self.console.print("✅ Threat models found - analysis will be comprehensive!")
-        elif len(diagram_files) > 0 or len(readme_files) > 0:
-            self.console.print("🤖 No threat models found - will generate threats using AI analysis")
-            self.console.print("📋 ThreatForest will analyze your content and images to create standardized threat models")
+    
+    def _select_threat_model_document(self):
+        """Select threat model document"""
+        
+        self.console.print("\n📄 Step 4: Threat Model Document", style="bold blue")
+        
+        if Confirm.ask("Do you have an existing threat model document?"):
+            while True:
+                threat_model_path = Prompt.ask("Enter the full path to your threat model document")
+                
+                # Expand user path and resolve
+                threat_model_path = Path(threat_model_path).expanduser().resolve()
+                
+                if threat_model_path.exists() and threat_model_path.is_file():
+                    self.config["threat_model_path"] = str(threat_model_path)
+                    self.console.print(f"✅ Threat model document: {threat_model_path.name}")
+                    break
+                else:
+                    self.console.print(f"❌ File not found: {threat_model_path}")
+                    if not Confirm.ask("Try again?"):
+                        self.config["threat_model_path"] = None
+                        break
         else:
-            self.console.print("⚠️  Limited inputs - analysis will be basic")
+            self.config["threat_model_path"] = None
+            self.console.print("ℹ️  No threat model document specified - will analyze project for threats")
+    
     
     def _discover_threat_files_preview(self, project_path: str) -> List[str]:
         """Preview threat file discovery"""
@@ -335,7 +584,7 @@ Let's get started with the setup!
     def _review_configuration(self):
         """Review configuration before execution"""
         
-        self.console.print("\n📋 Step 4: Configuration Review", style="bold blue")
+        self.console.print("\n📋 Step 5: Configuration Review", style="bold blue")
         
         config_table = Table(title="ThreatForest Configuration")
         config_table.add_column("Setting", style="cyan")
@@ -344,6 +593,13 @@ Let's get started with the setup!
         config_table.add_row("AWS Profile", self.config.get("aws_profile", "default"))
         config_table.add_row("Bedrock Model", self.config["bedrock_model"].split("/")[-1])
         config_table.add_row("Project Path", self.config["project_path"])
+        
+        threat_model_display = self.config.get("threat_model_path")
+        if threat_model_display:
+            threat_model_display = Path(threat_model_display).name
+        else:
+            threat_model_display = "Auto-discover from project"
+        config_table.add_row("Threat Model", threat_model_display)
         
         self.console.print(config_table)
         
@@ -354,7 +610,7 @@ Let's get started with the setup!
     async def _run_analysis(self):
         """Run the complete ThreatForest analysis"""
         
-        self.console.print("\n🚀 Step 5: Running ThreatForest Analysis", style="bold blue")
+        self.console.print("\n🚀 Step 6: Running ThreatForest Analysis", style="bold blue")
         
         # Create output directory
         project_name = Path(self.config["project_path"]).name.replace(" ", "_").lower()
@@ -377,6 +633,10 @@ Let's get started with the setup!
             # Step 2: Information Extraction
             with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}")) as progress:
                 task = progress.add_task("🤖 Extracting project information with AI...", total=None)
+                
+                # Add threat model path to context if specified
+                if self.config.get("threat_model_path"):
+                    context_result["threat_model_path"] = self.config["threat_model_path"]
                 
                 extraction_tool = InformationExtractionTool()
                 extraction_result = await extraction_tool.execute(
@@ -422,7 +682,7 @@ Let's get started with the setup!
                 
                 tree_generator = AttackTreeGeneratorTool()
                 trees_result = await tree_generator.execute(
-                    threat_statements=high_threats[:5],  # Limit to 5 to avoid long processing
+                    threat_statements=high_threats,
                     extracted_info=extraction_result,
                     bedrock_model=self.config["bedrock_model"],
                     aws_profile=self.config.get("aws_profile")
@@ -432,9 +692,6 @@ Let's get started with the setup!
             
             successful_trees = [t for t in trees_result['attack_trees'] if 'mermaid_code' in t]
             self.console.print(f"🌳 Generated {len(successful_trees)} attack trees successfully")
-            
-            # Save attack trees immediately after generation
-            self._save_attack_trees(trees_result, output_dir)
             
             # Skip TTC mapping but continue with summary generation
             self.console.print("⏭️  Skipping MITRE ATT&CK mapping as requested")
@@ -470,11 +727,72 @@ Let's get started with the setup!
     def _save_attack_trees(self, trees_result: Dict[str, Any], output_dir: Path) -> None:
         """Save attack trees to output directory"""
         if not trees_result or 'attack_trees' not in trees_result:
+            print("⚠️  No attack trees to save")
             return
             
-        # Attack trees are now handled by summary generator
         successful_trees = [tree for tree in trees_result['attack_trees'] if 'mermaid_code' in tree]
-        print(f"🌳 Generated {len(successful_trees)} attack trees successfully")
+        failed_trees = [tree for tree in trees_result['attack_trees'] if 'error' in tree]
+        
+        print(f"🌳 Saving {len(successful_trees)} attack trees to {output_dir}")
+        
+        # Save successful attack trees
+        for tree in successful_trees:
+            threat_id = tree.get('threat_id', 'unknown')
+            threat_statement = tree.get('threat_statement', 'Unknown threat')
+            mermaid_code = tree.get('mermaid_code', '')
+            
+            # Create filename
+            filename = f"attack_tree_{threat_id}.md"
+            filepath = output_dir / filename
+            
+            # Create markdown content
+            content = f"""# Attack Tree: {threat_statement}
+
+**Threat ID**: {threat_id}
+**Category**: {tree.get('threat_category', 'Unknown')}
+
+## Attack Tree Diagram
+
+```mermaid
+{mermaid_code}
+```
+
+## Attack Steps
+
+"""
+            
+            # Add attack steps if available
+            attack_steps = tree.get('attack_steps', [])
+            if attack_steps:
+                for i, step in enumerate(attack_steps, 1):
+                    content += f"{i}. **{step.get('node_id', 'unknown')}**: {step.get('description', 'No description')}\n"
+            else:
+                content += "No attack steps extracted.\n"
+            
+            content += f"""
+## Generation Details
+
+- **Generated on**: {__import__('datetime').datetime.now().isoformat()}
+- **Validation**: {'Passed' if tree.get('validation', {}).get('is_valid', False) else 'Failed'}
+"""
+            
+            # Write to file
+            try:
+                with open(filepath, 'w', encoding='utf-8') as f:
+                    f.write(content)
+                print(f"✅ Saved attack tree: {filename}")
+            except Exception as e:
+                print(f"❌ Failed to save {filename}: {e}")
+        
+        # Report failed trees
+        if failed_trees:
+            print(f"⚠️  {len(failed_trees)} attack trees failed to generate:")
+            for tree in failed_trees:
+                threat_id = tree.get('threat_id', 'unknown')
+                error = tree.get('error', 'Unknown error')
+                print(f"  - {threat_id}: {error}")
+        
+        print(f"🌳 Attack tree generation complete: {len(successful_trees)} successful, {len(failed_trees)} failed")
     
     def _show_success_summary_no_ttc(self, output_dir: Path, summary_result: Dict[str, Any], 
                                     extraction_result: Dict[str, Any]):

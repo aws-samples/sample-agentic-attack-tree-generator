@@ -1,6 +1,6 @@
 # ThreatForest Analysis Report
 
-**Generated on:** 2025-09-26 15:22:23
+**Generated on:** 2025-10-03 16:47:40
 
 ## Executive Summary
 
@@ -14,15 +14,15 @@ This report presents a comprehensive threat analysis for **Healthcare Analytics 
 - **Industry Sector**: Healthcare
 
 ### Technology Stack
-- AWS AppFlow
+- Amazon AppFlow
 - AWS Transfer for SFTP
 - AWS Snow Family
 - Amazon HealthLake (FHIR)
 - AWS Database Migration Service
 - AWS Data Exchange
-- Amazon S3
-- AWS Glue
 - AWS Lake Formation
+- AWS Glue
+- Amazon S3
 - Amazon Redshift
 - Amazon Athena
 - Amazon QuickSight
@@ -30,10 +30,13 @@ This report presents a comprehensive threat analysis for **Healthcare Analytics 
 - Amazon SageMaker
 - Amazon EFS/FSx
 - Amazon RDS
-- AWS Lambda
-- Amazon ECS
-- Amazon EKS
-- AWS AppSync
+- AWS Identity & Access Management
+- AWS Key Management Service
+- Amazon GuardDuty
+- Amazon Macie
+- AWS Config
+- AWS CloudTrail
+- Amazon CloudWatch
 
 ### Security Objectives
 - **Confidentiality**: ✅ Required
@@ -45,24 +48,25 @@ This report presents a comprehensive threat analysis for **Healthcare Analytics 
 ### Threat Summary
 - **Total Threats Identified**: 16
 - **High Severity Threats**: 6
-- **Attack Trees Generated**: 5
+- **Attack Trees Generated**: 6
 
 ### High Severity Threats
 1. **T001**: Data Transmission Interception
-2. **T002**: Storage Misconfiguration
-3. **T003**: SQL Injection Attack
-4. **T004**: Credential Compromise
-5. **T005**: Insider Threat
-6. **T006**: Network Infrastructure Compromise
+2. **T002**: Storage Configuration Breach
+3. **T003**: Data Exfiltration Attack
+4. **T004**: SQL Injection Attack
+5. **T005**: Credential Compromise
+6. **T006**: Insider Threat
 
 ## Attack Tree Analysis
 
 ### Generated Attack Trees
 - **T001**: Data Transmission Interception (0 TTC mappings)
-- **T002**: Storage Misconfiguration (0 TTC mappings)
-- **T003**: SQL Injection Attack (0 TTC mappings)
-- **T004**: Credential Compromise (0 TTC mappings)
-- **T005**: Insider Threat (0 TTC mappings)
+- **T002**: Storage Configuration Breach (0 TTC mappings)
+- **T003**: Data Exfiltration Attack (0 TTC mappings)
+- **T004**: SQL Injection Attack (0 TTC mappings)
+- **T005**: Credential Compromise (0 TTC mappings)
+- **T006**: Insider Threat (0 TTC mappings)
 
 ## Recommendations
 

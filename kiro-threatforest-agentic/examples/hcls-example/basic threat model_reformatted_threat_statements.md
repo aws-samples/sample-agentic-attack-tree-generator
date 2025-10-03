@@ -4,11 +4,11 @@
 
 ## Application Context
 - **Application**: Healthcare Analytics Environment
-- **Generated**: 2024-12-19 14:30:00 UTC
+- **Generated**: 2024-12-19 10:30:00 UTC
 - **Total Threats**: 16
 - **High Priority**: 6
-- **Medium Priority**: 7
-- **Low Priority**: 3
+- **Medium Priority**: 6
+- **Low Priority**: 4
 
 ## Threat Statements
 
@@ -16,12 +16,12 @@
 
 #### T001 - Data Transmission Interception
 
-**Threat Statement**: A malicious actor with network access capabilities, can intercept healthcare data during transmission from SaaS applications to AWS AppFlow, which leads to unauthorized PHI exposure, resulting in reduced confidentiality of patient health information and personally identifiable information.
+**Threat Statement**: A network attacker with access to transmission paths, can intercept healthcare data during transmission from SaaS applications to AWS AppFlow, which leads to PHI exposure, resulting in reduced confidentiality of PHI/PII Data.
 
-- **Threat Source**: Malicious actor with network access capabilities
-- **Prerequisites**: Network access capabilities
+- **Threat Source**: Network attacker
+- **Prerequisites**: Access to transmission paths
 - **Threat Action**: Intercept healthcare data during transmission from SaaS applications to AWS AppFlow
-- **Threat Impact**: Unauthorized PHI exposure
+- **Threat Impact**: PHI exposure
 - **Reduced Goal**: Confidentiality
 - **Impacted Assets**: PHI/PII Data
 - **Priority**: High
@@ -29,27 +29,42 @@
 
 ---
 
-#### T002 - Storage Misconfiguration
+#### T002 - Storage Configuration Breach
 
-**Threat Statement**: A malicious actor with basic reconnaissance skills, can exploit misconfigured S3 bucket permissions, which leads to exposure of raw healthcare data to unauthorized users or public access, resulting in reduced confidentiality of patient health information and research data.
+**Threat Statement**: A malicious actor with basic AWS knowledge, can exploit misconfigured S3 bucket permissions, which leads to exposure of raw healthcare data to unauthorized users or public access, resulting in reduced confidentiality of PHI/PII Data.
 
-- **Threat Source**: Malicious actor with basic reconnaissance skills
-- **Prerequisites**: Basic reconnaissance skills
+- **Threat Source**: Malicious actor
+- **Prerequisites**: Basic AWS knowledge
 - **Threat Action**: Exploit misconfigured S3 bucket permissions
 - **Threat Impact**: Exposure of raw healthcare data to unauthorized users or public access
 - **Reduced Goal**: Confidentiality
-- **Impacted Assets**: PHI/PII Data, Research Data
+- **Impacted Assets**: PHI/PII Data
 - **Priority**: High
-- **Category**: Storage Misconfiguration
+- **Category**: Storage Configuration Breach
 
 ---
 
-#### T003 - SQL Injection Attack
+#### T003 - Data Exfiltration Attack
 
-**Threat Statement**: A malicious actor with database knowledge, can perform SQL injection attacks against Redshift, which leads to unauthorized data access or modification, resulting in reduced confidentiality and integrity of patient health information and research data.
+**Threat Statement**: An attacker with AWS account access, can exfiltrate large volumes of PHI from the S3 data lake, which leads to massive data breach, resulting in reduced confidentiality of PHI/PII Data and Research Data.
 
-- **Threat Source**: Malicious actor with database knowledge
-- **Prerequisites**: Database knowledge
+- **Threat Source**: Attacker
+- **Prerequisites**: AWS account access
+- **Threat Action**: Exfiltrate large volumes of PHI from the S3 data lake
+- **Threat Impact**: Massive data breach
+- **Reduced Goal**: Confidentiality
+- **Impacted Assets**: PHI/PII Data, Research Data
+- **Priority**: High
+- **Category**: Data Exfiltration Attack
+
+---
+
+#### T004 - SQL Injection Attack
+
+**Threat Statement**: A malicious user with database access, can perform SQL injection attacks against Redshift, which leads to unauthorized data access or modification, resulting in reduced confidentiality and integrity of PHI/PII Data and Research Data.
+
+- **Threat Source**: Malicious user
+- **Prerequisites**: Database access
 - **Threat Action**: Perform SQL injection attacks against Redshift
 - **Threat Impact**: Unauthorized data access or modification
 - **Reduced Goal**: Confidentiality and integrity
@@ -59,14 +74,14 @@
 
 ---
 
-#### T004 - Credential Compromise
+#### T005 - Credential Compromise
 
-**Threat Statement**: A malicious actor with compromised IAM credentials, can gain broad access across the entire healthcare analytics pipeline, which leads to unauthorized access to all system components, resulting in reduced confidentiality, integrity, and availability of all critical assets.
+**Threat Statement**: An attacker with compromised IAM credentials, can gain broad access across the entire healthcare analytics pipeline, which leads to system-wide security breach, resulting in reduced confidentiality, integrity, and availability of all system assets.
 
-- **Threat Source**: Malicious actor with compromised IAM credentials
+- **Threat Source**: Attacker
 - **Prerequisites**: Compromised IAM credentials
 - **Threat Action**: Gain broad access across the entire healthcare analytics pipeline
-- **Threat Impact**: Unauthorized access to all system components
+- **Threat Impact**: System-wide security breach
 - **Reduced Goal**: Confidentiality, integrity, and availability
 - **Impacted Assets**: PHI/PII Data, Research Data, Business Intelligence, ML Models, Infrastructure
 - **Priority**: High
@@ -74,14 +89,14 @@
 
 ---
 
-#### T005 - Insider Threat
+#### T006 - Insider Threat
 
-**Threat Statement**: A malicious insider with privileged user access, can perform unauthorized PHI access or data exfiltration, which leads to large-scale data breach, resulting in reduced confidentiality of patient health information and research data.
+**Threat Statement**: A malicious insider with privileged user access, can perform unauthorized PHI access or data exfiltration, which leads to internal data breach, resulting in reduced confidentiality of PHI/PII Data and Research Data.
 
-- **Threat Source**: Malicious insider with privileged user access
+- **Threat Source**: Malicious insider
 - **Prerequisites**: Privileged user access
 - **Threat Action**: Perform unauthorized PHI access or data exfiltration
-- **Threat Impact**: Large-scale data breach
+- **Threat Impact**: Internal data breach
 - **Reduced Goal**: Confidentiality
 - **Impacted Assets**: PHI/PII Data, Research Data
 - **Priority**: High
@@ -89,31 +104,16 @@
 
 ---
 
-#### T006 - Network Infrastructure Compromise
-
-**Threat Statement**: A malicious actor with network exploitation capabilities, can compromise VPN/Direct Connect connections, which leads to network-level access to the entire environment, resulting in reduced confidentiality, integrity, and availability of all system assets.
-
-- **Threat Source**: Malicious actor with network exploitation capabilities
-- **Prerequisites**: Network exploitation capabilities
-- **Threat Action**: Compromise VPN/Direct Connect connections
-- **Threat Impact**: Network-level access to the entire environment
-- **Reduced Goal**: Confidentiality, integrity, and availability
-- **Impacted Assets**: Infrastructure, PHI/PII Data, Research Data, Business Intelligence, ML Models
-- **Priority**: High
-- **Category**: Network Infrastructure Compromise
-
----
-
 ### Medium Priority Threats
 
 #### T007 - Authentication Bypass
 
-**Threat Statement**: A malicious actor with compromised SaaS application credentials, can perform unauthorized data extraction through AppFlow connectors, which leads to unauthorized access to healthcare data, resulting in reduced confidentiality of patient health information.
+**Threat Statement**: An attacker with compromised SaaS application credentials, can perform unauthorized data extraction through AppFlow connectors, which leads to data theft from source systems, resulting in reduced confidentiality of PHI/PII Data.
 
-- **Threat Source**: Malicious actor with compromised SaaS application credentials
+- **Threat Source**: Attacker
 - **Prerequisites**: Compromised SaaS application credentials
 - **Threat Action**: Perform unauthorized data extraction through AppFlow connectors
-- **Threat Impact**: Unauthorized access to healthcare data
+- **Threat Impact**: Data theft from source systems
 - **Reduced Goal**: Confidentiality
 - **Impacted Assets**: PHI/PII Data
 - **Priority**: Medium
@@ -121,72 +121,42 @@
 
 ---
 
-#### T008 - Data Exfiltration
+#### T008 - Data Processing Corruption
 
-**Threat Statement**: A malicious actor with AWS account access, can exfiltrate large volumes of PHI from the S3 data lake, which leads to mass data breach, resulting in reduced confidentiality of patient health information and research data.
+**Threat Statement**: An attacker with access to Glue ETL jobs, can compromise Glue ETL jobs to corrupt or exfiltrate data during processing, which leads to data integrity loss or unauthorized access, resulting in reduced integrity and confidentiality of Research Data and Business Intelligence.
 
-- **Threat Source**: Malicious actor with AWS account access
-- **Prerequisites**: AWS account access
-- **Threat Action**: Exfiltrate large volumes of PHI from the S3 data lake
-- **Threat Impact**: Mass data breach
-- **Reduced Goal**: Confidentiality
-- **Impacted Assets**: PHI/PII Data, Research Data
-- **Priority**: Medium
-- **Category**: Data Exfiltration
-
----
-
-#### T009 - Data Processing Manipulation
-
-**Threat Statement**: A malicious actor with system access, can compromise Glue ETL jobs, which leads to data corruption or exfiltration during processing, resulting in reduced integrity and confidentiality of research data and business intelligence.
-
-- **Threat Source**: Malicious actor with system access
-- **Prerequisites**: System access
-- **Threat Action**: Compromise Glue ETL jobs
-- **Threat Impact**: Data corruption or exfiltration during processing
+- **Threat Source**: Attacker
+- **Prerequisites**: Access to Glue ETL jobs
+- **Threat Action**: Compromise Glue ETL jobs to corrupt or exfiltrate data during processing
+- **Threat Impact**: Data integrity loss or unauthorized access
 - **Reduced Goal**: Integrity and confidentiality
 - **Impacted Assets**: Research Data, Business Intelligence
 - **Priority**: Medium
-- **Category**: Data Processing Manipulation
+- **Category**: Data Processing Corruption
 
 ---
 
-#### T010 - Authorization Bypass
+#### T009 - Dashboard Data Exposure
 
-**Threat Statement**: A malicious actor with basic system access, can exploit insufficient access controls on Athena queries, which leads to unauthorized data analysis, resulting in reduced confidentiality of patient health information and research data.
+**Threat Statement**: An unauthorized business user with dashboard access, can access QuickSight dashboards that inadvertently expose aggregated PHI, which leads to unauthorized PHI disclosure, resulting in reduced confidentiality of PHI/PII Data.
 
-- **Threat Source**: Malicious actor with basic system access
-- **Prerequisites**: Basic system access
-- **Threat Action**: Exploit insufficient access controls on Athena queries
-- **Threat Impact**: Unauthorized data analysis
+- **Threat Source**: Unauthorized business user
+- **Prerequisites**: Dashboard access
+- **Threat Action**: Access QuickSight dashboards that inadvertently expose aggregated PHI
+- **Threat Impact**: Unauthorized PHI disclosure
 - **Reduced Goal**: Confidentiality
-- **Impacted Assets**: PHI/PII Data, Research Data
+- **Impacted Assets**: PHI/PII Data
 - **Priority**: Medium
-- **Category**: Authorization Bypass
+- **Category**: Dashboard Data Exposure
 
 ---
 
-#### T011 - Data Exposure
+#### T010 - Model Inversion Attack
 
-**Threat Statement**: A business user with legitimate dashboard access, can inadvertently expose aggregated PHI through QuickSight dashboards to unauthorized users, which leads to unintended PHI disclosure, resulting in reduced confidentiality of patient health information.
+**Threat Statement**: A malicious researcher with ML endpoint access, can exploit ML model inference endpoints to extract training data through model inversion attacks, which leads to exposure of sensitive training data, resulting in reduced confidentiality of PHI/PII Data and ML Models.
 
-- **Threat Source**: Business user with legitimate dashboard access
-- **Prerequisites**: Legitimate dashboard access
-- **Threat Action**: Inadvertently expose aggregated PHI through QuickSight dashboards to unauthorized users
-- **Threat Impact**: Unintended PHI disclosure
-- **Reduced Goal**: Confidentiality
-- **Impacted Assets**: PHI/PII Data, Business Intelligence
-- **Priority**: Medium
-- **Category**: Data Exposure
-
----
-
-#### T012 - Model Inversion Attack
-
-**Threat Statement**: A malicious actor with ML knowledge, can exploit ML model inference endpoints to extract training data through model inversion attacks, which leads to exposure of sensitive training data, resulting in reduced confidentiality of patient health information and machine learning models.
-
-- **Threat Source**: Malicious actor with ML knowledge
-- **Prerequisites**: ML knowledge
+- **Threat Source**: Malicious researcher
+- **Prerequisites**: ML endpoint access
 - **Threat Action**: Exploit ML model inference endpoints to extract training data through model inversion attacks
 - **Threat Impact**: Exposure of sensitive training data
 - **Reduced Goal**: Confidentiality
@@ -196,16 +166,31 @@
 
 ---
 
-#### T013 - Detection Evasion
+#### T011 - Network Intrusion
 
-**Threat Statement**: A malicious actor with system knowledge, can exploit insufficient logging and monitoring, which leads to data breaches going undetected for extended periods, resulting in reduced availability of security monitoring and increased impact of breaches.
+**Threat Statement**: An attacker with compromised VPN/Direct Connect access, can gain network-level access to the entire environment, which leads to lateral movement and system compromise, resulting in reduced confidentiality, integrity, and availability of Infrastructure and all connected assets.
 
-- **Threat Source**: Malicious actor with system knowledge
+- **Threat Source**: Attacker
+- **Prerequisites**: Compromised VPN/Direct Connect access
+- **Threat Action**: Gain network-level access to the entire environment
+- **Threat Impact**: Lateral movement and system compromise
+- **Reduced Goal**: Confidentiality, integrity, and availability
+- **Impacted Assets**: Infrastructure, PHI/PII Data, Research Data
+- **Priority**: Medium
+- **Category**: Network Intrusion
+
+---
+
+#### T012 - Detection Evasion
+
+**Threat Statement**: A sophisticated attacker with system knowledge, can exploit insufficient logging and monitoring to allow data breaches to go undetected for extended periods, which leads to prolonged unauthorized access, resulting in reduced availability of security monitoring and increased risk to all assets.
+
+- **Threat Source**: Sophisticated attacker
 - **Prerequisites**: System knowledge
-- **Threat Action**: Exploit insufficient logging and monitoring
-- **Threat Impact**: Data breaches going undetected for extended periods
+- **Threat Action**: Exploit insufficient logging and monitoring to allow data breaches to go undetected for extended periods
+- **Threat Impact**: Prolonged unauthorized access
 - **Reduced Goal**: Availability of security monitoring
-- **Impacted Assets**: Infrastructure, PHI/PII Data
+- **Impacted Assets**: Infrastructure, PHI/PII Data, Research Data, Business Intelligence
 - **Priority**: Medium
 - **Category**: Detection Evasion
 
@@ -213,47 +198,62 @@
 
 ### Low Priority Threats
 
-#### T014 - Input Validation Bypass
+#### T013 - Input Validation Bypass
 
-**Threat Statement**: A malicious actor with basic attack skills, can exploit insufficient data validation in AppFlow, which leads to malicious payloads entering the analytics pipeline, resulting in reduced integrity of research data and business intelligence.
+**Threat Statement**: A malicious user with data submission access, can exploit insufficient data validation in AppFlow to allow malicious payloads to enter the analytics pipeline, which leads to potential system compromise or data corruption, resulting in reduced integrity of Research Data and Infrastructure.
 
-- **Threat Source**: Malicious actor with basic attack skills
-- **Prerequisites**: Basic attack skills
-- **Threat Action**: Exploit insufficient data validation in AppFlow
-- **Threat Impact**: Malicious payloads entering the analytics pipeline
+- **Threat Source**: Malicious user
+- **Prerequisites**: Data submission access
+- **Threat Action**: Exploit insufficient data validation in AppFlow to allow malicious payloads to enter the analytics pipeline
+- **Threat Impact**: Potential system compromise or data corruption
 - **Reduced Goal**: Integrity
-- **Impacted Assets**: Research Data, Business Intelligence
+- **Impacted Assets**: Research Data, Infrastructure
 - **Priority**: Low
 - **Category**: Input Validation Bypass
 
 ---
 
-#### T015 - Encryption Bypass
+#### T014 - Encryption Weakness
 
-**Threat Statement**: A malicious actor with physical access, can exploit inadequate encryption at rest to expose sensitive data if storage media is compromised, which leads to data exposure from physical media, resulting in reduced confidentiality of patient health information.
+**Threat Statement**: An attacker with physical access to storage media, can exploit inadequate encryption at rest to expose sensitive data if storage media is compromised, which leads to offline data exposure, resulting in reduced confidentiality of PHI/PII Data.
 
-- **Threat Source**: Malicious actor with physical access
-- **Prerequisites**: Physical access
+- **Threat Source**: Attacker
+- **Prerequisites**: Physical access to storage media
 - **Threat Action**: Exploit inadequate encryption at rest to expose sensitive data if storage media is compromised
-- **Threat Impact**: Data exposure from physical media
+- **Threat Impact**: Offline data exposure
 - **Reduced Goal**: Confidentiality
 - **Impacted Assets**: PHI/PII Data
 - **Priority**: Low
-- **Category**: Encryption Bypass
+- **Category**: Encryption Weakness
 
 ---
 
-#### T016 - Authentication Weakness
+#### T015 - Query Access Control Bypass
 
-**Threat Statement**: A malicious actor with basic hacking skills, can exploit custom applications with weak authentication, which leads to unauthorized access to processed healthcare data, resulting in reduced confidentiality of business intelligence and processed patient data.
+**Threat Statement**: An unauthorized analyst with basic system access, can exploit insufficient access controls on Athena queries to perform unauthorized data analysis, which leads to inappropriate data access, resulting in reduced confidentiality of Research Data and Business Intelligence.
 
-- **Threat Source**: Malicious actor with basic hacking skills
-- **Prerequisites**: Basic hacking skills
-- **Threat Action**: Exploit custom applications with weak authentication
-- **Threat Impact**: Unauthorized access to processed healthcare data
+- **Threat Source**: Unauthorized analyst
+- **Prerequisites**: Basic system access
+- **Threat Action**: Exploit insufficient access controls on Athena queries to perform unauthorized data analysis
+- **Threat Impact**: Inappropriate data access
 - **Reduced Goal**: Confidentiality
-- **Impacted Assets**: Business Intelligence, PHI/PII Data
+- **Impacted Assets**: Research Data, Business Intelligence
 - **Priority**: Low
-- **Category**: Authentication Weakness
+- **Category**: Query Access Control Bypass
+
+---
+
+#### T016 - Application Authentication Weakness
+
+**Threat Statement**: An external attacker with network access, can exploit custom applications with weak authentication to gain unauthorized access to processed healthcare data, which leads to unauthorized data access through application vulnerabilities, resulting in reduced confidentiality of PHI/PII Data and Business Intelligence.
+
+- **Threat Source**: External attacker
+- **Prerequisites**: Network access
+- **Threat Action**: Exploit custom applications with weak authentication to gain unauthorized access to processed healthcare data
+- **Threat Impact**: Unauthorized data access through application vulnerabilities
+- **Reduced Goal**: Confidentiality
+- **Impacted Assets**: PHI/PII Data, Business Intelligence
+- **Priority**: Low
+- **Category**: Application Authentication Weakness
 
 ---

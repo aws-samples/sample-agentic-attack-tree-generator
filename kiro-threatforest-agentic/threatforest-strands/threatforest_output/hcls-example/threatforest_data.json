@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated_at": "2025-09-26T15:22:23.552697",
+    "generated_at": "2025-10-03T16:47:40.622389",
     "generator": "ThreatForest",
     "version": "1.0"
   },
@@ -10,15 +10,15 @@
     "architecture_type": "Cloud-native Data Analytics Platform",
     "deployment_environment": "Cloud (AWS)",
     "technologies": [
-      "AWS AppFlow",
+      "Amazon AppFlow",
       "AWS Transfer for SFTP",
       "AWS Snow Family",
       "Amazon HealthLake (FHIR)",
       "AWS Database Migration Service",
       "AWS Data Exchange",
-      "Amazon S3",
-      "AWS Glue",
       "AWS Lake Formation",
+      "AWS Glue",
+      "Amazon S3",
       "Amazon Redshift",
       "Amazon Athena",
       "Amazon QuickSight",
@@ -26,10 +26,13 @@
       "Amazon SageMaker",
       "Amazon EFS/FSx",
       "Amazon RDS",
-      "AWS Lambda",
-      "Amazon ECS",
-      "Amazon EKS",
-      "AWS AppSync"
+      "AWS Identity & Access Management",
+      "AWS Key Management Service",
+      "Amazon GuardDuty",
+      "Amazon Macie",
+      "AWS Config",
+      "AWS CloudTrail",
+      "Amazon CloudWatch"
     ],
     "security_objectives": {
       "confidentiality": true,
@@ -38,10 +41,10 @@
     },
     "data_types": [
       "Healthcare data",
-      "FHIR standardized healthcare data",
-      "EHR (Electronic Health Records)",
-      "PACS (Picture Archiving and Communication System)",
-      "Public datasets",
+      "Electronic Health Records (EHR)",
+      "PACS imaging data",
+      "FHIR standardized data",
+      "Public health datasets",
       "Research partner data",
       "Business intelligence reports",
       "Machine learning datasets"
@@ -50,23 +53,32 @@
       "SaaS Applications (ERP, CRM, IoT Apps)",
       "Customer Hosted systems (EHR, PACS)",
       "External Sources (Public Data Sets, Research Partners)",
-      "VPN or Direct Connect"
+      "VPN or Direct Connect connections",
+      "HIPAA compliant AWS services"
     ],
-    "network_architecture": "Hybrid cloud architecture with VPN/Direct Connect for customer-hosted systems, secure data ingestion through multiple channels (AppFlow, SFTP, Snow Family), and comprehensive management and security layer spanning the entire platform",
+    "network_architecture": "Multi-tier cloud architecture with secure ingestion layer, centralized data lake, processing layer, and multiple consumption endpoints. VPN/Direct Connect for secure connectivity to customer-hosted systems. Comprehensive management and security layer spanning the entire platform.",
     "key_components": [
-      "Data Ingestion Layer (AppFlow, Transfer for SFTP, Snow Family, HealthLake)",
-      "Data Lake (S3, Glue, Lake Formation)",
-      "Data Warehousing (Redshift, Athena)",
-      "Business Intelligence & Reporting (QuickSight)",
-      "Custom Applications Platform",
-      "Machine Learning Environment (SageMaker, EC2, EFS/FSx, RDS)",
-      "Management & Security Layer (IAM, KMS, GuardDuty, Macie, Config, CloudTrail, CloudWatch)"
-    ]
+      "Data Ingestion Layer (AppFlow, Transfer for SFTP, Snow Family)",
+      "Data Lake (S3 with Lake Formation governance)",
+      "Data Processing & Cataloging (Glue Crawlers, Data Catalog)",
+      "Data Warehousing (Redshift)",
+      "Analytics & Query Engine (Athena)",
+      "Business Intelligence (QuickSight)",
+      "Machine Learning Platform (SageMaker, EC2)",
+      "Security & Governance Layer (IAM, KMS, GuardDuty, Macie)",
+      "Monitoring & Compliance (CloudTrail, CloudWatch, Config)"
+    ],
+    "\"application_name\"": "\"Healthcare Analytics Platform\",",
+    "\"industry\"": "\"Healthcare\",",
+    "\"architecture_type\"": "\"Cloud-native Data Lake Architecture with Microservices\",",
+    "\"components\"": "[",
+    "\"technologies\"": "{",
+    "\"description\"": "\"Data consumed by business intelligence tools, custom applications, and ML workflows\""
   },
   "extraction_summary": {
     "total_threats": 16,
     "high_severity_count": 6,
-    "technologies_identified": 20,
+    "technologies_identified": 23,
     "has_security_objectives": true,
     "user_validated": false
   },
@@ -74,181 +86,335 @@
     "all_threats": [
       {
         "id": "T001",
-        "category": "Data Transmission Interception",
+        "description": "A network attacker with access to transmission paths, can intercept healthcare data during transmission from SaaS applications to AWS AppFlow, which leads to PHI exposure, resulting in reduced confidentiality of PHI/PII Data.",
+        "statement": "A network attacker with access to transmission paths, can intercept healthcare data during transmission from SaaS applications to AWS AppFlow, which leads to PHI exposure, resulting in reduced confidentiality of PHI/PII Data.",
+        "threatSource": "Network attacker",
+        "prerequisites": "Access to transmission paths",
+        "threatAction": "Intercept healthcare data during transmission from SaaS applications to AWS AppFlow",
+        "threatImpact": "PHI exposure",
+        "impactedGoal": "Confidentiality",
+        "impactedAssets": "PHI/PII Data",
         "severity": "High",
-        "description": "A malicious actor with network access capabilities, can intercept healthcare data during transmission from SaaS applications to AWS AppFlow, which leads to unauthorized PHI exposure, resulting in reduced confidentiality of patient health information and personally identifiable information.",
-        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/hcls-example/basic threat model_reformatted_threat_statements.md",
-        "line_number": 17
+        "priority": "High",
+        "category": "Data Transmission Interception",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/hcls-example/basic threat model_reformatted_threat_statements.md"
       },
       {
         "id": "T002",
-        "category": "Storage Misconfiguration",
+        "description": "A malicious actor with basic AWS knowledge, can exploit misconfigured S3 bucket permissions, which leads to exposure of raw healthcare data to unauthorized users or public access, resulting in reduced confidentiality of PHI/PII Data.",
+        "statement": "A malicious actor with basic AWS knowledge, can exploit misconfigured S3 bucket permissions, which leads to exposure of raw healthcare data to unauthorized users or public access, resulting in reduced confidentiality of PHI/PII Data.",
+        "threatSource": "Malicious actor",
+        "prerequisites": "Basic AWS knowledge",
+        "threatAction": "Exploit misconfigured S3 bucket permissions",
+        "threatImpact": "Exposure of raw healthcare data to unauthorized users or public access",
+        "impactedGoal": "Confidentiality",
+        "impactedAssets": "PHI/PII Data",
         "severity": "High",
-        "description": "A malicious actor with basic reconnaissance skills, can exploit misconfigured S3 bucket permissions, which leads to exposure of raw healthcare data to unauthorized users or public access, resulting in reduced confidentiality of patient health information and research data.",
-        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/hcls-example/basic threat model_reformatted_threat_statements.md",
-        "line_number": 32
+        "priority": "High",
+        "category": "Storage Configuration Breach",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/hcls-example/basic threat model_reformatted_threat_statements.md"
       },
       {
         "id": "T003",
-        "category": "SQL Injection Attack",
+        "description": "An attacker with AWS account access, can exfiltrate large volumes of PHI from the S3 data lake, which leads to massive data breach, resulting in reduced confidentiality of PHI/PII Data and Research Data.",
+        "statement": "An attacker with AWS account access, can exfiltrate large volumes of PHI from the S3 data lake, which leads to massive data breach, resulting in reduced confidentiality of PHI/PII Data and Research Data.",
+        "threatSource": "Attacker",
+        "prerequisites": "AWS account access",
+        "threatAction": "Exfiltrate large volumes of PHI from the S3 data lake",
+        "threatImpact": "Massive data breach",
+        "impactedGoal": "Confidentiality",
+        "impactedAssets": "PHI/PII Data, Research Data",
         "severity": "High",
-        "description": "A malicious actor with database knowledge, can perform SQL injection attacks against Redshift, which leads to unauthorized data access or modification, resulting in reduced confidentiality and integrity of patient health information and research data.",
-        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/hcls-example/basic threat model_reformatted_threat_statements.md",
-        "line_number": 47
+        "priority": "High",
+        "category": "Data Exfiltration Attack",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/hcls-example/basic threat model_reformatted_threat_statements.md"
       },
       {
         "id": "T004",
-        "category": "Credential Compromise",
+        "description": "A malicious user with database access, can perform SQL injection attacks against Redshift, which leads to unauthorized data access or modification, resulting in reduced confidentiality and integrity of PHI/PII Data and Research Data.",
+        "statement": "A malicious user with database access, can perform SQL injection attacks against Redshift, which leads to unauthorized data access or modification, resulting in reduced confidentiality and integrity of PHI/PII Data and Research Data.",
+        "threatSource": "Malicious user",
+        "prerequisites": "Database access",
+        "threatAction": "Perform SQL injection attacks against Redshift",
+        "threatImpact": "Unauthorized data access or modification",
+        "impactedGoal": "Confidentiality and integrity",
+        "impactedAssets": "PHI/PII Data, Research Data",
         "severity": "High",
-        "description": "A malicious actor with compromised IAM credentials, can gain broad access across the entire healthcare analytics pipeline, which leads to unauthorized access to all system components, resulting in reduced confidentiality, integrity, and availability of all critical assets.",
-        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/hcls-example/basic threat model_reformatted_threat_statements.md",
-        "line_number": 62
+        "priority": "High",
+        "category": "SQL Injection Attack",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/hcls-example/basic threat model_reformatted_threat_statements.md"
       },
       {
         "id": "T005",
-        "category": "Insider Threat",
+        "description": "An attacker with compromised IAM credentials, can gain broad access across the entire healthcare analytics pipeline, which leads to system-wide security breach, resulting in reduced confidentiality, integrity, and availability of all system assets.",
+        "statement": "An attacker with compromised IAM credentials, can gain broad access across the entire healthcare analytics pipeline, which leads to system-wide security breach, resulting in reduced confidentiality, integrity, and availability of all system assets.",
+        "threatSource": "Attacker",
+        "prerequisites": "Compromised IAM credentials",
+        "threatAction": "Gain broad access across the entire healthcare analytics pipeline",
+        "threatImpact": "System-wide security breach",
+        "impactedGoal": "Confidentiality, integrity, and availability",
+        "impactedAssets": "PHI/PII Data, Research Data, Business Intelligence, ML Models, Infrastructure",
         "severity": "High",
-        "description": "A malicious insider with privileged user access, can perform unauthorized PHI access or data exfiltration, which leads to large-scale data breach, resulting in reduced confidentiality of patient health information and research data.",
-        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/hcls-example/basic threat model_reformatted_threat_statements.md",
-        "line_number": 77
+        "priority": "High",
+        "category": "Credential Compromise",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/hcls-example/basic threat model_reformatted_threat_statements.md"
       },
       {
         "id": "T006",
-        "category": "Network Infrastructure Compromise",
+        "description": "A malicious insider with privileged user access, can perform unauthorized PHI access or data exfiltration, which leads to internal data breach, resulting in reduced confidentiality of PHI/PII Data and Research Data.",
+        "statement": "A malicious insider with privileged user access, can perform unauthorized PHI access or data exfiltration, which leads to internal data breach, resulting in reduced confidentiality of PHI/PII Data and Research Data.",
+        "threatSource": "Malicious insider",
+        "prerequisites": "Privileged user access",
+        "threatAction": "Perform unauthorized PHI access or data exfiltration",
+        "threatImpact": "Internal data breach",
+        "impactedGoal": "Confidentiality",
+        "impactedAssets": "PHI/PII Data, Research Data",
         "severity": "High",
-        "description": "A malicious actor with network exploitation capabilities, can compromise VPN/Direct Connect connections, which leads to network-level access to the entire environment, resulting in reduced confidentiality, integrity, and availability of all system assets.",
-        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/hcls-example/basic threat model_reformatted_threat_statements.md",
-        "line_number": 92
+        "priority": "High",
+        "category": "Insider Threat",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/hcls-example/basic threat model_reformatted_threat_statements.md"
       },
       {
         "id": "T007",
-        "category": "Authentication Bypass",
+        "description": "An attacker with compromised SaaS application credentials, can perform unauthorized data extraction through AppFlow connectors, which leads to data theft from source systems, resulting in reduced confidentiality of PHI/PII Data.",
+        "statement": "An attacker with compromised SaaS application credentials, can perform unauthorized data extraction through AppFlow connectors, which leads to data theft from source systems, resulting in reduced confidentiality of PHI/PII Data.",
+        "threatSource": "Attacker",
+        "prerequisites": "Compromised SaaS application credentials",
+        "threatAction": "Perform unauthorized data extraction through AppFlow connectors",
+        "threatImpact": "Data theft from source systems",
+        "impactedGoal": "Confidentiality",
+        "impactedAssets": "PHI/PII Data",
         "severity": "Medium",
-        "description": "A malicious actor with compromised SaaS application credentials, can perform unauthorized data extraction through AppFlow connectors, which leads to unauthorized access to healthcare data, resulting in reduced confidentiality of patient health information.",
-        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/hcls-example/basic threat model_reformatted_threat_statements.md",
-        "line_number": 109
+        "priority": "Medium",
+        "category": "Authentication Bypass",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/hcls-example/basic threat model_reformatted_threat_statements.md"
       },
       {
         "id": "T008",
-        "category": "Data Exfiltration",
+        "description": "An attacker with access to Glue ETL jobs, can compromise Glue ETL jobs to corrupt or exfiltrate data during processing, which leads to data integrity loss or unauthorized access, resulting in reduced integrity and confidentiality of Research Data and Business Intelligence.",
+        "statement": "An attacker with access to Glue ETL jobs, can compromise Glue ETL jobs to corrupt or exfiltrate data during processing, which leads to data integrity loss or unauthorized access, resulting in reduced integrity and confidentiality of Research Data and Business Intelligence.",
+        "threatSource": "Attacker",
+        "prerequisites": "Access to Glue ETL jobs",
+        "threatAction": "Compromise Glue ETL jobs to corrupt or exfiltrate data during processing",
+        "threatImpact": "Data integrity loss or unauthorized access",
+        "impactedGoal": "Integrity and confidentiality",
+        "impactedAssets": "Research Data, Business Intelligence",
         "severity": "Medium",
-        "description": "A malicious actor with AWS account access, can exfiltrate large volumes of PHI from the S3 data lake, which leads to mass data breach, resulting in reduced confidentiality of patient health information and research data.",
-        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/hcls-example/basic threat model_reformatted_threat_statements.md",
-        "line_number": 124
+        "priority": "Medium",
+        "category": "Data Processing Corruption",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/hcls-example/basic threat model_reformatted_threat_statements.md"
       },
       {
         "id": "T009",
-        "category": "Data Processing Manipulation",
+        "description": "An unauthorized business user with dashboard access, can access QuickSight dashboards that inadvertently expose aggregated PHI, which leads to unauthorized PHI disclosure, resulting in reduced confidentiality of PHI/PII Data.",
+        "statement": "An unauthorized business user with dashboard access, can access QuickSight dashboards that inadvertently expose aggregated PHI, which leads to unauthorized PHI disclosure, resulting in reduced confidentiality of PHI/PII Data.",
+        "threatSource": "Unauthorized business user",
+        "prerequisites": "Dashboard access",
+        "threatAction": "Access QuickSight dashboards that inadvertently expose aggregated PHI",
+        "threatImpact": "Unauthorized PHI disclosure",
+        "impactedGoal": "Confidentiality",
+        "impactedAssets": "PHI/PII Data",
         "severity": "Medium",
-        "description": "A malicious actor with system access, can compromise Glue ETL jobs, which leads to data corruption or exfiltration during processing, resulting in reduced integrity and confidentiality of research data and business intelligence.",
-        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/hcls-example/basic threat model_reformatted_threat_statements.md",
-        "line_number": 139
+        "priority": "Medium",
+        "category": "Dashboard Data Exposure",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/hcls-example/basic threat model_reformatted_threat_statements.md"
       },
       {
         "id": "T010",
-        "category": "Authorization Bypass",
+        "description": "A malicious researcher with ML endpoint access, can exploit ML model inference endpoints to extract training data through model inversion attacks, which leads to exposure of sensitive training data, resulting in reduced confidentiality of PHI/PII Data and ML Models.",
+        "statement": "A malicious researcher with ML endpoint access, can exploit ML model inference endpoints to extract training data through model inversion attacks, which leads to exposure of sensitive training data, resulting in reduced confidentiality of PHI/PII Data and ML Models.",
+        "threatSource": "Malicious researcher",
+        "prerequisites": "ML endpoint access",
+        "threatAction": "Exploit ML model inference endpoints to extract training data through model inversion attacks",
+        "threatImpact": "Exposure of sensitive training data",
+        "impactedGoal": "Confidentiality",
+        "impactedAssets": "PHI/PII Data, ML Models",
         "severity": "Medium",
-        "description": "A malicious actor with basic system access, can exploit insufficient access controls on Athena queries, which leads to unauthorized data analysis, resulting in reduced confidentiality of patient health information and research data.",
-        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/hcls-example/basic threat model_reformatted_threat_statements.md",
-        "line_number": 154
+        "priority": "Medium",
+        "category": "Model Inversion Attack",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/hcls-example/basic threat model_reformatted_threat_statements.md"
       },
       {
         "id": "T011",
-        "category": "Data Exposure",
+        "description": "An attacker with compromised VPN/Direct Connect access, can gain network-level access to the entire environment, which leads to lateral movement and system compromise, resulting in reduced confidentiality, integrity, and availability of Infrastructure and all connected assets.",
+        "statement": "An attacker with compromised VPN/Direct Connect access, can gain network-level access to the entire environment, which leads to lateral movement and system compromise, resulting in reduced confidentiality, integrity, and availability of Infrastructure and all connected assets.",
+        "threatSource": "Attacker",
+        "prerequisites": "Compromised VPN/Direct Connect access",
+        "threatAction": "Gain network-level access to the entire environment",
+        "threatImpact": "Lateral movement and system compromise",
+        "impactedGoal": "Confidentiality, integrity, and availability",
+        "impactedAssets": "Infrastructure, PHI/PII Data, Research Data",
         "severity": "Medium",
-        "description": "A business user with legitimate dashboard access, can inadvertently expose aggregated PHI through QuickSight dashboards to unauthorized users, which leads to unintended PHI disclosure, resulting in reduced confidentiality of patient health information.",
-        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/hcls-example/basic threat model_reformatted_threat_statements.md",
-        "line_number": 169
+        "priority": "Medium",
+        "category": "Network Intrusion",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/hcls-example/basic threat model_reformatted_threat_statements.md"
       },
       {
         "id": "T012",
-        "category": "Model Inversion Attack",
+        "description": "A sophisticated attacker with system knowledge, can exploit insufficient logging and monitoring to allow data breaches to go undetected for extended periods, which leads to prolonged unauthorized access, resulting in reduced availability of security monitoring and increased risk to all assets.",
+        "statement": "A sophisticated attacker with system knowledge, can exploit insufficient logging and monitoring to allow data breaches to go undetected for extended periods, which leads to prolonged unauthorized access, resulting in reduced availability of security monitoring and increased risk to all assets.",
+        "threatSource": "Sophisticated attacker",
+        "prerequisites": "System knowledge",
+        "threatAction": "Exploit insufficient logging and monitoring to allow data breaches to go undetected for extended periods",
+        "threatImpact": "Prolonged unauthorized access",
+        "impactedGoal": "Availability of security monitoring",
+        "impactedAssets": "Infrastructure, PHI/PII Data, Research Data, Business Intelligence",
         "severity": "Medium",
-        "description": "A malicious actor with ML knowledge, can exploit ML model inference endpoints to extract training data through model inversion attacks, which leads to exposure of sensitive training data, resulting in reduced confidentiality of patient health information and machine learning models.",
-        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/hcls-example/basic threat model_reformatted_threat_statements.md",
-        "line_number": 184
+        "priority": "Medium",
+        "category": "Detection Evasion",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/hcls-example/basic threat model_reformatted_threat_statements.md"
       },
       {
         "id": "T013",
-        "category": "Detection Evasion",
-        "severity": "Medium",
-        "description": "A malicious actor with system knowledge, can exploit insufficient logging and monitoring, which leads to data breaches going undetected for extended periods, resulting in reduced availability of security monitoring and increased impact of breaches.",
-        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/hcls-example/basic threat model_reformatted_threat_statements.md",
-        "line_number": 199
+        "description": "A malicious user with data submission access, can exploit insufficient data validation in AppFlow to allow malicious payloads to enter the analytics pipeline, which leads to potential system compromise or data corruption, resulting in reduced integrity of Research Data and Infrastructure.",
+        "statement": "A malicious user with data submission access, can exploit insufficient data validation in AppFlow to allow malicious payloads to enter the analytics pipeline, which leads to potential system compromise or data corruption, resulting in reduced integrity of Research Data and Infrastructure.",
+        "threatSource": "Malicious user",
+        "prerequisites": "Data submission access",
+        "threatAction": "Exploit insufficient data validation in AppFlow to allow malicious payloads to enter the analytics pipeline",
+        "threatImpact": "Potential system compromise or data corruption",
+        "impactedGoal": "Integrity",
+        "impactedAssets": "Research Data, Infrastructure",
+        "severity": "Low",
+        "priority": "Low",
+        "category": "Input Validation Bypass",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/hcls-example/basic threat model_reformatted_threat_statements.md"
       },
       {
         "id": "T014",
-        "category": "Input Validation Bypass",
+        "description": "An attacker with physical access to storage media, can exploit inadequate encryption at rest to expose sensitive data if storage media is compromised, which leads to offline data exposure, resulting in reduced confidentiality of PHI/PII Data.",
+        "statement": "An attacker with physical access to storage media, can exploit inadequate encryption at rest to expose sensitive data if storage media is compromised, which leads to offline data exposure, resulting in reduced confidentiality of PHI/PII Data.",
+        "threatSource": "Attacker",
+        "prerequisites": "Physical access to storage media",
+        "threatAction": "Exploit inadequate encryption at rest to expose sensitive data if storage media is compromised",
+        "threatImpact": "Offline data exposure",
+        "impactedGoal": "Confidentiality",
+        "impactedAssets": "PHI/PII Data",
         "severity": "Low",
-        "description": "A malicious actor with basic attack skills, can exploit insufficient data validation in AppFlow, which leads to malicious payloads entering the analytics pipeline, resulting in reduced integrity of research data and business intelligence.",
-        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/hcls-example/basic threat model_reformatted_threat_statements.md",
-        "line_number": 216
+        "priority": "Low",
+        "category": "Encryption Weakness",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/hcls-example/basic threat model_reformatted_threat_statements.md"
       },
       {
         "id": "T015",
-        "category": "Encryption Bypass",
+        "description": "An unauthorized analyst with basic system access, can exploit insufficient access controls on Athena queries to perform unauthorized data analysis, which leads to inappropriate data access, resulting in reduced confidentiality of Research Data and Business Intelligence.",
+        "statement": "An unauthorized analyst with basic system access, can exploit insufficient access controls on Athena queries to perform unauthorized data analysis, which leads to inappropriate data access, resulting in reduced confidentiality of Research Data and Business Intelligence.",
+        "threatSource": "Unauthorized analyst",
+        "prerequisites": "Basic system access",
+        "threatAction": "Exploit insufficient access controls on Athena queries to perform unauthorized data analysis",
+        "threatImpact": "Inappropriate data access",
+        "impactedGoal": "Confidentiality",
+        "impactedAssets": "Research Data, Business Intelligence",
         "severity": "Low",
-        "description": "A malicious actor with physical access, can exploit inadequate encryption at rest to expose sensitive data if storage media is compromised, which leads to data exposure from physical media, resulting in reduced confidentiality of patient health information.",
-        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/hcls-example/basic threat model_reformatted_threat_statements.md",
-        "line_number": 231
+        "priority": "Low",
+        "category": "Query Access Control Bypass",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/hcls-example/basic threat model_reformatted_threat_statements.md"
       },
       {
         "id": "T016",
-        "category": "Authentication Weakness",
+        "description": "An external attacker with network access, can exploit custom applications with weak authentication to gain unauthorized access to processed healthcare data, which leads to unauthorized data access through application vulnerabilities, resulting in reduced confidentiality of PHI/PII Data and Business Intelligence.",
+        "statement": "An external attacker with network access, can exploit custom applications with weak authentication to gain unauthorized access to processed healthcare data, which leads to unauthorized data access through application vulnerabilities, resulting in reduced confidentiality of PHI/PII Data and Business Intelligence.",
+        "threatSource": "External attacker",
+        "prerequisites": "Network access",
+        "threatAction": "Exploit custom applications with weak authentication to gain unauthorized access to processed healthcare data",
+        "threatImpact": "Unauthorized data access through application vulnerabilities",
+        "impactedGoal": "Confidentiality",
+        "impactedAssets": "PHI/PII Data, Business Intelligence",
         "severity": "Low",
-        "description": "A malicious actor with basic hacking skills, can exploit custom applications with weak authentication, which leads to unauthorized access to processed healthcare data, resulting in reduced confidentiality of business intelligence and processed patient data.",
-        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/hcls-example/basic threat model_reformatted_threat_statements.md",
-        "line_number": 246
+        "priority": "Low",
+        "category": "Application Authentication Weakness",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/hcls-example/basic threat model_reformatted_threat_statements.md"
       }
     ],
     "high_severity": [
       {
         "id": "T001",
-        "category": "Data Transmission Interception",
+        "description": "A network attacker with access to transmission paths, can intercept healthcare data during transmission from SaaS applications to AWS AppFlow, which leads to PHI exposure, resulting in reduced confidentiality of PHI/PII Data.",
+        "statement": "A network attacker with access to transmission paths, can intercept healthcare data during transmission from SaaS applications to AWS AppFlow, which leads to PHI exposure, resulting in reduced confidentiality of PHI/PII Data.",
+        "threatSource": "Network attacker",
+        "prerequisites": "Access to transmission paths",
+        "threatAction": "Intercept healthcare data during transmission from SaaS applications to AWS AppFlow",
+        "threatImpact": "PHI exposure",
+        "impactedGoal": "Confidentiality",
+        "impactedAssets": "PHI/PII Data",
         "severity": "High",
-        "description": "A malicious actor with network access capabilities, can intercept healthcare data during transmission from SaaS applications to AWS AppFlow, which leads to unauthorized PHI exposure, resulting in reduced confidentiality of patient health information and personally identifiable information.",
-        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/hcls-example/basic threat model_reformatted_threat_statements.md",
-        "line_number": 17
+        "priority": "High",
+        "category": "Data Transmission Interception",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/hcls-example/basic threat model_reformatted_threat_statements.md"
       },
       {
         "id": "T002",
-        "category": "Storage Misconfiguration",
+        "description": "A malicious actor with basic AWS knowledge, can exploit misconfigured S3 bucket permissions, which leads to exposure of raw healthcare data to unauthorized users or public access, resulting in reduced confidentiality of PHI/PII Data.",
+        "statement": "A malicious actor with basic AWS knowledge, can exploit misconfigured S3 bucket permissions, which leads to exposure of raw healthcare data to unauthorized users or public access, resulting in reduced confidentiality of PHI/PII Data.",
+        "threatSource": "Malicious actor",
+        "prerequisites": "Basic AWS knowledge",
+        "threatAction": "Exploit misconfigured S3 bucket permissions",
+        "threatImpact": "Exposure of raw healthcare data to unauthorized users or public access",
+        "impactedGoal": "Confidentiality",
+        "impactedAssets": "PHI/PII Data",
         "severity": "High",
-        "description": "A malicious actor with basic reconnaissance skills, can exploit misconfigured S3 bucket permissions, which leads to exposure of raw healthcare data to unauthorized users or public access, resulting in reduced confidentiality of patient health information and research data.",
-        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/hcls-example/basic threat model_reformatted_threat_statements.md",
-        "line_number": 32
+        "priority": "High",
+        "category": "Storage Configuration Breach",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/hcls-example/basic threat model_reformatted_threat_statements.md"
       },
       {
         "id": "T003",
-        "category": "SQL Injection Attack",
+        "description": "An attacker with AWS account access, can exfiltrate large volumes of PHI from the S3 data lake, which leads to massive data breach, resulting in reduced confidentiality of PHI/PII Data and Research Data.",
+        "statement": "An attacker with AWS account access, can exfiltrate large volumes of PHI from the S3 data lake, which leads to massive data breach, resulting in reduced confidentiality of PHI/PII Data and Research Data.",
+        "threatSource": "Attacker",
+        "prerequisites": "AWS account access",
+        "threatAction": "Exfiltrate large volumes of PHI from the S3 data lake",
+        "threatImpact": "Massive data breach",
+        "impactedGoal": "Confidentiality",
+        "impactedAssets": "PHI/PII Data, Research Data",
         "severity": "High",
-        "description": "A malicious actor with database knowledge, can perform SQL injection attacks against Redshift, which leads to unauthorized data access or modification, resulting in reduced confidentiality and integrity of patient health information and research data.",
-        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/hcls-example/basic threat model_reformatted_threat_statements.md",
-        "line_number": 47
+        "priority": "High",
+        "category": "Data Exfiltration Attack",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/hcls-example/basic threat model_reformatted_threat_statements.md"
       },
       {
         "id": "T004",
-        "category": "Credential Compromise",
+        "description": "A malicious user with database access, can perform SQL injection attacks against Redshift, which leads to unauthorized data access or modification, resulting in reduced confidentiality and integrity of PHI/PII Data and Research Data.",
+        "statement": "A malicious user with database access, can perform SQL injection attacks against Redshift, which leads to unauthorized data access or modification, resulting in reduced confidentiality and integrity of PHI/PII Data and Research Data.",
+        "threatSource": "Malicious user",
+        "prerequisites": "Database access",
+        "threatAction": "Perform SQL injection attacks against Redshift",
+        "threatImpact": "Unauthorized data access or modification",
+        "impactedGoal": "Confidentiality and integrity",
+        "impactedAssets": "PHI/PII Data, Research Data",
         "severity": "High",
-        "description": "A malicious actor with compromised IAM credentials, can gain broad access across the entire healthcare analytics pipeline, which leads to unauthorized access to all system components, resulting in reduced confidentiality, integrity, and availability of all critical assets.",
-        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/hcls-example/basic threat model_reformatted_threat_statements.md",
-        "line_number": 62
+        "priority": "High",
+        "category": "SQL Injection Attack",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/hcls-example/basic threat model_reformatted_threat_statements.md"
       },
       {
         "id": "T005",
-        "category": "Insider Threat",
+        "description": "An attacker with compromised IAM credentials, can gain broad access across the entire healthcare analytics pipeline, which leads to system-wide security breach, resulting in reduced confidentiality, integrity, and availability of all system assets.",
+        "statement": "An attacker with compromised IAM credentials, can gain broad access across the entire healthcare analytics pipeline, which leads to system-wide security breach, resulting in reduced confidentiality, integrity, and availability of all system assets.",
+        "threatSource": "Attacker",
+        "prerequisites": "Compromised IAM credentials",
+        "threatAction": "Gain broad access across the entire healthcare analytics pipeline",
+        "threatImpact": "System-wide security breach",
+        "impactedGoal": "Confidentiality, integrity, and availability",
+        "impactedAssets": "PHI/PII Data, Research Data, Business Intelligence, ML Models, Infrastructure",
         "severity": "High",
-        "description": "A malicious insider with privileged user access, can perform unauthorized PHI access or data exfiltration, which leads to large-scale data breach, resulting in reduced confidentiality of patient health information and research data.",
-        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/hcls-example/basic threat model_reformatted_threat_statements.md",
-        "line_number": 77
+        "priority": "High",
+        "category": "Credential Compromise",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/hcls-example/basic threat model_reformatted_threat_statements.md"
       },
       {
         "id": "T006",
-        "category": "Network Infrastructure Compromise",
+        "description": "A malicious insider with privileged user access, can perform unauthorized PHI access or data exfiltration, which leads to internal data breach, resulting in reduced confidentiality of PHI/PII Data and Research Data.",
+        "statement": "A malicious insider with privileged user access, can perform unauthorized PHI access or data exfiltration, which leads to internal data breach, resulting in reduced confidentiality of PHI/PII Data and Research Data.",
+        "threatSource": "Malicious insider",
+        "prerequisites": "Privileged user access",
+        "threatAction": "Perform unauthorized PHI access or data exfiltration",
+        "threatImpact": "Internal data breach",
+        "impactedGoal": "Confidentiality",
+        "impactedAssets": "PHI/PII Data, Research Data",
         "severity": "High",
-        "description": "A malicious actor with network exploitation capabilities, can compromise VPN/Direct Connect connections, which leads to network-level access to the entire environment, resulting in reduced confidentiality, integrity, and availability of all system assets.",
-        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/hcls-example/basic threat model_reformatted_threat_statements.md",
-        "line_number": 92
+        "priority": "High",
+        "category": "Insider Threat",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/hcls-example/basic threat model_reformatted_threat_statements.md"
       }
     ]
   },
@@ -256,735 +422,566 @@
     {
       "threat_id": "T001",
       "threat_category": "Data Transmission Interception",
-      "threat_description": "A malicious actor with network access capabilities, can intercept healthcare data during transmission from SaaS applications to AWS AppFlow, which leads to unauthorized PHI exposure, resulting in reduced confidentiality of patient health information and personally identifiable information.",
-      "threat_statement": "A malicious actor with network access capabilities, can intercept healthcare data during transmission from SaaS applications to AWS AppFlow, which leads to unauthorized PHI exposure, resulting in reduced confidentiality of patient health information and personally identifiable information.",
-      "mermaid_code": "graph TD\n    A[\"Compromise PHIPII Confidentiality via Data Transmission Interception\"]\n    B[\"Network Access Prerequisite\"]\n    C[\"SaaS Application Data Sources\"]\n    D[\"AWS AppFlow Integration Points\"]\n    E[\"Network-Level Interception\"]\n    F[\"Man-in-the-Middle Attack\"]\n    G[\"Traffic SniffingEavesdropping\"]\n    H[\"DNS Hijacking\"]\n    I[\"API Endpoint Exploitation\"]\n    J[\"Authentication Token Theft\"]\n    K[\"Session Hijacking\"]\n    L[\"AWS AppFlow Targeting\"]\n    M[\"S3 Bucket Misconfiguration\"]\n    N[\"IAM Role Exploitation\"]\n    O[\"Unencrypted Data Transmission\"]\n    P[\"Weak TLS Implementation\"]\n    Q[\"Certificate Validation Bypass\"]\n    R[\"Implement End-to-End Encryption\"]\n    S[\"Deploy Network Segmentation\"]\n    T[\"Enable TLS 1.3 with Strong Ciphers\"]\n    U[\"Implement Certificate Pinning\"]\n    V[\"Deploy Network Monitoring\"]\n    W[\"Configure VPC Flow Logs\"]\n    X[\"Implement Zero Trust Architecture\"]\n    Y[\"Enable AWS CloudTrail Logging\"]\n    Z[\"Deploy Data Loss Prevention\"]\n    AA[\"Implement Field-Level Encryption\"]\n    A --> B\n    A --> E\n    A --> I\n    A --> L\n    B --> C\n    B --> D\n    B --> O\n    E --> F\n    E --> G\n    E --> H\n    F --> P\n    G --> O\n    H --> Q\n    I --> J\n    I --> K\n    J --> K\n    L --> M\n    L --> N\n    O --> P\n    P --> Q\n    E --> R\n    E --> S\n    F --> T\n    F --> U\n    G --> V\n    G --> W\n    H --> X\n    I --> Y\n    L --> Z\n    O --> AA\n    classDef attack fill:#ffcccc\n    classDef mitigation fill:#ccffcc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class E,F,G,H,I,J,K,L,M,N attack\n    class R,S,T,U,V,W,X,Y,Z,AA mitigation\n    class A goal\n    class B,C,D,O,P,Q fact",
+      "threat_description": "A network attacker with access to transmission paths, can intercept healthcare data during transmission from SaaS applications to AWS AppFlow, which leads to PHI exposure, resulting in reduced confidentiality of PHI/PII Data.",
+      "threat_statement": "A network attacker with access to transmission paths, can intercept healthcare data during transmission from SaaS applications to AWS AppFlow, which leads to PHI exposure, resulting in reduced confidentiality of PHI/PII Data.",
+      "mermaid_code": "graph TD\n    A[\"Network attacker with access to transmission paths\"] --> B[\"Network reconnaissance\"]\n    A --> C[\"Position on transmission path\"]\n    B --> D[\"Identify SaaS to AWS AppFlow traffic\"]\n    C --> E[\"Man-in-the-middle positioning\"]\n    C --> F[\"Network tap deployment\"]\n    D --> G[\"Traffic pattern analysis\"]\n    E --> H[\"SSLTLS interception attempt\"]\n    F --> I[\"Passive traffic capture\"]\n    G --> J[\"Healthcare data flow identification\"]\n    H --> K[\"Certificate spoofing\"]\n    I --> L[\"Encrypted traffic collection\"]\n    J --> M[\"Target specific PHI transmissions\"]\n    K --> N[\"Decrypt intercepted traffic\"]\n    L --> O[\"Offline decryption attempts\"]\n    M --> P[\"Real-time PHI interception\"]\n    N --> P\n    O --> Q[\"PHI extraction from captured data\"]\n    P --> R[\"PHI exposure and confidentiality breach\"]\n    Q --> R\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q attack\n    class R goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
       "attack_steps": [
         {
           "node_id": "A",
-          "description": "Compromise PHIPII Confidentiality via Data Transmission Interception"
+          "description": "Network attacker with access to transmission paths"
         },
         {
           "node_id": "B",
-          "description": "Network Access Prerequisite"
+          "description": "Network reconnaissance"
         },
         {
           "node_id": "C",
-          "description": "SaaS Application Data Sources"
+          "description": "Position on transmission path"
         },
         {
           "node_id": "D",
-          "description": "AWS AppFlow Integration Points"
+          "description": "Identify SaaS to AWS AppFlow traffic"
         },
         {
           "node_id": "E",
-          "description": "Network-Level Interception"
+          "description": "Man-in-the-middle positioning"
         },
         {
           "node_id": "F",
-          "description": "Man-in-the-Middle Attack"
+          "description": "Network tap deployment"
         },
         {
           "node_id": "G",
-          "description": "Traffic SniffingEavesdropping"
+          "description": "Traffic pattern analysis"
         },
         {
           "node_id": "H",
-          "description": "DNS Hijacking"
+          "description": "SSLTLS interception attempt"
         },
         {
           "node_id": "I",
-          "description": "API Endpoint Exploitation"
+          "description": "Passive traffic capture"
         },
         {
           "node_id": "J",
-          "description": "Authentication Token Theft"
+          "description": "Healthcare data flow identification"
         },
         {
           "node_id": "K",
-          "description": "Session Hijacking"
+          "description": "Certificate spoofing"
         },
         {
           "node_id": "L",
-          "description": "AWS AppFlow Targeting"
+          "description": "Encrypted traffic collection"
         },
         {
           "node_id": "M",
-          "description": "S3 Bucket Misconfiguration"
+          "description": "Target specific PHI transmissions"
         },
         {
           "node_id": "N",
-          "description": "IAM Role Exploitation"
+          "description": "Decrypt intercepted traffic"
         },
         {
           "node_id": "O",
-          "description": "Unencrypted Data Transmission"
+          "description": "Offline decryption attempts"
         },
         {
           "node_id": "P",
-          "description": "Weak TLS Implementation"
+          "description": "Real-time PHI interception"
         },
         {
           "node_id": "Q",
-          "description": "Certificate Validation Bypass"
+          "description": "PHI extraction from captured data"
         },
         {
           "node_id": "R",
-          "description": "Implement End-to-End Encryption"
-        },
-        {
-          "node_id": "S",
-          "description": "Deploy Network Segmentation"
-        },
-        {
-          "node_id": "T",
-          "description": "Enable TLS 1.3 with Strong Ciphers"
-        },
-        {
-          "node_id": "U",
-          "description": "Implement Certificate Pinning"
-        },
-        {
-          "node_id": "V",
-          "description": "Deploy Network Monitoring"
-        },
-        {
-          "node_id": "W",
-          "description": "Configure VPC Flow Logs"
-        },
-        {
-          "node_id": "X",
-          "description": "Implement Zero Trust Architecture"
-        },
-        {
-          "node_id": "Y",
-          "description": "Enable AWS CloudTrail Logging"
-        },
-        {
-          "node_id": "Z",
-          "description": "Deploy Data Loss Prevention"
-        },
-        {
-          "node_id": "AA",
-          "description": "Implement Field-Level Encryption"
+          "description": "PHI exposure and confidentiality breach"
         }
       ],
-      "generated_content": "# Attack Tree: A malicious actor with network access capabilities, can intercept healthcare data during transmission from SaaS applications to AWS AppFlow, which leads to unauthorized PHI exposure, resulting in reduced confidentiality of patient health information and personally identifiable information.\n\n```mermaid\ngraph TD\n    A[\"Compromise PHI/PII Confidentiality via Data Transmission Interception\"]\n    \n    B[\"Network Access Prerequisite\"]\n    C[\"SaaS Application Data Sources\"]\n    D[\"AWS AppFlow Integration Points\"]\n    \n    E[\"Network-Level Interception\"]\n    F[\"Man-in-the-Middle Attack\"]\n    G[\"Traffic Sniffing/Eavesdropping\"]\n    H[\"DNS Hijacking\"]\n    \n    I[\"API Endpoint Exploitation\"]\n    J[\"Authentication Token Theft\"]\n    K[\"Session Hijacking\"]\n    \n    L[\"AWS AppFlow Targeting\"]\n    M[\"S3 Bucket Misconfiguration\"]\n    N[\"IAM Role Exploitation\"]\n    \n    O[\"Unencrypted Data Transmission\"]\n    P[\"Weak TLS Implementation\"]\n    Q[\"Certificate Validation Bypass\"]\n    \n    R[\"Implement End-to-End Encryption\"]\n    S[\"Deploy Network Segmentation\"]\n    T[\"Enable TLS 1.3 with Strong Ciphers\"]\n    U[\"Implement Certificate Pinning\"]\n    V[\"Deploy Network Monitoring\"]\n    W[\"Configure VPC Flow Logs\"]\n    X[\"Implement Zero Trust Architecture\"]\n    Y[\"Enable AWS CloudTrail Logging\"]\n    Z[\"Deploy Data Loss Prevention\"]\n    AA[\"Implement Field-Level Encryption\"]\n    \n    A --> B\n    A --> E\n    A --> I\n    A --> L\n    \n    B --> C\n    B --> D\n    B --> O\n    \n    E --> F\n    E --> G\n    E --> H\n    \n    F --> P\n    G --> O\n    H --> Q\n    \n    I --> J\n    I --> K\n    J --> K\n    \n    L --> M\n    L --> N\n    \n    O --> P\n    P --> Q\n    \n    E --> R\n    E --> S\n    F --> T\n    F --> U\n    G --> V\n    G --> W\n    H --> X\n    I --> Y\n    L --> Z\n    O --> AA\n    \n    classDef attack fill:#ffcccc\n    classDef mitigation fill:#ccffcc  \n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class E,F,G,H,I,J,K,L,M,N attack\n    class R,S,T,U,V,W,X,Y,Z,AA mitigation\n    class A goal\n    class B,C,D,O,P,Q fact\n```",
+      "generated_content": "# Attack Tree T001: Network Attacker Intercepting Healthcare Data in Transit\n\n```mermaid\ngraph TD\n    A[\"Network attacker with access to transmission paths\"] --> B[\"Network reconnaissance\"]\n    A --> C[\"Position on transmission path\"]\n    \n    B --> D[\"Identify SaaS to AWS AppFlow traffic\"]\n    C --> E[\"Man-in-the-middle positioning\"]\n    C --> F[\"Network tap deployment\"]\n    \n    D --> G[\"Traffic pattern analysis\"]\n    E --> H[\"SSL/TLS interception attempt\"]\n    F --> I[\"Passive traffic capture\"]\n    \n    G --> J[\"Healthcare data flow identification\"]\n    H --> K[\"Certificate spoofing\"]\n    I --> L[\"Encrypted traffic collection\"]\n    \n    J --> M[\"Target specific PHI transmissions\"]\n    K --> N[\"Decrypt intercepted traffic\"]\n    L --> O[\"Offline decryption attempts\"]\n    \n    M --> P[\"Real-time PHI interception\"]\n    N --> P\n    O --> Q[\"PHI extraction from captured data\"]\n    \n    P --> R[\"PHI exposure and confidentiality breach\"]\n    Q --> R\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q attack\n    class R goal\n    class A fact\n```",
       "validation": {
         "is_valid": true,
         "errors": [],
         "warnings": [
           "Only 1 attack nodes (recommended: 5+)",
-          "Only 1 mitigation nodes (recommended: 3+)",
           "Only 1 fact nodes (recommended: 3+)"
         ],
         "node_counts": {
           "attack": 1,
-          "mitigation": 1,
           "goal": 1,
           "fact": 1
         },
-        "connection_count": 30,
+        "connection_count": 19,
         "tech_mentions": 0
       }
     },
     {
       "threat_id": "T002",
-      "threat_category": "Storage Misconfiguration",
-      "threat_description": "A malicious actor with basic reconnaissance skills, can exploit misconfigured S3 bucket permissions, which leads to exposure of raw healthcare data to unauthorized users or public access, resulting in reduced confidentiality of patient health information and research data.",
-      "threat_statement": "A malicious actor with basic reconnaissance skills, can exploit misconfigured S3 bucket permissions, which leads to exposure of raw healthcare data to unauthorized users or public access, resulting in reduced confidentiality of patient health information and research data.",
-      "mermaid_code": "graph TD\n    root[\"Expose Healthcare Data from S3 Buckets\"]\n    recon1[\"Perform DNS Enumeration\"]\n    recon2[\"Search GitHubCode Repositories\"]\n    recon3[\"Use Automated S3 Bucket Scanners\"]\n    recon4[\"Analyze Application Traffic\"]\n    vuln1[\"S3 Bucket with Public Read Access\"]\n    vuln2[\"Default S3 Permissions Not Changed\"]\n    vuln3[\"Predictable Bucket Naming Convention\"]\n    vuln4[\"No Access Logging Enabled\"]\n    attack1[\"Enumerate S3 Bucket Names\"]\n    attack2[\"Test Bucket Permissions\"]\n    attack3[\"Download Healthcare Files\"]\n    attack4[\"List Bucket Contents\"]\n    attack5[\"Access Patient Data Files\"]\n    attack6[\"Extract Research Data\"]\n    impact1[\"Patient Privacy Violation\"]\n    impact2[\"HIPAA Compliance Breach\"]\n    impact3[\"Regulatory Fines\"]\n    impact4[\"Reputation Damage\"]\n    mitigation1[\"Implement Bucket Policies with Least Privilege\"]\n    mitigation2[\"Enable S3 Access Logging\"]\n    mitigation3[\"Use S3 Block Public Access\"]\n    mitigation4[\"Implement Data Encryption at Rest\"]\n    mitigation5[\"Regular Permission Audits\"]\n    mitigation6[\"Use IAM Roles Instead of Access Keys\"]\n    mitigation7[\"Implement Data Loss Prevention\"]\n    mitigation8[\"Enable CloudTrail Monitoring\"]\n    root --> recon1\n    root --> recon2\n    root --> recon3\n    root --> recon4\n    recon1 --> attack1\n    recon2 --> attack1\n    recon3 --> attack1\n    recon4 --> attack1\n    vuln1 --> attack2\n    vuln2 --> attack2\n    vuln3 --> attack1\n    vuln4 --> attack3\n    attack1 --> attack2\n    attack2 --> attack4\n    attack4 --> attack3\n    attack3 --> attack5\n    attack3 --> attack6\n    attack5 --> impact1\n    attack5 --> impact2\n    attack6 --> impact2\n    impact1 --> impact3\n    impact2 --> impact3\n    impact3 --> impact4\n    mitigation1 --> attack2\n    mitigation2 --> attack3\n    mitigation3 --> vuln1\n    mitigation4 --> attack5\n    mitigation5 --> vuln2\n    mitigation6 --> attack2\n    mitigation7 --> attack3\n    mitigation8 --> attack4\n    classDef attack fill:#ffcccc\n    classDef mitigation fill:#ccffcc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class recon1,recon2,recon3,recon4,attack1,attack2,attack3,attack4,attack5,attack6 attack\n    class mitigation1,mitigation2,mitigation3,mitigation4,mitigation5,mitigation6,mitigation7,mitigation8 mitigation\n    class root,impact1,impact2,impact3,impact4 goal\n    class vuln1,vuln2,vuln3,vuln4 fact",
+      "threat_category": "Storage Configuration Breach",
+      "threat_description": "A malicious actor with basic AWS knowledge, can exploit misconfigured S3 bucket permissions, which leads to exposure of raw healthcare data to unauthorized users or public access, resulting in reduced confidentiality of PHI/PII Data.",
+      "threat_statement": "A malicious actor with basic AWS knowledge, can exploit misconfigured S3 bucket permissions, which leads to exposure of raw healthcare data to unauthorized users or public access, resulting in reduced confidentiality of PHI/PII Data.",
+      "mermaid_code": "graph TD\n    A[\"Malicious actor with basic AWS knowledge\"] --> B[\"S3 bucket discovery\"]\n    A --> C[\"AWS reconnaissance\"]\n    B --> D[\"Public bucket enumeration\"]\n    B --> E[\"DNS brute forcing\"]\n    B --> F[\"Google dorking for S3 URLs\"]\n    C --> G[\"AWS CLI configuration probing\"]\n    C --> H[\"IAM policy enumeration\"]\n    D --> I[\"Access misconfigured bucket\"]\n    E --> I\n    F --> I\n    G --> J[\"Exploit overprivileged access\"]\n    H --> J\n    I --> K[\"Download healthcare data files\"]\n    J --> K\n    K --> L[\"Extract PHIPII from raw data\"]\n    L --> M[\"Unauthorized access to healthcare records\"]\n    M --> N[\"Confidentiality breach of PHIPII Data\"]\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M attack\n    class N goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
       "attack_steps": [
         {
-          "node_id": "root",
-          "description": "Expose Healthcare Data from S3 Buckets"
+          "node_id": "A",
+          "description": "Malicious actor with basic AWS knowledge"
         },
         {
-          "node_id": "recon1",
-          "description": "Perform DNS Enumeration"
+          "node_id": "B",
+          "description": "S3 bucket discovery"
         },
         {
-          "node_id": "recon2",
-          "description": "Search GitHubCode Repositories"
+          "node_id": "C",
+          "description": "AWS reconnaissance"
         },
         {
-          "node_id": "recon3",
-          "description": "Use Automated S3 Bucket Scanners"
+          "node_id": "D",
+          "description": "Public bucket enumeration"
         },
         {
-          "node_id": "recon4",
-          "description": "Analyze Application Traffic"
+          "node_id": "E",
+          "description": "DNS brute forcing"
         },
         {
-          "node_id": "vuln1",
-          "description": "S3 Bucket with Public Read Access"
+          "node_id": "F",
+          "description": "Google dorking for S3 URLs"
         },
         {
-          "node_id": "vuln2",
-          "description": "Default S3 Permissions Not Changed"
+          "node_id": "G",
+          "description": "AWS CLI configuration probing"
         },
         {
-          "node_id": "vuln3",
-          "description": "Predictable Bucket Naming Convention"
+          "node_id": "H",
+          "description": "IAM policy enumeration"
         },
         {
-          "node_id": "vuln4",
-          "description": "No Access Logging Enabled"
+          "node_id": "I",
+          "description": "Access misconfigured bucket"
         },
         {
-          "node_id": "attack1",
-          "description": "Enumerate S3 Bucket Names"
+          "node_id": "J",
+          "description": "Exploit overprivileged access"
         },
         {
-          "node_id": "attack2",
-          "description": "Test Bucket Permissions"
+          "node_id": "K",
+          "description": "Download healthcare data files"
         },
         {
-          "node_id": "attack3",
-          "description": "Download Healthcare Files"
+          "node_id": "L",
+          "description": "Extract PHIPII from raw data"
         },
         {
-          "node_id": "attack4",
-          "description": "List Bucket Contents"
+          "node_id": "M",
+          "description": "Unauthorized access to healthcare records"
         },
         {
-          "node_id": "attack5",
-          "description": "Access Patient Data Files"
-        },
-        {
-          "node_id": "attack6",
-          "description": "Extract Research Data"
-        },
-        {
-          "node_id": "impact1",
-          "description": "Patient Privacy Violation"
-        },
-        {
-          "node_id": "impact2",
-          "description": "HIPAA Compliance Breach"
-        },
-        {
-          "node_id": "impact3",
-          "description": "Regulatory Fines"
-        },
-        {
-          "node_id": "impact4",
-          "description": "Reputation Damage"
-        },
-        {
-          "node_id": "mitigation1",
-          "description": "Implement Bucket Policies with Least Privilege"
-        },
-        {
-          "node_id": "mitigation2",
-          "description": "Enable S3 Access Logging"
-        },
-        {
-          "node_id": "mitigation3",
-          "description": "Use S3 Block Public Access"
-        },
-        {
-          "node_id": "mitigation4",
-          "description": "Implement Data Encryption at Rest"
-        },
-        {
-          "node_id": "mitigation5",
-          "description": "Regular Permission Audits"
-        },
-        {
-          "node_id": "mitigation6",
-          "description": "Use IAM Roles Instead of Access Keys"
-        },
-        {
-          "node_id": "mitigation7",
-          "description": "Implement Data Loss Prevention"
-        },
-        {
-          "node_id": "mitigation8",
-          "description": "Enable CloudTrail Monitoring"
+          "node_id": "N",
+          "description": "Confidentiality breach of PHIPII Data"
         }
       ],
-      "generated_content": "# Attack Tree: A malicious actor with basic reconnaissance skills, can exploit misconfigured S3 bucket permissions, which leads to exposure of raw healthcare data to unauthorized users or public access, resulting in reduced confidentiality of patient health information and research data.\n\n```mermaid\ngraph TD\n    root[\"Expose Healthcare Data from S3 Buckets\"]\n    \n    recon1[\"Perform DNS Enumeration\"]\n    recon2[\"Search GitHub/Code Repositories\"]\n    recon3[\"Use Automated S3 Bucket Scanners\"]\n    recon4[\"Analyze Application Traffic\"]\n    \n    vuln1[\"S3 Bucket with Public Read Access\"]\n    vuln2[\"Default S3 Permissions Not Changed\"]\n    vuln3[\"Predictable Bucket Naming Convention\"]\n    vuln4[\"No Access Logging Enabled\"]\n    \n    attack1[\"Enumerate S3 Bucket Names\"]\n    attack2[\"Test Bucket Permissions\"]\n    attack3[\"Download Healthcare Files\"]\n    attack4[\"List Bucket Contents\"]\n    attack5[\"Access Patient Data Files\"]\n    attack6[\"Extract Research Data\"]\n    \n    impact1[\"Patient Privacy Violation\"]\n    impact2[\"HIPAA Compliance Breach\"]\n    impact3[\"Regulatory Fines\"]\n    impact4[\"Reputation Damage\"]\n    \n    mitigation1[\"Implement Bucket Policies with Least Privilege\"]\n    mitigation2[\"Enable S3 Access Logging\"]\n    mitigation3[\"Use S3 Block Public Access\"]\n    mitigation4[\"Implement Data Encryption at Rest\"]\n    mitigation5[\"Regular Permission Audits\"]\n    mitigation6[\"Use IAM Roles Instead of Access Keys\"]\n    mitigation7[\"Implement Data Loss Prevention\"]\n    mitigation8[\"Enable CloudTrail Monitoring\"]\n    \n    root --> recon1\n    root --> recon2\n    root --> recon3\n    root --> recon4\n    \n    recon1 --> attack1\n    recon2 --> attack1\n    recon3 --> attack1\n    recon4 --> attack1\n    \n    vuln1 --> attack2\n    vuln2 --> attack2\n    vuln3 --> attack1\n    vuln4 --> attack3\n    \n    attack1 --> attack2\n    attack2 --> attack4\n    attack4 --> attack3\n    attack3 --> attack5\n    attack3 --> attack6\n    \n    attack5 --> impact1\n    attack5 --> impact2\n    attack6 --> impact2\n    impact1 --> impact3\n    impact2 --> impact3\n    impact3 --> impact4\n    \n    mitigation1 --> attack2\n    mitigation2 --> attack3\n    mitigation3 --> vuln1\n    mitigation4 --> attack5\n    mitigation5 --> vuln2\n    mitigation6 --> attack2\n    mitigation7 --> attack3\n    mitigation8 --> attack4\n    \n    classDef attack fill:#ffcccc\n    classDef mitigation fill:#ccffcc  \n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class recon1,recon2,recon3,recon4,attack1,attack2,attack3,attack4,attack5,attack6 attack\n    class mitigation1,mitigation2,mitigation3,mitigation4,mitigation5,mitigation6,mitigation7,mitigation8 mitigation\n    class root,impact1,impact2,impact3,impact4 goal\n    class vuln1,vuln2,vuln3,vuln4 fact\n```",
+      "generated_content": "# Attack Tree for T002: S3 Bucket Misconfiguration Attack\n\n```mermaid\ngraph TD\n    A[\"Malicious actor with basic AWS knowledge\"] --> B[\"S3 bucket discovery\"]\n    A --> C[\"AWS reconnaissance\"]\n    \n    B --> D[\"Public bucket enumeration\"]\n    B --> E[\"DNS brute forcing\"]\n    B --> F[\"Google dorking for S3 URLs\"]\n    \n    C --> G[\"AWS CLI configuration probing\"]\n    C --> H[\"IAM policy enumeration\"]\n    \n    D --> I[\"Access misconfigured bucket\"]\n    E --> I\n    F --> I\n    G --> J[\"Exploit overprivileged access\"]\n    H --> J\n    \n    I --> K[\"Download healthcare data files\"]\n    J --> K\n    \n    K --> L[\"Extract PHI/PII from raw data\"]\n    L --> M[\"Unauthorized access to healthcare records\"]\n    \n    M --> N[\"Confidentiality breach of PHI/PII Data\"]\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M attack\n    class N goal\n    class A fact\n```",
       "validation": {
         "is_valid": true,
         "errors": [],
         "warnings": [
           "Only 1 attack nodes (recommended: 5+)",
-          "Only 1 mitigation nodes (recommended: 3+)",
           "Only 1 fact nodes (recommended: 3+)"
         ],
         "node_counts": {
           "attack": 1,
-          "mitigation": 1,
           "goal": 1,
           "fact": 1
         },
-        "connection_count": 31,
+        "connection_count": 17,
         "tech_mentions": 0
       }
     },
     {
       "threat_id": "T003",
-      "threat_category": "SQL Injection Attack",
-      "threat_description": "A malicious actor with database knowledge, can perform SQL injection attacks against Redshift, which leads to unauthorized data access or modification, resulting in reduced confidentiality and integrity of patient health information and research data.",
-      "threat_statement": "A malicious actor with database knowledge, can perform SQL injection attacks against Redshift, which leads to unauthorized data access or modification, resulting in reduced confidentiality and integrity of patient health information and research data.",
-      "mermaid_code": "graph TD\n    goal1[\"Compromise Patient Health Information and Research Data\"]\n    attack1[\"Perform SQL Injection Attack on Redshift\"]\n    attack2[\"Identify Vulnerable Input Fields\"]\n    attack3[\"Craft Malicious SQL Payloads\"]\n    attack4[\"Bypass Input Validation\"]\n    attack5[\"Execute Union-Based SQL Injection\"]\n    attack6[\"Execute Blind SQL Injection\"]\n    attack7[\"Execute Time-Based SQL Injection\"]\n    attack8[\"Extract Database Schema Information\"]\n    attack9[\"Access Patient Health Records\"]\n    attack10[\"Modify Research Data\"]\n    attack11[\"Escalate Database Privileges\"]\n    attack12[\"Create Backdoor Access\"]\n    fact1[\"Attacker Has Database Knowledge\"]\n    fact2[\"Application Uses Redshift Database\"]\n    fact3[\"Web Application Accepts User Input\"]\n    fact4[\"Database Contains Patient Health Information\"]\n    fact5[\"Database Contains Research Data\"]\n    fact6[\"Application Has Internet Connectivity\"]\n    mitigation1[\"Implement Parameterized Queries\"]\n    mitigation2[\"Deploy Web Application Firewall (WAF)\"]\n    mitigation3[\"Enable Input Validation and Sanitization\"]\n    mitigation4[\"Implement Least Privilege Access\"]\n    mitigation5[\"Enable Database Activity Monitoring\"]\n    mitigation6[\"Deploy SQL Injection Detection Tools\"]\n    mitigation7[\"Implement Database Encryption\"]\n    mitigation8[\"Enable Query Logging and Auditing\"]\n    mitigation9[\"Regular Security Code Reviews\"]\n    mitigation10[\"Implement Rate Limiting\"]\n    goal1 --> attack1\n    attack1 --> attack2\n    attack1 --> attack3\n    attack2 --> attack4\n    attack3 --> attack5\n    attack3 --> attack6\n    attack3 --> attack7\n    attack5 --> attack8\n    attack6 --> attack8\n    attack7 --> attack8\n    attack8 --> attack9\n    attack8 --> attack10\n    attack8 --> attack11\n    attack11 --> attack12\n    fact1 --> attack1\n    fact2 --> attack1\n    fact3 --> attack2\n    fact4 --> attack9\n    fact5 --> attack10\n    fact6 --> attack1\n    mitigation1 -.-> attack1\n    mitigation2 -.-> attack2\n    mitigation3 -.-> attack4\n    mitigation4 -.-> attack11\n    mitigation5 -.-> attack8\n    mitigation6 -.-> attack5\n    mitigation6 -.-> attack6\n    mitigation6 -.-> attack7\n    mitigation7 -.-> attack9\n    mitigation7 -.-> attack10\n    mitigation8 -.-> attack8\n    mitigation9 -.-> attack3\n    mitigation10 -.-> attack2\n    classDef attack fill:#ffcccc\n    classDef mitigation fill:#ccffcc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class attack1,attack2,attack3,attack4,attack5,attack6,attack7,attack8,attack9,attack10,attack11,attack12 attack\n    class mitigation1,mitigation2,mitigation3,mitigation4,mitigation5,mitigation6,mitigation7,mitigation8,mitigation9,mitigation10 mitigation\n    class goal1 goal\n    class fact1,fact2,fact3,fact4,fact5,fact6 fact",
+      "threat_category": "Data Exfiltration Attack",
+      "threat_description": "An attacker with AWS account access, can exfiltrate large volumes of PHI from the S3 data lake, which leads to massive data breach, resulting in reduced confidentiality of PHI/PII Data and Research Data.",
+      "threat_statement": "An attacker with AWS account access, can exfiltrate large volumes of PHI from the S3 data lake, which leads to massive data breach, resulting in reduced confidentiality of PHI/PII Data and Research Data.",
+      "mermaid_code": "graph TD\n    A[\"Attacker with AWS account access\"] --> B[\"S3 bucket discovery\"]\n    A --> C[\"IAM privilege escalation\"]\n    B --> D[\"Enumerate S3 buckets containing PHI\"]\n    C --> E[\"Obtain elevated S3 permissions\"]\n    D --> F[\"Identify PHI data patterns\"]\n    E --> F\n    F --> G[\"Bulk data download via AWS CLI\"]\n    F --> H[\"S3 sync operations\"]\n    F --> I[\"Cross-region replication setup\"]\n    G --> J[\"Exfiltrate PHIPII to external storage\"]\n    H --> J\n    I --> K[\"Replicate data to attacker-controlled bucket\"]\n    K --> J\n    J --> L[\"Massive PHI data breach achieved\"]\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K attack\n    class L goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
       "attack_steps": [
         {
-          "node_id": "goal1",
-          "description": "Compromise Patient Health Information and Research Data"
+          "node_id": "A",
+          "description": "Attacker with AWS account access"
         },
         {
-          "node_id": "attack1",
-          "description": "Perform SQL Injection Attack on Redshift"
+          "node_id": "B",
+          "description": "S3 bucket discovery"
         },
         {
-          "node_id": "attack2",
-          "description": "Identify Vulnerable Input Fields"
+          "node_id": "C",
+          "description": "IAM privilege escalation"
         },
         {
-          "node_id": "attack3",
-          "description": "Craft Malicious SQL Payloads"
+          "node_id": "D",
+          "description": "Enumerate S3 buckets containing PHI"
         },
         {
-          "node_id": "attack4",
-          "description": "Bypass Input Validation"
+          "node_id": "E",
+          "description": "Obtain elevated S3 permissions"
         },
         {
-          "node_id": "attack5",
-          "description": "Execute Union-Based SQL Injection"
+          "node_id": "F",
+          "description": "Identify PHI data patterns"
         },
         {
-          "node_id": "attack6",
-          "description": "Execute Blind SQL Injection"
+          "node_id": "G",
+          "description": "Bulk data download via AWS CLI"
         },
         {
-          "node_id": "attack7",
-          "description": "Execute Time-Based SQL Injection"
+          "node_id": "H",
+          "description": "S3 sync operations"
         },
         {
-          "node_id": "attack8",
-          "description": "Extract Database Schema Information"
+          "node_id": "I",
+          "description": "Cross-region replication setup"
         },
         {
-          "node_id": "attack9",
-          "description": "Access Patient Health Records"
+          "node_id": "J",
+          "description": "Exfiltrate PHIPII to external storage"
         },
         {
-          "node_id": "attack10",
-          "description": "Modify Research Data"
+          "node_id": "K",
+          "description": "Replicate data to attacker-controlled bucket"
         },
         {
-          "node_id": "attack11",
-          "description": "Escalate Database Privileges"
-        },
-        {
-          "node_id": "attack12",
-          "description": "Create Backdoor Access"
-        },
-        {
-          "node_id": "fact1",
-          "description": "Attacker Has Database Knowledge"
-        },
-        {
-          "node_id": "fact2",
-          "description": "Application Uses Redshift Database"
-        },
-        {
-          "node_id": "fact3",
-          "description": "Web Application Accepts User Input"
-        },
-        {
-          "node_id": "fact4",
-          "description": "Database Contains Patient Health Information"
-        },
-        {
-          "node_id": "fact5",
-          "description": "Database Contains Research Data"
-        },
-        {
-          "node_id": "fact6",
-          "description": "Application Has Internet Connectivity"
-        },
-        {
-          "node_id": "mitigation1",
-          "description": "Implement Parameterized Queries"
-        },
-        {
-          "node_id": "mitigation2",
-          "description": "Deploy Web Application Firewall (WAF)"
-        },
-        {
-          "node_id": "mitigation3",
-          "description": "Enable Input Validation and Sanitization"
-        },
-        {
-          "node_id": "mitigation4",
-          "description": "Implement Least Privilege Access"
-        },
-        {
-          "node_id": "mitigation5",
-          "description": "Enable Database Activity Monitoring"
-        },
-        {
-          "node_id": "mitigation6",
-          "description": "Deploy SQL Injection Detection Tools"
-        },
-        {
-          "node_id": "mitigation7",
-          "description": "Implement Database Encryption"
-        },
-        {
-          "node_id": "mitigation8",
-          "description": "Enable Query Logging and Auditing"
-        },
-        {
-          "node_id": "mitigation9",
-          "description": "Regular Security Code Reviews"
-        },
-        {
-          "node_id": "mitigation10",
-          "description": "Implement Rate Limiting"
+          "node_id": "L",
+          "description": "Massive PHI data breach achieved"
         }
       ],
-      "generated_content": "# Attack Tree: A malicious actor with database knowledge, can perform SQL injection attacks against Redshift, which leads to unauthorized data access or modification, resulting in reduced confidentiality and integrity of patient health information and research data.\n\n```mermaid\ngraph TD\n    goal1[\"Compromise Patient Health Information and Research Data\"]\n    \n    attack1[\"Perform SQL Injection Attack on Redshift\"]\n    attack2[\"Identify Vulnerable Input Fields\"]\n    attack3[\"Craft Malicious SQL Payloads\"]\n    attack4[\"Bypass Input Validation\"]\n    attack5[\"Execute Union-Based SQL Injection\"]\n    attack6[\"Execute Blind SQL Injection\"]\n    attack7[\"Execute Time-Based SQL Injection\"]\n    attack8[\"Extract Database Schema Information\"]\n    attack9[\"Access Patient Health Records\"]\n    attack10[\"Modify Research Data\"]\n    attack11[\"Escalate Database Privileges\"]\n    attack12[\"Create Backdoor Access\"]\n    \n    fact1[\"Attacker Has Database Knowledge\"]\n    fact2[\"Application Uses Redshift Database\"]\n    fact3[\"Web Application Accepts User Input\"]\n    fact4[\"Database Contains Patient Health Information\"]\n    fact5[\"Database Contains Research Data\"]\n    fact6[\"Application Has Internet Connectivity\"]\n    \n    mitigation1[\"Implement Parameterized Queries\"]\n    mitigation2[\"Deploy Web Application Firewall (WAF)\"]\n    mitigation3[\"Enable Input Validation and Sanitization\"]\n    mitigation4[\"Implement Least Privilege Access\"]\n    mitigation5[\"Enable Database Activity Monitoring\"]\n    mitigation6[\"Deploy SQL Injection Detection Tools\"]\n    mitigation7[\"Implement Database Encryption\"]\n    mitigation8[\"Enable Query Logging and Auditing\"]\n    mitigation9[\"Regular Security Code Reviews\"]\n    mitigation10[\"Implement Rate Limiting\"]\n    \n    goal1 --> attack1\n    attack1 --> attack2\n    attack1 --> attack3\n    attack2 --> attack4\n    attack3 --> attack5\n    attack3 --> attack6\n    attack3 --> attack7\n    attack5 --> attack8\n    attack6 --> attack8\n    attack7 --> attack8\n    attack8 --> attack9\n    attack8 --> attack10\n    attack8 --> attack11\n    attack11 --> attack12\n    \n    fact1 --> attack1\n    fact2 --> attack1\n    fact3 --> attack2\n    fact4 --> attack9\n    fact5 --> attack10\n    fact6 --> attack1\n    \n    mitigation1 -.-> attack1\n    mitigation2 -.-> attack2\n    mitigation3 -.-> attack4\n    mitigation4 -.-> attack11\n    mitigation5 -.-> attack8\n    mitigation6 -.-> attack5\n    mitigation6 -.-> attack6\n    mitigation6 -.-> attack7\n    mitigation7 -.-> attack9\n    mitigation7 -.-> attack10\n    mitigation8 -.-> attack8\n    mitigation9 -.-> attack3\n    mitigation10 -.-> attack2\n    \n    classDef attack fill:#ffcccc\n    classDef mitigation fill:#ccffcc  \n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class attack1,attack2,attack3,attack4,attack5,attack6,attack7,attack8,attack9,attack10,attack11,attack12 attack\n    class mitigation1,mitigation2,mitigation3,mitigation4,mitigation5,mitigation6,mitigation7,mitigation8,mitigation9,mitigation10 mitigation\n    class goal1 goal\n    class fact1,fact2,fact3,fact4,fact5,fact6 fact\n```",
+      "generated_content": "# Attack Tree for T003: PHI Data Exfiltration from S3 Data Lake\n\n```mermaid\ngraph TD\n    A[\"Attacker with AWS account access\"] --> B[\"S3 bucket discovery\"]\n    A --> C[\"IAM privilege escalation\"]\n    \n    B --> D[\"Enumerate S3 buckets containing PHI\"]\n    C --> E[\"Obtain elevated S3 permissions\"]\n    \n    D --> F[\"Identify PHI data patterns\"]\n    E --> F\n    \n    F --> G[\"Bulk data download via AWS CLI\"]\n    F --> H[\"S3 sync operations\"]\n    F --> I[\"Cross-region replication setup\"]\n    \n    G --> J[\"Exfiltrate PHI/PII to external storage\"]\n    H --> J\n    I --> K[\"Replicate data to attacker-controlled bucket\"]\n    \n    K --> J\n    J --> L[\"Massive PHI data breach achieved\"]\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K attack\n    class L goal\n    class A fact\n```",
       "validation": {
         "is_valid": true,
         "errors": [],
         "warnings": [
           "Only 1 attack nodes (recommended: 5+)",
-          "Only 1 mitigation nodes (recommended: 3+)",
           "Only 1 fact nodes (recommended: 3+)"
         ],
         "node_counts": {
           "attack": 1,
-          "mitigation": 1,
           "goal": 1,
           "fact": 1
         },
-        "connection_count": 20,
+        "connection_count": 14,
         "tech_mentions": 0
       }
     },
     {
       "threat_id": "T004",
-      "threat_category": "Credential Compromise",
-      "threat_description": "A malicious actor with compromised IAM credentials, can gain broad access across the entire healthcare analytics pipeline, which leads to unauthorized access to all system components, resulting in reduced confidentiality, integrity, and availability of all critical assets.",
-      "threat_statement": "A malicious actor with compromised IAM credentials, can gain broad access across the entire healthcare analytics pipeline, which leads to unauthorized access to all system components, resulting in reduced confidentiality, integrity, and availability of all critical assets.",
-      "mermaid_code": "graph TD\n    A[\"Complete Healthcare Analytics Pipeline Compromise\"]\n    B[\"Compromised IAM Credentials Available\"]\n    C[\"Overprivileged IAM Roles Exist\"]\n    D[\"Insufficient Access Monitoring\"]\n    E[\"Credential Theft via Phishing\"]\n    F[\"Insider Threat - Malicious Employee\"]\n    G[\"Credential Stuffing Attack\"]\n    H[\"TokenKey Exposure in Code Repository\"]\n    I[\"Lateral Movement Across Pipeline Components\"]\n    J[\"Data Exfiltration from Analytics Systems\"]\n    K[\"System Disruption and Service Denial\"]\n    L[\"Data Manipulation and Integrity Compromise\"]\n    M[\"Access Analytics Databases\"]\n    N[\"Compromise Processing Servers\"]\n    O[\"Infiltrate Data Storage Systems\"]\n    P[\"Target Reporting and Visualization Tools\"]\n    Q[\"Steal Patient Health Records\"]\n    R[\"Export Research Data\"]\n    S[\"Access Financial Healthcare Data\"]\n    T[\"Delete Critical Analytics Data\"]\n    U[\"Disrupt ETL Processes\"]\n    V[\"Overload System Resources\"]\n    W[\"Modify Patient Records\"]\n    X[\"Alter Analytics Results\"]\n    Y[\"Insert False Data Points\"]\n    Z1[\"Multi-Factor Authentication Implementation\"]\n    Z2[\"Principle of Least Privilege Enforcement\"]\n    Z3[\"Real-time Access Monitoring and Alerting\"]\n    Z4[\"Regular Access Reviews and Audits\"]\n    Z5[\"Data Loss Prevention Controls\"]\n    Z6[\"Network Segmentation\"]\n    Z7[\"Backup and Recovery Procedures\"]\n    Z8[\"Data Integrity Monitoring\"]\n    B --> A\n    C --> A\n    D --> A\n    E --> B\n    F --> B\n    G --> B\n    H --> B\n    A --> I\n    A --> J\n    A --> K\n    A --> L\n    I --> M\n    I --> N\n    I --> O\n    I --> P\n    J --> Q\n    J --> R\n    J --> S\n    K --> T\n    K --> U\n    K --> V\n    L --> W\n    L --> X\n    L --> Y\n    Z1 --> E\n    Z1 --> G\n    Z2 --> C\n    Z3 --> D\n    Z4 --> C\n    Z5 --> J\n    Z6 --> I\n    Z7 --> K\n    Z8 --> L\n    classDef attack fill:#ffcccc\n    classDef mitigation fill:#ccffcc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y attack\n    class Z1,Z2,Z3,Z4,Z5,Z6,Z7,Z8 mitigation\n    class A goal\n    class B,C,D fact",
+      "threat_category": "SQL Injection Attack",
+      "threat_description": "A malicious user with database access, can perform SQL injection attacks against Redshift, which leads to unauthorized data access or modification, resulting in reduced confidentiality and integrity of PHI/PII Data and Research Data.",
+      "threat_statement": "A malicious user with database access, can perform SQL injection attacks against Redshift, which leads to unauthorized data access or modification, resulting in reduced confidentiality and integrity of PHI/PII Data and Research Data.",
+      "mermaid_code": "graph TD\n    A[\"Malicious user with database access\"] --> B[\"Database reconnaissance\"]\n    A --> C[\"Identify injection points\"]\n    B --> D[\"Enumerate database schema\"]\n    B --> E[\"Discover table structures\"]\n    C --> F[\"Test input validation\"]\n    C --> G[\"Analyze query parameters\"]\n    D --> H[\"Craft SQL injection payload\"]\n    E --> H\n    F --> H\n    G --> H\n    H --> I[\"Execute union-based injection\"]\n    H --> J[\"Execute blind SQL injection\"]\n    H --> K[\"Execute time-based injection\"]\n    I --> L[\"Extract PHIPII data\"]\n    J --> L\n    K --> L\n    I --> M[\"Modify research data\"]\n    J --> M\n    K --> M\n    L --> N[\"Confidentiality breach of sensitive data\"]\n    M --> O[\"Integrity compromise of research data\"]\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M attack\n    class N,O goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
       "attack_steps": [
         {
           "node_id": "A",
-          "description": "Complete Healthcare Analytics Pipeline Compromise"
+          "description": "Malicious user with database access"
         },
         {
           "node_id": "B",
-          "description": "Compromised IAM Credentials Available"
+          "description": "Database reconnaissance"
         },
         {
           "node_id": "C",
-          "description": "Overprivileged IAM Roles Exist"
+          "description": "Identify injection points"
         },
         {
           "node_id": "D",
-          "description": "Insufficient Access Monitoring"
+          "description": "Enumerate database schema"
         },
         {
           "node_id": "E",
-          "description": "Credential Theft via Phishing"
+          "description": "Discover table structures"
         },
         {
           "node_id": "F",
-          "description": "Insider Threat - Malicious Employee"
+          "description": "Test input validation"
         },
         {
           "node_id": "G",
-          "description": "Credential Stuffing Attack"
+          "description": "Analyze query parameters"
         },
         {
           "node_id": "H",
-          "description": "TokenKey Exposure in Code Repository"
+          "description": "Craft SQL injection payload"
         },
         {
           "node_id": "I",
-          "description": "Lateral Movement Across Pipeline Components"
+          "description": "Execute union-based injection"
         },
         {
           "node_id": "J",
-          "description": "Data Exfiltration from Analytics Systems"
+          "description": "Execute blind SQL injection"
         },
         {
           "node_id": "K",
-          "description": "System Disruption and Service Denial"
+          "description": "Execute time-based injection"
         },
         {
           "node_id": "L",
-          "description": "Data Manipulation and Integrity Compromise"
+          "description": "Extract PHIPII data"
         },
         {
           "node_id": "M",
-          "description": "Access Analytics Databases"
+          "description": "Modify research data"
         },
         {
           "node_id": "N",
-          "description": "Compromise Processing Servers"
+          "description": "Confidentiality breach of sensitive data"
         },
         {
           "node_id": "O",
-          "description": "Infiltrate Data Storage Systems"
-        },
-        {
-          "node_id": "P",
-          "description": "Target Reporting and Visualization Tools"
-        },
-        {
-          "node_id": "Q",
-          "description": "Steal Patient Health Records"
-        },
-        {
-          "node_id": "R",
-          "description": "Export Research Data"
-        },
-        {
-          "node_id": "S",
-          "description": "Access Financial Healthcare Data"
-        },
-        {
-          "node_id": "T",
-          "description": "Delete Critical Analytics Data"
-        },
-        {
-          "node_id": "U",
-          "description": "Disrupt ETL Processes"
-        },
-        {
-          "node_id": "V",
-          "description": "Overload System Resources"
-        },
-        {
-          "node_id": "W",
-          "description": "Modify Patient Records"
-        },
-        {
-          "node_id": "X",
-          "description": "Alter Analytics Results"
-        },
-        {
-          "node_id": "Y",
-          "description": "Insert False Data Points"
-        },
-        {
-          "node_id": "Z1",
-          "description": "Multi-Factor Authentication Implementation"
-        },
-        {
-          "node_id": "Z2",
-          "description": "Principle of Least Privilege Enforcement"
-        },
-        {
-          "node_id": "Z3",
-          "description": "Real-time Access Monitoring and Alerting"
-        },
-        {
-          "node_id": "Z4",
-          "description": "Regular Access Reviews and Audits"
-        },
-        {
-          "node_id": "Z5",
-          "description": "Data Loss Prevention Controls"
-        },
-        {
-          "node_id": "Z6",
-          "description": "Network Segmentation"
-        },
-        {
-          "node_id": "Z7",
-          "description": "Backup and Recovery Procedures"
-        },
-        {
-          "node_id": "Z8",
-          "description": "Data Integrity Monitoring"
+          "description": "Integrity compromise of research data"
         }
       ],
-      "generated_content": "# Attack Tree: A malicious actor with compromised IAM credentials, can gain broad access across the entire healthcare analytics pipeline, which leads to unauthorized access to all system components, resulting in reduced confidentiality, integrity, and availability of all critical assets.\n\n```mermaid\ngraph TD\n    A[\"Complete Healthcare Analytics Pipeline Compromise\"]\n    \n    B[\"Compromised IAM Credentials Available\"]\n    C[\"Overprivileged IAM Roles Exist\"]\n    D[\"Insufficient Access Monitoring\"]\n    \n    E[\"Credential Theft via Phishing\"]\n    F[\"Insider Threat - Malicious Employee\"]\n    G[\"Credential Stuffing Attack\"]\n    H[\"Token/Key Exposure in Code Repository\"]\n    \n    I[\"Lateral Movement Across Pipeline Components\"]\n    J[\"Data Exfiltration from Analytics Systems\"]\n    K[\"System Disruption and Service Denial\"]\n    L[\"Data Manipulation and Integrity Compromise\"]\n    \n    M[\"Access Analytics Databases\"]\n    N[\"Compromise Processing Servers\"]\n    O[\"Infiltrate Data Storage Systems\"]\n    P[\"Target Reporting and Visualization Tools\"]\n    \n    Q[\"Steal Patient Health Records\"]\n    R[\"Export Research Data\"]\n    S[\"Access Financial Healthcare Data\"]\n    \n    T[\"Delete Critical Analytics Data\"]\n    U[\"Disrupt ETL Processes\"]\n    V[\"Overload System Resources\"]\n    \n    W[\"Modify Patient Records\"]\n    X[\"Alter Analytics Results\"]\n    Y[\"Insert False Data Points\"]\n    \n    Z1[\"Multi-Factor Authentication Implementation\"]\n    Z2[\"Principle of Least Privilege Enforcement\"]\n    Z3[\"Real-time Access Monitoring and Alerting\"]\n    Z4[\"Regular Access Reviews and Audits\"]\n    Z5[\"Data Loss Prevention Controls\"]\n    Z6[\"Network Segmentation\"]\n    Z7[\"Backup and Recovery Procedures\"]\n    Z8[\"Data Integrity Monitoring\"]\n    \n    B --> A\n    C --> A\n    D --> A\n    \n    E --> B\n    F --> B\n    G --> B\n    H --> B\n    \n    A --> I\n    A --> J\n    A --> K\n    A --> L\n    \n    I --> M\n    I --> N\n    I --> O\n    I --> P\n    \n    J --> Q\n    J --> R\n    J --> S\n    \n    K --> T\n    K --> U\n    K --> V\n    \n    L --> W\n    L --> X\n    L --> Y\n    \n    Z1 --> E\n    Z1 --> G\n    Z2 --> C\n    Z3 --> D\n    Z4 --> C\n    Z5 --> J\n    Z6 --> I\n    Z7 --> K\n    Z8 --> L\n    \n    classDef attack fill:#ffcccc\n    classDef mitigation fill:#ccffcc  \n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y attack\n    class Z1,Z2,Z3,Z4,Z5,Z6,Z7,Z8 mitigation\n    class A goal\n    class B,C,D fact\n```",
+      "generated_content": "# Attack Tree for T004: SQL Injection Attack Against Redshift\n\n```mermaid\ngraph TD\n    A[\"Malicious user with database access\"] --> B[\"Database reconnaissance\"]\n    A --> C[\"Identify injection points\"]\n    \n    B --> D[\"Enumerate database schema\"]\n    B --> E[\"Discover table structures\"]\n    \n    C --> F[\"Test input validation\"]\n    C --> G[\"Analyze query parameters\"]\n    \n    D --> H[\"Craft SQL injection payload\"]\n    E --> H\n    F --> H\n    G --> H\n    \n    H --> I[\"Execute union-based injection\"]\n    H --> J[\"Execute blind SQL injection\"]\n    H --> K[\"Execute time-based injection\"]\n    \n    I --> L[\"Extract PHI/PII data\"]\n    J --> L\n    K --> L\n    \n    I --> M[\"Modify research data\"]\n    J --> M\n    K --> M\n    \n    L --> N[\"Confidentiality breach of sensitive data\"]\n    M --> O[\"Integrity compromise of research data\"]\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M attack\n    class N,O goal\n    class A fact\n```",
       "validation": {
         "is_valid": true,
         "errors": [],
         "warnings": [
           "Only 1 attack nodes (recommended: 5+)",
-          "Only 1 mitigation nodes (recommended: 3+)",
           "Only 1 fact nodes (recommended: 3+)"
         ],
         "node_counts": {
           "attack": 1,
-          "mitigation": 1,
           "goal": 1,
           "fact": 1
         },
-        "connection_count": 33,
+        "connection_count": 21,
         "tech_mentions": 0
       }
     },
     {
       "threat_id": "T005",
-      "threat_category": "Insider Threat",
-      "threat_description": "A malicious insider with privileged user access, can perform unauthorized PHI access or data exfiltration, which leads to large-scale data breach, resulting in reduced confidentiality of patient health information and research data.",
-      "threat_statement": "A malicious insider with privileged user access, can perform unauthorized PHI access or data exfiltration, which leads to large-scale data breach, resulting in reduced confidentiality of patient health information and research data.",
-      "mermaid_code": "graph TD\n    root[\"Large-scale PHI Data Breach\"]\n    path1[\"Direct Database Access\"]\n    path2[\"API Exploitation\"]\n    path3[\"File System Access\"]\n    path4[\"Backup System Compromise\"]\n    fact1[\"Privileged User Credentials\"]\n    fact2[\"Access to Production Systems\"]\n    fact3[\"Knowledge of System Architecture\"]\n    fact4[\"Legitimate Business Access\"]\n    attack1[\"Query Patient Database Directly\"]\n    attack2[\"Extract PHI via SQL Queries\"]\n    attack3[\"Exploit Administrative API Endpoints\"]\n    attack4[\"Bypass API Rate Limiting\"]\n    attack5[\"Access Network File Shares\"]\n    attack6[\"Download Research Data Files\"]\n    attack7[\"Access Backup Storage\"]\n    attack8[\"Restore Historical Data\"]\n    attack9[\"Use External Storage Devices\"]\n    attack10[\"Transmit Data via Email\"]\n    attack11[\"Upload to Cloud Services\"]\n    attack12[\"Cover Tracks in Audit Logs\"]\n    mit1[\"Implement Zero Trust Architecture\"]\n    mit2[\"Deploy Data Loss Prevention (DLP)\"]\n    mit3[\"Enable Database Activity Monitoring\"]\n    mit4[\"Enforce Least Privilege Access\"]\n    mit5[\"Implement Multi-Factor Authentication\"]\n    mit6[\"Deploy User Behavior Analytics\"]\n    mit7[\"Enable Real-time Audit Logging\"]\n    mit8[\"Implement Data Encryption at Rest\"]\n    mit9[\"Deploy Network Segmentation\"]\n    mit10[\"Regular Access Reviews\"]\n    goal1[\"Unauthorized PHI Access\"]\n    goal2[\"Data Exfiltration\"]\n    goal3[\"Avoid Detection\"]\n    root --> goal1\n    root --> goal2\n    root --> goal3\n    goal1 --> path1\n    goal1 --> path2\n    goal1 --> path3\n    goal2 --> path4\n    goal2 --> attack9\n    goal2 --> attack10\n    goal2 --> attack11\n    goal3 --> attack12\n    fact1 --> path1\n    fact1 --> path2\n    fact1 --> path3\n    fact1 --> path4\n    fact2 --> attack1\n    fact2 --> attack3\n    fact2 --> attack5\n    fact2 --> attack7\n    fact3 --> attack2\n    fact3 --> attack4\n    fact3 --> attack6\n    fact3 --> attack8\n    fact4 --> attack12\n    path1 --> attack1\n    attack1 --> attack2\n    path2 --> attack3\n    attack3 --> attack4\n    path3 --> attack5\n    attack5 --> attack6\n    path4 --> attack7\n    attack7 --> attack8\n    mit1 -.-> fact2\n    mit2 -.-> goal2\n    mit3 -.-> path1\n    mit4 -.-> fact1\n    mit5 -.-> fact1\n    mit6 -.-> goal3\n    mit7 -.-> attack12\n    mit8 -.-> goal2\n    mit9 -.-> fact2\n    mit10 -.-> fact4\n    classDef attack fill:#ffcccc\n    classDef mitigation fill:#ccffcc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class path1,path2,path3,path4,attack1,attack2,attack3,attack4,attack5,attack6,attack7,attack8,attack9,attack10,attack11,attack12 attack\n    class mit1,mit2,mit3,mit4,mit5,mit6,mit7,mit8,mit9,mit10 mitigation\n    class root,goal1,goal2,goal3 goal\n    class fact1,fact2,fact3,fact4 fact",
+      "threat_category": "Credential Compromise",
+      "threat_description": "An attacker with compromised IAM credentials, can gain broad access across the entire healthcare analytics pipeline, which leads to system-wide security breach, resulting in reduced confidentiality, integrity, and availability of all system assets.",
+      "threat_statement": "An attacker with compromised IAM credentials, can gain broad access across the entire healthcare analytics pipeline, which leads to system-wide security breach, resulting in reduced confidentiality, integrity, and availability of all system assets.",
+      "mermaid_code": "graph TD\n    A[\"Attacker with compromised IAM credentials\"] --> B[\"Credential validation and enumeration\"]\n    A --> C[\"Initial access establishment\"]\n    B --> D[\"Discover assigned permissions\"]\n    B --> E[\"Test credential validity across services\"]\n    C --> F[\"Establish persistent access\"]\n    C --> G[\"Avoid detection mechanisms\"]\n    D --> H[\"Privilege escalation attempts\"]\n    E --> I[\"Lateral movement across healthcare pipeline\"]\n    H --> J[\"Assume higher privilege roles\"]\n    H --> K[\"Modify IAM policies\"]\n    I --> L[\"Access patient data repositories\"]\n    I --> M[\"Compromise analytics processing systems\"]\n    I --> N[\"Target backup and archival systems\"]\n    F --> O[\"Create backdoor access methods\"]\n    G --> P[\"Disable logging and monitoring\"]\n    J --> Q[\"Administrative control acquisition\"]\n    K --> Q\n    O --> Q\n    P --> Q\n    L --> R[\"Exfiltrate sensitive healthcare data\"]\n    M --> S[\"Manipulate analytics algorithms\"]\n    N --> T[\"Corrupt backup systems\"]\n    Q --> U[\"Deploy system-wide malware\"]\n    Q --> V[\"Mass data destruction\"]\n    R --> W[\"System-wide security breach - Confidentiality loss\"]\n    S --> X[\"System-wide security breach - Integrity compromise\"]\n    T --> X\n    U --> Y[\"System-wide security breach - Availability disruption\"]\n    V --> Y\n    W --> Z[\"Complete compromise of healthcare analytics pipeline\"]\n    X --> Z\n    Y --> Z\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y attack\n    class Z goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
       "attack_steps": [
         {
-          "node_id": "root",
-          "description": "Large-scale PHI Data Breach"
+          "node_id": "A",
+          "description": "Attacker with compromised IAM credentials"
         },
         {
-          "node_id": "path1",
-          "description": "Direct Database Access"
+          "node_id": "B",
+          "description": "Credential validation and enumeration"
         },
         {
-          "node_id": "path2",
-          "description": "API Exploitation"
+          "node_id": "C",
+          "description": "Initial access establishment"
         },
         {
-          "node_id": "path3",
-          "description": "File System Access"
+          "node_id": "D",
+          "description": "Discover assigned permissions"
         },
         {
-          "node_id": "path4",
-          "description": "Backup System Compromise"
+          "node_id": "E",
+          "description": "Test credential validity across services"
         },
         {
-          "node_id": "fact1",
-          "description": "Privileged User Credentials"
+          "node_id": "F",
+          "description": "Establish persistent access"
         },
         {
-          "node_id": "fact2",
-          "description": "Access to Production Systems"
+          "node_id": "G",
+          "description": "Avoid detection mechanisms"
         },
         {
-          "node_id": "fact3",
-          "description": "Knowledge of System Architecture"
+          "node_id": "H",
+          "description": "Privilege escalation attempts"
         },
         {
-          "node_id": "fact4",
-          "description": "Legitimate Business Access"
+          "node_id": "I",
+          "description": "Lateral movement across healthcare pipeline"
         },
         {
-          "node_id": "attack1",
-          "description": "Query Patient Database Directly"
+          "node_id": "J",
+          "description": "Assume higher privilege roles"
         },
         {
-          "node_id": "attack2",
-          "description": "Extract PHI via SQL Queries"
+          "node_id": "K",
+          "description": "Modify IAM policies"
         },
         {
-          "node_id": "attack3",
-          "description": "Exploit Administrative API Endpoints"
+          "node_id": "L",
+          "description": "Access patient data repositories"
         },
         {
-          "node_id": "attack4",
-          "description": "Bypass API Rate Limiting"
+          "node_id": "M",
+          "description": "Compromise analytics processing systems"
         },
         {
-          "node_id": "attack5",
-          "description": "Access Network File Shares"
+          "node_id": "N",
+          "description": "Target backup and archival systems"
         },
         {
-          "node_id": "attack6",
-          "description": "Download Research Data Files"
+          "node_id": "O",
+          "description": "Create backdoor access methods"
         },
         {
-          "node_id": "attack7",
-          "description": "Access Backup Storage"
+          "node_id": "P",
+          "description": "Disable logging and monitoring"
         },
         {
-          "node_id": "attack8",
-          "description": "Restore Historical Data"
+          "node_id": "Q",
+          "description": "Administrative control acquisition"
         },
         {
-          "node_id": "attack9",
-          "description": "Use External Storage Devices"
+          "node_id": "R",
+          "description": "Exfiltrate sensitive healthcare data"
         },
         {
-          "node_id": "attack10",
-          "description": "Transmit Data via Email"
+          "node_id": "S",
+          "description": "Manipulate analytics algorithms"
         },
         {
-          "node_id": "attack11",
-          "description": "Upload to Cloud Services"
+          "node_id": "T",
+          "description": "Corrupt backup systems"
         },
         {
-          "node_id": "attack12",
-          "description": "Cover Tracks in Audit Logs"
+          "node_id": "U",
+          "description": "Deploy system-wide malware"
         },
         {
-          "node_id": "mit1",
-          "description": "Implement Zero Trust Architecture"
+          "node_id": "V",
+          "description": "Mass data destruction"
         },
         {
-          "node_id": "mit2",
-          "description": "Deploy Data Loss Prevention (DLP)"
+          "node_id": "W",
+          "description": "System-wide security breach - Confidentiality loss"
         },
         {
-          "node_id": "mit3",
-          "description": "Enable Database Activity Monitoring"
+          "node_id": "X",
+          "description": "System-wide security breach - Integrity compromise"
         },
         {
-          "node_id": "mit4",
-          "description": "Enforce Least Privilege Access"
+          "node_id": "Y",
+          "description": "System-wide security breach - Availability disruption"
         },
         {
-          "node_id": "mit5",
-          "description": "Implement Multi-Factor Authentication"
-        },
-        {
-          "node_id": "mit6",
-          "description": "Deploy User Behavior Analytics"
-        },
-        {
-          "node_id": "mit7",
-          "description": "Enable Real-time Audit Logging"
-        },
-        {
-          "node_id": "mit8",
-          "description": "Implement Data Encryption at Rest"
-        },
-        {
-          "node_id": "mit9",
-          "description": "Deploy Network Segmentation"
-        },
-        {
-          "node_id": "mit10",
-          "description": "Regular Access Reviews"
-        },
-        {
-          "node_id": "goal1",
-          "description": "Unauthorized PHI Access"
-        },
-        {
-          "node_id": "goal2",
-          "description": "Data Exfiltration"
-        },
-        {
-          "node_id": "goal3",
-          "description": "Avoid Detection"
+          "node_id": "Z",
+          "description": "Complete compromise of healthcare analytics pipeline"
         }
       ],
-      "generated_content": "# Attack Tree: A malicious insider with privileged user access, can perform unauthorized PHI access or data exfiltration, which leads to large-scale data breach, resulting in reduced confidentiality of patient health information and research data.\n\n```mermaid\ngraph TD\n    root[\"Large-scale PHI Data Breach\"]\n    \n    path1[\"Direct Database Access\"]\n    path2[\"API Exploitation\"]\n    path3[\"File System Access\"]\n    path4[\"Backup System Compromise\"]\n    \n    fact1[\"Privileged User Credentials\"]\n    fact2[\"Access to Production Systems\"]\n    fact3[\"Knowledge of System Architecture\"]\n    fact4[\"Legitimate Business Access\"]\n    \n    attack1[\"Query Patient Database Directly\"]\n    attack2[\"Extract PHI via SQL Queries\"]\n    attack3[\"Exploit Administrative API Endpoints\"]\n    attack4[\"Bypass API Rate Limiting\"]\n    attack5[\"Access Network File Shares\"]\n    attack6[\"Download Research Data Files\"]\n    attack7[\"Access Backup Storage\"]\n    attack8[\"Restore Historical Data\"]\n    attack9[\"Use External Storage Devices\"]\n    attack10[\"Transmit Data via Email\"]\n    attack11[\"Upload to Cloud Services\"]\n    attack12[\"Cover Tracks in Audit Logs\"]\n    \n    mit1[\"Implement Zero Trust Architecture\"]\n    mit2[\"Deploy Data Loss Prevention (DLP)\"]\n    mit3[\"Enable Database Activity Monitoring\"]\n    mit4[\"Enforce Least Privilege Access\"]\n    mit5[\"Implement Multi-Factor Authentication\"]\n    mit6[\"Deploy User Behavior Analytics\"]\n    mit7[\"Enable Real-time Audit Logging\"]\n    mit8[\"Implement Data Encryption at Rest\"]\n    mit9[\"Deploy Network Segmentation\"]\n    mit10[\"Regular Access Reviews\"]\n    \n    goal1[\"Unauthorized PHI Access\"]\n    goal2[\"Data Exfiltration\"]\n    goal3[\"Avoid Detection\"]\n    \n    root --> goal1\n    root --> goal2\n    root --> goal3\n    \n    goal1 --> path1\n    goal1 --> path2\n    goal1 --> path3\n    \n    goal2 --> path4\n    goal2 --> attack9\n    goal2 --> attack10\n    goal2 --> attack11\n    \n    goal3 --> attack12\n    \n    fact1 --> path1\n    fact1 --> path2\n    fact1 --> path3\n    fact1 --> path4\n    \n    fact2 --> attack1\n    fact2 --> attack3\n    fact2 --> attack5\n    fact2 --> attack7\n    \n    fact3 --> attack2\n    fact3 --> attack4\n    fact3 --> attack6\n    fact3 --> attack8\n    \n    fact4 --> attack12\n    \n    path1 --> attack1\n    attack1 --> attack2\n    \n    path2 --> attack3\n    attack3 --> attack4\n    \n    path3 --> attack5\n    attack5 --> attack6\n    \n    path4 --> attack7\n    attack7 --> attack8\n    \n    mit1 -.-> fact2\n    mit2 -.-> goal2\n    mit3 -.-> path1\n    mit4 -.-> fact1\n    mit5 -.-> fact1\n    mit6 -.-> goal3\n    mit7 -.-> attack12\n    mit8 -.-> goal2\n    mit9 -.-> fact2\n    mit10 -.-> fact4\n    \n    classDef attack fill:#ffcccc\n    classDef mitigation fill:#ccffcc  \n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class path1,path2,path3,path4,attack1,attack2,attack3,attack4,attack5,attack6,attack7,attack8,attack9,attack10,attack11,attack12 attack\n    class mit1,mit2,mit3,mit4,mit5,mit6,mit7,mit8,mit9,mit10 mitigation\n    class root,goal1,goal2,goal3 goal\n    class fact1,fact2,fact3,fact4 fact\n```",
+      "generated_content": "# Attack Tree for T005: Compromised IAM Credentials Leading to System-Wide Breach\n\n```mermaid\ngraph TD\n    A[\"Attacker with compromised IAM credentials\"] --> B[\"Credential validation and enumeration\"]\n    A --> C[\"Initial access establishment\"]\n    \n    B --> D[\"Discover assigned permissions\"]\n    B --> E[\"Test credential validity across services\"]\n    \n    C --> F[\"Establish persistent access\"]\n    C --> G[\"Avoid detection mechanisms\"]\n    \n    D --> H[\"Privilege escalation attempts\"]\n    E --> I[\"Lateral movement across healthcare pipeline\"]\n    \n    H --> J[\"Assume higher privilege roles\"]\n    H --> K[\"Modify IAM policies\"]\n    \n    I --> L[\"Access patient data repositories\"]\n    I --> M[\"Compromise analytics processing systems\"]\n    I --> N[\"Target backup and archival systems\"]\n    \n    F --> O[\"Create backdoor access methods\"]\n    G --> P[\"Disable logging and monitoring\"]\n    \n    J --> Q[\"Administrative control acquisition\"]\n    K --> Q\n    O --> Q\n    P --> Q\n    \n    L --> R[\"Exfiltrate sensitive healthcare data\"]\n    M --> S[\"Manipulate analytics algorithms\"]\n    N --> T[\"Corrupt backup systems\"]\n    \n    Q --> U[\"Deploy system-wide malware\"]\n    Q --> V[\"Mass data destruction\"]\n    \n    R --> W[\"System-wide security breach - Confidentiality loss\"]\n    S --> X[\"System-wide security breach - Integrity compromise\"]\n    T --> X\n    U --> Y[\"System-wide security breach - Availability disruption\"]\n    V --> Y\n    \n    W --> Z[\"Complete compromise of healthcare analytics pipeline\"]\n    X --> Z\n    Y --> Z\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y attack\n    class Z goal\n    class A fact\n```",
       "validation": {
         "is_valid": true,
         "errors": [],
         "warnings": [
           "Only 1 attack nodes (recommended: 5+)",
-          "Only 1 mitigation nodes (recommended: 3+)",
           "Only 1 fact nodes (recommended: 3+)"
         ],
         "node_counts": {
           "attack": 1,
-          "mitigation": 1,
           "goal": 1,
           "fact": 1
         },
         "connection_count": 32,
+        "tech_mentions": 0
+      }
+    },
+    {
+      "threat_id": "T006",
+      "threat_category": "Insider Threat",
+      "threat_description": "A malicious insider with privileged user access, can perform unauthorized PHI access or data exfiltration, which leads to internal data breach, resulting in reduced confidentiality of PHI/PII Data and Research Data.",
+      "threat_statement": "A malicious insider with privileged user access, can perform unauthorized PHI access or data exfiltration, which leads to internal data breach, resulting in reduced confidentiality of PHI/PII Data and Research Data.",
+      "mermaid_code": "graph TD\n    A[\"Malicious insider with privileged user access\"] --> B[\"Reconnaissance of data locations\"]\n    A --> C[\"Direct database access\"]\n    B --> D[\"Identify PHI storage systems\"]\n    B --> E[\"Map network file shares\"]\n    D --> F[\"Query patient databases\"]\n    E --> G[\"Access research data repositories\"]\n    C --> H[\"Execute SQL queries for PHI extraction\"]\n    C --> I[\"Bulk data export operations\"]\n    F --> J[\"Extract individual patient records\"]\n    G --> K[\"Download research datasets\"]\n    H --> L[\"Mass PHI database dump\"]\n    I --> M[\"Automated data harvesting\"]\n    J --> N[\"Copy PHI to external storage\"]\n    K --> N\n    L --> O[\"Transfer bulk data via network\"]\n    M --> O\n    N --> P[\"Exfiltrate via removable media\"]\n    O --> Q[\"Exfiltrate via network channels\"]\n    P --> R[\"Internal data breach - PHIPII compromised\"]\n    Q --> R\n    R --> S[\"Confidentiality of PHIPII and Research Data reduced\"]\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R attack\n    class S goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "Malicious insider with privileged user access"
+        },
+        {
+          "node_id": "B",
+          "description": "Reconnaissance of data locations"
+        },
+        {
+          "node_id": "C",
+          "description": "Direct database access"
+        },
+        {
+          "node_id": "D",
+          "description": "Identify PHI storage systems"
+        },
+        {
+          "node_id": "E",
+          "description": "Map network file shares"
+        },
+        {
+          "node_id": "F",
+          "description": "Query patient databases"
+        },
+        {
+          "node_id": "G",
+          "description": "Access research data repositories"
+        },
+        {
+          "node_id": "H",
+          "description": "Execute SQL queries for PHI extraction"
+        },
+        {
+          "node_id": "I",
+          "description": "Bulk data export operations"
+        },
+        {
+          "node_id": "J",
+          "description": "Extract individual patient records"
+        },
+        {
+          "node_id": "K",
+          "description": "Download research datasets"
+        },
+        {
+          "node_id": "L",
+          "description": "Mass PHI database dump"
+        },
+        {
+          "node_id": "M",
+          "description": "Automated data harvesting"
+        },
+        {
+          "node_id": "N",
+          "description": "Copy PHI to external storage"
+        },
+        {
+          "node_id": "O",
+          "description": "Transfer bulk data via network"
+        },
+        {
+          "node_id": "P",
+          "description": "Exfiltrate via removable media"
+        },
+        {
+          "node_id": "Q",
+          "description": "Exfiltrate via network channels"
+        },
+        {
+          "node_id": "R",
+          "description": "Internal data breach - PHIPII compromised"
+        },
+        {
+          "node_id": "S",
+          "description": "Confidentiality of PHIPII and Research Data reduced"
+        }
+      ],
+      "generated_content": "# Attack Tree for Threat T006: Malicious Insider PHI Data Breach\n\n```mermaid\ngraph TD\n    A[\"Malicious insider with privileged user access\"] --> B[\"Reconnaissance of data locations\"]\n    A --> C[\"Direct database access\"]\n    \n    B --> D[\"Identify PHI storage systems\"]\n    B --> E[\"Map network file shares\"]\n    \n    D --> F[\"Query patient databases\"]\n    E --> G[\"Access research data repositories\"]\n    \n    C --> H[\"Execute SQL queries for PHI extraction\"]\n    C --> I[\"Bulk data export operations\"]\n    \n    F --> J[\"Extract individual patient records\"]\n    G --> K[\"Download research datasets\"]\n    H --> L[\"Mass PHI database dump\"]\n    I --> M[\"Automated data harvesting\"]\n    \n    J --> N[\"Copy PHI to external storage\"]\n    K --> N\n    L --> O[\"Transfer bulk data via network\"]\n    M --> O\n    \n    N --> P[\"Exfiltrate via removable media\"]\n    O --> Q[\"Exfiltrate via network channels\"]\n    \n    P --> R[\"Internal data breach - PHI/PII compromised\"]\n    Q --> R\n    \n    R --> S[\"Confidentiality of PHI/PII and Research Data reduced\"]\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R attack\n    class S goal\n    class A fact\n```",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 21,
         "tech_mentions": 0
       }
     }

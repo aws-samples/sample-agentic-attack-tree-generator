@@ -1,13 +1,18 @@
 """TTC Mapping Tool for mapping attack steps to MITRE ATT&CK techniques"""
 import json
+import asyncio
 from typing import Dict, Any, List, Optional
 from pathlib import Path
+from threatforest.utils.logger import ThreatForestLogger
 
 # Mock Strands Tool for testing
 class Tool:
     def __init__(self, name: str, description: str):
         self.name = name
         self.description = description
+
+import boto3
+from botocore.exceptions import ClientError
 
 
 class TTCMappingTool(Tool):
@@ -19,6 +24,10 @@ class TTCMappingTool(Tool):
             name="ttc_mapping",
             description="Map attack steps to TTC techniques from STIX data"
         )
+        self.logger = ThreatForestLogger.get_logger(self.__class__.__name__)
+        self.rate_limit_delay = 2.5
+        self.max_retries = 3
+        self.base_backoff = 2
     
     async def execute(self, attack_trees: Dict[str, Any], 
                      aaf_bundle_path: str = None,
@@ -44,7 +53,72 @@ class TTCMappingTool(Tool):
         use_bedrock_only = len(techniques) == 0
         
         if use_bedrock_only:
-            print("🤖 Using Bedrock-only MITRE ATT&CK mapping (no local STIX data)")
+            self.logger.info(f"Using Bedrock-only MITRE ATT&CK mapping (no local STIX data)")
+    
+    async def _bedrock_call_with_retry(self, bedrock_client, model_id: str, body: dict, operation_name: str = "TTC mapping") -> dict:
+        """Execute Bedrock API call with exponential backoff retry logic"""
+        last_error = None
+        
+        for attempt in range(self.max_retries):
+            try:
+                response = bedrock_client.invoke_model(modelId=model_id, body=json.dumps(body))
+                return json.loads(response['body'].read())
+            except ClientError as e:
+                error_code = e.response.get('Error', {}).get('Code', '')
+                error_msg = e.response.get('Error', {}).get('Message', str(e))
+                
+                if error_code == 'ThrottlingException':
+                    wait_time = self.base_backoff * (2 ** attempt)
+                    self.logger.warning(f"⚠️  {operation_name} throttled (attempt {attempt + 1}/{self.max_retries})")
+                    print(f"⚠️  Rate limited by AWS Bedrock - waiting {wait_time}s before retry...")
+                    
+                    if attempt < self.max_retries - 1:
+                        await asyncio.sleep(wait_time)
+                        continue
+                    else:
+                        self.logger.error(f"Max retries reached for {operation_name}")
+                        print(f"❌ Max retries exceeded - Bedrock API throttling persists")
+                        raise Exception(f"Throttling error after {self.max_retries} retries: {error_msg}")
+                else:
+                    self.logger.error(f"{operation_name} error: {error_code} - {error_msg}")
+                    raise Exception(f"Bedrock API error ({error_code}): {error_msg}")
+            except Exception as e:
+                last_error = e
+                if attempt < self.max_retries - 1:
+                    wait_time = self.base_backoff * (2 ** attempt)
+                    self.logger.warning(f"{operation_name} attempt {attempt + 1} failed, retrying in {wait_time}s: {str(e)}")
+                    await asyncio.sleep(wait_time)
+                else:
+                    self.logger.error(f"{operation_name} failed after all retries: {str(e)}")
+                    raise
+        
+        raise last_error if last_error else Exception(f"Unknown error in {operation_name} retry logic")
+    
+    async def execute(self, attack_trees: Dict[str, Any], 
+                     aaf_bundle_path: str = None,
+                     bedrock_model: str = "us.anthropic.claude-sonnet-4-20250514-v1:0",
+                     aws_profile: Optional[str] = None) -> Dict[str, Any]:
+        """Execute TTC mapping with Bedrock enhancement"""
+        
+        # Load STIX data
+        stix_data = self._load_stix_data(aaf_bundle_path)
+        if not stix_data:
+            return {
+                "ttc_mapped_trees": attack_trees.get("attack_trees", []),
+                "mapping_summary": {
+                    "total_mappings": 0,
+                    "successful_mappings": 0,
+                    "threshold_used": self.threshold,
+                    "error": "Failed to load STIX data"
+                }
+            }
+        
+        # Extract techniques from STIX data
+        techniques = self._extract_techniques(stix_data)
+        use_bedrock_only = len(techniques) == 0
+        
+        if use_bedrock_only:
+            self.logger.info(f"Using Bedrock-only MITRE ATT&CK mapping (no local STIX data)")
         
         # Map attack trees with Bedrock enhancement
         mapped_trees = []
@@ -111,7 +185,7 @@ class TTCMappingTool(Tool):
                     "id": "bundle--combined-stix-data"
                 }
         else:
-            print(f"⚠️  STIX data directory not found at {stix_data_dir}")
+            self.logger.warning(f"STIX data directory not found at {stix_data_dir}")
         
         # Fallback to specified bundle path
         if bundle_path:
@@ -121,9 +195,9 @@ class TTCMappingTool(Tool):
                     with open(bundle_file, 'r') as f:
                         return json.load(f)
             except Exception as e:
-                print(f"⚠️  Error loading STIX data from {bundle_path}: {e}")
+                self.logger.warning(f"Error loading STIX data from {bundle_path}: {e}")
         
-        print("⚠️  No STIX data found - will use Bedrock-only mapping")
+        self.logger.warning(f"No STIX data found - will use Bedrock-only mapping")
         # Return empty STIX data structure for Bedrock-only mapping
         return {
             "objects": [],
@@ -231,19 +305,15 @@ class TTCMappingTool(Tool):
                 "messages": [{"role": "user", "content": prompt}]
             }
             
-            response = bedrock.invoke_model(
-                modelId=bedrock_model,
-                body=json.dumps(body)
-            )
-            
-            response_body = json.loads(response['body'].read())
+            response_body = await self._bedrock_call_with_retry(bedrock, bedrock_model, body, "TTC mapping")
             generated_content = response_body['content'][0]['text']
             
             # Parse Bedrock response
             return self._parse_bedrock_mappings(generated_content, attack_steps, candidate_techniques)
             
         except Exception as e:
-            print(f"Bedrock mapping error: {e}")
+            self.logger.error(f"Bedrock mapping error: {e}")
+            print(f"❌ TTC mapping error: {str(e)}")
             # Fallback to keyword-based mapping
             return self._fallback_keyword_mapping(attack_steps, candidate_techniques)
     
@@ -423,16 +493,13 @@ Focus on specific techniques with high confidence scores (0.7+)."""
             session = boto3.Session(profile_name=aws_profile) if aws_profile else boto3.Session()
             bedrock = session.client('bedrock-runtime', region_name='us-east-1')
             
-            response = bedrock.invoke_model(
-                modelId=bedrock_model,
-                body=json.dumps({
-                    "anthropic_version": "bedrock-2023-05-31",
-                    "max_tokens": 65536,
-                    "messages": [{"role": "user", "content": prompt}]
-                })
-            )
+            body = {
+                "anthropic_version": "bedrock-2023-05-31",
+                "max_tokens": 65536,
+                "messages": [{"role": "user", "content": prompt}]
+            }
             
-            result = json.loads(response['body'].read())
+            result = await self._bedrock_call_with_retry(bedrock, bedrock_model, body, "Bedrock-only TTC mapping")
             content = result['content'][0]['text']
             
             try:
@@ -445,14 +512,15 @@ Focus on specific techniques with high confidence scores (0.7+)."""
                 return tree_copy
                 
             except json.JSONDecodeError:
-                print(f"⚠️  Failed to parse Bedrock mapping response")
+                self.logger.warning(f"Failed to parse Bedrock mapping response")
                 tree_copy = tree.copy()
                 tree_copy['ttc_mappings'] = []
                 tree_copy['mapping_count'] = 0
                 return tree_copy
                 
         except Exception as e:
-            print(f"⚠️  Bedrock mapping failed: {e}")
+            self.logger.error(f"Bedrock mapping failed: {e}")
+            print(f"❌ TTC mapping error: {str(e)}")
             tree_copy = tree.copy()
             tree_copy['ttc_mappings'] = []
             tree_copy['mapping_count'] = 0

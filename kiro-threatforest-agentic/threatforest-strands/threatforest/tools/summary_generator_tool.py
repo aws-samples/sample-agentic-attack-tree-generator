@@ -1,6 +1,7 @@
 """Summary Generator Tool for creating comprehensive threat analysis reports"""
 from typing import Dict, Any, List
 from pathlib import Path
+from threatforest.utils.logger import ThreatForestLogger
 import json
 from datetime import datetime
 
@@ -19,6 +20,7 @@ class SummaryGeneratorTool(Tool):
             name="summary_generator",
             description="Generate comprehensive threat analysis reports with attack trees and TTC mappings"
         )
+        self.logger = ThreatForestLogger.get_logger(self.__class__.__name__)
     
     async def execute(self, attack_trees: Dict[str, Any], 
                      extracted_info: Dict[str, Any],
@@ -44,7 +46,7 @@ class SummaryGeneratorTool(Tool):
                     output_path, attack_trees, extracted_info
                 )
             except Exception as e:
-                print(f"⚠️  Main summary generation failed: {e}")
+                self.logger.warning(f"Main summary generation failed: {e}")
                 summary_file = None
             
             # Generate individual attack tree files
@@ -62,7 +64,7 @@ class SummaryGeneratorTool(Tool):
                     output_path, trees_to_process
                 )
             except Exception as e:
-                print(f"⚠️  Attack tree files generation failed: {e}")
+                self.logger.warning(f"Attack tree files generation failed: {e}")
                 import traceback
                 traceback.print_exc()
                 tree_files = []
@@ -76,7 +78,7 @@ class SummaryGeneratorTool(Tool):
                     output_path, attack_trees, extracted_info
                 )
             except Exception as e:
-                print(f"⚠️  JSON export generation failed: {e}")
+                self.logger.warning(f"JSON export generation failed: {e}")
                 json_file = None
             
             # Collect output files
@@ -98,7 +100,7 @@ class SummaryGeneratorTool(Tool):
             }
             
         except Exception as e:
-            print(f"⚠️  Summary generation execute failed: {e}")
+            self.logger.warning(f"Summary generation execute failed: {e}")
             import traceback
             traceback.print_exc()
             return {'output_files': []}
@@ -196,18 +198,13 @@ This report presents a comprehensive threat analysis for **{project_info.get('ap
             threat_statement = tree.get('threat_statement', tree.get('description', 'No description available'))
             category = tree.get('threat_category', tree.get('category', 'Unknown'))
             
-            # Create filename with threat name
-            if threat_statement:
+            # Create filename with category
+            if category and category != 'Unknown':
+                # Clean category for filename (remove spaces, special chars)
                 import re
-                # Extract key words from threat statement for filename
-                words = re.findall(r'\b[A-Za-z]{3,}\b', threat_statement)
-                meaningful_words = [w for w in words[:4] if w.lower() not in 
-                                  ['can', 'the', 'and', 'which', 'leads', 'resulting', 'from', 'with']]
-                if meaningful_words:
-                    filename_base = '_'.join(meaningful_words)
-                    filename = f"attack_tree_{threat_id}_{filename_base}.md"
-                else:
-                    filename = f"attack_tree_{threat_id}.md"
+                category_clean = re.sub(r'[^\w\s-]', '', category)
+                category_clean = re.sub(r'[-\s]+', '_', category_clean).strip('_')
+                filename = f"attack_tree_{threat_id}_{category_clean}.md"
             else:
                 filename = f"attack_tree_{threat_id}.md"
                 
@@ -217,7 +214,7 @@ This report presents a comprehensive threat analysis for **{project_info.get('ap
             content = f"""# Attack Tree: {category}
 
 **Threat ID**: {threat_id}  
-**Description**: {threat_statement[:200]}{'...' if len(threat_statement) > 200 else ''}
+**Associated threat statement**: {threat_statement}
 
 ## Attack Tree Diagram
 
@@ -248,7 +245,7 @@ Review this attack tree to:
                 tree_files.append(str(file_path))
                 print(f"💾 Generated attack tree file: {filename}")
             except Exception as e:
-                print(f"⚠️  Failed to write attack tree file {filename}: {e}")
+                self.logger.warning(f"Failed to write attack tree file {filename}: {e}")
         
         return tree_files
     

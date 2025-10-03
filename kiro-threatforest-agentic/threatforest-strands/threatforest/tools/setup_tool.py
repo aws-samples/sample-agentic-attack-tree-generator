@@ -4,6 +4,7 @@ import sys
 import json
 import subprocess
 from pathlib import Path
+from threatforest.utils.logger import ThreatForestLogger
 from typing import Dict, Any, Optional, List
 
 # Mock Strands Tool for testing
@@ -37,6 +38,7 @@ class SetupTool(Tool):
             name="setup",
             description="Setup ThreatForest environment including venv, AWS credentials, and Bedrock model validation"
         )
+        self.logger = ThreatForestLogger.get_logger(self.__class__.__name__)
     
     async def execute(self, project_path: str, aws_profile: Optional[str] = None, 
                      bedrock_model: Optional[str] = None, 

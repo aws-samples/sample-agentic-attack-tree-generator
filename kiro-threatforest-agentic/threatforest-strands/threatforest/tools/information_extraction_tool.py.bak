@@ -1,9 +1,9 @@
 """Information Extraction Tool for parsing threat statements and key project info"""
 import re
 import json
+import logging
 from typing import Dict, List, Any, Optional
 from pathlib import Path
-from threatforest.utils.logger import ThreatForestLogger
 
 # Mock Strands Tool for testing
 class Tool:
@@ -12,7 +12,6 @@ class Tool:
         self.description = description
 
 import boto3
-from botocore.exceptions import ClientError
 
 
 class InformationExtractionTool(Tool):
@@ -23,15 +22,11 @@ class InformationExtractionTool(Tool):
             name="information_extraction",
             description="Extract key information including threat statements, technologies, and security objectives"
         )
-        self.logger = ThreatForestLogger.get_logger(self.__class__.__name__)
-        self.rate_limit_delay = 2.5
-        self.max_retries = 3
-        self.base_backoff = 2
+        self.logger = logging.getLogger('ThreatForest.InformationExtraction')
     
     async def execute(self, context_files: Dict[str, Any], bedrock_model: str, 
                      aws_profile: Optional[str] = None, interactive: bool = False) -> Dict[str, Any]:
         """Execute information extraction with threat generation if needed"""
-        import asyncio
         
         # Add model_id to context_files for Bedrock operations
         if bedrock_model:
@@ -43,21 +38,18 @@ class InformationExtractionTool(Tool):
         # Extract key project information using LLM
         project_info = await self._extract_project_info(context_files, bedrock_model, aws_profile)
         
-        # Rate limiting between Bedrock calls
-        await asyncio.sleep(self.rate_limit_delay)
-        
         # If no threat statements found, check if we have threat files without statements
         if not threat_statements:
             threat_files_without_statements = context_files.get("threat_files_without_statements", [])
             
             if threat_files_without_statements:
-                self.logger.info("Found threat model files but no proper threat statements - generating from existing content...")
+                print("🤖 Found threat model files but no proper threat statements - generating from existing content...")
                 generated_threats = await self._generate_threats_from_existing_content(
                     threat_files_without_statements, project_info, bedrock_model, aws_profile
                 )
                 threat_statements.extend(generated_threats)
             else:
-                self.logger.info("No threat statements found - generating threat statements using AI analysis...")
+                print("🤖 No threat statements found - generating threat statements using AI analysis...")
                 generated_threats = await self._generate_threats_with_bedrock(
                     context_files, project_info, bedrock_model, aws_profile
                 )
@@ -70,16 +62,16 @@ class InformationExtractionTool(Tool):
         # Filter high severity threats
         high_severity_threats = [t for t in threat_statements if t.get("severity") == "High"]
         
-        self.logger.debug(f"Total threats extracted: {len(threat_statements)}")
-        self.logger.debug(f"High severity threats: {len(high_severity_threats)}")
+        print(f"🔍 Debug: Total threats extracted: {len(threat_statements)}")
+        print(f"🔍 Debug: High severity threats: {len(high_severity_threats)}")
         for threat in high_severity_threats:
-            self.logger.debug(f"  - {threat.get('id', 'Unknown')}: {threat.get('severity', 'Unknown')} priority")
+            print(f"  - {threat.get('id', 'Unknown')}: {threat.get('severity', 'Unknown')} priority")
         
         # Merge enhanced context into project_info
         if context_files.get('enhanced_context'):
             enhanced_context = context_files['enhanced_context']
             project_info.update(enhanced_context)
-            self.logger.debug(f"Enhanced context merged: {list(enhanced_context.keys())}")
+            print(f"🔍 Enhanced context merged: {list(enhanced_context.keys())}")
         
         return {
             "threat_statements": threat_statements,
@@ -94,46 +86,6 @@ class InformationExtractionTool(Tool):
             }
         }
     
-    async def _bedrock_call_with_retry(self, bedrock_client, model_id: str, body: dict, operation_name: str = "Bedrock call") -> dict:
-        """Execute Bedrock API call with exponential backoff retry logic"""
-        import asyncio
-        last_error = None
-        
-        for attempt in range(self.max_retries):
-            try:
-                response = bedrock_client.invoke_model(modelId=model_id, body=json.dumps(body))
-                return json.loads(response['body'].read())
-            except ClientError as e:
-                error_code = e.response.get('Error', {}).get('Code', '')
-                error_msg = e.response.get('Error', {}).get('Message', str(e))
-                
-                if error_code == 'ThrottlingException':
-                    wait_time = self.base_backoff * (2 ** attempt)
-                    self.logger.warning(f"⚠️  {operation_name} throttled (attempt {attempt + 1}/{self.max_retries})")
-                    print(f"⚠️  Rate limited by AWS Bedrock - waiting {wait_time}s before retry...")
-                    
-                    if attempt < self.max_retries - 1:
-                        await asyncio.sleep(wait_time)
-                        continue
-                    else:
-                        self.logger.error(f"Max retries reached for {operation_name}")
-                        print(f"❌ Max retries exceeded - Bedrock API throttling persists")
-                        raise Exception(f"Throttling error after {self.max_retries} retries: {error_msg}")
-                else:
-                    self.logger.error(f"{operation_name} error: {error_code} - {error_msg}")
-                    raise Exception(f"Bedrock API error ({error_code}): {error_msg}")
-            except Exception as e:
-                last_error = e
-                if attempt < self.max_retries - 1:
-                    wait_time = self.base_backoff * (2 ** attempt)
-                    self.logger.warning(f"{operation_name} attempt {attempt + 1} failed, retrying in {wait_time}s: {str(e)}")
-                    await asyncio.sleep(wait_time)
-                else:
-                    self.logger.error(f"{operation_name} failed after all retries: {str(e)}")
-                    raise
-        
-        raise last_error if last_error else Exception(f"Unknown error in {operation_name} retry logic")
-    
     def _parse_threat_statements(self, context_files: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Parse threat statements from manually specified threat model or discovered files"""
         threats = []
@@ -142,29 +94,29 @@ class InformationExtractionTool(Tool):
         manual_threat_path = context_files.get("threat_model_path")
         
         if manual_threat_path:
-            self.logger.info(f"Processing manually specified threat model: {Path(manual_threat_path).name}")
+            print(f"📄 Processing manually specified threat model: {Path(manual_threat_path).name}")
             try:
                 # Analyze the manually specified file
                 analysis = self._analyze_threat_file(manual_threat_path)
                 
                 if analysis['is_correct_format']:
-                    self.logger.info(f"File is correctly formatted, extracting threats directly")
+                    print(f"✅ File is correctly formatted, extracting threats directly")
                     threats = self._extract_threats_from_content(analysis['content'], manual_threat_path)
                 else:
-                    self.logger.info(f"File needs reformatting, processing with Bedrock")
+                    print(f"🔄 File needs reformatting, processing with Bedrock")
                     threats = self._process_threat_file(manual_threat_path, context_files)
                 
                 if threats:
-                    self.logger.info(f"Found {len(threats)} threats in manually specified file")
+                    print(f"✅ Found {len(threats)} threats in manually specified file")
                     return threats
                 else:
-                    self.logger.warning(f"No threats found in manually specified file")
+                    print(f"⚠️  No threats found in manually specified file")
                     
             except Exception as e:
-                self.logger.error(f"Failed to process manually specified threat model: {e}")
+                print(f"❌ Failed to process manually specified threat model: {e}")
         
         # Fallback to auto-discovery if no manual path or manual path failed
-        self.logger.info("Auto-discovering threat files from project...")
+        print("🔍 Auto-discovering threat files from project...")
         
         # Get threat_models from the discovered files
         threat_models = []
@@ -173,7 +125,7 @@ class InformationExtractionTool(Tool):
         elif "discovered_files" in context_files and "threat_models" in context_files["discovered_files"]:
             threat_models = context_files["discovered_files"]["threat_models"]
         
-        self.logger.debug(f"Found {len(threat_models)} potential threat files")
+        print(f"🔍 Found {len(threat_models)} potential threat files")
         
         # Process discovered threat files
         for threat_file_path in threat_models:
@@ -196,12 +148,12 @@ class InformationExtractionTool(Tool):
                     context_files['context_files'].append(threat_file_path)
                     
             except Exception as e:
-                self.logger.warning(f"Failed to process file {threat_file_path}: {e}")
+                print(f"⚠️  Failed to process file {threat_file_path}: {e}")
         
         if threats:
-            self.logger.info(f"Found {len(threats)} existing threat statements")
+            print(f"✅ Found {len(threats)} existing threat statements")
         else:
-            self.logger.info("No properly formatted threat statements found")
+            print("📋 No properly formatted threat statements found")
         
         return threats
     
@@ -238,7 +190,7 @@ class InformationExtractionTool(Tool):
             }
             
         except Exception as e:
-            self.logger.warning(f"Failed to analyze {file_path.name}: {e}")
+            print(f"⚠️  Failed to analyze {file_path.name}: {e}")
             return {
                 'path': threat_file_path,
                 'filename': file_path.name,
@@ -252,14 +204,14 @@ class InformationExtractionTool(Tool):
     
     def _process_threat_file(self, threat_file_path: str, context_files: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Process a threat file and determine if it needs Bedrock reformatting"""
-        self.logger.info(f"Processing threat file: {Path(threat_file_path).name}")
+        print(f"📄 Processing threat file: {Path(threat_file_path).name}")
         
         # Check if this is a ThreatComposer file (.tc.json)
         file_path = Path(threat_file_path)
         is_threatcomposer = file_path.name.lower().endswith('.tc.json')
         
         if is_threatcomposer:
-            self.logger.info(f"Detected ThreatComposer file - using JQ parser")
+            print(f"🎯 Detected ThreatComposer file - using JQ parser")
             return self._process_threatcomposer_file(threat_file_path)
         
         # Read the file content for non-ThreatComposer files
@@ -268,11 +220,11 @@ class InformationExtractionTool(Tool):
         
         # Check if file already matches the correct format
         if self._is_correct_format(content):
-            self.logger.info(f"File already in correct format - using directly")
+            print(f"✅ File already in correct format - using directly")
             return self._extract_threats_from_content(content, threat_file_path)
         
         # File needs reformatting via Bedrock
-        self.logger.info(f"File needs reformatting - will reformat via Bedrock")
+        print(f"🤖 File needs reformatting - will reformat via Bedrock")
         reformatted_file = self._reformat_threats_via_bedrock(threat_file_path, content, context_files)
         if reformatted_file:
             # Re-extract from reformatted file
@@ -293,14 +245,14 @@ class InformationExtractionTool(Tool):
             jq_script = tools_dir / "threat_jq.sh"
             
             if not jq_script.exists():
-                self.logger.error(f"JQ script not found at {jq_script}")
+                print(f"❌ JQ script not found at {jq_script}")
                 return []
             
             # Make script executable
             os.chmod(jq_script, 0o755)
             
             # Extract threat data using JQ parser
-            self.logger.debug(f"Extracting threats using JQ parser...")
+            print(f"🔍 Extracting threats using JQ parser...")
             result = subprocess.run(
                 [str(jq_script), threat_file_path, "extract"],
                 capture_output=True,
@@ -309,28 +261,28 @@ class InformationExtractionTool(Tool):
             )
             
             if result.returncode != 0:
-                self.logger.error(f"JQ extraction failed: {result.stderr}")
+                print(f"❌ JQ extraction failed: {result.stderr}")
                 return []
             
             # Parse the extracted JSON data
             try:
                 threat_data = json.loads(result.stdout)
             except json.JSONDecodeError as e:
-                self.logger.error(f"Failed to parse JQ output: {e}")
+                print(f"❌ Failed to parse JQ output: {e}")
                 return []
             
             # Create formatted output file
             output_file = self._create_formatted_threat_file(threat_data, threat_file_path)
             
             if output_file:
-                self.logger.info(f"Created formatted threat file: {Path(output_file).name}")
+                print(f"✅ Created formatted threat file: {Path(output_file).name}")
                 # Extract threats from the formatted file
                 with open(output_file, 'r', encoding='utf-8') as f:
                     content = f.read()
                 return self._extract_threats_from_content(content, output_file)
             
         except Exception as e:
-            self.logger.error(f"Error processing ThreatComposer file: {e}")
+            print(f"❌ Error processing ThreatComposer file: {e}")
         
         return []
     
@@ -473,7 +425,7 @@ class InformationExtractionTool(Tool):
             return str(output_file)
             
         except Exception as e:
-            self.logger.error(f"Error creating formatted threat file: {e}")
+            print(f"❌ Error creating formatted threat file: {e}")
             return None
     
     def _extract_threat_category(self, threat_statement: str) -> str:
@@ -589,8 +541,6 @@ class InformationExtractionTool(Tool):
         # Split content into threat sections by the #### pattern (handles both T### and UUID formats)
         threat_sections = re.split(r'\n(?=#### [A-Za-z0-9\-]+ - )', content)
         
-        self.logger.debug(f"Found {len(threat_sections)} threat sections in {Path(file_path).name}")
-        
         for section in threat_sections:
             if not section.strip() or '####' not in section:
                 continue
@@ -609,12 +559,9 @@ class InformationExtractionTool(Tool):
             capturing = False
             
             for line in lines:
-                if '**Threat Statement**' in line and ':' in line:
-                    # Extract statement from this line - handle both **: and **:
-                    if '**Threat Statement:**' in line:
-                        threat_statement = line.split('**Threat Statement:**', 1)[1].strip()
-                    elif '**Threat Statement**:' in line:
-                        threat_statement = line.split('**Threat Statement**:', 1)[1].strip()
+                if '**Threat Statement:**' in line:
+                    # Extract statement from this line
+                    threat_statement = line.split('**Threat Statement:**', 1)[1].strip()
                     capturing = True
                     continue
                 elif capturing and line.strip().startswith('- **'):
@@ -685,9 +632,7 @@ class InformationExtractionTool(Tool):
             }
             
             threats.append(threat)
-            self.logger.debug(f"Extracted threat {threat_id} with severity: {severity}")
-        
-        self.logger.info(f"Extracted {len(threats)} threats from {Path(file_path).name}")
+            print(f"🔍 Extracted threat {threat_id} with priority: {priority}")
         
         # If no threats found with structured format, try legacy extraction
         if not threats:
@@ -847,13 +792,16 @@ Focus on:
             # Prepare messages with text and images
             messages = self._prepare_bedrock_messages(prompt, context_files)
             
-            body = {
-                "anthropic_version": "bedrock-2023-05-31",
-                "max_tokens": 65536,
-                "messages": messages
-            }
+            response = bedrock.invoke_model(
+                modelId=bedrock_model,
+                body=json.dumps({
+                    "anthropic_version": "bedrock-2023-05-31",
+                    "max_tokens": 65536,
+                    "messages": messages
+                })
+            )
             
-            result = await self._bedrock_call_with_retry(bedrock, bedrock_model, body, "Project info extraction")
+            result = json.loads(response['body'].read())
             content = result['content'][0]['text']
             
             # Parse JSON response
@@ -870,8 +818,7 @@ Focus on:
                     return {"error": f"Failed to parse JSON response: {content[:200]}..."}
             
         except Exception as e:
-            self.logger.error(f"Bedrock extraction failed: {e}")
-            print(f"❌ Failed to extract project info: {str(e)}")
+            print(f"⚠️  Bedrock extraction failed: {e}")
             return {
                 "error": str(e),
                 "application_name": "Unknown Application",
@@ -943,9 +890,9 @@ Focus on:
                             "data": img_data
                         }
                     })
-                    self.logger.info(f"Added image to analysis: {img_path}")
+                    print(f"📷 Added image to analysis: {img_path}")
             except Exception as e:
-                self.logger.warning(f"Failed to load image {img_path}: {e}")
+                print(f"⚠️  Failed to load image {img_path}: {e}")
         
         messages.append({
             "role": "user",
@@ -1041,7 +988,7 @@ Focus on:
             if Confirm.ask("Update architecture type?", default=False):
                 project_info['architecture_type'] = Prompt.ask("Architecture type", default=project_info.get('architecture_type', ''))
             
-            console.self.logger.info("[green]Information updated![/green]")
+            console.print("✅ [green]Information updated![/green]")
         
         # Save validated info to file
         self._save_validated_info(project_info)
@@ -1145,11 +1092,11 @@ Focus on:
                     "source_file": "Generated from existing threat models"
                 })
             
-            self.logger.info(f"Generated {len(generated_threats)} threat statements from existing threat model content")
+            print(f"✅ Generated {len(generated_threats)} threat statements from existing threat model content")
             return generated_threats
             
         except Exception as e:
-            self.logger.warning(f"Failed to generate threats from existing content: {e}")
+            print(f"⚠️  Failed to generate threats from existing content: {e}")
             return []
     
     async def _generate_threats_with_bedrock(self, context_files: Dict[str, Any], 
@@ -1211,21 +1158,24 @@ Requirements:
             # Prepare messages with text and images
             messages = self._prepare_bedrock_messages(prompt, context_files)
             
-            body = {
-                "anthropic_version": "bedrock-2023-05-31",
-                "max_tokens": 65536,
-                "messages": messages
-            }
+            response = bedrock.invoke_model(
+                modelId=bedrock_model,
+                body=json.dumps({
+                    "anthropic_version": "bedrock-2023-05-31",
+                    "max_tokens": 65536,
+                    "messages": messages
+                })
+            )
             
-            result = await self._bedrock_call_with_retry(bedrock, bedrock_model, body, "Threat generation")
+            result = json.loads(response['body'].read())
             content = result['content'][0]['text']
             
             # Parse the JSON response with better error handling
             try:
                 threat_data = self._parse_json_response(content)
-                self.logger.info("Successfully extracted complete JSON structure")
+                print("✅ Successfully extracted complete JSON structure")
             except Exception as e:
-                self.logger.warning(f"JSON parsing failed: {e}")
+                print(f"⚠️  JSON parsing failed: {e}")
                 print(f"Raw content: {content[:500]}...")
                 return self._get_fallback_threats(project_info)
             
@@ -1250,16 +1200,16 @@ Requirements:
             # Create markdown file with generated threats
             filename = self._create_threats_markdown_file(threats, context_files.get('project_path', '.'), project_info)
             
-            self.logger.info(f"Generated {len(threats)} threat statements using AI analysis")
-            self.logger.info(f"Threats saved to {filename}")
+            print(f"✅ Generated {len(threats)} threat statements using AI analysis")
+            print(f"📄 Threats saved to {filename}")
             return threats
             
         except Exception as e:
-            self.logger.warning(f"Failed to generate threats with Bedrock: {e}")
+            print(f"⚠️  Failed to generate threats with Bedrock: {e}")
             # Return basic fallback threats with proper syntax
             fallback_threats = self._get_fallback_threats(project_info)
             filename = self._create_threats_markdown_file(fallback_threats, context_files.get('project_path', '.'), project_info)
-            self.logger.info(f"Fallback threats saved to {filename}")
+            print(f"📄 Fallback threats saved to {filename}")
             return fallback_threats
     
     def _create_threats_markdown_file(self, threats: List[Dict[str, Any]], project_path: str, project_info: Dict[str, Any] = None) -> str:
@@ -1466,7 +1416,7 @@ You can edit this file to:
             
             # Use model from context or default
             model_id = context_files.get('model_id', 'anthropic.claude-3-haiku-20240307-v1:0')
-            self.logger.debug(f"Debug: Using model ID: {model_id}")
+            print(f"🔍 Debug: Using model ID: {model_id}")
             
             prompt = f"""You are a cybersecurity expert. I have a threat model document that contains threat information but not in the correct format.
 
@@ -1546,9 +1496,6 @@ Return a complete markdown document with properly formatted threat statements us
             response_body = json.loads(response['body'].read())
             reformatted_content = response_body['content'][0]['text']
             
-            # Fix the counts by parsing the actual content
-            reformatted_content = self._fix_threat_counts(reformatted_content)
-            
             # Save reformatted file
             with open(new_file_path, 'w', encoding='utf-8') as f:
                 f.write(reformatted_content)
@@ -1557,26 +1504,8 @@ Return a complete markdown document with properly formatted threat statements us
             return str(new_file_path)
             
         except Exception as e:
-            self.logger.warning(f"Failed to reformat threats via Bedrock: {e}")
+            print(f"⚠️  Failed to reformat threats via Bedrock: {e}")
             return None
-    
-    def _fix_threat_counts(self, content: str) -> str:
-        """Fix threat counts in the header by parsing actual content"""
-        import re
-        
-        # Count actual threats by priority
-        high_count = len(re.findall(r'- \*\*Priority\*\*: High', content))
-        medium_count = len(re.findall(r'- \*\*Priority\*\*: Medium', content))
-        low_count = len(re.findall(r'- \*\*Priority\*\*: Low', content))
-        total_count = high_count + medium_count + low_count
-        
-        # Update the counts in the header
-        content = re.sub(r'- \*\*Total Threats\*\*: \d+', f'- **Total Threats**: {total_count}', content)
-        content = re.sub(r'- \*\*High Priority\*\*: \d+', f'- **High Priority**: {high_count}', content)
-        content = re.sub(r'- \*\*Medium Priority\*\*: \d+', f'- **Medium Priority**: {medium_count}', content)
-        content = re.sub(r'- \*\*Low Priority\*\*: \d+', f'- **Low Priority**: {low_count}', content)
-        
-        return content
     
     def _reformat_mixed_threats_via_bedrock(self, original_file: str, content: str, correct_threats: List[Dict], context_files: Dict[str, Any]) -> str:
         """Reformat threat file via Bedrock when there are mixed correct/incorrect threats"""
@@ -1601,7 +1530,7 @@ Return a complete markdown document with properly formatted threat statements us
             
             # Use model from context or default
             model_id = context_files.get('model_id', 'anthropic.claude-3-haiku-20240307-v1:0')
-            self.logger.debug(f"Debug: Using model ID: {model_id}")
+            print(f"🔍 Debug: Using model ID: {model_id}")
             
             prompt = f"""You are a cybersecurity expert. I have a threat model document that contains some correctly formatted threats and some incorrectly formatted threats.
 
@@ -1659,9 +1588,6 @@ Return a complete markdown document with all threat statements properly formatte
             response_body = json.loads(response['body'].read())
             reformatted_content = response_body['content'][0]['text']
             
-            # Fix the counts by parsing the actual content
-            reformatted_content = self._fix_threat_counts(reformatted_content)
-            
             # Save reformatted file
             with open(new_file_path, 'w', encoding='utf-8') as f:
                 f.write(reformatted_content)
@@ -1670,5 +1596,5 @@ Return a complete markdown document with all threat statements properly formatte
             return str(new_file_path)
             
         except Exception as e:
-            self.logger.warning(f"Failed to reformat mixed threats via Bedrock: {e}")
+            print(f"⚠️  Failed to reformat mixed threats via Bedrock: {e}")
             return None
