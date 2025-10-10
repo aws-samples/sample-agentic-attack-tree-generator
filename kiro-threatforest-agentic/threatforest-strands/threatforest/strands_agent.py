@@ -6,35 +6,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 
-# Mock Strands imports for testing
-class Tool:
-    def __init__(self, name: str, description: str):
-        self.name = name
-        self.description = description
-
-class Agent:
-    def __init__(self, name: str, description: str, tools: List[Tool]):
-        self.name = name
-        self.description = description
-        self.tools = {tool.name: tool for tool in tools}
-    
-    async def use_tool(self, tool_name: str, params: Dict[str, Any]) -> Dict[str, Any]:
-        if tool_name in self.tools:
-            tool = self.tools[tool_name]
-            return await tool.execute(**params)
-        else:
-            raise ValueError(f"Tool {tool_name} not found")
-
-class Context:
-    def __init__(self):
-        self.data = {}
-    
-    def add(self, key: str, value: Any):
-        self.data[key] = value
-    
-    def to_dict(self) -> Dict[str, Any]:
-        return self.data
-
+from .core import Agent, Context
 from .tools.setup_tool import SetupTool
 from .tools.context_analysis_tool import ContextAnalysisTool
 from .tools.information_extraction_tool import InformationExtractionTool
@@ -48,7 +20,7 @@ class ThreatForestConfig:
     """Configuration for ThreatForest execution"""
     project_path: Path
     aws_profile: Optional[str] = None
-    bedrock_model: str = "us.anthropic.claude-sonnet-4-20250514-v1:0"  # Updated to Claude Sonnet 4
+    bedrock_model: str = "us.anthropic.claude-sonnet-4-20250514-v1:0"
     output_dir: Optional[Path] = None
     ttc_threshold: float = 0.8
 

@@ -1213,7 +1213,7 @@ All branches work in parallel from `strands-integration`:
   - [x] AttackTreeGeneratorTool
   - [x] TTCMappingTool
   - [x] SummaryGeneratorTool
-- [ ] Task 1.5: Update strands_agent.py
+- [x] Task 1.5: Update strands_agent.py
 - [ ] Task 1.6: Integration testing
 
 **Success Criteria**:
