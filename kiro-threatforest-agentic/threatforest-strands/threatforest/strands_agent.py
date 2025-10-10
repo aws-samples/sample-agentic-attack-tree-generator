@@ -52,10 +52,40 @@ class ThreatForestOrchestrator(Agent):
     
     def _initialize_state(self) -> ThreatForestState:
         """Initialize or resume workflow state"""
-        if self.config.resume:
-            state = self.state_manager.load_checkpoint()
-            if state:
-                return state
+        # Check for existing state
+        existing_state = self.state_manager.load_checkpoint()
+        
+        if existing_state:
+            # Validate state
+            is_valid, message = existing_state.is_valid_for_resume()
+            
+            if not is_valid:
+                print(f"⚠️  Found existing state but it's invalid: {message}")
+                print("Starting fresh workflow...")
+                return ThreatForestState(
+                    project_path=str(self.config.project_path),
+                    aws_profile=self.config.aws_profile,
+                    bedrock_model=self.config.bedrock_model
+                )
+            
+            # Prompt user if resume flag not set
+            if not self.config.resume:
+                print(f"\n📋 Found existing workflow state:")
+                print(f"   Stage: {existing_state.current_stage.value}")
+                print(f"   Last updated: {existing_state.last_updated.strftime('%Y-%m-%d %H:%M:%S')}")
+                print(f"   Progress: Setup={existing_state.setup_complete}, "
+                      f"Context={existing_state.context_complete}, "
+                      f"Extraction={existing_state.extraction_complete}")
+                
+                response = input("\n🔄 Resume from checkpoint? (y/n): ").strip().lower()
+                if response == 'y':
+                    print(f"✓ Resuming from {existing_state.current_stage.value} stage\n")
+                    return existing_state
+                else:
+                    print("Starting fresh workflow...\n")
+            else:
+                print(f"✓ Resuming from {existing_state.current_stage.value} stage\n")
+                return existing_state
         
         return ThreatForestState(
             project_path=str(self.config.project_path),

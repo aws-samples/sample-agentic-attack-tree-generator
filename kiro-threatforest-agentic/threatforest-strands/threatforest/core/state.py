@@ -75,3 +75,38 @@ class ThreatForestState(BaseModel):
             )
         self.current_stage = stage
         self.last_updated = datetime.now()
+    
+    def is_valid_for_resume(self) -> tuple[bool, str]:
+        """Validate if state is valid for resuming workflow"""
+        # Check if workflow is already complete
+        if self.current_stage == WorkflowStage.COMPLETE.value:
+            return False, "Workflow already complete"
+        
+        # Define stage order for comparison
+        stage_order = {
+            WorkflowStage.SETUP.value: 0,
+            WorkflowStage.CONTEXT_ANALYSIS.value: 1,
+            WorkflowStage.EXTRACTION.value: 2,
+            WorkflowStage.TREE_GENERATION.value: 3,
+            WorkflowStage.MAPPING.value: 4,
+            WorkflowStage.SUMMARY.value: 5,
+            WorkflowStage.COMPLETE.value: 6
+        }
+        
+        current_order = stage_order.get(self.current_stage, 0)
+        
+        # Validate stage completion consistency
+        stage_checks = [
+            (WorkflowStage.CONTEXT_ANALYSIS.value, self.setup_complete, "Setup incomplete"),
+            (WorkflowStage.EXTRACTION.value, self.context_complete, "Context analysis incomplete"),
+            (WorkflowStage.TREE_GENERATION.value, self.extraction_complete, "Extraction incomplete"),
+            (WorkflowStage.MAPPING.value, self.tree_generation_complete, "Tree generation incomplete"),
+            (WorkflowStage.SUMMARY.value, self.tree_generation_complete, "Tree generation incomplete"),
+        ]
+        
+        for stage, required_flag, error_msg in stage_checks:
+            stage_order_val = stage_order.get(stage, 0)
+            if current_order >= stage_order_val and not required_flag:
+                return False, f"Invalid state: {error_msg} for stage {self.current_stage}"
+        
+        return True, "State valid for resume"
