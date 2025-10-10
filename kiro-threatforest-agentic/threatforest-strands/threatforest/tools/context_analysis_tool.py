@@ -4,7 +4,7 @@ import json
 import subprocess
 from pathlib import Path
 from threatforest.utils.logger import ThreatForestLogger
-from threatforest.core import Tool, tool
+from threatforest.core import Tool, tool, FileDiscovery
 from typing import Dict, List, Any, Optional
 
 
@@ -21,28 +21,24 @@ class ContextAnalysisTool(Tool):
         self.threat_keywords = ['threat', 'risk', 'vulnerability', 'attack', 'security']
     
     async def execute(self, project_path: str) -> Dict[str, Any]:
-        """Execute enhanced context analysis"""
+        """Execute enhanced context analysis using FileDiscovery"""
         project_dir = Path(project_path)
         
-        # Discover threat models first (highest priority)
-        threat_models = self._discover_threat_files(project_path)
+        # Use FileDiscovery for single-pass file discovery
+        discovered = FileDiscovery.discover(project_path)
+        self.logger.info(f"Discovered {discovered.total_files} files in {discovered.discovery_time_ms:.2f}ms")
         
-        # Discover other context files
+        # Build context files structure from discovered files
         context_files = {
-            "threat_models": threat_models,
-            "readmes": [],
-            "architecture_diagrams": [],
-            "data_flow_diagrams": [],
-            "other_docs": []
+            "threat_models": discovered.threat_models,
+            "readmes": [f for f in discovered.documentation if 'readme' in Path(f).name.lower()],
+            "architecture_diagrams": [f for f in discovered.diagrams if any(x in Path(f).name.lower() for x in ['arch', 'diagram'])],
+            "data_flow_diagrams": [f for f in discovered.diagrams if 'flow' in Path(f).name.lower() or 'dfd' in Path(f).name.lower()],
+            "other_docs": [f for f in discovered.documentation if 'readme' not in Path(f).name.lower()]
         }
         
-        # Search for other relevant files
-        for file_path in project_dir.rglob("*"):
-            if file_path.is_file() and str(file_path) not in threat_models:
-                self._categorize_file(file_path, context_files)
-        
         # Process threat models with enhanced extraction
-        threat_analysis = self._process_threat_models(threat_models)
+        threat_analysis = self._process_threat_models(discovered.threat_models)
         
         # Parse other files
         parsed_files = {}
@@ -67,8 +63,6 @@ class ContextAnalysisTool(Tool):
             "summary": self._generate_enhanced_summary(threat_analysis, parsed_files, context_files),
             "enhanced_context": self._extract_enhanced_context_via_bedrock(context_files)
         }
-    
-    def _discover_threat_files(self, project_path: str) -> List[str]:
         """Discover threat-related files using enhanced detection"""
         threat_files = []
         
