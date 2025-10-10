@@ -1970,21 +1970,23 @@ PYTHONPATH=. python -m unittest tests/performance-optimization/test_file_discove
 **Dependencies**: None  
 **Can parallel with**: Medium #11  
 **Effort**: 3-4 days
+**Status**: 🟡 In Progress
 
 #### Task List
-- [ ] **Task 12.1**: Create BedrockResponseCache
+- [x] **Task 12.1**: Create BedrockResponseCache
   - Create `threatforest/core/cache.py`
   - Implement cache key generation
   - Add get/set methods
   - Support cache expiration
 
-- [ ] **Task 12.2**: Configure cache storage
+- [x] **Task 12.2**: Configure cache storage
   - Use ~/.threatforest/cache directory
   - Store as JSON files
   - Add cache size limits
   - Implement LRU eviction
 
-- [ ] **Task 12.3**: Integrate with Bedrock calls
+- [x] **Task 12.3**: Integrate with Bedrock calls
+  - Create BedrockService wrapper
   - Check cache before API call
   - Store response after API call
   - Add cache hit/miss logging
@@ -2002,15 +2004,16 @@ PYTHONPATH=. python -m unittest tests/performance-optimization/test_file_discove
 #### Success Criteria
 ✅ Bedrock responses cached  
 ✅ Cache hits avoid API calls  
-✅ 50%+ reduction in API calls for repeated runs  
+⚪ 50%+ reduction in API calls for repeated runs  
 ✅ Cache size managed automatically  
 ✅ Cache statistics available  
 ✅ Can disable caching if needed  
 
 #### Validation Commands
 ```bash
-python -m pytest tests/test_caching.py -v
-python scripts/benchmark_cache.py
+python -m unittest tests/performance-optimization/test_cache.py -v  # ✅ 9 tests passing
+python -m unittest tests/performance-optimization/test_bedrock_service.py -v  # ✅ 9 tests passing
+python -m unittest discover -s tests/performance-optimization -v  # ✅ 25 tests passing
 ```
 
 ---

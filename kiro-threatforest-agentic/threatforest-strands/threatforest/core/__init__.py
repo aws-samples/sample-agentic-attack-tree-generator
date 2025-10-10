@@ -15,11 +15,13 @@ from .error_handler import ErrorHandler
 from .rate_limiter import BedrockRateLimiter, CircuitBreaker
 from .retry import RetryStrategy, retry_with_backoff, sync_retry_with_backoff
 from .bedrock_client import BedrockClientManager
+from .bedrock_service import BedrockService
 from .validation import (
     SetupToolInput, ContextAnalysisInput, ExtractionToolInput,
     AttackTreeGeneratorInput, TTCMappingInput, SummaryGeneratorInput
 )
 from .file_discovery import FileDiscovery, DiscoveredFiles
+from .cache import BedrockResponseCache, CacheEntry
 
 __all__ = [
     'Tool', 'tool', 
@@ -35,7 +37,9 @@ __all__ = [
     'BedrockRateLimiter', 'CircuitBreaker',
     'RetryStrategy', 'retry_with_backoff', 'sync_retry_with_backoff',
     'BedrockClientManager',
+    'BedrockService',
     'SetupToolInput', 'ContextAnalysisInput', 'ExtractionToolInput',
     'AttackTreeGeneratorInput', 'TTCMappingInput', 'SummaryGeneratorInput',
-    'FileDiscovery', 'DiscoveredFiles'
+    'FileDiscovery', 'DiscoveredFiles',
+    'BedrockResponseCache', 'CacheEntry'
 ]
