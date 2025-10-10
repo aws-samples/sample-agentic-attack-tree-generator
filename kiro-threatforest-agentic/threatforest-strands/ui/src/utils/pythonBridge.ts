@@ -134,12 +134,52 @@ except Exception as e:
       return { success: false, error: `Unknown input type: ${inputType}` };
     }
 
-    return this.execute(
-      'src.modules.core.validation',
-      className,
-      'validate',
-      { init: data, call: {} }
-    );
+    // For Pydantic v2, validation happens during __init__
+    // Just try to create the instance - if it succeeds, validation passed
+    return new Promise((resolve) => {
+      const argsJson = JSON.stringify(data).replace(/'/g, "\\'");
+      const script = `
+import sys
+import json
+sys.path.insert(0, '${this.projectRoot}')
+
+from src.modules.core.validation import ${className}
+
+try:
+    args = json.loads('${argsJson}')
+    # Validation happens here - if this succeeds, input is valid
+    instance = ${className}(**args)
+    print(json.dumps({'success': True, 'data': instance.model_dump()}))
+except Exception as e:
+    import traceback
+    print(json.dumps({'success': False, 'error': str(e), 'traceback': traceback.format_exc()}))
+`;
+
+      const python = spawn(this.pythonPath, ['-c', script]);
+      let output = '';
+      let error = '';
+
+      python.stdout.on('data', (data: Buffer) => {
+        output += data.toString();
+      });
+
+      python.stderr.on('data', (data: Buffer) => {
+        error += data.toString();
+      });
+
+      python.on('close', (code: number) => {
+        if (code !== 0) {
+          resolve({ success: false, error: error || 'Python process failed' });
+        } else {
+          try {
+            const result = JSON.parse(output);
+            resolve(result);
+          } catch (e) {
+            resolve({ success: false, error: 'Failed to parse Python output' });
+          }
+        }
+      });
+    });
   }
 
   // Parser integration
