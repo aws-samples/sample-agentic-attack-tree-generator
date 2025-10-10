@@ -8,11 +8,11 @@
   },
   "type": "module",
   "scripts": {
-    "build": "esbuild src/index.tsx --bundle --platform=node --outfile=dist/index.js --format=esm",
-    "build:cli": "esbuild src/cli.tsx --bundle --platform=node --outfile=dist/cli.js --format=esm --banner:js=\"#!/usr/bin/env node\" && chmod +x dist/cli.js",
+    "build": "esbuild src/index.tsx --bundle --platform=node --outfile=dist/index.js --format=esm --external:react-devtools-core",
+    "build:cli": "esbuild src/cli.tsx --bundle --platform=node --outfile=dist/cli.js --format=esm --external:react-devtools-core --banner:js=\"#!/usr/bin/env node\" && chmod +x dist/cli.js",
     "build:all": "npm run build && npm run build:cli",
     "dev": "npm run build:cli && node dist/cli.js",
-    "watch": "esbuild src/index.tsx --bundle --platform=node --outfile=dist/index.js --format=esm --watch",
+    "watch": "esbuild src/index.tsx --bundle --platform=node --outfile=dist/index.js --format=esm --external:react-devtools-core --watch",
     "install:global": "npm run build:all && npm link"
   },
   "dependencies": {
