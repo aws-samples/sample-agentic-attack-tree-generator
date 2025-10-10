@@ -1185,7 +1185,133 @@ All branches work in parallel from `strands-integration`:
 
 ---
 
-## 🎯 CURRENT BRANCH: strands-production-readiness
+## 🎯 CURRENT BRANCH: user-experience
+
+**Branch Focus**: 👁️ User Experience Group  
+**Parent Branch**: strands-integration  
+**Status**: 🟡 In Progress  
+**Started**: 2025-10-10  
+**Target Completion**: TBD
+
+### Branch Objectives
+- [ ] Create modern React Ink terminal UI for wizard
+- [ ] Integrate all new functionality (FileDiscovery, Cache, StateManager, etc.)
+- [ ] Implement real-time progress with ETA
+- [ ] Add resume from checkpoint capability
+- [ ] Show cache statistics during execution
+- [ ] Provide better error handling with recovery options
+
+### Tasks in This Branch
+
+#### ⚪ High #13: Recreate Wizard with React Ink UI
+**Status**: ⚪ Not Started | **Effort**: 1-2 weeks  
+**Dependencies**: All Groups (1-4)
+
+- [ ] Task 13.1: Setup React Ink infrastructure
+- [ ] Task 13.2: Create core UI components
+- [ ] Task 13.3: Integrate new core functionality
+- [ ] Task 13.4: Add interactive features
+- [ ] Task 13.5: Implement workflow orchestration
+- [ ] Task 13.6: Add CLI commands
+
+**Success Criteria**:
+- ⚪ Modern, interactive UI with React Ink
+- ⚪ All new functionality integrated
+- ⚪ Real-time progress with ETA
+- ⚪ Resume from checkpoint works seamlessly
+- ⚪ Cache statistics visible during execution
+- ⚪ Error handling with recovery options
+- ⚪ Parallel execution visualized
+- ⚪ Better UX than current Rich-based wizard
+
+**Validation**: 
+```bash
+npm run build
+threatforest run
+threatforest resume
+threatforest cache stats
+```
+
+---
+
+### Branch Completion Checklist
+
+Before merging `user-experience` to `strands-integration`:
+
+**Code Quality**:
+- [ ] All tasks marked complete [x]
+- [ ] All success criteria met ✅
+- [ ] React Ink UI fully functional
+- [ ] All integrations working
+- [ ] Code follows best practices
+- [ ] All new code has documentation
+
+**Testing**:
+- [ ] UI components tested
+- [ ] Integration tests pass
+- [ ] End-to-end wizard flow works
+- [ ] Resume functionality tested
+- [ ] Error recovery tested
+- [ ] No regression in existing functionality
+
+**Documentation**:
+- [ ] README updated with new CLI commands
+- [ ] UI component documentation
+- [ ] Integration guide created
+- [ ] This improvements.md updated with ✅
+
+**Review**:
+- [ ] Code review completed
+- [ ] UX review
+- [ ] Performance review
+- [ ] Approval from tech lead
+
+**Dependencies**:
+- [x] Group 3 (Validation) complete
+- [x] Group 4 (Performance) complete
+- [ ] No blocking issues
+
+---
+
+### Branch Notes & Decisions
+
+**Date**: 2025-10-10  
+**Note**: Branch created for React Ink wizard implementation. This will provide a modern, interactive terminal UI that showcases all the new functionality from Groups 1-4.
+
+**Key Decisions**:
+- Using React Ink for terminal UI framework
+- TypeScript for type safety
+- Python-Node bridge for tool execution
+- JSON-based state files for resume capability
+
+**Blockers**: None currently
+
+**Risks**:
+- React Ink learning curve
+- Python-Node IPC complexity
+- Performance of terminal rendering
+
+---
+
+## 🎯 PREVIOUS BRANCHES
+
+### ✅ validation-parsing (MERGED)
+**Status**: 🟢 Complete | **Merged**: 2025-10-10
+- High #7: Input Validation ✅
+- Medium #11: Parser Chain ✅
+- 28 tests passing
+
+### ✅ performance-optimization (MERGED)
+**Status**: 🟢 Complete | **Merged**: 2025-10-10
+- Medium #9: File Discovery Optimization ✅
+- Medium #12: Response Caching ✅
+- 25 tests passing
+
+---
+
+---
+
+## 🎯 ARCHIVED: strands-production-readiness
 
 **Branch Focus**: 🏗️ Strands Framework Group  
 **Parent Branch**: strands-integration  
