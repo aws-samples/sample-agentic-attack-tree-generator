@@ -34,7 +34,7 @@ async function handleCommand() {
       // Delegate to Python cache manager
       const subcommand = args[1] || 'stats';
       const { spawn } = require('child_process');
-      const python = spawn('python', ['-m', 'threatforest.cli.cache_manager', subcommand]);
+      const python = spawn('python', ['-m', 'src.modules.cli.cache_manager', subcommand]);
       
       python.stdout.on('data', (data: Buffer) => process.stdout.write(data));
       python.stderr.on('data', (data: Buffer) => process.stderr.write(data));

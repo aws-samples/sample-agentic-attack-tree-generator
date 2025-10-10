@@ -73,7 +73,7 @@ except Exception as e:
   // FileDiscovery integration
   async discoverFiles(projectPath: string): Promise<PythonResult> {
     return this.execute(
-      'threatforest.core.file_discovery',
+      'src.modules.core.file_discovery',
       'FileDiscovery',
       'discover_all',
       { init: { project_path: projectPath }, call: {} }
@@ -83,7 +83,7 @@ except Exception as e:
   // Cache integration
   async getCacheStats(): Promise<PythonResult> {
     return this.execute(
-      'threatforest.core.cache',
+      'src.modules.core.cache',
       'BedrockResponseCache',
       'get_stats',
       { init: {}, call: {} }
@@ -92,7 +92,7 @@ except Exception as e:
 
   async clearCache(): Promise<PythonResult> {
     return this.execute(
-      'threatforest.core.cache',
+      'src.modules.core.cache',
       'BedrockResponseCache',
       'clear',
       { init: {}, call: {} }
@@ -102,7 +102,7 @@ except Exception as e:
   // StateManager integration
   async loadState(projectPath?: string): Promise<PythonResult> {
     return this.execute(
-      'threatforest.core.state_manager',
+      'src.modules.core.state_manager',
       'StateManager',
       'load_checkpoint',
       { init: { project_path: projectPath }, call: {} }
@@ -111,7 +111,7 @@ except Exception as e:
 
   async saveState(state: any, projectPath?: string): Promise<PythonResult> {
     return this.execute(
-      'threatforest.core.state_manager',
+      'src.modules.core.state_manager',
       'StateManager',
       'save_checkpoint',
       { init: { project_path: projectPath }, call: { state } }
@@ -133,7 +133,7 @@ except Exception as e:
     }
 
     return this.execute(
-      'threatforest.core.validation',
+      'src.modules.core.validation',
       className,
       'validate',
       { init: data, call: {} }
@@ -143,7 +143,7 @@ except Exception as e:
   // Parser integration
   async parseThreats(content: string, filePath: string): Promise<PythonResult> {
     return this.execute(
-      'threatforest.parsers.chain',
+      'src.modules.parsers.chain',
       'ParserChain',
       'parse',
       { init: {}, call: { content, file_path: filePath } }
