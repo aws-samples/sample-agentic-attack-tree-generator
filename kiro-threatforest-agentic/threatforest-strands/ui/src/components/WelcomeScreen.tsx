@@ -1,28 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text } from 'ink';
 import { PythonBridge } from '../utils/pythonBridge';
+import { ResumePrompt } from './ResumePrompt';
 
 interface Props {
   onNext: (state: any) => void;
+  onResume?: (state: any) => void;
 }
 
-export const WelcomeScreen: React.FC<Props> = ({ onNext }) => {
+export const WelcomeScreen: React.FC<Props> = ({ onNext, onResume }) => {
   const [hasState, setHasState] = useState(false);
+  const [savedState, setSavedState] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showPrompt, setShowPrompt] = useState(false);
 
   useEffect(() => {
     const checkState = async () => {
       const bridge = new PythonBridge();
       const result = await bridge.loadState();
-      setHasState(result.success && result.data);
-      setLoading(false);
       
-      // Auto-advance after 2 seconds
-      setTimeout(() => onNext({}), 2000);
+      if (result.success && result.data) {
+        setHasState(true);
+        setSavedState(result.data);
+        setShowPrompt(true);
+      } else {
+        setLoading(false);
+        setTimeout(() => onNext({}), 2000);
+      }
     };
     
     checkState();
   }, []);
+
+  const handleResume = () => {
+    if (onResume && savedState) {
+      onResume(savedState);
+    }
+  };
+
+  const handleRestart = () => {
+    setShowPrompt(false);
+    setTimeout(() => onNext({}), 500);
+  };
+
+  if (showPrompt && savedState) {
+    return <ResumePrompt state={savedState} onResume={handleResume} onRestart={handleRestart} />;
+  }
 
   return (
     <Box flexDirection="column" borderStyle="round" borderColor="cyan" padding={1}>
@@ -42,8 +65,6 @@ export const WelcomeScreen: React.FC<Props> = ({ onNext }) => {
       <Box marginTop={1}>
         {loading ? (
           <Text>Checking for previous session...</Text>
-        ) : hasState ? (
-          <Text color="yellow">⚠️  Found previous session. Use 'threatforest resume' to continue.</Text>
         ) : (
           <Text color="green">✓ Ready to start new session</Text>
         )}
