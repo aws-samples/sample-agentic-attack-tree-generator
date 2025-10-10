@@ -1693,30 +1693,30 @@ python -m pytest tests/test_rate_limiting.py -v
 **Effort**: 2-3 days
 
 #### Task List
-- [ ] **Task 6.1**: Create BedrockClientManager
+- [x] **Task 6.1**: Create BedrockClientManager
   - Create `threatforest/core/bedrock_client.py`
   - Implement singleton pattern
   - Add client caching by profile/region
   - Configure connection pooling
 
-- [ ] **Task 6.2**: Add client configuration
+- [x] **Task 6.2**: Add client configuration
   - Set max_pool_connections=50
   - Configure adaptive retry mode
   - Set appropriate timeouts
   - Add request compression
 
-- [ ] **Task 6.3**: Replace client creation in tools
+- [x] **Task 6.3**: Replace client creation in tools
   - Update SetupTool
   - Update InformationExtractionTool
   - Update AttackTreeGeneratorTool
   - Update TTCMappingTool
 
-- [ ] **Task 6.4**: Add client health checks
+- [x] **Task 6.4**: Add client health checks
   - Implement connection validation
   - Add automatic reconnection
   - Monitor client performance
 
-- [ ] **Task 6.5**: Add client metrics
+- [x] **Task 6.5**: Add client metrics
   - Track active connections
   - Monitor request latency
   - Log connection pool usage

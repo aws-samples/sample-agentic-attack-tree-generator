@@ -14,6 +14,7 @@ from .errors import (
 from .error_handler import ErrorHandler
 from .rate_limiter import BedrockRateLimiter, CircuitBreaker
 from .retry import RetryStrategy, retry_with_backoff, sync_retry_with_backoff
+from .bedrock_client import BedrockClientManager
 
 __all__ = [
     'Tool', 'tool', 
@@ -27,5 +28,6 @@ __all__ = [
     'FileOperationError', 'StateError', 'ConfigurationError',
     'ErrorHandler',
     'BedrockRateLimiter', 'CircuitBreaker',
-    'RetryStrategy', 'retry_with_backoff', 'sync_retry_with_backoff'
+    'RetryStrategy', 'retry_with_backoff', 'sync_retry_with_backoff',
+    'BedrockClientManager'
 ]
