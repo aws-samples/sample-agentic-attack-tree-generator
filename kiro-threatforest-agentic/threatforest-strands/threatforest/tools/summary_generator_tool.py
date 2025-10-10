@@ -185,7 +185,7 @@ This report presents a comprehensive threat analysis for **{project_info.get('ap
         if not trees:
             return tree_files
         
-        for tree in trees:
+        for idx, tree in enumerate(trees, 1):
             if not isinstance(tree, dict) or 'mermaid_code' not in tree:
                 continue
                 
@@ -193,15 +193,16 @@ This report presents a comprehensive threat analysis for **{project_info.get('ap
             threat_statement = tree.get('threat_statement', tree.get('description', 'No description available'))
             category = tree.get('threat_category', tree.get('category', 'Unknown'))
             
-            # Create filename with category
-            if category and category != 'Unknown':
-                # Clean category for filename (remove spaces, special chars)
-                import re
-                category_clean = re.sub(r'[^\w\s-]', '', category)
-                category_clean = re.sub(r'[-\s]+', '_', category_clean).strip('_')
-                filename = f"attack_tree_{threat_id}_{category_clean}.md"
-            else:
-                filename = f"attack_tree_{threat_id}.md"
+            # Extract short description from threat statement (first part before dash or newline)
+            import re
+            short_desc = threat_statement.split('-')[0].strip() if '-' in threat_statement else threat_statement.split('\n')[0].strip()
+            # Clean for filename: remove special chars, limit length
+            short_desc_clean = re.sub(r'[^\w\s-]', '', short_desc)
+            short_desc_clean = re.sub(r'[-\s]+', '_', short_desc_clean).strip('_')
+            short_desc_clean = short_desc_clean[:50]  # Limit length
+            
+            # Use sequential number (001, 002, etc.) instead of threat_id
+            filename = f"attack_tree_{idx:03d}_{short_desc_clean}.md"
                 
             file_path = output_path / filename
             
@@ -209,6 +210,7 @@ This report presents a comprehensive threat analysis for **{project_info.get('ap
             content = f"""# Attack Tree: {category}
 
 **Threat ID**: {threat_id}  
+**Threat Number**: {idx}
 **Associated threat statement**: {threat_statement}
 
 ## Attack Tree Diagram
