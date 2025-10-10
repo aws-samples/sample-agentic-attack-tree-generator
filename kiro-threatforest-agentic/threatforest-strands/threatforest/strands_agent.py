@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 
-from .core import Agent, Context
+from .core import Agent, Context, ThreatForestState, WorkflowStage, StateManager
 from .tools.setup_tool import SetupTool
 from .tools.context_analysis_tool import ContextAnalysisTool
 from .tools.information_extraction_tool import InformationExtractionTool
@@ -23,6 +23,7 @@ class ThreatForestConfig:
     bedrock_model: str = "us.anthropic.claude-sonnet-4-20250514-v1:0"
     output_dir: Optional[Path] = None
     ttc_threshold: float = 0.8
+    resume: bool = False  # Enable resume from checkpoint
 
 
 class ThreatForestOrchestrator(Agent):
@@ -30,6 +31,8 @@ class ThreatForestOrchestrator(Agent):
     
     def __init__(self, config: ThreatForestConfig):
         self.config = config
+        self.state_manager = StateManager()
+        self.state: Optional[ThreatForestState] = None
         
         # Initialize tools
         tools = [
@@ -47,39 +50,80 @@ class ThreatForestOrchestrator(Agent):
             tools=tools
         )
     
+    def _initialize_state(self) -> ThreatForestState:
+        """Initialize or resume workflow state"""
+        if self.config.resume:
+            state = self.state_manager.load_checkpoint()
+            if state:
+                return state
+        
+        return ThreatForestState(
+            project_path=str(self.config.project_path),
+            aws_profile=self.config.aws_profile,
+            bedrock_model=self.config.bedrock_model
+        )
+    
     async def execute_workflow(self) -> Dict[str, Any]:
-        """Execute the complete ThreatForest workflow"""
+        """Execute the complete ThreatForest workflow with state management"""
+        # Initialize or resume state
+        self.state = self._initialize_state()
         context = Context()
+        context.add("workflow_state", self.state.model_dump())
         
         try:
             # Step 1: Setup and validation
-            setup_result = await self.use_tool("setup", {
-                "project_path": str(self.config.project_path),
-                "aws_profile": self.config.aws_profile,
-                "bedrock_model": self.config.bedrock_model
-            })
-            context.add("setup", setup_result)
-            
-            if not setup_result.get("setup_complete", False):
-                return {
-                    "status": "setup_failed",
-                    "setup_result": setup_result,
-                    "message": "Setup validation failed. Please check AWS credentials and Bedrock access."
-                }
+            if not self.state.setup_complete:
+                self.state.advance_to(WorkflowStage.SETUP)
+                setup_result = await self.use_tool("setup", {
+                    "project_path": str(self.config.project_path),
+                    "aws_profile": self.config.aws_profile,
+                    "bedrock_model": self.config.bedrock_model
+                })
+                self.state.setup_result = setup_result
+                self.state.setup_complete = setup_result.get("setup_complete", False)
+                self.state_manager.save_checkpoint(self.state)
+                context.add("setup", setup_result)
+                context.add("workflow_state", self.state.model_dump())
+                
+                if not self.state.setup_complete:
+                    return {
+                        "status": "setup_failed",
+                        "setup_result": setup_result,
+                        "message": "Setup validation failed. Please check AWS credentials and Bedrock access."
+                    }
+            else:
+                context.add("setup", self.state.setup_result)
             
             # Step 2: Context analysis
-            context_result = await self.use_tool("context_analysis", {
-                "project_path": str(self.config.project_path)
-            })
-            context.add("context_files", context_result)
+            if not self.state.context_complete:
+                self.state.advance_to(WorkflowStage.CONTEXT_ANALYSIS)
+                context_result = await self.use_tool("context_analysis", {
+                    "project_path": str(self.config.project_path)
+                })
+                self.state.context_files = context_result
+                self.state.context_complete = True
+                self.state_manager.save_checkpoint(self.state)
+                context.add("context_files", context_result)
+                context.add("workflow_state", self.state.model_dump())
+            else:
+                context.add("context_files", self.state.context_files)
             
             # Step 3: Information extraction
-            extraction_result = await self.use_tool("information_extraction", {
-                "context_files": context_result,
-                "bedrock_model": self.config.bedrock_model,
-                "aws_profile": self.config.aws_profile
-            })
-            context.add("extracted_info", extraction_result)
+            if not self.state.extraction_complete:
+                self.state.advance_to(WorkflowStage.EXTRACTION)
+                extraction_result = await self.use_tool("information_extraction", {
+                    "context_files": self.state.context_files,
+                    "bedrock_model": self.config.bedrock_model,
+                    "aws_profile": self.config.aws_profile
+                })
+                self.state.extracted_info = extraction_result
+                self.state.extraction_complete = True
+                self.state_manager.save_checkpoint(self.state)
+                context.add("extracted_info", extraction_result)
+                context.add("workflow_state", self.state.model_dump())
+            else:
+                context.add("extracted_info", self.state.extracted_info)
+                extraction_result = self.state.extracted_info
             
             # Determine application name for output directory
             app_name = extraction_result.get("project_info", {}).get("application_name", "unknown_app")
@@ -87,22 +131,40 @@ class ThreatForestOrchestrator(Agent):
             output_dir.mkdir(parents=True, exist_ok=True)
             
             # Step 4: Generate attack trees (High severity only)
-            attack_trees = await self.use_tool("attack_tree_generator", {
-                "threat_statements": extraction_result.get("threat_statements", []),
-                "extracted_info": extraction_result,
-                "bedrock_model": self.config.bedrock_model,
-                "aws_profile": self.config.aws_profile
-            })
-            context.add("attack_trees", attack_trees)
+            if not self.state.tree_generation_complete:
+                self.state.advance_to(WorkflowStage.TREE_GENERATION)
+                attack_trees = await self.use_tool("attack_tree_generator", {
+                    "threat_statements": extraction_result.get("threat_statements", []),
+                    "extracted_info": extraction_result,
+                    "bedrock_model": self.config.bedrock_model,
+                    "aws_profile": self.config.aws_profile
+                })
+                self.state.attack_trees = attack_trees.get("attack_trees", [])
+                self.state.tree_generation_complete = True
+                self.state_manager.save_checkpoint(self.state)
+                context.add("attack_trees", attack_trees)
+                context.add("workflow_state", self.state.model_dump())
+            else:
+                attack_trees = {"attack_trees": self.state.attack_trees}
+                context.add("attack_trees", attack_trees)
             
-            # Skip TTC mapping but generate summary
-            # Step 5: Generate summary (without TTC mapping)
-            summary = await self.use_tool("summary_generator", {
-                "attack_trees": attack_trees,  # Use unmapped attack trees
-                "extracted_info": extraction_result,
-                "output_dir": str(output_dir)
-            })
-            context.add("summary", summary)
+            # Step 5: Generate summary
+            if not self.state.summary_complete:
+                self.state.advance_to(WorkflowStage.SUMMARY)
+                summary = await self.use_tool("summary_generator", {
+                    "attack_trees": attack_trees,
+                    "extracted_info": extraction_result,
+                    "output_dir": str(output_dir)
+                })
+                self.state.output_files = summary.get("output_files", [])
+                self.state.summary_complete = True
+                self.state.advance_to(WorkflowStage.COMPLETE)
+                self.state_manager.save_checkpoint(self.state)
+                context.add("summary", summary)
+                context.add("workflow_state", self.state.model_dump())
+            else:
+                summary = {"output_files": self.state.output_files}
+                context.add("summary", summary)
             
             return {
                 "status": "success",
