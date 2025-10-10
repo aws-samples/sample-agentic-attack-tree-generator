@@ -16,8 +16,15 @@ export const ConfigurationScreen: React.FC<Props> = ({ onNext, state }) => {
 
   const models = [
     { label: 'Claude Sonnet 4', value: 'us.anthropic.claude-sonnet-4-20250514-v1:0' },
-    { label: 'Claude Opus 4', value: 'us.anthropic.claude-opus-4-20250514-v1:0' },
-    { label: 'Claude 3.5 Sonnet', value: 'anthropic.claude-3-5-sonnet-20241022-v2:0' }
+    { label: 'Claude Opus 4.1', value: 'us.anthropic.claude-opus-4-1-20250805-v1:0' },
+    { label: 'Claude 3.5 Sonnet', value: 'anthropic.claude-3-5-sonnet-20241022-v2:0' },
+    { label: 'Claude 3.5 Haiku', value: 'anthropic.claude-3-5-haiku-20241022-v1:0' },
+    { label: 'Claude 3 Opus', value: 'anthropic.claude-3-opus-20240229-v1:0' },
+    { label: 'Claude 3 Haiku', value: 'anthropic.claude-3-haiku-20240307-v1:0' },
+    { label: 'Titan Text Premier', value: 'amazon.titan-text-premier-v1:0' },
+    { label: 'Titan Text Express', value: 'amazon.titan-text-express-v1' },
+    { label: 'Llama 3.2 90B', value: 'meta.llama3-2-90b-instruct-v1:0' },
+    { label: 'Llama 3.2 11B', value: 'meta.llama3-2-11b-instruct-v1:0' }
   ];
 
   const handleSubmit = () => {
