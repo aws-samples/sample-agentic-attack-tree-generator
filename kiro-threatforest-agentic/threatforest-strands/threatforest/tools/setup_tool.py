@@ -5,13 +5,8 @@ import json
 import subprocess
 from pathlib import Path
 from threatforest.utils.logger import ThreatForestLogger
+from threatforest.core import Tool, tool
 from typing import Dict, Any, Optional, List
-
-# Mock Strands Tool for testing
-class Tool:
-    def __init__(self, name: str, description: str):
-        self.name = name
-        self.description = description
 
 import boto3
 from botocore.exceptions import NoCredentialsError, ProfileNotFound
@@ -40,6 +35,7 @@ class SetupTool(Tool):
         )
         self.logger = ThreatForestLogger.get_logger(self.__class__.__name__)
     
+    @tool(name="setup", description="Execute setup process")
     async def execute(self, project_path: str, aws_profile: Optional[str] = None, 
                      bedrock_model: Optional[str] = None, 
                      inference_profile_arn: Optional[str] = None,
