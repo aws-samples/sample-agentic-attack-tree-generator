@@ -1,27 +1,96 @@
-# ThreatForest - New Folder Structure
+# ThreatForest - Setup & Usage Guide
 
-## Quick Start
+## Quick Start (Recommended)
 
-### Option 1: React Ink UI (Recommended)
+### One-Command Setup
 
-First, build the UI:
+Simply run ThreatForest - it will automatically build the UI on first run:
+
+```bash
+python threatforest.py
+```
+
+That's it! The application will:
+1. Check if React UI is built
+2. Auto-install dependencies (`npm install`) if needed
+3. Auto-build the UI (`npm run build:cli`) if needed
+4. Launch the interactive terminal UI
+
+### Manual Build (Optional)
+
+If you prefer to build manually first:
+
 ```bash
 cd ui
 npm install
 npm run build:cli
 cd ..
+python threatforest.py
 ```
 
-Then run ThreatForest:
+## Requirements
+
+- **Python**: 3.8+
+- **Node.js**: 16+ (for React Ink UI)
+- **npm**: Comes with Node.js
+
+## Installation
+
+### 1. Clone Repository
+
+```bash
+git clone <repository-url>
+cd threatforest-strands
+```
+
+### 2. Install Python Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+Or install in development mode:
+
+```bash
+pip install -e .
+```
+
+### 3. Run ThreatForest
+
 ```bash
 python threatforest.py
 ```
 
-### Option 2: Python Wizard (Fallback)
+The UI will build automatically on first run.
 
-If React UI is not built, it automatically falls back to the Python wizard:
+## Usage
+
+### Start New Analysis
+
 ```bash
 python threatforest.py
+# or
+python threatforest.py run
+```
+
+### Resume from Checkpoint
+
+```bash
+python threatforest.py resume
+```
+
+### Cache Management
+
+```bash
+python threatforest.py cache stats    # View cache statistics
+python threatforest.py cache info     # View cache configuration
+python threatforest.py cache clear    # Clear cache
+```
+
+### Check Workflow Status
+
+```bash
+python threatforest.py status
 ```
 
 ## Folder Structure
@@ -51,33 +120,109 @@ threatforest-strands/
 
 ```
 
-## Installation
+## Output Files
 
-### Development Mode
+All generated files are organized in the `output/` directory:
 
-```bash
-pip install -e .
-```
+- **Attack Trees**: `output/attack_trees/*.md` - Generated attack tree files
+- **Logs**: `output/logs/threatforest.log` - Application logs with rotation
+- **State**: `output/state/workflow_state.json` - Workflow checkpoints for resume
 
-### Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-## Usage
-
-### Run ThreatForest
-
-```bash
-python threatforest.py
-```
+## Development
 
 ### Run Tests
 
 ```bash
 python -m pytest tests/ -v
 ```
+
+### Run Specific Test Group
+
+```bash
+python -m pytest tests/validation-parsing/ -v
+python -m pytest tests/performance-optimization/ -v
+python -m pytest tests/infrastructure-reliability/ -v
+```
+
+### Development Mode (UI)
+
+For UI development with hot reload:
+
+```bash
+cd ui
+npm run watch
+```
+
+## Troubleshooting
+
+### UI Build Fails
+
+If automatic build fails, try manual build:
+
+```bash
+cd ui
+rm -rf node_modules dist
+npm install
+npm run build:cli
+cd ..
+python threatforest.py
+```
+
+### Node.js Not Found
+
+Install Node.js from https://nodejs.org/ (version 16 or higher)
+
+### Python Dependencies Missing
+
+```bash
+pip install -r requirements.txt
+```
+
+## Architecture
+
+### Entry Point Flow
+
+```
+python threatforest.py
+    ↓
+Checks: ui/dist/cli.js exists?
+    ↓ No
+Auto-build: npm install && npm run build:cli
+    ↓ Yes
+Launch: node ui/dist/cli.js [args]
+    ↓
+React Ink UI (TypeScript)
+    ↓
+Python Bridge (JSON IPC)
+    ↓
+Python Tools (src/modules/)
+```
+
+### Key Components
+
+- **threatforest.py** - Main entry point with auto-build
+- **ui/** - React Ink terminal UI (TypeScript)
+- **src/modules/** - Python backend (core, parsers, tools, cli, utils)
+- **output/** - Generated files (attack trees, logs, state)
+
+## Benefits of New Structure
+
+✅ **Single Command**: `python threatforest.py` - that's it!  
+✅ **Auto-Build**: UI builds automatically on first run  
+✅ **Clean Separation**: src, tests, output, docs, ui  
+✅ **Professional**: Follows Python best practices  
+✅ **Easy Navigation**: Clear folder hierarchy  
+✅ **Resume Capability**: State checkpoints for recovery  
+✅ **Modern UI**: React Ink terminal interface  
+
+## Next Steps
+
+1. Run `python threatforest.py`
+2. Follow the interactive wizard
+3. View generated attack trees in `output/attack_trees/`
+4. Check logs in `output/logs/` if needed
+5. Resume from checkpoint with `python threatforest.py resume`
+
 
 ### Cache Management
 
