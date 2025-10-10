@@ -17,7 +17,9 @@ export class PythonBridge {
   private projectRoot: string;
 
   constructor() {
-    this.projectRoot = path.join(__dirname, '../../..');
+    // Since the CLI runs from ui/ directory (cwd=ui_dir in threatforest.py),
+    // we need to go up one level to get to project root
+    this.projectRoot = path.join(process.cwd(), '..');
     this.pythonPath = process.env.PYTHON_PATH || 'python';
   }
 
