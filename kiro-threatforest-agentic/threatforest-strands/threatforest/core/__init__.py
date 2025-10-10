@@ -12,6 +12,8 @@ from .errors import (
     FileOperationError, StateError, ConfigurationError
 )
 from .error_handler import ErrorHandler
+from .rate_limiter import BedrockRateLimiter, CircuitBreaker
+from .retry import RetryStrategy, retry_with_backoff, sync_retry_with_backoff
 
 __all__ = [
     'Tool', 'tool', 
@@ -23,5 +25,7 @@ __all__ = [
     'Pipeline', 'Stage',
     'ErrorSeverity', 'ThreatForestError', 'BedrockError', 'ValidationError',
     'FileOperationError', 'StateError', 'ConfigurationError',
-    'ErrorHandler'
+    'ErrorHandler',
+    'BedrockRateLimiter', 'CircuitBreaker',
+    'RetryStrategy', 'retry_with_backoff', 'sync_retry_with_backoff'
 ]

@@ -1635,35 +1635,35 @@ python -m pytest tests/test_error_handling.py -v
 **Effort**: 1 week
 
 #### Task List
-- [ ] **Task 3.1**: Create BedrockRateLimiter class
+- [x] **Task 3.1**: Create BedrockRateLimiter class
   - Create `threatforest/core/rate_limiter.py`
   - Implement semaphore-based rate limiting
   - Add sliding window request tracking
   - Implement circuit breaker pattern
 
-- [ ] **Task 3.2**: Add adaptive rate limiting
+- [x] **Task 3.2**: Add adaptive rate limiting
   - Monitor API response headers
   - Adjust rate based on throttling signals
   - Implement exponential backoff
 
-- [ ] **Task 3.3**: Create centralized retry logic
+- [x] **Task 3.3**: Create centralized retry logic
   - Create `threatforest/core/retry.py`
   - Implement retry_with_backoff decorator
   - Add configurable retry strategies
   - Support different retry policies per operation
 
-- [ ] **Task 3.4**: Remove duplicate retry code
+- [x] **Task 3.4**: Remove duplicate retry code
   - Remove retry logic from InformationExtractionTool
   - Remove retry logic from AttackTreeGeneratorTool
   - Remove retry logic from TTCMappingTool
   - Replace with centralized retry decorator
 
-- [ ] **Task 3.5**: Integrate rate limiter with tools
+- [x] **Task 3.5**: Integrate rate limiter with tools
   - Update all Bedrock calls to use rate limiter
   - Add rate limiter to BedrockClientManager
   - Configure rate limits per model
 
-- [ ] **Task 3.6**: Add rate limit monitoring
+- [x] **Task 3.6**: Add rate limit monitoring
   - Track rate limit hits
   - Log circuit breaker activations
   - Add metrics for retry attempts
