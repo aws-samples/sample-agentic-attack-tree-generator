@@ -17,7 +17,6 @@ class SummaryGeneratorTool(Tool):
         )
         self.logger = ThreatForestLogger.get_logger(self.__class__.__name__)
     
-    @tool(name="summary_generator", description="Generate comprehensive threat analysis reports")
     async def execute(self, attack_trees: Dict[str, Any], 
                      extracted_info: Dict[str, Any],
                      output_dir: str) -> Dict[str, Any]:

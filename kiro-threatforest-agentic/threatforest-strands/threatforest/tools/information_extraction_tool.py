@@ -23,7 +23,6 @@ class InformationExtractionTool(Tool):
         self.max_retries = 3
         self.base_backoff = 2
     
-    @tool(name="information_extraction", description="Extract key information from context files")
     async def execute(self, context_files: Dict[str, Any], bedrock_model: str, 
                      aws_profile: Optional[str] = None, interactive: bool = False) -> Dict[str, Any]:
         """Execute information extraction with threat generation if needed"""

@@ -20,7 +20,6 @@ class ContextAnalysisTool(Tool):
         self.supported_formats = ['.json', '.tc', '.yaml', '.yml', '.md', '.txt']
         self.threat_keywords = ['threat', 'risk', 'vulnerability', 'attack', 'security']
     
-    @tool(name="context_analysis", description="Discover and analyze context files")
     async def execute(self, project_path: str) -> Dict[str, Any]:
         """Execute enhanced context analysis"""
         project_dir = Path(project_path)

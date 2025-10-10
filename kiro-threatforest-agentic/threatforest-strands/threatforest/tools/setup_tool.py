@@ -35,7 +35,6 @@ class SetupTool(Tool):
         )
         self.logger = ThreatForestLogger.get_logger(self.__class__.__name__)
     
-    @tool(name="setup", description="Execute setup process")
     async def execute(self, project_path: str, aws_profile: Optional[str] = None, 
                      bedrock_model: Optional[str] = None, 
                      inference_profile_arn: Optional[str] = None,

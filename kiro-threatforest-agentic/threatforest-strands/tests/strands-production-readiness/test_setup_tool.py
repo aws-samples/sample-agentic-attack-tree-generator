@@ -15,7 +15,7 @@ class TestSetupTool(unittest.TestCase):
         self.assertEqual(tool.name, "setup")
         self.assertIsNotNone(tool.description)
         self.assertTrue(hasattr(tool, 'execute'))
-        self.assertTrue(hasattr(tool.execute, '_is_tool'))
+        self.assertTrue(callable(tool.execute))
 
     def test_setup_tool_execute(self):
         """Test that SetupTool execute method works"""

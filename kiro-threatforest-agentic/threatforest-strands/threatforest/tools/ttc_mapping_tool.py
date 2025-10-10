@@ -24,7 +24,6 @@ class TTCMappingTool(Tool):
         self.max_retries = 3
         self.base_backoff = 2
     
-    @tool(name="ttc_mapping", description="Map attack steps to TTC techniques")
     async def execute(self, attack_trees: Dict[str, Any], 
                      aaf_bundle_path: str = None,
                      bedrock_model: str = "us.anthropic.claude-sonnet-4-20250514-v1:0",

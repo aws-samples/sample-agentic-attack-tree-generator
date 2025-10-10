@@ -24,7 +24,6 @@ class AttackTreeGeneratorTool(Tool):
         self.max_retries = 3
         self.base_backoff = 2  # base seconds for exponential backoff
     
-    @tool(name="attack_tree_generator", description="Generate attack trees for high severity threats")
     async def execute(self, threat_statements: List[Dict[str, Any]], 
                      extracted_info: Dict[str, Any], bedrock_model: str,
                      aws_profile: Optional[str] = None) -> Dict[str, Any]:
