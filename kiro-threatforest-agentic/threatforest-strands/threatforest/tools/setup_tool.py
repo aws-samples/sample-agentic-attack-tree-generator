@@ -5,13 +5,8 @@ import json
 import subprocess
 from pathlib import Path
 from threatforest.utils.logger import ThreatForestLogger
+from threatforest.core import Tool, tool
 from typing import Dict, Any, Optional, List
-
-# Mock Strands Tool for testing
-class Tool:
-    def __init__(self, name: str, description: str):
-        self.name = name
-        self.description = description
 
 import boto3
 from botocore.exceptions import NoCredentialsError, ProfileNotFound

@@ -2,7 +2,270 @@
 
 **Review Date**: 2025-10-10  
 **Reviewed By**: AI Code Review Assistant  
-**Application**: ThreatForest - AI-Driven Threat Modeling & Attack Tree Generation
+**Application**: ThreatForest - AI-Driven Threat Modeling & Attack Tree Generation  
+**Current Branch**: `strands-production-readiness`
+
+---
+
+## 🌿 BRANCH STRATEGY & WORKFLOW
+
+### Branch Structure
+
+**Base Branch**: `strands-integration` - All feature branches are created from and merged back to this branch.
+
+Each activity group has a dedicated feature branch created from `strands-integration`:
+
+| Branch Name | Activity Group | Parent Branch | Status | Lead |
+|-------------|---------------|---------------|--------|------|
+| `strands-production-readiness` | 🏗️ Strands Framework | `strands-integration` | 🟡 In Progress | - |
+| `infrastructure-reliability` | 🔧 Infrastructure & Reliability | `strands-integration` | ⚪ Not Started | - |
+| `validation-parsing` | ✅ Validation & Parsing | `strands-integration` | ⚪ Not Started | - |
+| `performance-optimization` | ⚡ Performance & Optimization | `strands-integration` | ⚪ Not Started | - |
+| `user-experience` | 👁️ User Experience | `strands-integration` | ⚪ Not Started | - |
+
+**Status Legend**: 🟢 Complete | 🟡 In Progress | 🔴 Blocked | ⚪ Not Started
+
+### Workflow Process
+
+```
+main (production)
+ │
+ └─── strands-integration (BASE BRANCH) ← All features branch from here
+       │
+       ├─── strands-production-readiness (🏗️ Strands Framework)
+       │     ├─ Critical #1: Mock Strands → Real Strands
+       │     ├─ High #4: Orchestration
+       │     └─ High #5: State Management
+       │
+       ├─── infrastructure-reliability (🔧 Infrastructure)
+       │     ├─ Critical #2: Error Handling
+       │     ├─ Critical #3: Rate Limiting
+       │     ├─ High #6: Bedrock Client
+       │     └─ High #8: Logging
+       │
+       ├─── validation-parsing (✅ Validation)
+       │     ├─ High #7: Input Validation
+       │     └─ Medium #11: Parser Chain
+       │
+       ├─── performance-optimization (⚡ Performance)
+       │     ├─ Medium #9: File Discovery
+       │     └─ Medium #12: Caching
+       │
+       └─── user-experience (👁️ UX)
+             └─ Medium #10: Progress Tracking
+```
+
+### Branch Lifecycle
+
+1. **Create Branch**: All feature branches created from `strands-integration`
+   ```bash
+   git checkout strands-integration
+   git pull origin strands-integration
+   git checkout -b [feature-branch-name]
+   ```
+
+2. **Implement**: Complete all tasks in the group
+3. **Test**: Run all validation commands and tests
+4. **Document**: Update this file with ✅ checkmarks
+5. **Review**: Code review and approval
+6. **Merge**: Merge back to `strands-integration`
+   ```bash
+   git checkout strands-integration
+   git merge [feature-branch-name]
+   git push origin strands-integration
+   ```
+7. **Final Integration**: After all features complete, merge `strands-integration` → `main`
+
+### Merge Strategy
+
+**Feature Development** (can work in parallel):
+```
+strands-production-readiness → strands-integration
+infrastructure-reliability → strands-integration
+validation-parsing → strands-integration
+performance-optimization → strands-integration
+user-experience → strands-integration
+```
+
+**Final Integration**:
+```
+strands-integration → main (after all features merged and tested)
+```
+
+### Merge Requirements
+
+Before merging any feature branch to `strands-integration`:
+- [ ] All tasks in the group marked complete (✅)
+- [ ] All success criteria met
+- [ ] All validation commands pass
+- [ ] Unit tests pass (>80% coverage)
+- [ ] Integration tests pass
+- [ ] No breaking changes to existing functionality
+- [ ] Documentation updated
+- [ ] Code review approved
+- [ ] No conflicts with `strands-integration`
+
+### Cross-Branch Dependencies
+
+All branches work independently from `strands-integration`:
+
+```
+strands-integration (BASE) ← All features branch from here
+  ├─> strands-production-readiness (🏗️)
+  ├─> infrastructure-reliability (🔧)
+  ├─> validation-parsing (✅)
+  ├─> performance-optimization (⚡)
+  └─> user-experience (👁️)
+```
+
+**Development Approach**:
+1. All feature branches created from `strands-integration`
+2. Features can be developed in parallel
+3. Each feature merges back to `strands-integration` when complete
+4. Integration testing happens on `strands-integration`
+5. Final merge to `main` after all features integrated
+
+---
+
+## 📋 WORKING DOCUMENT INSTRUCTIONS
+
+### How to Use This Document
+
+This is a **living document** that tracks progress across all branches:
+
+1. **Before Starting Work**:
+   - Check current branch status
+   - Review dependencies
+   - Ensure prerequisites are met
+
+2. **During Implementation**:
+   - Mark tasks as complete: `- [x]` 
+   - Add notes in comments if needed
+   - Update status indicators
+
+3. **After Completion**:
+   - Run validation commands
+   - Mark success criteria: ✅
+   - Update branch status table
+   - Document any deviations
+
+4. **Before Merging**:
+   - Verify all checkboxes marked
+   - Confirm all tests pass
+   - Update merge requirements checklist
+
+### File Organization by Branch
+
+**IMPORTANT**: All branch-specific artifacts must be organized in dedicated folders:
+
+```
+threatforest-strands/
+├── tests/
+│   ├── strands-production-readiness/
+│   │   ├── test_strands_integration.py
+│   │   ├── test_orchestration.py
+│   │   └── test_state_management.py
+│   ├── infrastructure-reliability/
+│   │   ├── test_error_handling.py
+│   │   ├── test_rate_limiting.py
+│   │   └── test_bedrock_client.py
+│   ├── validation-parsing/
+│   │   ├── test_validation.py
+│   │   └── test_parsers.py
+│   ├── performance-optimization/
+│   │   ├── test_file_discovery.py
+│   │   └── test_caching.py
+│   └── user-experience/
+│       └── test_progress.py
+│
+├── scripts/
+│   ├── strands-production-readiness/
+│   │   ├── benchmark_orchestration.py
+│   │   └── test_resume.py
+│   ├── infrastructure-reliability/
+│   │   ├── benchmark_bedrock_client.py
+│   │   └── test_invalid_inputs.py
+│   ├── validation-parsing/
+│   │   └── test_parser_formats.py
+│   ├── performance-optimization/
+│   │   ├── benchmark_file_discovery.py
+│   │   └── benchmark_cache.py
+│   └── user-experience/
+│       └── test_progress_visual.py
+│
+└── docs/
+    ├── strands-production-readiness/
+    │   ├── migration_guide.md
+    │   └── api_documentation.md
+    ├── infrastructure-reliability/
+    │   └── error_handling_guide.md
+    ├── validation-parsing/
+    │   └── parser_guide.md
+    ├── performance-optimization/
+    │   └── performance_tuning.md
+    └── user-experience/
+        └── progress_tracking_guide.md
+```
+
+### Creating Branch-Specific Files
+
+When creating test scripts, benchmarks, or documentation:
+
+```bash
+# For tests
+mkdir -p tests/[branch-name]
+touch tests/[branch-name]/test_[feature].py
+
+# For scripts
+mkdir -p scripts/[branch-name]
+touch scripts/[branch-name]/benchmark_[feature].py
+
+# For documentation
+mkdir -p docs/[branch-name]
+touch docs/[branch-name]/[feature]_guide.md
+```
+
+**Example for strands-production-readiness**:
+```bash
+mkdir -p tests/strands-production-readiness
+touch tests/strands-production-readiness/test_strands_integration.py
+
+mkdir -p scripts/strands-production-readiness
+touch scripts/strands-production-readiness/benchmark_orchestration.py
+
+mkdir -p docs/strands-production-readiness
+touch docs/strands-production-readiness/migration_guide.md
+```
+
+### Branch Artifact Guidelines
+
+**DO**:
+✅ Create branch-specific folders for all artifacts  
+✅ Use descriptive filenames that match the task  
+✅ Include branch name in commit messages  
+✅ Document test coverage in branch folder README  
+
+**DON'T**:
+❌ Mix artifacts from different branches in same folder  
+❌ Create files in root test/scripts directories  
+❌ Use generic names like `test.py` or `script.py`  
+❌ Forget to update .gitignore for temporary files  
+
+### Status Tracking Format
+
+```markdown
+### Task Status
+- [ ] Not started
+- [~] In progress (add assignee: @username)
+- [x] Complete
+- [!] Blocked (add reason)
+
+### Success Criteria Status
+⚪ Not started
+🟡 In progress
+✅ Complete
+🔴 Failed/Blocked
+```
 
 ---
 
@@ -865,34 +1128,6 @@ async def test_rate_limiting(attack_tree_generator):
 
 ---
 
-## 🎯 Recommended Implementation Roadmap
-
-### Phase 1: Foundation (Weeks 1-4)
-1. Implement real Strands framework integration
-2. Standardize error handling across all tools
-3. Refactor rate limiting to centralized service
-4. Add input validation with Pydantic
-
-### Phase 2: Architecture (Weeks 5-7)
-5. Implement proper Strands orchestration patterns
-6. Add state management with persistence
-7. Optimize Bedrock client usage
-8. Implement parser chain pattern
-
-### Phase 3: Observability (Weeks 8-9)
-9. Add structured logging
-10. Implement progress tracking
-11. Add response caching
-12. Add metrics collection
-
-### Phase 4: Polish (Weeks 10-12)
-13. File discovery optimization
-14. Configuration file support
-15. Enhanced unit test coverage
-16. Documentation updates
-
----
-
 ## 📝 Code Quality Observations
 
 ### Strengths
@@ -912,80 +1147,927 @@ async def test_rate_limiting(attack_tree_generator):
 
 ---
 
-## 🔧 Quick Wins (Can Implement Today)
-
-1. **Bedrock Client Singleton** (30 minutes)
-   - Create `BedrockClientManager` class
-   - Replace all `boto3.Session()` calls
-
-2. **Add Type Hints** (1 hour)
-   - Add missing type hints to function signatures
-   - Use `from __future__ import annotations` for forward references
-
-3. **Consolidate Constants** (30 minutes)
-   ```python
-   # config/constants.py
-   RATE_LIMIT_DELAY = 2.5
-   MAX_RETRIES = 3
-   BASE_BACKOFF = 2
-   DEFAULT_MODEL = "us.anthropic.claude-sonnet-4-20250514-v1:0"
-   ```
-
-4. **Add Docstrings** (2 hours)
-   - Add comprehensive docstrings to all public methods
-   - Include parameter descriptions and return types
-
----
-
-## 📚 Additional Resources
-
-- **Strands Documentation**: [Link to Strands framework docs]
-- **AWS Bedrock Best Practices**: https://docs.aws.amazon.com/bedrock/
-- **Python Async Patterns**: https://docs.python.org/3/library/asyncio.html
-- **Pydantic Validation**: https://docs.pydantic.dev/
-
----
-
-## 🎓 Conclusion
-
-ThreatForest has a solid foundation but requires significant refactoring to properly leverage the Strands framework and implement production-ready patterns. The most critical issue is replacing the mock Strands implementation with the actual framework, which will unlock proper orchestration, state management, and error recovery capabilities.
-
-Focus on Phase 1 improvements first, as they provide the foundation for all subsequent enhancements. The estimated total effort for all improvements is approximately 12 weeks for a single developer, but can be parallelized across a team.
-
-**Next Steps**:
-1. Review and prioritize improvements with the team
-2. Create detailed implementation tickets for Phase 1
-3. Set up proper Strands framework integration
-4. Implement standardized error handling
-5. Begin incremental refactoring of tools
-
----
-
----
-
 ## 📋 DETAILED IMPLEMENTATION TASK LISTS
 
-### Dependency Order
+### Grouped by Activity Type & Branch
 
-**MUST BE DONE IN ORDER:**
-1. Critical #1 (Mock Strands) → Blocks High #4 (Orchestration)
-2. Critical #2 (Error Handling) → Enables all other improvements
-3. High #7 (Input Validation) → Should precede High #5 (State Management)
-4. High #5 (State Management) → Blocks High #4 (Orchestration)
+**🏗️ STRANDS FRAMEWORK** → Branch: `strands-production-readiness`
+- Critical #1: Replace Mock Strands with Real Framework
+- High #4: Implement Strands Orchestration
+- High #5: Implement State Management
 
-**CAN BE DONE IN PARALLEL:**
-- Critical #3 (Rate Limiting) + High #6 (Bedrock Client)
-- Medium #8 (Logging) + Medium #9 (File Discovery)
-- Medium #11 (Parser Chain) + Medium #12 (Caching)
+**🔧 INFRASTRUCTURE & RELIABILITY** → Branch: `infrastructure-reliability`
+- Critical #2: Standardize Error Handling
+- Critical #3: Refactor Rate Limiting
+- High #6: Bedrock Client Reuse
+- High #8: Enhance Logging
+
+**✅ VALIDATION & PARSING** → Branch: `validation-parsing`
+- High #7: Add Input Validation
+- Medium #11: Implement Parser Chain
+
+**⚡ PERFORMANCE & OPTIMIZATION** → Branch: `performance-optimization`
+- Medium #9: Optimize File Discovery
+- Medium #12: Add Response Caching
+
+**👁️ USER EXPERIENCE** → Branch: `user-experience`
+- Medium #10: Add Progress Tracking
+
+### Implementation Approach
+
+All branches work in parallel from `strands-integration`:
+- Each branch focuses on its specific activity group
+- Features can be developed simultaneously
+- Each merges back to `strands-integration` when complete
+- No strict week-based timeline - complete when ready
 
 ---
 
-## 🔴 CRITICAL PRIORITY IMPLEMENTATIONS
+---
+
+## 🎯 CURRENT BRANCH: strands-production-readiness
+
+**Branch Focus**: 🏗️ Strands Framework Group  
+**Parent Branch**: strands-integration  
+**Status**: 🟡 In Progress  
+**Started**: 2025-10-10  
+**Target Completion**: Week 6 (2025-11-21)
+
+### Branch Objectives
+- [ ] Replace all mock Strands implementations with real framework
+- [ ] Implement proper Strands orchestration with parallel stages
+- [ ] Add state management with persistence and resume capability
+- [ ] Achieve 30%+ performance improvement from parallelization
+
+### Tasks in This Branch
+
+#### ✅ Critical #1: Replace Mock Strands with Real Framework
+**Status**: ✅ Complete | **Completed**: 2025-10-10
+
+- [x] Task 1.1: Install real Strands framework
+- [x] Task 1.2: Create base Strands tool class
+- [x] Task 1.3: Refactor SetupTool
+- [x] Task 1.4: Refactor remaining tools
+  - [x] ContextAnalysisTool
+  - [x] InformationExtractionTool
+  - [x] AttackTreeGeneratorTool
+  - [x] TTCMappingTool
+  - [x] SummaryGeneratorTool
+- [x] Task 1.5: Update strands_agent.py
+- [x] Task 1.6: Integration testing
+
+**Success Criteria**:
+- ✅ All mock classes removed from codebase
+- ✅ All tools inherit from real Strands Tool class
+- ✅ Strands decorators (@tool, @agent_step) used correctly
+- ✅ Full workflow executes without errors
+- ✅ Can access Strands state management features
+- ✅ No import errors related to Strands
+
+**Validation**: 
+```bash
+grep -r "class Tool:" threatforest/  # ✅ No mock classes
+grep -r "Mock Strands" threatforest/  # ✅ No mock comments
+PYTHONPATH=. python tests/strands-production-readiness/test_strands_integration.py  # ✅ All tests pass
+```
+
+---
+
+#### ✅ High #4: Implement Strands Orchestration
+**Status**: ✅ Complete | **Completed**: 2025-10-10  
+**Dependencies**: Critical #1, High #5
+
+- [x] Task 4.1: Define workflow stages
+- [x] Task 4.2: Create Pipeline class
+- [x] Task 4.3: Refactor orchestrator
+- [x] Task 4.4: Implement parallel execution
+- [x] Task 4.5: Add stage checkpointing
+- [x] Task 4.6: Integration testing
+
+**Success Criteria**:
+- ✅ Pipeline executes stages in correct order
+- ✅ Parallel stages execute concurrently
+- ✅ Stage dependencies enforced
+- ✅ Can resume from any stage
+- ✅ Error in one parallel task doesn't block others
+- ⚪ 30%+ performance improvement from parallelization
+
+**Validation**:
+```bash
+python -m pytest tests/test_orchestration.py -v
+python scripts/benchmark_orchestration.py
+```
+
+---
+
+#### ✅ High #5: Implement State Management
+**Status**: 🟡 In Progress | **Assignee**: - | **Effort**: 1 week  
+**Dependencies**: High #7 (from validation-parsing branch)
+
+- [x] Task 5.1: Create state models
+- [x] Task 5.2: Implement StateManager
+- [x] Task 5.3: Add state persistence
+- [x] Task 5.4: Integrate with orchestrator
+- [x] Task 5.5: Implement resume functionality
+- [x] Task 5.6: Add state cleanup
+
+**Success Criteria**:
+- ⚪ State persisted after each stage
+- ⚪ Can resume from any checkpoint
+- ⚪ State transitions validated
+- ⚪ Invalid state transitions prevented
+- ⚪ State files cleaned up automatically
+- ⚪ Resume works after crash/interruption
+
+**Validation**:
+```bash
+python -m pytest tests/test_state_management.py -v
+python scripts/test_resume.py
+```
+
+---
+
+### Branch Completion Checklist
+
+Before merging `strands-production-readiness` to `strands-integration`:
+
+**Code Quality**:
+- [ ] All tasks marked complete [x]
+- [ ] All success criteria met ✅
+- [ ] No mock Strands classes remain
+- [ ] Code follows Strands best practices
+- [ ] All new code has docstrings
+
+**Testing**:
+- [ ] Unit tests pass (>80% coverage)
+- [ ] Integration tests pass
+- [ ] Validation commands all pass
+- [ ] Performance benchmarks meet targets (30%+ improvement)
+- [ ] No regression in existing functionality
+
+**Documentation**:
+- [ ] README updated with Strands usage
+- [ ] API documentation generated
+- [ ] Migration guide created (mock → real Strands)
+- [ ] This improvements.md updated with ✅
+
+**Review**:
+- [ ] Code review completed
+- [ ] Security review (if needed)
+- [ ] Performance review
+- [ ] Approval from tech lead
+
+**Dependencies**:
+- [ ] High #7 (Input Validation) merged from validation-parsing branch
+- [ ] No blocking issues
+
+---
+
+### Merge Instructions
+
+When ready to merge `strands-production-readiness` back to `strands-integration`:
+
+```bash
+# 1. Ensure all changes are committed
+git status  # Should be clean
+
+# 2. Update from parent branch
+git pull origin strands-integration
+
+# 3. Resolve any conflicts if they exist
+# (Edit conflicted files, then:)
+git add .
+git commit -m "Resolve merge conflicts with strands-integration"
+
+# 4. Push your feature branch
+git push origin strands-production-readiness
+
+# 5. Switch to parent branch
+git checkout strands-integration
+git pull origin strands-integration
+
+# 6. Merge feature branch
+git merge strands-production-readiness
+
+# 7. Run tests to verify integration
+python -m pytest tests/ -v
+
+# 8. Push to parent branch
+git push origin strands-integration
+
+# 9. Update this document
+# Mark branch status as 🟢 Complete in branch table
+# Add completion notes to lessons learned section
+```
+
+**Alternative: Create Pull Request**
+```bash
+# Push your branch
+git push origin strands-production-readiness
+
+# Then create PR via Git UI:
+# Source: strands-production-readiness
+# Target: strands-integration
+```
+
+---
+
+### Branch Notes & Decisions
+
+**Date**: 2025-10-10  
+**Note**: Branch created for Strands framework improvements. This is the foundational work that will enable proper orchestration and state management.
+
+**Key Decisions**:
+- Using real Strands framework instead of mock implementation
+- State management will use Pydantic for validation
+- Parallel execution will target context gathering and tree generation stages
+
+**Blockers**: None currently
+
+**Risks**:
+- Strands framework API changes could require rework
+- Performance targets may need adjustment based on testing
+
+---
 
 ### Critical #1: Replace Mock Strands with Real Framework
 
+**Activity Group**: Strands Framework  
 **Dependencies**: None (foundational)  
-**Blocks**: High #4 (Orchestration)
+**Blocks**: High #4 (Orchestration), High #5 (State Management)  
+**Effort**: 2-3 weeks
+
+#### Task List
+- [ ] **Task 1.1**: Install real Strands framework
+  - Add `strands-framework>=1.0.0` to requirements.txt
+  - Run `pip install strands-framework`
+  - Verify installation with `python -c "import strands"`
+
+- [ ] **Task 1.2**: Create base Strands tool class
+  - Create `threatforest/core/base_tool.py`
+  - Import real Strands Tool class
+  - Define ThreatForestTool base class with common functionality
+  - Add logging, error handling hooks
+
+- [ ] **Task 1.3**: Refactor SetupTool
+  - Remove mock Tool class from `setup_tool.py`
+  - Inherit from real Strands Tool
+  - Add `@tool` decorator to execute method
+  - Update tool registration
+
+- [ ] **Task 1.4**: Refactor remaining tools (one at a time)
+  - ContextAnalysisTool
+  - InformationExtractionTool
+  - AttackTreeGeneratorTool
+  - TTCMappingTool
+  - SummaryGeneratorTool
+
+- [ ] **Task 1.5**: Update strands_agent.py
+  - Remove mock Agent class
+  - Import real Strands Agent, Orchestrator
+  - Update ThreatForestOrchestrator to use real Strands patterns
+
+- [ ] **Task 1.6**: Integration testing
+  - Test each tool individually
+  - Test full workflow end-to-end
+  - Verify Strands features work (state, error recovery)
+
+#### Success Criteria
+✅ All mock classes removed from codebase  
+✅ All tools inherit from real Strands Tool class  
+✅ Strands decorators (@tool, @agent_step) used correctly  
+✅ Full workflow executes without errors  
+✅ Can access Strands state management features  
+✅ No import errors related to Strands  
+
+#### Validation Commands
+```bash
+grep -r "class Tool:" threatforest/
+grep -r "Mock Strands" threatforest/
+python -m pytest tests/test_strands_integration.py -v
+```
+
+---
+
+### High #4: Implement Strands Orchestration
+
+**Activity Group**: Strands Framework  
+**Dependencies**: Critical #1 (Mock Strands), High #5 (State Management)  
+**Effort**: 2 weeks
+
+#### Task List
+- [ ] **Task 4.1**: Define workflow stages
+  - Create `threatforest/core/stages.py`
+  - Define WorkflowStage enum
+  - Define stage dependencies
+  - Create stage validation logic
+
+- [ ] **Task 4.2**: Create Pipeline class
+  - Create `threatforest/core/pipeline.py`
+  - Implement Pipeline with stage execution
+  - Add ParallelStage support
+  - Implement stage dependency resolution
+
+- [ ] **Task 4.3**: Refactor orchestrator
+  - Update ThreatForestOrchestrator to use Pipeline
+  - Define parallel stages (context + STIX loading)
+  - Add stage decorators (@agent_step)
+  - Implement stage error recovery
+
+- [ ] **Task 4.4**: Implement parallel execution
+  - Identify independent operations
+  - Create parallel context gathering stage
+  - Create parallel tree generation stage
+  - Add concurrency limits
+
+- [ ] **Task 4.5**: Add stage checkpointing
+  - Save state after each stage
+  - Enable resume from last checkpoint
+  - Add stage rollback capability
+
+- [ ] **Task 4.6**: Integration testing
+  - Test sequential execution
+  - Test parallel execution
+  - Test error recovery
+  - Test resume from checkpoint
+
+#### Success Criteria
+✅ Pipeline executes stages in correct order  
+✅ Parallel stages execute concurrently  
+✅ Stage dependencies enforced  
+✅ Can resume from any stage  
+✅ Error in one parallel task doesn't block others  
+✅ 30%+ performance improvement from parallelization  
+
+#### Validation Commands
+```bash
+python -m pytest tests/test_orchestration.py -v
+python scripts/benchmark_orchestration.py
+```
+
+---
+
+### High #5: Implement State Management
+
+**Activity Group**: Strands Framework  
+**Dependencies**: High #7 (Input Validation)  
+**Blocks**: High #4 (Orchestration)  
+**Effort**: 1 week
+
+#### Task List
+- [ ] **Task 5.1**: Create state models
+  - Create `threatforest/core/state.py`
+  - Define ThreatForestState with Pydantic
+  - Define WorkflowStage enum
+  - Add state transition validation
+
+- [ ] **Task 5.2**: Implement StateManager
+  - Create StateManager class
+  - Add save_checkpoint() method
+  - Add load_checkpoint() method
+  - Implement state validation
+
+- [ ] **Task 5.3**: Add state persistence
+  - Save state to JSON after each stage
+  - Create .threatforest/state/ directory
+  - Add state versioning
+  - Implement state migration
+
+- [ ] **Task 5.4**: Integrate with orchestrator
+  - Pass state through pipeline
+  - Update state after each stage
+  - Add state to tool context
+
+- [ ] **Task 5.5**: Implement resume functionality
+  - Detect existing state on startup
+  - Prompt user to resume or restart
+  - Skip completed stages
+  - Validate state before resume
+
+- [ ] **Task 5.6**: Add state cleanup
+  - Remove old state files
+  - Add state expiration
+  - Implement state archival
+
+#### Success Criteria
+✅ State persisted after each stage  
+✅ Can resume from any checkpoint  
+✅ State transitions validated  
+✅ Invalid state transitions prevented  
+✅ State files cleaned up automatically  
+✅ Resume works after crash/interruption  
+
+#### Validation Commands
+```bash
+python -m pytest tests/test_state_management.py -v
+python scripts/test_resume.py
+```
+
+---
+
+## 🔧 GROUP 2: INFRASTRUCTURE & RELIABILITY
+
+### Critical #2: Standardize Error Handling
+
+**Activity Group**: Infrastructure & Reliability  
+**Dependencies**: None  
+**Enables**: All other improvements  
+**Effort**: 1 week
+
+#### Task List
+- [ ] **Task 2.1**: Create error types module
+  - Create `threatforest/core/errors.py`
+  - Define ErrorSeverity enum
+  - Define ThreatForestError dataclass
+  - Define specific exception classes (BedrockError, ValidationError, etc.)
+
+- [ ] **Task 2.2**: Create ErrorHandler class
+  - Create `threatforest/core/error_handler.py`
+  - Implement handle_bedrock_error()
+  - Implement handle_validation_error()
+  - Implement handle_file_error()
+  - Add error recovery strategies
+
+- [ ] **Task 2.3**: Create error response format
+  - Define standard error response structure
+  - Include error code, message, context, recoverable flag
+  - Add error serialization methods
+
+- [ ] **Task 2.4**: Refactor tool error handling
+  - Update SetupTool error handling
+  - Update ContextAnalysisTool error handling
+  - Update InformationExtractionTool error handling
+  - Update AttackTreeGeneratorTool error handling
+  - Update TTCMappingTool error handling
+  - Update SummaryGeneratorTool error handling
+
+- [ ] **Task 2.5**: Add error logging integration
+  - Log all errors with structured format
+  - Include stack traces for critical errors
+  - Add error metrics collection
+
+- [ ] **Task 2.6**: Update wizard error handling
+  - Replace generic try/except blocks
+  - Use ErrorHandler for all errors
+  - Display user-friendly error messages
+
+#### Success Criteria
+✅ All tools use standardized error handling  
+✅ Error responses follow consistent format  
+✅ Errors include recovery suggestions  
+✅ All errors logged with proper severity  
+✅ No generic Exception catches remain  
+✅ User sees helpful error messages  
+
+#### Validation Commands
+```bash
+grep -r "except Exception" threatforest/ | grep -v "# OK"
+python -m pytest tests/test_error_handling.py -v
+```
+
+---
+
+### Critical #3: Refactor Rate Limiting
+
+**Activity Group**: Infrastructure & Reliability  
+**Dependencies**: None  
+**Can parallel with**: High #6 (Bedrock Client)  
+**Effort**: 1 week
+
+#### Task List
+- [ ] **Task 3.1**: Create BedrockRateLimiter class
+  - Create `threatforest/core/rate_limiter.py`
+  - Implement semaphore-based rate limiting
+  - Add sliding window request tracking
+  - Implement circuit breaker pattern
+
+- [ ] **Task 3.2**: Add adaptive rate limiting
+  - Monitor API response headers
+  - Adjust rate based on throttling signals
+  - Implement exponential backoff
+
+- [ ] **Task 3.3**: Create centralized retry logic
+  - Create `threatforest/core/retry.py`
+  - Implement retry_with_backoff decorator
+  - Add configurable retry strategies
+  - Support different retry policies per operation
+
+- [ ] **Task 3.4**: Remove duplicate retry code
+  - Remove retry logic from InformationExtractionTool
+  - Remove retry logic from AttackTreeGeneratorTool
+  - Remove retry logic from TTCMappingTool
+  - Replace with centralized retry decorator
+
+- [ ] **Task 3.5**: Integrate rate limiter with tools
+  - Update all Bedrock calls to use rate limiter
+  - Add rate limiter to BedrockClientManager
+  - Configure rate limits per model
+
+- [ ] **Task 3.6**: Add rate limit monitoring
+  - Track rate limit hits
+  - Log circuit breaker activations
+  - Add metrics for retry attempts
+
+#### Success Criteria
+✅ Single BedrockRateLimiter used across all tools  
+✅ No duplicate retry logic in codebase  
+✅ Circuit breaker prevents cascading failures  
+✅ Adaptive rate limiting responds to API signals  
+✅ Rate limit metrics collected  
+✅ No throttling errors in normal operation  
+
+#### Validation Commands
+```bash
+grep -r "max_retries" threatforest/tools/
+grep -r "base_backoff" threatforest/tools/
+python -m pytest tests/test_rate_limiting.py -v
+```
+
+---
+
+### High #6: Bedrock Client Reuse
+
+**Activity Group**: Infrastructure & Reliability  
+**Dependencies**: None  
+**Can parallel with**: Critical #3 (Rate Limiting)  
+**Effort**: 2-3 days
+
+#### Task List
+- [ ] **Task 6.1**: Create BedrockClientManager
+  - Create `threatforest/core/bedrock_client.py`
+  - Implement singleton pattern
+  - Add client caching by profile/region
+  - Configure connection pooling
+
+- [ ] **Task 6.2**: Add client configuration
+  - Set max_pool_connections=50
+  - Configure adaptive retry mode
+  - Set appropriate timeouts
+  - Add request compression
+
+- [ ] **Task 6.3**: Replace client creation in tools
+  - Update SetupTool
+  - Update InformationExtractionTool
+  - Update AttackTreeGeneratorTool
+  - Update TTCMappingTool
+
+- [ ] **Task 6.4**: Add client health checks
+  - Implement connection validation
+  - Add automatic reconnection
+  - Monitor client performance
+
+- [ ] **Task 6.5**: Add client metrics
+  - Track active connections
+  - Monitor request latency
+  - Log connection pool usage
+
+#### Success Criteria
+✅ Single BedrockClientManager instance used  
+✅ No boto3.Session() calls in tools  
+✅ Connection pooling configured  
+✅ 20%+ reduction in API call latency  
+✅ Client metrics collected  
+✅ Automatic reconnection on failures  
+
+#### Validation Commands
+```bash
+grep -r "boto3.Session" threatforest/tools/
+python scripts/benchmark_bedrock_client.py
+```
+
+---
+
+### High #8: Enhance Logging
+
+**Activity Group**: Infrastructure & Reliability  
+**Dependencies**: None  
+**Can parallel with**: Medium #9  
+**Effort**: 3-4 days
+
+#### Task List
+- [ ] **Task 8.1**: Install structlog
+  - Add `structlog>=23.0.0` to requirements.txt
+  - Install structlog
+  - Configure structlog processors
+
+- [ ] **Task 8.2**: Update ThreatForestLogger
+  - Replace basic logging with structlog
+  - Add JSON output format
+  - Add correlation ID support
+  - Configure log levels
+
+- [ ] **Task 8.3**: Add correlation IDs
+  - Create correlation_id ContextVar
+  - Generate unique ID per workflow
+  - Include in all log messages
+  - Pass through tool chain
+
+- [ ] **Task 8.4**: Add structured logging to tools
+  - Update SetupTool logging
+  - Update ContextAnalysisTool logging
+  - Update InformationExtractionTool logging
+  - Update AttackTreeGeneratorTool logging
+  - Update TTCMappingTool logging
+  - Update SummaryGeneratorTool logging
+
+- [ ] **Task 8.5**: Add performance logging
+  - Log operation durations
+  - Log Bedrock token usage
+  - Log cache hit rates
+  - Log error rates
+
+- [ ] **Task 8.6**: Configure log output
+  - JSON format for production
+  - Human-readable for development
+  - Separate error log file
+  - Log rotation configuration
+
+#### Success Criteria
+✅ All logs use structlog  
+✅ Correlation IDs in all log messages  
+✅ JSON format for machine parsing  
+✅ Performance metrics logged  
+✅ Easy to trace requests across tools  
+✅ Log files rotated automatically  
+
+#### Validation Commands
+```bash
+grep -r "logger.info" threatforest/ | head -5
+cat threatforest_output/latest.log | jq .
+```
+
+---
+
+## ✅ GROUP 3: VALIDATION & PARSING
+
+### High #7: Add Input Validation
+
+**Activity Group**: Validation & Parsing  
+**Dependencies**: None  
+**Blocks**: High #5 (State Management)  
+**Effort**: 1 week
+
+#### Task List
+- [ ] **Task 7.1**: Create validation models
+  - Create `threatforest/core/validation.py`
+  - Define SetupToolInput with Pydantic
+  - Define ContextAnalysisInput
+  - Define ExtractionToolInput
+  - Define AttackTreeGeneratorInput
+
+- [ ] **Task 7.2**: Add custom validators
+  - Validate project paths exist
+  - Validate AWS profile format
+  - Validate Bedrock model IDs
+  - Validate file paths and permissions
+
+- [ ] **Task 7.3**: Update tool execute methods
+  - Add input validation to SetupTool
+  - Add input validation to ContextAnalysisTool
+  - Add input validation to InformationExtractionTool
+  - Add input validation to AttackTreeGeneratorTool
+  - Add input validation to TTCMappingTool
+  - Add input validation to SummaryGeneratorTool
+
+- [ ] **Task 7.4**: Add validation error handling
+  - Create ValidationError exception
+  - Return helpful error messages
+  - Suggest corrections for invalid inputs
+
+- [ ] **Task 7.5**: Add wizard input validation
+  - Validate user inputs before processing
+  - Show validation errors immediately
+  - Prevent invalid configurations
+
+#### Success Criteria
+✅ All tool inputs validated with Pydantic  
+✅ Clear error messages for invalid inputs  
+✅ No runtime errors from invalid inputs  
+✅ Validation errors caught before processing  
+✅ User receives helpful correction suggestions  
+✅ All edge cases handled  
+
+#### Validation Commands
+```bash
+python -m pytest tests/test_validation.py -v
+python scripts/test_invalid_inputs.py
+```
+
+---
+
+### Medium #11: Implement Parser Chain
+
+**Activity Group**: Validation & Parsing  
+**Dependencies**: None  
+**Can parallel with**: Medium #12  
+**Effort**: 1 week
+
+#### Task List
+- [ ] **Task 11.1**: Create parser interface
+  - Create `threatforest/parsers/base.py`
+  - Define ThreatParser ABC
+  - Add can_parse() method
+  - Add parse() method
+
+- [ ] **Task 11.2**: Implement specific parsers
+  - Create ThreatComposerParser
+  - Create MarkdownThreatParser
+  - Create JSONThreatParser
+  - Create YAMLThreatParser
+
+- [ ] **Task 11.3**: Create ParserChain
+  - Create `threatforest/parsers/chain.py`
+  - Implement parser registration
+  - Add fallback logic
+  - Support parser priority
+
+- [ ] **Task 11.4**: Refactor InformationExtractionTool
+  - Remove regex-based parsing
+  - Use ParserChain
+  - Add parser selection logging
+
+- [ ] **Task 11.5**: Add parser tests
+  - Test each parser individually
+  - Test parser chain selection
+  - Test fallback behavior
+
+#### Success Criteria
+✅ All parsers implement common interface  
+✅ Parser chain selects correct parser  
+✅ Fallback works for unknown formats  
+✅ No regex parsing in tools  
+✅ Easy to add new parsers  
+✅ All formats tested  
+
+#### Validation Commands
+```bash
+python -m pytest tests/test_parsers.py -v
+python scripts/test_parser_formats.py
+```
+
+---
+
+## ⚡ GROUP 4: PERFORMANCE & OPTIMIZATION
+
+### Medium #9: Optimize File Discovery
+
+**Activity Group**: Performance & Optimization  
+**Dependencies**: None  
+**Can parallel with**: High #8  
+**Effort**: 2-3 days
+
+#### Task List
+- [ ] **Task 9.1**: Create FileDiscovery class
+  - Create `threatforest/core/file_discovery.py`
+  - Implement single-pass discovery
+  - Add file categorization logic
+  - Implement caching with lru_cache
+
+- [ ] **Task 9.2**: Define DiscoveredFiles dataclass
+  - Create dataclass with all file categories
+  - Add file metadata (size, modified time)
+  - Include file counts per category
+
+- [ ] **Task 9.3**: Refactor ContextAnalysisTool
+  - Remove multiple os.walk() calls
+  - Use FileDiscovery class
+  - Cache discovery results
+
+- [ ] **Task 9.4**: Refactor wizard discovery
+  - Remove duplicate discovery code
+  - Use FileDiscovery class
+  - Share cache with ContextAnalysisTool
+
+- [ ] **Task 9.5**: Add discovery filters
+  - Exclude common directories (.git, node_modules)
+  - Add file size limits
+  - Add file type filters
+
+- [ ] **Task 9.6**: Add discovery metrics
+  - Log discovery duration
+  - Log file counts
+  - Log cache hit rate
+
+#### Success Criteria
+✅ Single os.walk() per project  
+✅ Discovery results cached  
+✅ 50%+ faster for large projects  
+✅ No duplicate file categorization  
+✅ Common directories excluded  
+✅ Discovery metrics logged  
+
+#### Validation Commands
+```bash
+python scripts/benchmark_file_discovery.py
+python -m pytest tests/test_file_discovery.py -v
+```
+
+---
+
+### Medium #12: Add Response Caching
+
+**Activity Group**: Performance & Optimization  
+**Dependencies**: None  
+**Can parallel with**: Medium #11  
+**Effort**: 3-4 days
+
+#### Task List
+- [ ] **Task 12.1**: Create BedrockResponseCache
+  - Create `threatforest/core/cache.py`
+  - Implement cache key generation
+  - Add get/set methods
+  - Support cache expiration
+
+- [ ] **Task 12.2**: Configure cache storage
+  - Use ~/.threatforest/cache directory
+  - Store as JSON files
+  - Add cache size limits
+  - Implement LRU eviction
+
+- [ ] **Task 12.3**: Integrate with Bedrock calls
+  - Check cache before API call
+  - Store response after API call
+  - Add cache hit/miss logging
+
+- [ ] **Task 12.4**: Add cache management
+  - Implement cache clear command
+  - Add cache statistics
+  - Support cache warming
+
+- [ ] **Task 12.5**: Add cache configuration
+  - Make caching optional
+  - Configure TTL per operation
+  - Set cache size limits
+
+#### Success Criteria
+✅ Bedrock responses cached  
+✅ Cache hits avoid API calls  
+✅ 50%+ reduction in API calls for repeated runs  
+✅ Cache size managed automatically  
+✅ Cache statistics available  
+✅ Can disable caching if needed  
+
+#### Validation Commands
+```bash
+python -m pytest tests/test_caching.py -v
+python scripts/benchmark_cache.py
+```
+
+---
+
+## 👁️ GROUP 5: USER EXPERIENCE
+
+### Medium #10: Add Progress Tracking
+
+**Activity Group**: User Experience  
+**Dependencies**: None  
+**Effort**: 2-3 days
+
+#### Task List
+- [ ] **Task 10.1**: Create ProgressTracker class
+  - Create `threatforest/core/progress.py`
+  - Wrap Rich Progress
+  - Add task management
+  - Support nested progress bars
+
+- [ ] **Task 10.2**: Add progress to wizard
+  - Show file discovery progress
+  - Show extraction progress
+  - Show attack tree generation progress
+  - Show mapping progress
+
+- [ ] **Task 10.3**: Add ETA calculation
+  - Track operation durations
+  - Calculate remaining time
+  - Update ETA dynamically
+
+- [ ] **Task 10.4**: Add progress callbacks
+  - Allow tools to report progress
+  - Update progress from async operations
+  - Support cancellation
+
+- [ ] **Task 10.5**: Add progress persistence
+  - Save progress to state
+  - Resume progress display
+  - Show completed steps
+
+#### Success Criteria
+✅ Progress bars show actual progress  
+✅ ETA displayed and accurate  
+✅ Nested progress for sub-operations  
+✅ Progress persists across resume  
+✅ User can see what's happening  
+✅ Cancellation works cleanly  
+
+#### Validation Commands
+```bash
+python -m pytest tests/test_progress.py -v
+python threatforest_wizard.py --test-progress
+```
+
+---
+
+## 📊 IMPLEMENTATION TRACKING BY GROUP
 
 #### Task List
 - [ ] **Task 1.1**: Install real Strands framework
@@ -1659,78 +2741,422 @@ python scripts/benchmark_cache.py
 
 ## 📊 IMPLEMENTATION TRACKING
 
-### Dependency Graph
+### Group-Based Dependency Graph
+
 ```
-Critical #1 (Mock Strands) ──┐
-                             ├──> High #4 (Orchestration)
-High #5 (State Management) ──┘
+🏗️ STRANDS FRAMEWORK GROUP
+├─ Critical #1 (Mock Strands) ──┐
+├─ High #5 (State Management) ──┼──> High #4 (Orchestration)
+└─ High #4 (Orchestration) ─────┘
 
-High #7 (Input Validation) ──> High #5 (State Management)
+🔧 INFRASTRUCTURE GROUP
+├─ Critical #2 (Error Handling) ──> [Enables all groups]
+├─ Critical #3 (Rate Limiting) ───┐
+└─ High #6 (Bedrock Client) ──────┼──> [Can be parallel]
+└─ High #8 (Logging) ─────────────┘
 
-Critical #2 (Error Handling) ──> [Enables all others]
+✅ VALIDATION & PARSING GROUP
+├─ High #7 (Input Validation) ──> High #5 (State Management)
+└─ Medium #11 (Parser Chain) ────> [Independent]
 
-Critical #3 (Rate Limiting) ─┐
-                             ├──> [Can be parallel]
-High #6 (Bedrock Client) ────┘
+⚡ PERFORMANCE GROUP
+├─ Medium #9 (File Discovery) ───┐
+└─ Medium #12 (Caching) ─────────┼──> [Can be parallel]
 
-High #8 (Logging) ──┐
-                    ├──> [Can be parallel]
-Medium #9 (Files) ──┘
-
-Medium #11 (Parser) ──┐
-                      ├──> [Can be parallel]
-Medium #12 (Cache) ───┘
+👁️ USER EXPERIENCE GROUP
+└─ Medium #10 (Progress) ────────> [Independent]
 ```
 
-### Recommended Implementation Order
+### Recommended Implementation by Group
 
-**Week 1-2**: Foundation
-1. Critical #2 (Error Handling) - Enables everything
-2. Critical #1 (Mock Strands) - Foundational change
-3. High #7 (Input Validation) - Prevents errors
+**Phase 1: Foundation (Weeks 1-2)**
+- 🔧 Critical #2 (Error Handling) - 1 week
+- 🏗️ Critical #1 (Mock Strands) - 2-3 weeks (start in parallel)
+- ✅ High #7 (Input Validation) - 1 week
 
-**Week 3-4**: Core Infrastructure
-4. Critical #3 (Rate Limiting) + High #6 (Bedrock Client) - Parallel
-5. High #5 (State Management) - Depends on #7
-6. High #8 (Logging) - Can be parallel with #5
+**Phase 2: Infrastructure (Weeks 3-4)**
+- 🔧 Critical #3 (Rate Limiting) - 1 week
+- 🔧 High #6 (Bedrock Client) - 2-3 days (parallel with #3)
+- 🏗️ High #5 (State Management) - 1 week
+- 🔧 High #8 (Logging) - 3-4 days (parallel with #5)
 
-**Week 5-6**: Orchestration
-7. High #4 (Orchestration) - Depends on #1, #5
-8. Medium #9 (File Discovery) - Independent
-9. Medium #10 (Progress) - Independent
+**Phase 3: Orchestration (Weeks 5-6)**
+- 🏗️ High #4 (Strands Orchestration) - 2 weeks
+- ⚡ Medium #9 (File Discovery) - 2-3 days (parallel)
+- 👁️ Medium #10 (Progress) - 2-3 days (parallel)
 
-**Week 7-8**: Optimization
-10. Medium #11 (Parser Chain) + Medium #12 (Caching) - Parallel
+**Phase 4: Optimization (Weeks 7-8)**
+- ✅ Medium #11 (Parser Chain) - 1 week
+- ⚡ Medium #12 (Caching) - 3-4 days (parallel with #11)
 
 ---
 
-## ✅ COMPLETION CHECKLIST
+## ✅ COMPLETION CHECKLIST BY GROUP
 
-### Critical Priority (Must Complete)
+### 🏗️ Strands Framework Group
 - [ ] All mock Strands classes removed
+- [ ] Real Strands framework integrated
+- [ ] Pipeline orchestration with parallel stages
+- [ ] State management with persistence
+- [ ] Can resume from any stage
+- [ ] 30%+ performance improvement from parallelization
+
+### 🔧 Infrastructure & Reliability Group
 - [ ] Standardized error handling across all tools
 - [ ] Centralized rate limiting with circuit breaker
-- [ ] All critical tests passing
-
-### High Priority (Should Complete)
-- [ ] Strands orchestration with parallel stages
-- [ ] State management with persistence
 - [ ] Bedrock client singleton implemented
-- [ ] Input validation on all tools
 - [ ] Structured logging with correlation IDs
+- [ ] Zero unhandled exceptions
+- [ ] All infrastructure tests passing
 
-### Medium Priority (Nice to Have)
-- [ ] File discovery optimized
-- [ ] Progress tracking with ETA
+### ✅ Validation & Parsing Group
+- [ ] Input validation on all tools
 - [ ] Parser chain pattern implemented
+- [ ] All formats supported
+- [ ] No runtime validation errors
+- [ ] Clear error messages for invalid inputs
+
+### ⚡ Performance & Optimization Group
+- [ ] File discovery optimized (single pass)
 - [ ] Response caching enabled
+- [ ] 50%+ reduction in API calls (with caching)
+- [ ] 50%+ faster file discovery
+- [ ] Performance metrics tracked
+
+### 👁️ User Experience Group
+- [ ] Progress tracking with ETA
+- [ ] Nested progress bars
+- [ ] User can see what's happening
+- [ ] Cancellation works cleanly
 
 ### Overall Success Metrics
-- [ ] 30%+ performance improvement
-- [ ] 50%+ reduction in API calls (with caching)
+- [ ] All critical and high priority items complete
+- [ ] 30%+ overall performance improvement
+- [ ] 50%+ reduction in API costs (caching)
 - [ ] Zero unhandled exceptions in production
 - [ ] Can resume from any failure point
 - [ ] All tests passing with >80% coverage
+
+---
+
+## 📈 PROGRESS TRACKING TEMPLATE
+
+### Week 1-2: Foundation Phase
+- [ ] 🔧 Error Handling (Critical #2) - Day 1-5
+- [ ] 🏗️ Mock Strands (Critical #1) - Day 1-10 (parallel)
+- [ ] ✅ Input Validation (High #7) - Day 6-10
+
+**Milestone**: Foundation complete, can build on solid base
+
+### Week 3-4: Infrastructure Phase
+- [ ] 🔧 Rate Limiting (Critical #3) - Day 11-15
+- [ ] 🔧 Bedrock Client (High #6) - Day 11-13 (parallel)
+- [ ] 🏗️ State Management (High #5) - Day 16-20
+- [ ] 🔧 Logging (High #8) - Day 16-19 (parallel)
+
+**Milestone**: Infrastructure solid, ready for orchestration
+
+### Week 5-6: Orchestration Phase
+- [ ] 🏗️ Orchestration (High #4) - Day 21-30
+- [ ] ⚡ File Discovery (Medium #9) - Day 21-23 (parallel)
+- [ ] 👁️ Progress (Medium #10) - Day 24-26 (parallel)
+
+**Milestone**: Full Strands orchestration working
+
+### Week 7-8: Optimization Phase
+- [ ] ✅ Parser Chain (Medium #11) - Day 31-35
+- [ ] ⚡ Caching (Medium #12) - Day 31-34 (parallel)
+
+**Milestone**: All improvements complete, production ready
+
+---
+
+---
+
+## 📝 BRANCH TEMPLATES
+
+### Template: Starting a New Branch
+
+When creating a new feature branch from `strands-integration`:
+
+```bash
+# Create new branch from strands-integration
+git checkout strands-integration
+git pull origin strands-integration
+git checkout -b [branch-name]
+```
+
+Then add this section at the top of the document:
+
+```markdown
+## 🎯 CURRENT BRANCH: [branch-name]
+
+**Branch Focus**: [Activity Group Icon + Name]
+**Parent Branch**: strands-integration
+**Status**: 🟡 In Progress
+**Started**: [Date]
+**Target Completion**: [Date]
+
+### Branch Objectives
+- [ ] Objective 1
+- [ ] Objective 2
+- [ ] Objective 3
+
+### Tasks in This Branch
+[Copy relevant tasks from detailed sections below]
+
+### Branch Completion Checklist
+[Use standard checklist template]
+
+### Branch Notes & Decisions
+**Date**: [Date]
+**Note**: [Initial notes]
+**Key Decisions**: [List decisions]
+**Blockers**: [List blockers or "None"]
+**Risks**: [List risks]
+```
+
+### Template: Task Status Update
+
+```markdown
+#### ✅ [Priority] #[Number]: [Task Name]
+**Status**: [⚪ Not Started | 🟡 In Progress | ✅ Complete | 🔴 Blocked]
+**Assignee**: [@username or -]
+**Effort**: [time estimate]
+**Started**: [Date if in progress]
+**Completed**: [Date if complete]
+
+[If blocked, add:]
+**Blocker**: [Description]
+**Unblock By**: [Date or action needed]
+```
+
+### Template: Merge Request Checklist
+
+```markdown
+## Merge Request: [branch-name] → strands-integration
+
+**Branch**: [branch-name]
+**Target**: strands-integration
+**Activity Group**: [Group name]
+**Completed**: [Date]
+**Reviewer**: [@username]
+
+### Pre-Merge Verification
+- [ ] All tasks complete [x]
+- [ ] All success criteria ✅
+- [ ] All validation commands pass
+- [ ] Unit tests: [X/Y passing, Z% coverage]
+- [ ] Integration tests: [X/Y passing]
+- [ ] Performance benchmarks: [results]
+- [ ] No breaking changes
+- [ ] No conflicts with strands-integration
+- [ ] Documentation updated
+- [ ] Code review approved
+
+### Changes Summary
+- [List major changes]
+- [List files modified]
+- [List new dependencies]
+
+### Testing Notes
+[Describe testing performed]
+
+### Migration Notes
+[Any migration steps needed]
+
+### Rollback Plan
+[How to rollback if issues found]
+```
+
+**Special Case: strands-integration → main**
+```markdown
+## Merge Request: strands-integration → main
+
+**Branch**: strands-integration
+**Target**: main
+**Completed**: [Date]
+**Reviewer**: [@username]
+
+### Pre-Merge Verification
+- [ ] All feature branches merged to strands-integration
+- [ ] Full integration test suite passes
+- [ ] Performance targets met (30%+ improvement)
+- [ ] Production readiness review complete
+- [ ] Rollback plan documented
+```
+
+---
+
+## 🔄 BRANCH ROTATION SCHEDULE
+
+### Planned Branch Sequence
+
+All feature branches work in parallel from `strands-integration`:
+
+| Phase | Branch | Parent | Activity Group | Duration |
+|-------|--------|--------|---------------|----------|
+| 1 | `strands-production-readiness` | `strands-integration` | 🏗️ Strands Framework | Weeks 1-6 |
+| 1 | `infrastructure-reliability` | `strands-integration` | 🔧 Infrastructure | Weeks 1-4 |
+| 1 | `validation-parsing` | `strands-integration` | ✅ Validation | Weeks 1-2 |
+| 1 | `performance-optimization` | `strands-integration` | ⚡ Performance | Weeks 3-4 |
+| 1 | `user-experience` | `strands-integration` | 👁️ UX | Week 5 |
+| 2 | Merge all to `main` | - | Final Integration | Week 6-7 |
+
+**Note**: All feature branches can be developed in parallel since they all branch from `strands-integration`.
+
+### Branch Handoff Process
+
+**Working with strands-integration (Base Branch)**:
+
+1. **Create Feature Branch**:
+   ```bash
+   git checkout strands-integration
+   git pull origin strands-integration
+   git checkout -b [feature-branch]
+   ```
+
+2. **Develop Feature**:
+   - Work on feature branch
+   - Commit changes regularly
+   - Keep in sync with strands-integration:
+     ```bash
+     git checkout strands-integration
+     git pull origin strands-integration
+     git checkout [feature-branch]
+     git merge strands-integration
+     ```
+
+3. **Complete Feature**:
+   - Mark all tasks ✅
+   - Run all validation commands
+   - Update branch status to 🟢 Complete
+   - Create merge request to `strands-integration`
+
+4. **Merge to Base**:
+   ```bash
+   git checkout strands-integration
+   git pull origin strands-integration
+   git merge [feature-branch]
+   git push origin strands-integration
+   ```
+
+5. **Integration Testing**:
+   - Test integration with other merged features
+   - Resolve any conflicts
+   - Update documentation
+
+**Final Integration (All Features Complete)**:
+
+1. **Verify All Features Merged**:
+   - Check all feature branches merged to `strands-integration`
+   - Run full integration test suite
+   - Verify all success criteria met
+
+2. **Merge to Main**:
+   ```bash
+   git checkout main
+   git pull origin main
+   git merge strands-integration
+   git push origin main
+   ```
+
+3. **Tag Release**:
+   ```bash
+   git tag -a v2.0.0 -m "Production-ready Strands implementation"
+   git push origin v2.0.0
+   ```
+
+---
+
+## 📊 OVERALL PROGRESS TRACKER
+
+### Completion Status by Group
+
+| Activity Group | Tasks | Complete | In Progress | Not Started | % Complete |
+|---------------|-------|----------|-------------|-------------|------------|
+| 🏗️ Strands Framework | 3 | 0 | 0 | 3 | 0% |
+| 🔧 Infrastructure | 4 | 0 | 0 | 4 | 0% |
+| ✅ Validation | 2 | 0 | 0 | 2 | 0% |
+| ⚡ Performance | 2 | 0 | 0 | 2 | 0% |
+| 👁️ UX | 1 | 0 | 0 | 1 | 0% |
+| **TOTAL** | **12** | **0** | **0** | **12** | **0%** |
+
+### Milestone Tracker
+
+- [ ] **Milestone 1**: Foundation Complete (Weeks 1-2)
+  - Error Handling ✅
+  - Mock Strands Replaced ✅
+  - Input Validation ✅
+
+- [ ] **Milestone 2**: Infrastructure Solid (Weeks 3-4)
+  - Rate Limiting ✅
+  - Bedrock Client ✅
+  - State Management ✅
+  - Logging ✅
+
+- [ ] **Milestone 3**: Orchestration Working (Weeks 5-6)
+  - Strands Orchestration ✅
+  - File Discovery ✅
+  - Progress Tracking ✅
+
+- [ ] **Milestone 4**: Production Ready (Weeks 7-8)
+  - Parser Chain ✅
+  - Caching ✅
+  - All Tests Passing ✅
+
+---
+
+## 🎓 LESSONS LEARNED
+
+### Branch: strands-production-readiness
+**Status**: 🟡 In Progress
+
+*[To be filled in during/after branch completion]*
+
+**What Went Well**:
+- [Add items]
+
+**Challenges**:
+- [Add items]
+
+**Improvements for Next Branch**:
+- [Add items]
+
+---
+
+### Branch: infrastructure-reliability
+**Status**: ⚪ Not Started
+
+*[To be filled in during/after branch completion]*
+
+---
+
+### Branch: validation-parsing
+**Status**: ⚪ Not Started
+
+*[To be filled in during/after branch completion]*
+
+---
+
+### Branch: performance-optimization
+**Status**: ⚪ Not Started
+
+*[To be filled in during/after branch completion]*
+
+---
+
+### Branch: user-experience
+**Status**: ⚪ Not Started
+
+*[To be filled in during/after branch completion]*
+
+---
+
+**Document Version**: 3.0  
+**Last Updated**: 2025-10-10  
+**Review Status**: Branch Strategy Added  
+**Current Branch**: strands-production-readiness
 
 ---
 

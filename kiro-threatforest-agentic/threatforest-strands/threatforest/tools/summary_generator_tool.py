@@ -2,14 +2,9 @@
 from typing import Dict, Any, List
 from pathlib import Path
 from threatforest.utils.logger import ThreatForestLogger
+from threatforest.core import Tool, tool
 import json
 from datetime import datetime
-
-# Mock Strands Tool for testing
-class Tool:
-    def __init__(self, name: str, description: str):
-        self.name = name
-        self.description = description
 
 
 class SummaryGeneratorTool(Tool):

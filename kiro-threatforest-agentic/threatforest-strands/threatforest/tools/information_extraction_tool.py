@@ -4,12 +4,7 @@ import json
 from typing import Dict, List, Any, Optional
 from pathlib import Path
 from threatforest.utils.logger import ThreatForestLogger
-
-# Mock Strands Tool for testing
-class Tool:
-    def __init__(self, name: str, description: str):
-        self.name = name
-        self.description = description
+from threatforest.core import Tool, tool
 
 import boto3
 from botocore.exceptions import ClientError

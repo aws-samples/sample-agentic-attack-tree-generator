@@ -4,13 +4,8 @@ import json
 import subprocess
 from pathlib import Path
 from threatforest.utils.logger import ThreatForestLogger
+from threatforest.core import Tool, tool
 from typing import Dict, List, Any, Optional
-
-# Mock Strands Tool for testing
-class Tool:
-    def __init__(self, name: str, description: str):
-        self.name = name
-        self.description = description
 
 
 class ContextAnalysisTool(Tool):
