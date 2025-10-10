@@ -1,30 +1,36 @@
 # ThreatForest - Setup & Usage Guide
 
-## Quick Start (Recommended)
+## Quick Start
 
 ### One-Command Setup
 
-Simply run ThreatForest - it will automatically build the UI on first run:
+```bash
+./setup.sh
+```
 
+This will:
+1. Install Python dependencies
+2. Install Node.js dependencies
+3. Build the React UI
+
+Then run:
 ```bash
 python threatforest.py
 ```
 
-That's it! The application will:
-1. Check if React UI is built
-2. Auto-install dependencies (`npm install`) if needed
-3. Auto-build the UI (`npm run build:cli`) if needed
-4. Launch the interactive terminal UI
-
-### Manual Build (Optional)
-
-If you prefer to build manually first:
+### Manual Setup
 
 ```bash
+# 1. Install Python dependencies
+pip install -r requirements.txt
+
+# 2. Build React UI
 cd ui
 npm install
 npm run build:cli
 cd ..
+
+# 3. Run ThreatForest
 python threatforest.py
 ```
 
