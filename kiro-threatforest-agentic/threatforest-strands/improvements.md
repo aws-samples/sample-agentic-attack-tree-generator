@@ -1575,25 +1575,25 @@ python scripts/test_resume.py
 **Effort**: 1 week
 
 #### Task List
-- [ ] **Task 2.1**: Create error types module
+- [x] **Task 2.1**: Create error types module
   - Create `threatforest/core/errors.py`
   - Define ErrorSeverity enum
   - Define ThreatForestError dataclass
   - Define specific exception classes (BedrockError, ValidationError, etc.)
 
-- [ ] **Task 2.2**: Create ErrorHandler class
+- [x] **Task 2.2**: Create ErrorHandler class
   - Create `threatforest/core/error_handler.py`
   - Implement handle_bedrock_error()
   - Implement handle_validation_error()
   - Implement handle_file_error()
   - Add error recovery strategies
 
-- [ ] **Task 2.3**: Create error response format
+- [x] **Task 2.3**: Create error response format
   - Define standard error response structure
   - Include error code, message, context, recoverable flag
   - Add error serialization methods
 
-- [ ] **Task 2.4**: Refactor tool error handling
+- [x] **Task 2.4**: Refactor tool error handling
   - Update SetupTool error handling
   - Update ContextAnalysisTool error handling
   - Update InformationExtractionTool error handling
@@ -1601,12 +1601,12 @@ python scripts/test_resume.py
   - Update TTCMappingTool error handling
   - Update SummaryGeneratorTool error handling
 
-- [ ] **Task 2.5**: Add error logging integration
+- [x] **Task 2.5**: Add error logging integration
   - Log all errors with structured format
   - Include stack traces for critical errors
   - Add error metrics collection
 
-- [ ] **Task 2.6**: Update wizard error handling
+- [x] **Task 2.6**: Update wizard error handling
   - Replace generic try/except blocks
   - Use ErrorHandler for all errors
   - Display user-friendly error messages

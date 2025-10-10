@@ -1,4 +1,5 @@
 """Centralized error handling for ThreatForest"""
+import traceback
 from typing import Dict, Any, Optional
 from .errors import (
     ThreatForestError, ErrorSeverity, BedrockError, ValidationError,
@@ -9,15 +10,44 @@ from .errors import (
 class ErrorHandler:
     """Centralized error handler with recovery strategies"""
     
+    def __init__(self, logger=None):
+        """Initialize ErrorHandler with optional logger"""
+        self.logger = logger
+    
+    def _log_error(self, error: ThreatForestError, exception: Optional[Exception] = None):
+        """Log error with appropriate severity"""
+        if not self.logger:
+            return
+        
+        log_msg = f"[{error.code}] {error.message}"
+        
+        # Add context if available
+        if error.context:
+            log_msg += f" | Context: {error.context}"
+        
+        # Log based on severity
+        if error.severity == ErrorSeverity.CRITICAL:
+            self.logger.critical(log_msg)
+            if exception:
+                self.logger.critical(f"Stack trace: {traceback.format_exc()}")
+        elif error.severity == ErrorSeverity.HIGH:
+            self.logger.error(log_msg)
+            if exception:
+                self.logger.error(f"Stack trace: {traceback.format_exc()}")
+        elif error.severity == ErrorSeverity.MEDIUM:
+            self.logger.warning(log_msg)
+        else:
+            self.logger.info(log_msg)
+    
     @staticmethod
-    def handle_bedrock_error(error: Exception, context: Optional[Dict[str, Any]] = None) -> ThreatForestError:
+    def handle_bedrock_error(error: Exception, context: Optional[Dict[str, Any]] = None, logger=None) -> ThreatForestError:
         """Handle AWS Bedrock API errors"""
         error_msg = str(error)
         ctx = context or {}
         
         # Check for throttling
         if "ThrottlingException" in error_msg or "TooManyRequestsException" in error_msg:
-            return ThreatForestError(
+            tf_error = ThreatForestError(
                 code="BEDROCK_THROTTLED",
                 message="AWS Bedrock API rate limit exceeded",
                 severity=ErrorSeverity.HIGH,
@@ -25,10 +55,9 @@ class ErrorHandler:
                 recoverable=True,
                 recovery_suggestion="Retry with exponential backoff. Consider reducing request rate."
             )
-        
         # Check for authentication
-        if "UnauthorizedException" in error_msg or "AccessDeniedException" in error_msg:
-            return ThreatForestError(
+        elif "UnauthorizedException" in error_msg or "AccessDeniedException" in error_msg:
+            tf_error = ThreatForestError(
                 code="BEDROCK_AUTH_FAILED",
                 message="AWS Bedrock authentication failed",
                 severity=ErrorSeverity.CRITICAL,
@@ -36,16 +65,23 @@ class ErrorHandler:
                 recoverable=False,
                 recovery_suggestion="Check AWS credentials and IAM permissions for Bedrock access."
             )
-        
         # Generic Bedrock error
-        return ThreatForestError(
-            code="BEDROCK_ERROR",
-            message=f"AWS Bedrock API error: {error_msg}",
-            severity=ErrorSeverity.HIGH,
-            context=ctx,
-            recoverable=True,
-            recovery_suggestion="Check AWS service status and retry."
-        )
+        else:
+            tf_error = ThreatForestError(
+                code="BEDROCK_ERROR",
+                message=f"AWS Bedrock API error: {error_msg}",
+                severity=ErrorSeverity.HIGH,
+                context=ctx,
+                recoverable=True,
+                recovery_suggestion="Check AWS service status and retry."
+            )
+        
+        # Log if logger provided
+        if logger:
+            handler = ErrorHandler(logger)
+            handler._log_error(tf_error, error)
+        
+        return tf_error
     
     @staticmethod
     def handle_validation_error(error: ValidationError, context: Optional[Dict[str, Any]] = None) -> ThreatForestError:
