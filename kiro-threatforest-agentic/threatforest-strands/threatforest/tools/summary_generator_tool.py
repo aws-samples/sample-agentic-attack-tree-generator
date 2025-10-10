@@ -193,13 +193,19 @@ This report presents a comprehensive threat analysis for **{project_info.get('ap
             threat_statement = tree.get('threat_statement', tree.get('description', 'No description available'))
             category = tree.get('threat_category', tree.get('category', 'Unknown'))
             
-            # Extract short description from threat statement (first part before dash or newline)
+            # Extract and condense threat statement to key words
             import re
+            # Remove common words and extract key terms
             short_desc = threat_statement.split('-')[0].strip() if '-' in threat_statement else threat_statement.split('\n')[0].strip()
-            # Clean for filename: remove special chars, limit length
-            short_desc_clean = re.sub(r'[^\w\s-]', '', short_desc)
-            short_desc_clean = re.sub(r'[-\s]+', '_', short_desc_clean).strip('_')
-            short_desc_clean = short_desc_clean[:50]  # Limit length
+            
+            # Remove common filler words
+            stop_words = ['threat', 'an', 'a', 'the', 'can', 'could', 'may', 'might', 'who', 'with', 'to', 'of', 'in', 'on', 'at', 'for', 'by']
+            words = short_desc.lower().split()
+            key_words = [w for w in words if w not in stop_words and len(w) > 2][:4]  # Max 4 key words
+            
+            # Create condensed description
+            short_desc_clean = '_'.join(key_words) if key_words else 'threat'
+            short_desc_clean = re.sub(r'[^\w_]', '', short_desc_clean)
             
             # Use sequential number (001, 002, etc.) instead of threat_id
             filename = f"attack_tree_{idx:03d}_{short_desc_clean}.md"
