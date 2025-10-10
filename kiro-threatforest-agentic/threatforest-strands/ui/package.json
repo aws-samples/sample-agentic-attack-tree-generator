@@ -1,0 +1,28 @@
+{
+  "name": "threatforest-ui",
+  "version": "1.0.0",
+  "description": "React Ink terminal UI for ThreatForest",
+  "main": "dist/index.js",
+  "bin": {
+    "threatforest": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "esbuild src/index.tsx --bundle --platform=node --outfile=dist/index.js --external:ink --external:react",
+    "build:cli": "esbuild src/cli.tsx --bundle --platform=node --outfile=dist/cli.js --external:ink --external:react --banner:js=\"#!/usr/bin/env node\"",
+    "dev": "npm run build && node dist/cli.js",
+    "watch": "esbuild src/index.tsx --bundle --platform=node --outfile=dist/index.js --external:ink --external:react --watch"
+  },
+  "dependencies": {
+    "ink": "^4.4.1",
+    "react": "^18.2.0",
+    "ink-spinner": "^5.0.0",
+    "ink-text-input": "^5.0.1",
+    "ink-select-input": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/react": "^18.2.0",
+    "esbuild": "^0.19.0",
+    "typescript": "^5.3.0"
+  }
+}
