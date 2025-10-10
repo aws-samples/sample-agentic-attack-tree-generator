@@ -1212,7 +1212,7 @@ All branches work in parallel from `strands-integration`:
 - [x] Task 13.3: Integrate new core functionality
 - [x] Task 13.4: Add interactive features
 - [x] Task 13.5: Implement workflow orchestration
-- [ ] Task 13.6: Add CLI commands
+- [x] Task 13.6: Add CLI commands
 
 **Success Criteria**:
 - ✅ Modern, interactive UI with React Ink
@@ -1222,6 +1222,7 @@ All branches work in parallel from `strands-integration`:
 - ✅ Cache statistics visible during execution
 - ✅ Error handling with recovery options
 - ✅ Parallel execution visualized
+- ✅ Better UX than current Rich-based wizard
 - ⚪ Resume from checkpoint works seamlessly
 - ⚪ Cache statistics visible during execution
 - ⚪ Error handling with recovery options
