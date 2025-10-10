@@ -2,8 +2,24 @@
 
 ## Quick Start
 
-Run ThreatForest with a single command:
+### Option 1: React Ink UI (Recommended)
 
+First, build the UI:
+```bash
+cd ui
+npm install
+npm run build:cli
+cd ..
+```
+
+Then run ThreatForest:
+```bash
+python threatforest.py
+```
+
+### Option 2: Python Wizard (Fallback)
+
+If React UI is not built, it automatically falls back to the Python wizard:
 ```bash
 python threatforest.py
 ```
