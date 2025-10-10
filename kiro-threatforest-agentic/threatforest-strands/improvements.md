@@ -1808,20 +1808,20 @@ cat threatforest_output/latest.log | jq .
 **Effort**: 1 week
 
 #### Task List
-- [ ] **Task 7.1**: Create validation models
+- [x] **Task 7.1**: Create validation models
   - Create `threatforest/core/validation.py`
   - Define SetupToolInput with Pydantic
   - Define ContextAnalysisInput
   - Define ExtractionToolInput
   - Define AttackTreeGeneratorInput
 
-- [ ] **Task 7.2**: Add custom validators
+- [x] **Task 7.2**: Add custom validators
   - Validate project paths exist
   - Validate AWS profile format
   - Validate Bedrock model IDs
   - Validate file paths and permissions
 
-- [ ] **Task 7.3**: Update tool execute methods
+- [x] **Task 7.3**: Update tool execute methods
   - Add input validation to SetupTool
   - Add input validation to ContextAnalysisTool
   - Add input validation to InformationExtractionTool
