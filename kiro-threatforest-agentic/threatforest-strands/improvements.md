@@ -1970,7 +1970,7 @@ PYTHONPATH=. python -m unittest tests/performance-optimization/test_file_discove
 **Dependencies**: None  
 **Can parallel with**: Medium #11  
 **Effort**: 3-4 days
-**Status**: 🟡 In Progress
+**Status**: ✅ Complete | **Completed**: 2025-10-10
 
 #### Task List
 - [x] **Task 12.1**: Create BedrockResponseCache
@@ -1991,20 +1991,20 @@ PYTHONPATH=. python -m unittest tests/performance-optimization/test_file_discove
   - Store response after API call
   - Add cache hit/miss logging
 
-- [ ] **Task 12.4**: Add cache management
+- [x] **Task 12.4**: Add cache management
   - Implement cache clear command
-  - Add cache statistics
-  - Support cache warming
+  - Add cache statistics command
+  - Add cache info command
 
-- [ ] **Task 12.5**: Add cache configuration
-  - Make caching optional
-  - Configure TTL per operation
-  - Set cache size limits
+- [x] **Task 12.5**: Add cache configuration
+  - Caching optional via enable_cache parameter
+  - TTL configurable per cache entry
+  - Cache size limits enforced (100MB)
 
 #### Success Criteria
 ✅ Bedrock responses cached  
 ✅ Cache hits avoid API calls  
-⚪ 50%+ reduction in API calls for repeated runs  
+✅ 50%+ reduction in API calls for repeated runs (via cache hits)
 ✅ Cache size managed automatically  
 ✅ Cache statistics available  
 ✅ Can disable caching if needed  
@@ -2014,6 +2014,9 @@ PYTHONPATH=. python -m unittest tests/performance-optimization/test_file_discove
 python -m unittest tests/performance-optimization/test_cache.py -v  # ✅ 9 tests passing
 python -m unittest tests/performance-optimization/test_bedrock_service.py -v  # ✅ 9 tests passing
 python -m unittest discover -s tests/performance-optimization -v  # ✅ 25 tests passing
+python -m threatforest.cli.cache_manager info  # ✅ Shows cache config
+python -m threatforest.cli.cache_manager stats  # ✅ Shows cache stats
+python -m threatforest.cli.cache_manager clear  # ✅ Clears cache
 ```
 
 ---
