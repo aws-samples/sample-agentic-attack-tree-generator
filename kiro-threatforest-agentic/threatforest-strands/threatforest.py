@@ -7,6 +7,7 @@ Usage: python threatforest.py
 """
 
 import sys
+import os
 import subprocess
 from pathlib import Path
 
@@ -49,7 +50,9 @@ def main():
     
     # Launch React UI with any arguments passed
     try:
-        subprocess.run(["node", str(cli_path)] + sys.argv[1:], cwd=ui_dir)
+        env = os.environ.copy()
+        env['NODE_ENV'] = 'production'  # Skip devtools
+        subprocess.run(["node", str(cli_path)] + sys.argv[1:], cwd=ui_dir, env=env)
     except KeyboardInterrupt:
         print("\n\n👋 ThreatForest terminated")
         sys.exit(0)
