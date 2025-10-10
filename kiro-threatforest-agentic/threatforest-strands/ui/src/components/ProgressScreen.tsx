@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Text } from 'ink';
 import { StageIndicator, StageStatus } from './StageIndicator';
 import { ProgressBar } from './ProgressBar';
 import { CacheStats } from './CacheStats';
+import { WorkflowState } from '../hooks/useWorkflow';
 
 interface Props {
-  onNext: (state: any) => void;
-  state: any;
+  state: WorkflowState;
 }
 
 interface Stage {
@@ -14,44 +14,31 @@ interface Stage {
   status: StageStatus;
 }
 
-export const ProgressScreen: React.FC<Props> = ({ onNext, state }) => {
+export const ProgressScreen: React.FC<Props> = ({ state }) => {
   const [stages, setStages] = useState<Stage[]>([
-    { name: 'File Discovery', status: 'running' },
+    { name: 'File Discovery', status: 'pending' },
     { name: 'Threat Extraction', status: 'pending' },
     { name: 'Attack Tree Generation', status: 'pending' },
     { name: 'TTC Mapping', status: 'pending' }
   ]);
-  const [progress, setProgress] = useState({ current: 0, total: 100 });
 
   useEffect(() => {
-    // Simulate workflow progression
-    const stageNames = ['File Discovery', 'Threat Extraction', 'Attack Tree Generation', 'TTC Mapping'];
-    let currentStageIndex = 0;
+    const stageMap: Record<string, number> = {
+      'discovery': 0,
+      'extraction': 1,
+      'trees': 2,
+      'mapping': 3,
+      'complete': 4
+    };
 
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        const newCurrent = prev.current + 10;
-        if (newCurrent >= 100) {
-          // Move to next stage
-          setStages(prev => prev.map((stage, idx) => {
-            if (idx === currentStageIndex) return { ...stage, status: 'complete' };
-            if (idx === currentStageIndex + 1) return { ...stage, status: 'running' };
-            return stage;
-          }));
-          
-          currentStageIndex++;
-          if (currentStageIndex >= stageNames.length) {
-            clearInterval(interval);
-            setTimeout(() => onNext({}), 1000);
-          }
-          return { current: 0, total: 100 };
-        }
-        return { current: newCurrent, total: 100 };
-      });
-    }, 300);
+    const currentIndex = stageMap[state.stage] ?? -1;
 
-    return () => clearInterval(interval);
-  }, []);
+    setStages(prev => prev.map((stage, idx) => {
+      if (idx < currentIndex) return { ...stage, status: 'complete' };
+      if (idx === currentIndex) return { ...stage, status: 'running' };
+      return { ...stage, status: 'pending' };
+    }));
+  }, [state.stage]);
 
   return (
     <Box flexDirection="column" padding={1}>
@@ -60,16 +47,18 @@ export const ProgressScreen: React.FC<Props> = ({ onNext, state }) => {
       
       <StageIndicator stages={stages} />
       
-      <Box marginTop={1}>
-        <ProgressBar 
-          current={progress.current} 
-          total={progress.total}
-          label="Current Stage Progress"
-        />
-      </Box>
+      {state.message && (
+        <Box marginTop={1}>
+          <Text dimColor>{state.message}</Text>
+        </Box>
+      )}
       
       <Box marginTop={1}>
-        <Text dimColor>Project: {state.projectPath}</Text>
+        <ProgressBar 
+          current={state.progress.current} 
+          total={state.progress.total}
+          label="Overall Progress"
+        />
       </Box>
       
       <Box marginTop={1}>

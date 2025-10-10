@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { PythonBridge } from '../utils/pythonBridge';
+import { WorkflowExecutor, WorkflowConfig, WorkflowProgress } from '../utils/workflowExecutor';
 
 export type WorkflowStage = 
   | 'setup'
@@ -7,55 +7,80 @@ export type WorkflowStage =
   | 'extraction'
   | 'trees'
   | 'mapping'
-  | 'summary';
+  | 'complete';
 
 export interface WorkflowState {
   stage: WorkflowStage;
   progress: { current: number; total: number };
   error?: string;
   data?: any;
+  message?: string;
 }
 
-export const useWorkflow = () => {
+export const useWorkflow = (config?: WorkflowConfig) => {
   const [state, setState] = useState<WorkflowState>({
     stage: 'setup',
     progress: { current: 0, total: 0 }
   });
 
-  const bridge = new PythonBridge();
+  const handleProgress = useCallback((progress: WorkflowProgress) => {
+    setState(prev => ({
+      ...prev,
+      stage: progress.stage as WorkflowStage,
+      progress: { current: progress.current, total: progress.total },
+      message: progress.message
+    }));
+  }, []);
 
-  const runDiscovery = useCallback(async (projectPath: string) => {
-    setState(prev => ({ ...prev, stage: 'discovery' }));
-    const result = await bridge.discoverFiles(projectPath);
+  const executeWorkflow = useCallback(async (workflowConfig: WorkflowConfig) => {
+    const executor = new WorkflowExecutor(workflowConfig, handleProgress);
+    
+    // Validate configuration
+    const validation = await executor.validateConfiguration();
+    if (!validation.valid) {
+      setState(prev => ({ 
+        ...prev, 
+        error: validation.errors.join(', ') 
+      }));
+      return { success: false, error: validation.errors.join(', ') };
+    }
+
+    // Execute workflow
+    const result = await executor.executeWorkflow();
     
     if (result.success) {
       setState(prev => ({ 
         ...prev, 
-        data: { ...prev.data, discovery: result.data }
+        stage: 'complete',
+        data: result.data 
       }));
-      return result.data;
     } else {
-      setState(prev => ({ ...prev, error: result.error }));
-      return null;
+      setState(prev => ({ 
+        ...prev, 
+        error: result.error 
+      }));
     }
+
+    return result;
+  }, [handleProgress]);
+
+  const checkResume = useCallback(async (projectPath: string) => {
+    const executor = new WorkflowExecutor({ 
+      projectPath, 
+      bedrockModel: '', 
+      enableCache: true 
+    });
+    return executor.checkForResume();
   }, []);
 
-  const nextStage = useCallback(() => {
-    const stages: WorkflowStage[] = ['setup', 'discovery', 'extraction', 'trees', 'mapping', 'summary'];
-    const currentIndex = stages.indexOf(state.stage);
-    if (currentIndex < stages.length - 1) {
-      setState(prev => ({ ...prev, stage: stages[currentIndex + 1] }));
-    }
-  }, [state.stage]);
-
-  const updateProgress = useCallback((current: number, total: number) => {
-    setState(prev => ({ ...prev, progress: { current, total } }));
+  const clearError = useCallback(() => {
+    setState(prev => ({ ...prev, error: undefined }));
   }, []);
 
   return {
     state,
-    runDiscovery,
-    nextStage,
-    updateProgress
+    executeWorkflow,
+    checkResume,
+    clearError
   };
 };

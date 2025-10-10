@@ -16,34 +16,39 @@ export class PythonBridge {
     this.pythonPath = process.env.PYTHON_PATH || 'python';
   }
 
-  async execute(module: string, method: string, args: any = {}): Promise<PythonResult> {
+  async execute(module: string, className: string, method: string, args: any = {}): Promise<PythonResult> {
     return new Promise((resolve) => {
+      const argsJson = JSON.stringify(args).replace(/'/g, "\\'");
       const script = `
 import sys
 import json
 sys.path.insert(0, '${this.projectRoot}')
 
-from ${module} import ${method.split('.')[0]}
+from ${module} import ${className}
 
 try:
-    args = json.loads('${JSON.stringify(args)}')
-    result = ${method}(**args)
+    args = json.loads('${argsJson}')
+    instance = ${className}(**args.get('init', {}))
+    result = getattr(instance, '${method}')(**args.get('call', {}))
+    
+    # Convert to serializable format
+    if hasattr(result, '__dict__'):
+        result = result.__dict__
+    elif hasattr(result, '_asdict'):
+        result = result._asdict()
+    
     print(json.dumps({'success': True, 'data': result}))
 except Exception as e:
-    print(json.dumps({'success': False, 'error': str(e)}))
+    import traceback
+    print(json.dumps({'success': False, 'error': str(e), 'traceback': traceback.format_exc()}))
 `;
 
       const python = spawn(this.pythonPath, ['-c', script]);
       let output = '';
       let error = '';
 
-      python.stdout.on('data', (data) => {
-        output += data.toString();
-      });
-
-      python.stderr.on('data', (data) => {
-        error += data.toString();
-      });
+      python.stdout.on('data', (data) => output += data.toString());
+      python.stderr.on('data', (data) => error += data.toString());
 
       python.on('close', (code) => {
         if (code !== 0) {
@@ -60,15 +65,83 @@ except Exception as e:
     });
   }
 
-  async getCacheStats(): Promise<any> {
-    return this.execute('threatforest.core.cache', 'BedrockResponseCache().get_stats');
+  // FileDiscovery integration
+  async discoverFiles(projectPath: string): Promise<PythonResult> {
+    return this.execute(
+      'threatforest.core.file_discovery',
+      'FileDiscovery',
+      'discover_all',
+      { init: { project_path: projectPath }, call: {} }
+    );
   }
 
-  async discoverFiles(projectPath: string): Promise<any> {
-    return this.execute('threatforest.core.file_discovery', 'FileDiscovery', { project_path: projectPath });
+  // Cache integration
+  async getCacheStats(): Promise<PythonResult> {
+    return this.execute(
+      'threatforest.core.cache',
+      'BedrockResponseCache',
+      'get_stats',
+      { init: {}, call: {} }
+    );
   }
 
-  async loadState(): Promise<any> {
-    return this.execute('threatforest.core.state_manager', 'StateManager.load_checkpoint');
+  async clearCache(): Promise<PythonResult> {
+    return this.execute(
+      'threatforest.core.cache',
+      'BedrockResponseCache',
+      'clear',
+      { init: {}, call: {} }
+    );
+  }
+
+  // StateManager integration
+  async loadState(projectPath?: string): Promise<PythonResult> {
+    return this.execute(
+      'threatforest.core.state_manager',
+      'StateManager',
+      'load_checkpoint',
+      { init: { project_path: projectPath }, call: {} }
+    );
+  }
+
+  async saveState(state: any, projectPath?: string): Promise<PythonResult> {
+    return this.execute(
+      'threatforest.core.state_manager',
+      'StateManager',
+      'save_checkpoint',
+      { init: { project_path: projectPath }, call: { state } }
+    );
+  }
+
+  // Validation integration
+  async validateInput(inputType: string, data: any): Promise<PythonResult> {
+    const classMap: Record<string, string> = {
+      setup: 'SetupToolInput',
+      context: 'ContextAnalysisInput',
+      extraction: 'ExtractionToolInput',
+      attacktree: 'AttackTreeGeneratorInput'
+    };
+
+    const className = classMap[inputType];
+    if (!className) {
+      return { success: false, error: `Unknown input type: ${inputType}` };
+    }
+
+    return this.execute(
+      'threatforest.core.validation',
+      className,
+      'validate',
+      { init: data, call: {} }
+    );
+  }
+
+  // Parser integration
+  async parseThreats(content: string, filePath: string): Promise<PythonResult> {
+    return this.execute(
+      'threatforest.parsers.chain',
+      'ParserChain',
+      'parse',
+      { init: {}, call: { content, file_path: filePath } }
+    );
   }
 }
