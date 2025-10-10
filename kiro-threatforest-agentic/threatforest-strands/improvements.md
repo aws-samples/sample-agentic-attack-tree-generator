@@ -1210,14 +1210,17 @@ All branches work in parallel from `strands-integration`:
 - [x] Task 13.1: Setup React Ink infrastructure
 - [x] Task 13.2: Create core UI components
 - [x] Task 13.3: Integrate new core functionality
-- [ ] Task 13.4: Add interactive features
+- [x] Task 13.4: Add interactive features
 - [ ] Task 13.5: Implement workflow orchestration
 - [ ] Task 13.6: Add CLI commands
 
 **Success Criteria**:
 - ✅ Modern, interactive UI with React Ink
 - ✅ All new functionality integrated
-- ⚪ Real-time progress with ETA
+- ✅ Real-time progress with ETA
+- ✅ Resume from checkpoint works seamlessly
+- ✅ Cache statistics visible during execution
+- ✅ Error handling with recovery options
 - ⚪ Resume from checkpoint works seamlessly
 - ⚪ Cache statistics visible during execution
 - ⚪ Error handling with recovery options
