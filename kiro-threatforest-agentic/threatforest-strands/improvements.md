@@ -1745,24 +1745,24 @@ python scripts/benchmark_bedrock_client.py
 **Effort**: 3-4 days
 
 #### Task List
-- [ ] **Task 8.1**: Install structlog
+- [x] **Task 8.1**: Install structlog
   - Add `structlog>=23.0.0` to requirements.txt
   - Install structlog
   - Configure structlog processors
 
-- [ ] **Task 8.2**: Update ThreatForestLogger
+- [x] **Task 8.2**: Update ThreatForestLogger
   - Replace basic logging with structlog
   - Add JSON output format
   - Add correlation ID support
   - Configure log levels
 
-- [ ] **Task 8.3**: Add correlation IDs
+- [x] **Task 8.3**: Add correlation IDs
   - Create correlation_id ContextVar
   - Generate unique ID per workflow
   - Include in all log messages
   - Pass through tool chain
 
-- [ ] **Task 8.4**: Add structured logging to tools
+- [x] **Task 8.4**: Add structured logging to tools
   - Update SetupTool logging
   - Update ContextAnalysisTool logging
   - Update InformationExtractionTool logging
@@ -1770,13 +1770,13 @@ python scripts/benchmark_bedrock_client.py
   - Update TTCMappingTool logging
   - Update SummaryGeneratorTool logging
 
-- [ ] **Task 8.5**: Add performance logging
+- [x] **Task 8.5**: Add performance logging
   - Log operation durations
   - Log Bedrock token usage
   - Log cache hit rates
   - Log error rates
 
-- [ ] **Task 8.6**: Configure log output
+- [x] **Task 8.6**: Configure log output
   - JSON format for production
   - Human-readable for development
   - Separate error log file
