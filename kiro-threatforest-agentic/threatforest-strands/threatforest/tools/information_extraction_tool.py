@@ -5,6 +5,10 @@ from typing import Dict, List, Any, Optional
 from pathlib import Path
 from threatforest.utils.logger import ThreatForestLogger
 from threatforest.core import Tool, tool
+from threatforest.parsers import (
+    ParserChain, JSONThreatParser, YAMLThreatParser,
+    MarkdownThreatParser, ThreatComposerParser
+)
 
 import boto3
 from botocore.exceptions import ClientError
@@ -22,6 +26,14 @@ class InformationExtractionTool(Tool):
         self.rate_limit_delay = 2.5
         self.max_retries = 3
         self.base_backoff = 2
+        
+        # Initialize parser chain with priority ordering
+        self.parser_chain = ParserChain()
+        self.parser_chain.register(ThreatComposerParser(), priority=4)  # Highest priority for .tc files
+        self.parser_chain.register(JSONThreatParser(), priority=3)
+        self.parser_chain.register(YAMLThreatParser(), priority=2)
+        self.parser_chain.register(MarkdownThreatParser(), priority=1)
+        self.logger.debug("Parser chain initialized with 4 parsers")
     
     async def execute(self, context_files: Dict[str, Any], bedrock_model: str, 
                      aws_profile: Optional[str] = None, interactive: bool = False) -> Dict[str, Any]:
@@ -245,9 +257,85 @@ class InformationExtractionTool(Tool):
                 'error': str(e)
             }
     
+    def _parse_with_parser_chain(self, threat_file_path: str) -> Optional[List[Dict[str, Any]]]:
+        """Try to parse threat file using parser chain
+        
+        Returns:
+            List of threats if successfully parsed, None if parser chain cannot handle the file
+        """
+        file_path = Path(threat_file_path)
+        
+        try:
+            # Try to parse with parser chain
+            parsed_data = self.parser_chain.parse(file_path)
+            
+            if parsed_data is None:
+                self.logger.debug(f"Parser chain could not handle {file_path.name}")
+                return None
+            
+            self.logger.info(f"Successfully parsed {file_path.name} using {parsed_data.get('format', 'unknown')} parser")
+            
+            # Convert parsed data to threat format
+            threats = []
+            
+            if parsed_data.get('format') == 'threatcomposer':
+                # ThreatComposer format
+                for threat in parsed_data.get('threats', []):
+                    threats.append({
+                        'id': threat.get('id', f"T{len(threats)+1:03d}"),
+                        'statement': threat.get('statement', ''),
+                        'severity': threat.get('priority', 'Medium'),
+                        'category': threat.get('metadata', {}).get('category', 'Unknown'),
+                        'source': 'threatcomposer'
+                    })
+            
+            elif parsed_data.get('format') in ['json', 'yaml']:
+                # JSON/YAML format
+                data = parsed_data.get('data', {})
+                threat_list = data.get('threats', [])
+                for threat in threat_list:
+                    threats.append({
+                        'id': threat.get('id', f"T{len(threats)+1:03d}"),
+                        'statement': threat.get('statement', threat.get('description', '')),
+                        'severity': threat.get('severity', threat.get('priority', 'Medium')),
+                        'category': threat.get('category', 'Unknown'),
+                        'source': parsed_data['format']
+                    })
+            
+            elif parsed_data.get('format') == 'markdown':
+                # Markdown format
+                for threat in parsed_data.get('threats', []):
+                    threats.append({
+                        'id': f"T{len(threats)+1:03d}",
+                        'statement': threat.get('title', ''),
+                        'description': threat.get('description', ''),
+                        'severity': threat.get('severity', 'Medium'),
+                        'category': 'Markdown',
+                        'source': 'markdown'
+                    })
+            
+            if threats:
+                self.logger.info(f"Extracted {len(threats)} threats using parser chain")
+                return threats
+            else:
+                self.logger.warning(f"Parser chain parsed file but found no threats")
+                return None
+                
+        except Exception as e:
+            self.logger.warning(f"Parser chain failed for {file_path.name}: {e}")
+            return None
+    
     def _process_threat_file(self, threat_file_path: str, context_files: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Process a threat file and determine if it needs Bedrock reformatting"""
         self.logger.info(f"Processing threat file: {Path(threat_file_path).name}")
+        
+        # Try parser chain first (Task 11.4)
+        parsed_threats = self._parse_with_parser_chain(threat_file_path)
+        if parsed_threats is not None:
+            return parsed_threats
+        
+        # Fallback to legacy parsing logic
+        self.logger.debug("Falling back to legacy parsing logic")
         
         # Check if this is a ThreatComposer file (.tc.json)
         file_path = Path(threat_file_path)
