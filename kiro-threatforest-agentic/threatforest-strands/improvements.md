@@ -1575,25 +1575,25 @@ python scripts/test_resume.py
 **Effort**: 1 week
 
 #### Task List
-- [ ] **Task 2.1**: Create error types module
+- [x] **Task 2.1**: Create error types module
   - Create `threatforest/core/errors.py`
   - Define ErrorSeverity enum
   - Define ThreatForestError dataclass
   - Define specific exception classes (BedrockError, ValidationError, etc.)
 
-- [ ] **Task 2.2**: Create ErrorHandler class
+- [x] **Task 2.2**: Create ErrorHandler class
   - Create `threatforest/core/error_handler.py`
   - Implement handle_bedrock_error()
   - Implement handle_validation_error()
   - Implement handle_file_error()
   - Add error recovery strategies
 
-- [ ] **Task 2.3**: Create error response format
+- [x] **Task 2.3**: Create error response format
   - Define standard error response structure
   - Include error code, message, context, recoverable flag
   - Add error serialization methods
 
-- [ ] **Task 2.4**: Refactor tool error handling
+- [x] **Task 2.4**: Refactor tool error handling
   - Update SetupTool error handling
   - Update ContextAnalysisTool error handling
   - Update InformationExtractionTool error handling
@@ -1601,12 +1601,12 @@ python scripts/test_resume.py
   - Update TTCMappingTool error handling
   - Update SummaryGeneratorTool error handling
 
-- [ ] **Task 2.5**: Add error logging integration
+- [x] **Task 2.5**: Add error logging integration
   - Log all errors with structured format
   - Include stack traces for critical errors
   - Add error metrics collection
 
-- [ ] **Task 2.6**: Update wizard error handling
+- [x] **Task 2.6**: Update wizard error handling
   - Replace generic try/except blocks
   - Use ErrorHandler for all errors
   - Display user-friendly error messages
@@ -1635,35 +1635,35 @@ python -m pytest tests/test_error_handling.py -v
 **Effort**: 1 week
 
 #### Task List
-- [ ] **Task 3.1**: Create BedrockRateLimiter class
+- [x] **Task 3.1**: Create BedrockRateLimiter class
   - Create `threatforest/core/rate_limiter.py`
   - Implement semaphore-based rate limiting
   - Add sliding window request tracking
   - Implement circuit breaker pattern
 
-- [ ] **Task 3.2**: Add adaptive rate limiting
+- [x] **Task 3.2**: Add adaptive rate limiting
   - Monitor API response headers
   - Adjust rate based on throttling signals
   - Implement exponential backoff
 
-- [ ] **Task 3.3**: Create centralized retry logic
+- [x] **Task 3.3**: Create centralized retry logic
   - Create `threatforest/core/retry.py`
   - Implement retry_with_backoff decorator
   - Add configurable retry strategies
   - Support different retry policies per operation
 
-- [ ] **Task 3.4**: Remove duplicate retry code
+- [x] **Task 3.4**: Remove duplicate retry code
   - Remove retry logic from InformationExtractionTool
   - Remove retry logic from AttackTreeGeneratorTool
   - Remove retry logic from TTCMappingTool
   - Replace with centralized retry decorator
 
-- [ ] **Task 3.5**: Integrate rate limiter with tools
+- [x] **Task 3.5**: Integrate rate limiter with tools
   - Update all Bedrock calls to use rate limiter
   - Add rate limiter to BedrockClientManager
   - Configure rate limits per model
 
-- [ ] **Task 3.6**: Add rate limit monitoring
+- [x] **Task 3.6**: Add rate limit monitoring
   - Track rate limit hits
   - Log circuit breaker activations
   - Add metrics for retry attempts
@@ -1693,30 +1693,30 @@ python -m pytest tests/test_rate_limiting.py -v
 **Effort**: 2-3 days
 
 #### Task List
-- [ ] **Task 6.1**: Create BedrockClientManager
+- [x] **Task 6.1**: Create BedrockClientManager
   - Create `threatforest/core/bedrock_client.py`
   - Implement singleton pattern
   - Add client caching by profile/region
   - Configure connection pooling
 
-- [ ] **Task 6.2**: Add client configuration
+- [x] **Task 6.2**: Add client configuration
   - Set max_pool_connections=50
   - Configure adaptive retry mode
   - Set appropriate timeouts
   - Add request compression
 
-- [ ] **Task 6.3**: Replace client creation in tools
+- [x] **Task 6.3**: Replace client creation in tools
   - Update SetupTool
   - Update InformationExtractionTool
   - Update AttackTreeGeneratorTool
   - Update TTCMappingTool
 
-- [ ] **Task 6.4**: Add client health checks
+- [x] **Task 6.4**: Add client health checks
   - Implement connection validation
   - Add automatic reconnection
   - Monitor client performance
 
-- [ ] **Task 6.5**: Add client metrics
+- [x] **Task 6.5**: Add client metrics
   - Track active connections
   - Monitor request latency
   - Log connection pool usage
@@ -1745,24 +1745,24 @@ python scripts/benchmark_bedrock_client.py
 **Effort**: 3-4 days
 
 #### Task List
-- [ ] **Task 8.1**: Install structlog
+- [x] **Task 8.1**: Install structlog
   - Add `structlog>=23.0.0` to requirements.txt
   - Install structlog
   - Configure structlog processors
 
-- [ ] **Task 8.2**: Update ThreatForestLogger
+- [x] **Task 8.2**: Update ThreatForestLogger
   - Replace basic logging with structlog
   - Add JSON output format
   - Add correlation ID support
   - Configure log levels
 
-- [ ] **Task 8.3**: Add correlation IDs
+- [x] **Task 8.3**: Add correlation IDs
   - Create correlation_id ContextVar
   - Generate unique ID per workflow
   - Include in all log messages
   - Pass through tool chain
 
-- [ ] **Task 8.4**: Add structured logging to tools
+- [x] **Task 8.4**: Add structured logging to tools
   - Update SetupTool logging
   - Update ContextAnalysisTool logging
   - Update InformationExtractionTool logging
@@ -1770,13 +1770,13 @@ python scripts/benchmark_bedrock_client.py
   - Update TTCMappingTool logging
   - Update SummaryGeneratorTool logging
 
-- [ ] **Task 8.5**: Add performance logging
+- [x] **Task 8.5**: Add performance logging
   - Log operation durations
   - Log Bedrock token usage
   - Log cache hit rates
   - Log error rates
 
-- [ ] **Task 8.6**: Configure log output
+- [x] **Task 8.6**: Configure log output
   - JSON format for production
   - Human-readable for development
   - Separate error log file
