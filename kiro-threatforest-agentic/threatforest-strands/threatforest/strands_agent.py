@@ -192,6 +192,10 @@ class ThreatForestOrchestrator(Agent):
                 self.state_manager.save_checkpoint(self.state)
                 context.add("summary", summary)
                 context.add("workflow_state", self.state.model_dump())
+                
+                # Archive and cleanup completed state
+                self.state_manager.archive_checkpoint("latest")
+                self.state_manager.cleanup_completed_states()
             else:
                 summary = {"output_files": self.state.output_files}
                 context.add("summary", summary)
