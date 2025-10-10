@@ -7,11 +7,11 @@
     "threatforest": "./dist/cli.js"
   },
   "scripts": {
-    "build": "esbuild src/index.tsx --bundle --platform=node --outfile=dist/index.js --external:ink --external:react",
-    "build:cli": "esbuild src/cli.tsx --bundle --platform=node --outfile=dist/cli.js --external:ink --external:react --banner:js=\"#!/usr/bin/env node\" && chmod +x dist/cli.js",
+    "build": "esbuild src/index.tsx --bundle --platform=node --outfile=dist/index.js --external:ink --external:react --format=cjs",
+    "build:cli": "esbuild src/cli.tsx --bundle --platform=node --outfile=dist/cli.js --external:ink --external:react --format=cjs --banner:js=\"#!/usr/bin/env node\" && chmod +x dist/cli.js",
     "build:all": "npm run build && npm run build:cli",
     "dev": "npm run build:cli && node dist/cli.js",
-    "watch": "esbuild src/index.tsx --bundle --platform=node --outfile=dist/index.js --external:ink --external:react --watch",
+    "watch": "esbuild src/index.tsx --bundle --platform=node --outfile=dist/index.js --external:ink --external:react --format=cjs --watch",
     "install:global": "npm run build:all && npm link"
   },
   "dependencies": {
