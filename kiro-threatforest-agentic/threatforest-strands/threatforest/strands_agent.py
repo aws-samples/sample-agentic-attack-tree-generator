@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 
-from .core import Agent, Context, ThreatForestState, WorkflowStage, StateManager
+from .core import Agent, agent_step, Context, ThreatForestState, WorkflowStage, StateManager
 from .tools.setup_tool import SetupTool
 from .tools.context_analysis_tool import ContextAnalysisTool
 from .tools.information_extraction_tool import InformationExtractionTool
@@ -93,6 +93,7 @@ class ThreatForestOrchestrator(Agent):
             bedrock_model=self.config.bedrock_model
         )
     
+    @agent_step
     async def execute_workflow(self) -> Dict[str, Any]:
         """Execute the complete ThreatForest workflow with state management"""
         # Initialize or resume state
