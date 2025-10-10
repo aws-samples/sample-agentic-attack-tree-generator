@@ -2023,11 +2023,14 @@ python -m threatforest.cli.cache_manager clear  # ✅ Clears cache
 
 ## 👁️ GROUP 5: USER EXPERIENCE
 
+**Note**: Medium #10 (Progress Tracking) is superseded by High #13 (React Ink Wizard), which provides comprehensive progress tracking as part of the new UI.
+
 ### Medium #10: Add Progress Tracking
 
 **Activity Group**: User Experience  
 **Dependencies**: None  
 **Effort**: 2-3 days
+**Status**: ⚪ Superseded by High #13
 
 #### Task List
 - [ ] **Task 10.1**: Create ProgressTracker class
@@ -2070,6 +2073,204 @@ python -m threatforest.cli.cache_manager clear  # ✅ Clears cache
 python -m pytest tests/test_progress.py -v
 python threatforest_wizard.py --test-progress
 ```
+
+---
+
+### High #13: Recreate Wizard with React Ink UI
+
+**Activity Group**: User Experience  
+**Dependencies**: All Groups (1-4)  
+**Effort**: 1-2 weeks  
+**Status**: ⚪ Not Started
+
+#### Task List
+- [ ] **Task 13.1**: Setup React Ink infrastructure
+  - Install ink, react dependencies
+  - Create TypeScript/JSX project structure
+  - Setup build pipeline (esbuild/webpack)
+  - Create Python-Node bridge for tool execution
+
+- [ ] **Task 13.2**: Create core UI components
+  - WizardContainer with step navigation
+  - ConfigurationForm (project path, AWS profile, model)
+  - ProgressDisplay with real-time updates
+  - ResultsViewer with expandable sections
+  - ErrorDisplay with recovery options
+
+- [ ] **Task 13.3**: Integrate new core functionality
+  - FileDiscovery with cached results display
+  - BedrockService with cache hit/miss indicators
+  - StateManager for resume capability
+  - ErrorHandler with user-friendly messages
+  - ParserChain with format detection display
+
+- [ ] **Task 13.4**: Add interactive features
+  - Step-by-step wizard flow with validation
+  - Real-time progress bars with ETA
+  - Cache statistics display
+  - Resume from checkpoint prompt
+  - Interactive threat selection/filtering
+
+- [ ] **Task 13.5**: Implement workflow orchestration
+  - Pipeline stage visualization
+  - Parallel execution indicators
+  - Stage completion checkmarks
+  - Error recovery prompts
+  - Final summary with metrics
+
+- [ ] **Task 13.6**: Add CLI commands
+  - `threatforest run` - Start wizard
+  - `threatforest resume` - Resume from checkpoint
+  - `threatforest cache` - Manage cache (delegates to cache_manager)
+  - `threatforest status` - Show current state
+
+#### Success Criteria
+✅ Modern, interactive UI with React Ink  
+✅ All new functionality integrated (FileDiscovery, Cache, StateManager, etc.)  
+✅ Real-time progress with ETA  
+✅ Resume from checkpoint works seamlessly  
+✅ Cache statistics visible during execution  
+✅ Error handling with recovery options  
+✅ Parallel execution visualized  
+✅ Better UX than current Rich-based wizard  
+
+#### Technical Requirements
+- **Frontend**: React Ink (Terminal UI framework)
+- **Backend**: Python tools via subprocess/IPC
+- **State**: JSON-based state files from StateManager
+- **Progress**: Real-time updates via event streaming
+- **Cache**: Integration with BedrockResponseCache
+- **Discovery**: FileDiscovery with progress callbacks
+
+#### UI Flow
+```
+1. Welcome Screen
+   ├─ Show ThreatForest logo
+   ├─ Check for existing state (resume prompt)
+   └─ Configuration form
+
+2. Configuration
+   ├─ Project path (with validation)
+   ├─ AWS profile (with validation)
+   ├─ Bedrock model selection
+   └─ Cache settings (enable/disable)
+
+3. File Discovery
+   ├─ Progress bar with file count
+   ├─ Show discovered categories
+   ├─ Cache hit indicator
+   └─ Excluded directories list
+
+4. Threat Extraction
+   ├─ Parser detection display
+   ├─ Progress per file
+   ├─ Threat count by severity
+   └─ Cache statistics
+
+5. Attack Tree Generation
+   ├─ Parallel execution indicators
+   ├─ Progress per threat
+   ├─ ETA calculation
+   └─ Cache hit/miss ratio
+
+6. TTC Mapping
+   ├─ Progress bar
+   ├─ Mapping statistics
+   └─ Confidence scores
+
+7. Summary
+   ├─ Total threats processed
+   ├─ Attack trees generated
+   ├─ Cache statistics
+   ├─ Performance metrics
+   └─ Output location
+
+8. Error Recovery
+   ├─ Show error details
+   ├─ Suggest recovery actions
+   ├─ Retry/Skip/Abort options
+   └─ Save state for resume
+```
+
+#### Integration Points
+```typescript
+// Example: Integrate FileDiscovery
+import { spawn } from 'child_process';
+
+const discoverFiles = async (projectPath: string) => {
+  const result = await executePython(
+    'threatforest.core.file_discovery',
+    'FileDiscovery',
+    { project_path: projectPath }
+  );
+  
+  return {
+    threatModels: result.threat_models,
+    sourceCode: result.source_code,
+    metadata: result.metadata
+  };
+};
+
+// Example: Show cache stats
+const showCacheStats = async () => {
+  const stats = await executePython(
+    'threatforest.core.cache',
+    'BedrockResponseCache.get_stats'
+  );
+  
+  return (
+    <Box>
+      <Text>Cache Hits: {stats.hits}</Text>
+      <Text>Hit Rate: {stats.hit_rate}</Text>
+    </Box>
+  );
+};
+
+// Example: Resume from state
+const checkForResume = async () => {
+  const state = await executePython(
+    'threatforest.core.state_manager',
+    'StateManager.load_checkpoint'
+  );
+  
+  if (state) {
+    return (
+      <Box>
+        <Text>Found previous run from {state.started_at}</Text>
+        <Text>Resume from {state.current_stage}? (y/n)</Text>
+      </Box>
+    );
+  }
+};
+```
+
+#### Validation Commands
+```bash
+# Install dependencies
+npm install ink react
+npm install --save-dev @types/react typescript esbuild
+
+# Build wizard
+npm run build
+
+# Run wizard
+threatforest run
+
+# Test resume
+threatforest resume
+
+# Check cache
+threatforest cache stats
+```
+
+#### Benefits Over Current Wizard
+- **Better UX**: Modern, responsive terminal UI
+- **Real-time Updates**: Live progress without spinners
+- **Interactive**: Navigate between steps, edit config
+- **Visual**: Better layout, colors, formatting
+- **Maintainable**: Component-based architecture
+- **Extensible**: Easy to add new features
+- **Professional**: Polished, production-ready feel
 
 ---
 
@@ -3083,10 +3284,17 @@ All feature branches work in parallel from `strands-integration`:
 |---------------|-------|----------|-------------|-------------|------------|
 | 🏗️ Strands Framework | 3 | 0 | 0 | 3 | 0% |
 | 🔧 Infrastructure | 4 | 0 | 0 | 4 | 0% |
-| ✅ Validation | 2 | 0 | 0 | 2 | 0% |
-| ⚡ Performance | 2 | 0 | 0 | 2 | 0% |
-| 👁️ UX | 1 | 0 | 0 | 1 | 0% |
-| **TOTAL** | **12** | **0** | **0** | **12** | **0%** |
+| ✅ Validation | 2 | 2 | 0 | 0 | 100% |
+| ⚡ Performance | 2 | 2 | 0 | 0 | 100% |
+| 👁️ UX | 2 | 0 | 0 | 2 | 0% |
+| **TOTAL** | **13** | **4** | **0** | **9** | **31%** |
+
+### Completed Tasks
+
+✅ **High #7**: Input Validation (Group 3)  
+✅ **Medium #11**: Parser Chain (Group 3)  
+✅ **Medium #9**: File Discovery Optimization (Group 4)  
+✅ **Medium #12**: Response Caching (Group 4)  
 
 ### Milestone Tracker
 
