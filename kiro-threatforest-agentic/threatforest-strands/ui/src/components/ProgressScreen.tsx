@@ -3,6 +3,8 @@ import { Box, Text } from 'ink';
 import { StageIndicator, StageStatus } from './StageIndicator';
 import { ProgressBar } from './ProgressBar';
 import { CacheStats } from './CacheStats';
+import { ParallelExecutionDisplay } from './ParallelExecutionDisplay';
+import { ETADisplay } from './ETADisplay';
 import { WorkflowState } from '../hooks/useWorkflow';
 
 interface Props {
@@ -60,6 +62,25 @@ export const ProgressScreen: React.FC<Props> = ({ state }) => {
           label="Overall Progress"
         />
       </Box>
+      
+      {state.startTime && (
+        <Box marginTop={1}>
+          <ETADisplay 
+            startTime={state.startTime}
+            current={state.progress.current}
+            total={state.progress.total}
+          />
+        </Box>
+      )}
+      
+      {state.parallelTasks && state.parallelTasks.length > 0 && (
+        <Box marginTop={1}>
+          <ParallelExecutionDisplay 
+            tasks={state.parallelTasks}
+            title="Parallel Execution"
+          />
+        </Box>
+      )}
       
       <Box marginTop={1}>
         <CacheStats />

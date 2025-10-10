@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { WorkflowExecutor, WorkflowConfig, WorkflowProgress } from '../utils/workflowExecutor';
+import { WorkflowExecutor, WorkflowConfig, WorkflowProgress, ParallelTask } from '../utils/workflowExecutor';
 
 export type WorkflowStage = 
   | 'setup'
@@ -15,6 +15,8 @@ export interface WorkflowState {
   error?: string;
   data?: any;
   message?: string;
+  parallelTasks?: ParallelTask[];
+  startTime?: number;
 }
 
 export const useWorkflow = (config?: WorkflowConfig) => {
@@ -28,12 +30,16 @@ export const useWorkflow = (config?: WorkflowConfig) => {
       ...prev,
       stage: progress.stage as WorkflowStage,
       progress: { current: progress.current, total: progress.total },
-      message: progress.message
+      message: progress.message,
+      parallelTasks: progress.parallelTasks
     }));
   }, []);
 
   const executeWorkflow = useCallback(async (workflowConfig: WorkflowConfig) => {
     const executor = new WorkflowExecutor(workflowConfig, handleProgress);
+    
+    // Set start time
+    setState(prev => ({ ...prev, startTime: executor.getStartTime() }));
     
     // Validate configuration
     const validation = await executor.validateConfiguration();
