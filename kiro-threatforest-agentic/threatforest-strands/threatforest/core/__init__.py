@@ -6,6 +6,7 @@ from .context import Context
 from .state import ThreatForestState, WorkflowStage
 from .state_manager import StateManager
 from .parallel import ParallelExecutor, ParallelTask
+from .pipeline import Pipeline, Stage
 
 __all__ = [
     'Tool', 'tool', 
@@ -13,5 +14,6 @@ __all__ = [
     'Context',
     'ThreatForestState', 'WorkflowStage',
     'StateManager',
-    'ParallelExecutor', 'ParallelTask'
+    'ParallelExecutor', 'ParallelTask',
+    'Pipeline', 'Stage'
 ]
