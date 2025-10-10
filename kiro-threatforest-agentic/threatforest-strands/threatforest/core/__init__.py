@@ -19,6 +19,7 @@ from .validation import (
     SetupToolInput, ContextAnalysisInput, ExtractionToolInput,
     AttackTreeGeneratorInput, TTCMappingInput, SummaryGeneratorInput
 )
+from .file_discovery import FileDiscovery, DiscoveredFiles
 
 __all__ = [
     'Tool', 'tool', 
@@ -35,5 +36,6 @@ __all__ = [
     'RetryStrategy', 'retry_with_backoff', 'sync_retry_with_backoff',
     'BedrockClientManager',
     'SetupToolInput', 'ContextAnalysisInput', 'ExtractionToolInput',
-    'AttackTreeGeneratorInput', 'TTCMappingInput', 'SummaryGeneratorInput'
+    'AttackTreeGeneratorInput', 'TTCMappingInput', 'SummaryGeneratorInput',
+    'FileDiscovery', 'DiscoveredFiles'
 ]
