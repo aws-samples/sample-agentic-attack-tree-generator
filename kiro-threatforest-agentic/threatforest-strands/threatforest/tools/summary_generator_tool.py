@@ -2,14 +2,9 @@
 from typing import Dict, Any, List
 from pathlib import Path
 from threatforest.utils.logger import ThreatForestLogger
+from threatforest.core import Tool, tool
 import json
 from datetime import datetime
-
-# Mock Strands Tool for testing
-class Tool:
-    def __init__(self, name: str, description: str):
-        self.name = name
-        self.description = description
 
 
 class SummaryGeneratorTool(Tool):
@@ -22,6 +17,7 @@ class SummaryGeneratorTool(Tool):
         )
         self.logger = ThreatForestLogger.get_logger(self.__class__.__name__)
     
+    @tool(name="summary_generator", description="Generate comprehensive threat analysis reports")
     async def execute(self, attack_trees: Dict[str, Any], 
                      extracted_info: Dict[str, Any],
                      output_dir: str) -> Dict[str, Any]:

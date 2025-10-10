@@ -1207,12 +1207,12 @@ All branches work in parallel from `strands-integration`:
 - [x] Task 1.1: Install real Strands framework
 - [x] Task 1.2: Create base Strands tool class
 - [x] Task 1.3: Refactor SetupTool
-- [ ] Task 1.4: Refactor remaining tools
-  - [ ] ContextAnalysisTool
-  - [ ] InformationExtractionTool
-  - [ ] AttackTreeGeneratorTool
-  - [ ] TTCMappingTool
-  - [ ] SummaryGeneratorTool
+- [x] Task 1.4: Refactor remaining tools
+  - [x] ContextAnalysisTool
+  - [x] InformationExtractionTool
+  - [x] AttackTreeGeneratorTool
+  - [x] TTCMappingTool
+  - [x] SummaryGeneratorTool
 - [ ] Task 1.5: Update strands_agent.py
 - [ ] Task 1.6: Integration testing
 

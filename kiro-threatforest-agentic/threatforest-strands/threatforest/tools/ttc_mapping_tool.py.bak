@@ -90,6 +90,63 @@ class TTCMappingTool(Tool):
         
         raise last_error if last_error else Exception(f"Unknown error in {operation_name} retry logic")
     
+    async def execute(self, attack_trees: Dict[str, Any], 
+                     aaf_bundle_path: str = None,
+                     bedrock_model: str = "us.anthropic.claude-sonnet-4-20250514-v1:0",
+                     aws_profile: Optional[str] = None) -> Dict[str, Any]:
+        """Execute TTC mapping with Bedrock enhancement"""
+        
+        # Load STIX data
+        stix_data = self._load_stix_data(aaf_bundle_path)
+        if not stix_data:
+            return {
+                "ttc_mapped_trees": attack_trees.get("attack_trees", []),
+                "mapping_summary": {
+                    "total_mappings": 0,
+                    "successful_mappings": 0,
+                    "threshold_used": self.threshold,
+                    "error": "Failed to load STIX data"
+                }
+            }
+        
+        # Extract techniques from STIX data
+        techniques = self._extract_techniques(stix_data)
+        use_bedrock_only = len(techniques) == 0
+        
+        if use_bedrock_only:
+            self.logger.info(f"Using Bedrock-only MITRE ATT&CK mapping (no local STIX data)")
+        
+        # Map attack trees with Bedrock enhancement
+        mapped_trees = []
+        total_mappings = 0
+        successful_mappings = 0
+        
+        for tree in attack_trees.get("attack_trees", []):
+            if "mermaid_code" in tree:
+                if use_bedrock_only:
+                    mapped_tree = await self._map_with_bedrock_only(tree, bedrock_model, aws_profile)
+                else:
+                    mapped_tree = await self._map_attack_tree_with_bedrock(
+                        tree, techniques, bedrock_model, aws_profile
+                    )
+                mapped_trees.append(mapped_tree)
+                
+                mappings = mapped_tree.get("ttc_mappings", [])
+                total_mappings += len(mappings)
+                successful_mappings += len([m for m in mappings if m.get("confidence", 0) >= self.threshold])
+        
+        return {
+            "ttc_mapped_trees": mapped_trees,
+            "mapping_summary": {
+                "total_mappings": total_mappings,
+                "successful_mappings": successful_mappings,
+                "threshold_used": self.threshold,
+                "techniques_loaded": len(techniques),
+                "bedrock_enhanced": True
+            }
+        }
+    
+    def _load_stix_data(self, bundle_path: str) -> Optional[Dict[str, Any]]:
         """Load STIX bundle data from stix-data folder or specified path"""
         
         # First try the stix-data folder (relative to this file)

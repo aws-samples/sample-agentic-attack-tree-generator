@@ -4,13 +4,8 @@ import json
 import subprocess
 from pathlib import Path
 from threatforest.utils.logger import ThreatForestLogger
+from threatforest.core import Tool, tool
 from typing import Dict, List, Any, Optional
-
-# Mock Strands Tool for testing
-class Tool:
-    def __init__(self, name: str, description: str):
-        self.name = name
-        self.description = description
 
 
 class ContextAnalysisTool(Tool):
@@ -25,6 +20,7 @@ class ContextAnalysisTool(Tool):
         self.supported_formats = ['.json', '.tc', '.yaml', '.yml', '.md', '.txt']
         self.threat_keywords = ['threat', 'risk', 'vulnerability', 'attack', 'security']
     
+    @tool(name="context_analysis", description="Discover and analyze context files")
     async def execute(self, project_path: str) -> Dict[str, Any]:
         """Execute enhanced context analysis"""
         project_dir = Path(project_path)

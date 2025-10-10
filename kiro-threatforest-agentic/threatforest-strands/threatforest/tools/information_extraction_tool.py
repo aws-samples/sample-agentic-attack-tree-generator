@@ -4,12 +4,7 @@ import json
 from typing import Dict, List, Any, Optional
 from pathlib import Path
 from threatforest.utils.logger import ThreatForestLogger
-
-# Mock Strands Tool for testing
-class Tool:
-    def __init__(self, name: str, description: str):
-        self.name = name
-        self.description = description
+from threatforest.core import Tool, tool
 
 import boto3
 from botocore.exceptions import ClientError
@@ -28,6 +23,7 @@ class InformationExtractionTool(Tool):
         self.max_retries = 3
         self.base_backoff = 2
     
+    @tool(name="information_extraction", description="Extract key information from context files")
     async def execute(self, context_files: Dict[str, Any], bedrock_model: str, 
                      aws_profile: Optional[str] = None, interactive: bool = False) -> Dict[str, Any]:
         """Execute information extraction with threat generation if needed"""
