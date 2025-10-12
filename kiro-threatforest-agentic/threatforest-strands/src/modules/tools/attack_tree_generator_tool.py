@@ -10,6 +10,13 @@ from ..core import Tool, tool
 import boto3
 from botocore.exceptions import ClientError
 
+# Import progress types if available
+try:
+    from ..core import ProgressEmitter, ProgressEvent, ProgressEventType
+    PROGRESS_AVAILABLE = True
+except ImportError:
+    PROGRESS_AVAILABLE = False
+
 
 class AttackTreeGeneratorTool(Tool):
     """Tool for generating attack trees in Mermaid format"""
@@ -23,11 +30,25 @@ class AttackTreeGeneratorTool(Tool):
         self.rate_limit_delay = 2.5  # seconds between calls
         self.max_retries = 3
         self.base_backoff = 2  # base seconds for exponential backoff
+        self.throttled = False  # Track if we've been throttled
     
     async def execute(self, threat_statements: List[Dict[str, Any]], 
                      extracted_info: Dict[str, Any], bedrock_model: str,
-                     aws_profile: Optional[str] = None) -> Dict[str, Any]:
-        """Execute attack tree generation with rate limiting"""
+                     aws_profile: Optional[str] = None,
+                     existing_status: Optional[Dict[str, str]] = None,
+                     output_dir: Optional[str] = None,
+                     progress_emitter: Optional['ProgressEmitter'] = None) -> Dict[str, Any]:
+        """Execute attack tree generation with rate limiting and retry support
+        
+        Args:
+            existing_status: Dict mapping threat_id to status ('success'/'failed')
+                           Only retry threats with 'failed' status or not in dict
+            output_dir: Output directory for saving state file
+        """
+        
+        # Load existing state if not provided
+        if existing_status is None and output_dir:
+            existing_status = self._load_state(output_dir)
         
         # Debug: Log what we received
         self.logger.debug(f"Received {len(threat_statements)} total threat statements")
@@ -46,49 +67,165 @@ class AttackTreeGeneratorTool(Tool):
             self.logger.info("No high severity threats found")
             return {
                 "attack_trees": [],
+                "threat_status": {},
                 "message": "No high severity threats found for attack tree generation"
             }
         
-        self.logger.info(f"Generating attack trees for {len(high_threats)} high severity threats")
-        attack_trees = []
+        # Filter out already successful threats if retrying
+        existing_status = existing_status or {}
+        threats_to_process = [
+            t for t in high_threats 
+            if existing_status.get(t.get("id", ""), "") != "success"
+        ]
         
-        for idx, threat in enumerate(high_threats, 1):
+        skipped_count = len(high_threats) - len(threats_to_process)
+        if skipped_count > 0:
+            self.logger.info(f"Skipping {skipped_count} already successful threats")
+        
+        if not threats_to_process:
+            self.logger.info("All threats already have successful attack trees")
+            return {
+                "attack_trees": [],
+                "threat_status": existing_status,
+                "generation_summary": {
+                    "total_high_threats": len(high_threats),
+                    "processed_this_run": 0,
+                    "skipped_successful": len(high_threats),
+                    "successful_generations": 0,
+                    "failed_generations": 0,
+                    "all_complete": True
+                },
+                "message": "All threats already processed successfully. Use existing results or delete state file to regenerate."
+            }
+        
+        self.logger.info(f"Generating attack trees for {len(threats_to_process)} threats")
+        attack_trees = []
+        threat_status = dict(existing_status)  # Copy existing status
+        
+        for idx, threat in enumerate(threats_to_process, 1):
             threat_id = threat.get("id", "unknown")
-            self.logger.info(f"Processing threat {idx}/{len(high_threats)}: {threat_id}")
+            self.logger.info(f"Processing threat {idx}/{len(threats_to_process)}: {threat_id}")
+            
+            # Emit threat start progress
+            if progress_emitter and PROGRESS_AVAILABLE:
+                progress_emitter.emit(ProgressEvent(
+                    type=ProgressEventType.THREAT_START,
+                    stage="tree_generation",
+                    percentage=40.0 + ((idx - 1) / len(threats_to_process)) * 40.0,
+                    message=f"Generating attack tree for {threat_id}",
+                    details={"threat_id": threat_id, "index": idx, "total": len(threats_to_process)}
+                ))
             
             try:
                 tree = await self._generate_attack_tree_with_retry(threat, extracted_info, bedrock_model, aws_profile)
                 if tree:
                     attack_trees.append(tree)
-                    self.logger.info(f"✓ Successfully generated attack tree for {threat_id}")
+                    # Only mark as success if tree has mermaid_code (not an error)
+                    if "mermaid_code" in tree:
+                        threat_status[threat_id] = "success"
+                        self.logger.info(f"✓ Successfully generated attack tree for {threat_id}")
+                        
+                        # Emit threat complete progress
+                        if progress_emitter and PROGRESS_AVAILABLE:
+                            progress_emitter.emit(ProgressEvent(
+                                type=ProgressEventType.THREAT_COMPLETE,
+                                stage="tree_generation",
+                                percentage=40.0 + (idx / len(threats_to_process)) * 40.0,
+                                message=f"Completed attack tree for {threat_id} ({idx} of {len(threats_to_process)} total)",
+                                details={"threat_id": threat_id, "success": True}
+                            ))
+                    else:
+                        # Tree has error
+                        threat_status[threat_id] = "failed"
+                        self.logger.error(f"✗ {threat_id}: {tree.get('error', 'Unknown error')}")
+                        
+                        # Emit error progress
+                        if progress_emitter and PROGRESS_AVAILABLE:
+                            progress_emitter.emit(ProgressEvent(
+                                type=ProgressEventType.ERROR,
+                                stage="tree_generation",
+                                percentage=40.0 + (idx / len(threats_to_process)) * 40.0,
+                                message=f"Failed to generate attack tree for {threat_id}",
+                                details={"threat_id": threat_id, "error": tree.get('error', 'Unknown error')}
+                            ))
                 
                 # Rate limiting: wait between calls (except after last one)
-                if idx < len(high_threats):
-                    self.logger.debug(f"Rate limiting: waiting {self.rate_limit_delay}s before next call")
-                    await asyncio.sleep(self.rate_limit_delay)
+                if idx < len(threats_to_process):
+                    # Adaptive rate limiting: increase delay if we've been throttled
+                    delay = 10.0 if self.throttled else self.rate_limit_delay
+                    self.logger.debug(f"Rate limiting: waiting {delay}s before next call")
+                    await asyncio.sleep(delay)
                     
             except Exception as e:
                 error_msg = f"Failed to generate attack tree: {str(e)}"
                 self.logger.error(f"✗ {threat_id}: {error_msg}")
                 print(f"❌ Error generating attack tree for {threat_id}: {error_msg}")
+                threat_status[threat_id] = "failed"
                 attack_trees.append({
                     "threat_id": threat_id,
                     "error": error_msg
                 })
+                
+                # Emit threat error progress
+                if progress_emitter and PROGRESS_AVAILABLE:
+                    progress_emitter.emit(ProgressEvent(
+                        type=ProgressEventType.ERROR,
+                        stage="tree_generation",
+                        percentage=40.0 + (idx / len(threats_to_process)) * 40.0,
+                        message=f"Failed to generate attack tree for {threat_id}",
+                        details={"threat_id": threat_id, "error": error_msg}
+                    ))
+                
+                # Continue to next threat instead of stopping
+                continue
         
         successful = len([t for t in attack_trees if "mermaid_code" in t])
         failed = len([t for t in attack_trees if "error" in t])
         
         self.logger.info(f"Attack tree generation complete: {successful} successful, {failed} failed")
         
+        # Save state if output_dir provided
+        if output_dir:
+            self._save_state(output_dir, threat_status)
+        
         return {
             "attack_trees": attack_trees,
+            "threat_status": threat_status,
             "generation_summary": {
                 "total_high_threats": len(high_threats),
+                "processed_this_run": len(threats_to_process),
+                "skipped_successful": skipped_count,
                 "successful_generations": successful,
                 "failed_generations": failed
             }
         }
+    
+    def _load_state(self, output_dir: str) -> Dict[str, str]:
+        """Load threat generation state from file"""
+        state_file = Path(output_dir) / ".threatforest_state.json"
+        if state_file.exists():
+            try:
+                with open(state_file) as f:
+                    data = json.load(f)
+                    self.logger.info(f"Loaded state: {len(data.get('threat_status', {}))} threats tracked")
+                    return data.get('threat_status', {})
+            except Exception as e:
+                self.logger.warning(f"Failed to load state file: {e}")
+        return {}
+    
+    def _save_state(self, output_dir: str, threat_status: Dict[str, str]):
+        """Save threat generation state to file"""
+        state_file = Path(output_dir) / ".threatforest_state.json"
+        try:
+            state_file.parent.mkdir(parents=True, exist_ok=True)
+            with open(state_file, 'w') as f:
+                json.dump({
+                    'threat_status': threat_status,
+                    'last_updated': time.strftime('%Y-%m-%d %H:%M:%S')
+                }, f, indent=2)
+            self.logger.info(f"Saved state: {len(threat_status)} threats tracked")
+        except Exception as e:
+            self.logger.warning(f"Failed to save state file: {e}")
     
     async def _generate_attack_tree_with_retry(self, threat: Dict[str, Any], 
                                               extracted_info: Dict[str, Any],
@@ -105,6 +242,7 @@ class AttackTreeGeneratorTool(Tool):
                 error_msg = e.response.get('Error', {}).get('Message', str(e))
                 
                 if error_code == 'ThrottlingException':
+                    self.throttled = True  # Mark that we've been throttled
                     wait_time = self.base_backoff * (2 ** attempt)
                     self.logger.warning(f"⚠️  Throttled by Bedrock API (attempt {attempt + 1}/{self.max_retries})")
                     print(f"⚠️  Rate limited by AWS Bedrock - waiting {wait_time}s before retry...")
@@ -148,8 +286,13 @@ class AttackTreeGeneratorTool(Tool):
                 "messages": [{"role": "user", "content": prompt}]
             }
             
+            # Convert cross-region inference profile IDs to ARNs
+            model_id = bedrock_model
+            if model_id.startswith('us.') or model_id.startswith('eu.'):
+                model_id = f"arn:aws:bedrock:us-east-1::foundation-model/{model_id}"
+            
             response = bedrock.invoke_model(
-                modelId=bedrock_model,
+                modelId=model_id,
                 body=json.dumps(body)
             )
             
@@ -189,6 +332,14 @@ class AttackTreeGeneratorTool(Tool):
                 "threat_category": threat.get("category"),
                 "threat_description": threat.get("description"),
                 "threat_statement": threat.get("statement", threat.get("description", "")),
+                "threat_action": threat.get("threat_action", threat.get("threatAction", "")),
+                "threatSource": threat.get("threatSource", ""),
+                "prerequisites": threat.get("prerequisites", ""),
+                "threatAction": threat.get("threatAction", ""),
+                "threatImpact": threat.get("threatImpact", ""),
+                "impactedGoal": threat.get("impactedGoal", ""),
+                "impactedAssets": threat.get("impactedAssets", ""),
+                "priority": threat.get("priority", threat.get("severity", "")),
                 "mermaid_code": mermaid_code,
                 "attack_steps": self._extract_attack_steps(mermaid_code),
                 "generated_content": generated_content,
@@ -270,6 +421,18 @@ class AttackTreeGeneratorTool(Tool):
         # Build enhanced context from all available files
         context_info = self._build_enhanced_context(project_info)
         
+        # Build structured threat details if available
+        threat_details = ""
+        if threat.get('threatSource') or threat.get('prerequisites'):
+            threat_details = f"""
+**Threat Source**: {threat.get('threatSource', 'Unknown')}
+**Prerequisites**: {threat.get('prerequisites', 'None specified')}
+**Threat Action**: {threat.get('threatAction', 'Unknown')}
+**Threat Impact**: {threat.get('threatImpact', 'Unknown')}
+**Impacted Goal**: {threat.get('impactedGoal', 'Unknown')}
+**Impacted Assets**: {threat.get('impactedAssets', 'Unknown')}
+"""
+        
         # Build the threat-specific context with explicit single-threat instruction
         threat_context = f"""
 ## IMPORTANT: Generate ONE attack tree for THIS SINGLE threat statement only.
@@ -279,7 +442,7 @@ class AttackTreeGeneratorTool(Tool):
 **Statement**: {threat.get('statement', threat.get('description', 'No statement provided'))}
 **Priority**: {threat.get('priority', threat.get('severity', 'Unknown'))}
 **Category**: {threat.get('category', 'Unknown')}
-
+{threat_details}
 ## Context Information:
 **Application**: {project_info.get('application_name', 'Unknown Application')}
 **Technologies**: {', '.join(project_info.get('technologies', [])[:10])}

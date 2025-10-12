@@ -30,17 +30,6 @@ async function handleCommand() {
       }
       break;
 
-    case 'cache':
-      // Delegate to Python cache manager
-      const subcommand = args[1] || 'stats';
-      const { spawn } = require('child_process');
-      const python = spawn('python', ['-m', 'src.modules.cli.cache_manager', subcommand]);
-      
-      python.stdout.on('data', (data: Buffer) => process.stdout.write(data));
-      python.stderr.on('data', (data: Buffer) => process.stderr.write(data));
-      python.on('close', (code: number) => process.exit(code));
-      break;
-
     case 'status':
       // Show current workflow status
       const statusResult = await bridge.loadState();
@@ -74,17 +63,12 @@ Usage: threatforest <command> [options]
 Commands:
   run              Start new threat modeling session
   resume           Resume from last checkpoint
-  cache <action>   Manage response cache
-    stats          Show cache statistics
-    clear          Clear all cached responses
-    info           Show cache configuration
   status           Show current workflow status
   help             Show this help message
 
 Examples:
   threatforest run
   threatforest resume
-  threatforest cache stats
   threatforest status
 
 For more information, visit: https://github.com/threatforest

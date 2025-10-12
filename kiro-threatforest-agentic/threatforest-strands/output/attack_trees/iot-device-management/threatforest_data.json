@@ -1,0 +1,606 @@
+{
+  "metadata": {
+    "generated_at": "2025-10-12T11:19:13.893430",
+    "generator": "ThreatForest",
+    "version": "1.0"
+  },
+  "project_info": {
+    "application_name": "IoT Device Management Platform",
+    "sector": "IoT/Industrial Technology",
+    "architecture_type": "Microservices",
+    "deployment_environment": "Hybrid",
+    "technologies": [
+      "MQTT over TLS",
+      "CoAP",
+      "Python",
+      "FastAPI",
+      "Celery",
+      "MongoDB",
+      "InfluxDB",
+      "Apache Kafka",
+      "AWS IoT Core",
+      "AWS Lambda",
+      "X.509 certificates",
+      "Grafana",
+      "Prometheus"
+    ],
+    "security_objectives": {
+      "confidentiality": true,
+      "integrity": true,
+      "availability": true
+    },
+    "data_types": [
+      "sensor data",
+      "device configurations",
+      "user information",
+      "time-series data",
+      "telemetry data",
+      "firmware versions",
+      "device identity data",
+      "healthcare device data",
+      "industrial control data"
+    ],
+    "external_dependencies": [
+      "AWS IoT Core",
+      "AWS Lambda",
+      "X.509 certificate authorities",
+      "SCADA systems",
+      "PLCs",
+      "third-party healthcare systems",
+      "fleet management systems"
+    ],
+    "network_architecture": "Not provided in architecture diagrams",
+    "key_components": [
+      "Device Registry",
+      "Communication Gateway",
+      "Data Processing Engine",
+      "Firmware Management",
+      "Security Service",
+      "Dashboard",
+      "Message Broker (Kafka)",
+      "Database Layer (MongoDB/InfluxDB)",
+      "Monitoring System (Grafana/Prometheus)"
+    ],
+    "\"application_name\"": "\"IoT Device Management Platform\",",
+    "\"industry\"": "\"IoT/Multi-industry (Smart Cities, Industrial Automation, Healthcare)\",",
+    "\"architecture_type\"": "\"Microservices\",",
+    "\"components\"": "[",
+    "\"technologies\"": "{"
+  },
+  "extraction_summary": {
+    "total_threats": 12,
+    "high_severity_count": 4,
+    "technologies_identified": 13,
+    "has_security_objectives": true,
+    "user_validated": false
+  },
+  "threats": {
+    "all_threats": [
+      {
+        "id": "T001",
+        "statement": "T001 - Authentication",
+        "description": "**Threat Statement**: A malicious attacker with compromised X.509 certificates, can impersonate legitimate IoT devices, which leads to injection of malicious sensor data and unauthorized device commands, resulting in reduced integrity of device data and control systems.\n\n- **Threat Source**: malicious attacker\n- **Prerequisites**: compromised X.509 certificates\n- **Threat Action**: impersonate legitimate IoT devices\n- **Threat Impact**: injection of malicious sensor data and unauthorized device commands\n- **Reduced Goal**: integrity\n- **Impacted Assets**: device data and control systems\n- **Priority**: High\n- **Category**: Authentication\n\n---",
+        "severity": "High",
+        "category": "Authentication",
+        "source": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T002",
+        "statement": "T002 - Cryptographic Failures",
+        "description": "**Threat Statement**: A nation-state actor with advanced persistent threat capabilities, can intercept and decrypt MQTT over TLS communications, which leads to exposure of sensitive healthcare and industrial data, resulting in reduced confidentiality of patient monitors and SCADA systems.\n\n- **Threat Source**: nation-state actor\n- **Prerequisites**: advanced persistent threat capabilities\n- **Threat Action**: intercept and decrypt MQTT over TLS communications\n- **Threat Impact**: exposure of sensitive healthcare and industrial data\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: patient monitors and SCADA systems\n- **Priority**: High\n- **Category**: Cryptographic Failures\n\n---",
+        "severity": "High",
+        "category": "Cryptographic Failures",
+        "source": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T003",
+        "statement": "T003 - Supply Chain",
+        "description": "**Threat Statement**: A malicious insider with administrative access to AWS IoT Core, can push malicious firmware updates through the OTA system, which leads to complete device compromise and potential safety hazards, resulting in reduced integrity of industrial controllers and healthcare devices.\n\n- **Threat Source**: malicious insider\n- **Prerequisites**: administrative access to AWS IoT Core\n- **Threat Action**: push malicious firmware updates through the OTA system\n- **Threat Impact**: complete device compromise and potential safety hazards\n- **Reduced Goal**: integrity\n- **Impacted Assets**: industrial controllers and healthcare devices\n- **Priority**: High\n- **Category**: Supply Chain\n\n---",
+        "severity": "High",
+        "category": "Supply Chain",
+        "source": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T004",
+        "statement": "T004 - Denial of Service",
+        "description": "**Threat Statement**: A cybercriminal with botnet resources, can launch distributed denial-of-service attacks against the communication gateway, which leads to disruption of critical device communications, resulting in reduced availability of smart meters and vehicle telematics systems.\n\n- **Threat Source**: cybercriminal\n- **Prerequisites**: botnet resources\n- **Threat Action**: launch distributed denial-of-service attacks against the communication gateway\n- **Threat Impact**: disruption of critical device communications\n- **Reduced Goal**: availability\n- **Impacted Assets**: smart meters and vehicle telematics systems\n- **Priority**: High\n- **Category**: Denial of Service\n\n---\n\n### Medium Priority Threats",
+        "severity": "High",
+        "category": "Denial of Service",
+        "source": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T005",
+        "statement": "T005 - Injection",
+        "description": "**Threat Statement**: A malicious attacker with network access to Kafka message broker, can inject false sensor readings into data streams, which leads to incorrect analytics and decision making, resulting in reduced integrity of data processing engine and time-series data.\n\n- **Threat Source**: malicious attacker\n- **Prerequisites**: network access to Kafka message broker\n- **Threat Action**: inject false sensor readings into data streams\n- **Threat Impact**: incorrect analytics and decision making\n- **Reduced Goal**: integrity\n- **Impacted Assets**: data processing engine and time-series data\n- **Priority**: Medium\n- **Category**: Injection\n\n---",
+        "severity": "Medium",
+        "category": "Injection",
+        "source": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T006",
+        "statement": "T006 - Broken Access Control",
+        "description": "**Threat Statement**: A threat actor with compromised MongoDB credentials, can access and exfiltrate device configuration data, which leads to exposure of network topology and security parameters, resulting in reduced confidentiality of device registry and configuration data.\n\n- **Threat Source**: threat actor\n- **Prerequisites**: compromised MongoDB credentials\n- **Threat Action**: access and exfiltrate device configuration data\n- **Threat Impact**: exposure of network topology and security parameters\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: device registry and configuration data\n- **Priority**: Medium\n- **Category**: Broken Access Control\n\n---",
+        "severity": "Medium",
+        "category": "Broken Access Control",
+        "source": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T007",
+        "statement": "T007 - Code Injection",
+        "description": "**Threat Statement**: A malicious actor with access to Lambda functions, can modify data processing logic to corrupt sensor readings, which leads to inaccurate monitoring and false alarms, resulting in reduced integrity of smart sensors and anomaly detection system.\n\n- **Threat Source**: malicious actor\n- **Prerequisites**: access to Lambda functions\n- **Threat Action**: modify data processing logic to corrupt sensor readings\n- **Threat Impact**: inaccurate monitoring and false alarms\n- **Reduced Goal**: integrity\n- **Impacted Assets**: smart sensors and anomaly detection system\n- **Priority**: Medium\n- **Category**: Code Injection\n\n---",
+        "severity": "Medium",
+        "category": "Code Injection",
+        "source": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T008",
+        "statement": "T008 - Insecure Communication",
+        "description": "**Threat Statement**: A cybercriminal with CoAP protocol knowledge, can exploit weak device authentication to gain unauthorized access, which leads to device manipulation and data theft, resulting in reduced confidentiality of industrial automation systems.\n\n- **Threat Source**: cybercriminal\n- **Prerequisites**: CoAP protocol knowledge\n- **Threat Action**: exploit weak device authentication to gain unauthorized access\n- **Threat Impact**: device manipulation and data theft\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: industrial automation systems\n- **Priority**: Medium\n- **Category**: Insecure Communication\n\n---",
+        "severity": "Medium",
+        "category": "Insecure Communication",
+        "source": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T009",
+        "statement": "T009 - Data Integrity",
+        "description": "**Threat Statement**: A threat actor with access to InfluxDB instance, can modify historical time-series data, which leads to compromised trend analysis and reporting, resulting in reduced integrity of monitoring dashboards and compliance reports.\n\n- **Threat Source**: threat actor\n- **Prerequisites**: access to InfluxDB instance\n- **Threat Action**: modify historical time-series data\n- **Threat Impact**: compromised trend analysis and reporting\n- **Reduced Goal**: integrity\n- **Impacted Assets**: monitoring dashboards and compliance reports\n- **Priority**: Medium\n- **Category**: Data Integrity\n\n---",
+        "severity": "Medium",
+        "category": "Data Integrity",
+        "source": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T010",
+        "statement": "T010 - Broken Access Control",
+        "description": "**Threat Statement**: A malicious user with valid dashboard credentials, can access unauthorized device information across different organizations, which leads to data privacy violations, resulting in reduced confidentiality of multi-tenant device data.\n\n- **Threat Source**: malicious user\n- **Prerequisites**: valid dashboard credentials\n- **Threat Action**: access unauthorized device information across different organizations\n- **Threat Impact**: data privacy violations\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: multi-tenant device data\n- **Priority**: Medium\n- **Category**: Broken Access Control\n\n---\n\n### Low Priority Threats",
+        "severity": "Medium",
+        "category": "Broken Access Control",
+        "source": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T011",
+        "statement": "T011 - Information Disclosure",
+        "description": "**Threat Statement**: A script kiddie with basic network scanning tools, can discover exposed Prometheus metrics endpoints, which leads to information disclosure about system performance and topology, resulting in reduced confidentiality of infrastructure monitoring data.\n\n- **Threat Source**: script kiddie\n- **Prerequisites**: basic network scanning tools\n- **Threat Action**: discover exposed Prometheus metrics endpoints\n- **Threat Impact**: information disclosure about system performance and topology\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: infrastructure monitoring data\n- **Priority**: Low\n- **Category**: Information Disclosure\n\n---",
+        "severity": "Low",
+        "category": "Information Disclosure",
+        "source": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T012",
+        "statement": "T012 - Information Disclosure",
+        "description": "**Threat Statement**: A curious employee with read-only Grafana access, can view sensitive operational metrics beyond their authorization level, which leads to unauthorized information disclosure, resulting in reduced confidentiality of system performance data.\n\n- **Threat Source**: curious employee\n- **Prerequisites**: read-only Grafana access\n- **Threat Action**: view sensitive operational metrics beyond their authorization level\n- **Threat Impact**: unauthorized information disclosure\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: system performance data\n- **Priority**: Low\n- **Category**: Information Disclosure\n\n---\n\n\n## Usage Notes\n\nThese threat statements were generated using AI analysis of your application context. They follow the standard threat modeling syntax:\n\n**\"A [threat source] with [pre-requisites], can [threat action], which leads to [threat impact], resulting in [reduced goal] of [impacted assets].\"**\n\n### Next Steps\n1. Review and validate these threat statements\n2. Modify or add threats as needed for your specific context\n3. Use these threats as input for attack tree generation\n4. Consider implementing mitigations for high-priority threats\n\n### Customization\nYou can edit this file to:\n- Add more specific threat statements\n- Adjust priority levels\n- Include additional context or mitigations\n- Remove threats that don't apply to your application",
+        "severity": "Low",
+        "category": "Information Disclosure",
+        "source": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+      }
+    ],
+    "high_severity": [
+      {
+        "id": "T001",
+        "statement": "T001 - Authentication",
+        "description": "**Threat Statement**: A malicious attacker with compromised X.509 certificates, can impersonate legitimate IoT devices, which leads to injection of malicious sensor data and unauthorized device commands, resulting in reduced integrity of device data and control systems.\n\n- **Threat Source**: malicious attacker\n- **Prerequisites**: compromised X.509 certificates\n- **Threat Action**: impersonate legitimate IoT devices\n- **Threat Impact**: injection of malicious sensor data and unauthorized device commands\n- **Reduced Goal**: integrity\n- **Impacted Assets**: device data and control systems\n- **Priority**: High\n- **Category**: Authentication\n\n---",
+        "severity": "High",
+        "category": "Authentication",
+        "source": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T002",
+        "statement": "T002 - Cryptographic Failures",
+        "description": "**Threat Statement**: A nation-state actor with advanced persistent threat capabilities, can intercept and decrypt MQTT over TLS communications, which leads to exposure of sensitive healthcare and industrial data, resulting in reduced confidentiality of patient monitors and SCADA systems.\n\n- **Threat Source**: nation-state actor\n- **Prerequisites**: advanced persistent threat capabilities\n- **Threat Action**: intercept and decrypt MQTT over TLS communications\n- **Threat Impact**: exposure of sensitive healthcare and industrial data\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: patient monitors and SCADA systems\n- **Priority**: High\n- **Category**: Cryptographic Failures\n\n---",
+        "severity": "High",
+        "category": "Cryptographic Failures",
+        "source": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T003",
+        "statement": "T003 - Supply Chain",
+        "description": "**Threat Statement**: A malicious insider with administrative access to AWS IoT Core, can push malicious firmware updates through the OTA system, which leads to complete device compromise and potential safety hazards, resulting in reduced integrity of industrial controllers and healthcare devices.\n\n- **Threat Source**: malicious insider\n- **Prerequisites**: administrative access to AWS IoT Core\n- **Threat Action**: push malicious firmware updates through the OTA system\n- **Threat Impact**: complete device compromise and potential safety hazards\n- **Reduced Goal**: integrity\n- **Impacted Assets**: industrial controllers and healthcare devices\n- **Priority**: High\n- **Category**: Supply Chain\n\n---",
+        "severity": "High",
+        "category": "Supply Chain",
+        "source": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T004",
+        "statement": "T004 - Denial of Service",
+        "description": "**Threat Statement**: A cybercriminal with botnet resources, can launch distributed denial-of-service attacks against the communication gateway, which leads to disruption of critical device communications, resulting in reduced availability of smart meters and vehicle telematics systems.\n\n- **Threat Source**: cybercriminal\n- **Prerequisites**: botnet resources\n- **Threat Action**: launch distributed denial-of-service attacks against the communication gateway\n- **Threat Impact**: disruption of critical device communications\n- **Reduced Goal**: availability\n- **Impacted Assets**: smart meters and vehicle telematics systems\n- **Priority**: High\n- **Category**: Denial of Service\n\n---\n\n### Medium Priority Threats",
+        "severity": "High",
+        "category": "Denial of Service",
+        "source": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+      }
+    ]
+  },
+  "attack_trees": [
+    {
+      "threat_id": "T001",
+      "threat_category": "Authentication",
+      "threat_description": "**Threat Statement**: A malicious attacker with compromised X.509 certificates, can impersonate legitimate IoT devices, which leads to injection of malicious sensor data and unauthorized device commands, resulting in reduced integrity of device data and control systems.\n\n- **Threat Source**: malicious attacker\n- **Prerequisites**: compromised X.509 certificates\n- **Threat Action**: impersonate legitimate IoT devices\n- **Threat Impact**: injection of malicious sensor data and unauthorized device commands\n- **Reduced Goal**: integrity\n- **Impacted Assets**: device data and control systems\n- **Priority**: High\n- **Category**: Authentication\n\n---",
+      "threat_statement": "T001 - Authentication",
+      "threat_action": "",
+      "mermaid_code": "graph TD\n    A[\"Threat actor targeting authentication system\"] --> B[\"Reconnaissance of authentication mechanisms\"]\n    A --> C[\"Credential harvesting attempts\"]\n    B --> D[\"Enumerate authentication endpoints\"]\n    B --> E[\"Identify authentication protocols\"]\n    C --> F[\"Brute force attacks\"]\n    C --> G[\"Credential stuffing\"]\n    C --> H[\"Social engineering\"]\n    D --> I[\"Exploit weak authentication implementation\"]\n    E --> J[\"Target protocol vulnerabilities\"]\n    F --> K[\"Automated password attacks\"]\n    G --> L[\"Use leaked credential databases\"]\n    H --> M[\"Phishing for credentials\"]\n    I --> N[\"Bypass authentication controls\"]\n    J --> N\n    K --> O[\"Gain unauthorized access\"]\n    L --> O\n    M --> O\n    N --> O\n    O --> P[\"Compromise system confidentiality\"]\n    O --> Q[\"Compromise system integrity\"]\n    O --> R[\"Compromise system availability\"]\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N attack\n    class P,Q,R goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "Threat actor targeting authentication system"
+        },
+        {
+          "node_id": "B",
+          "description": "Reconnaissance of authentication mechanisms"
+        },
+        {
+          "node_id": "C",
+          "description": "Credential harvesting attempts"
+        },
+        {
+          "node_id": "D",
+          "description": "Enumerate authentication endpoints"
+        },
+        {
+          "node_id": "E",
+          "description": "Identify authentication protocols"
+        },
+        {
+          "node_id": "F",
+          "description": "Brute force attacks"
+        },
+        {
+          "node_id": "G",
+          "description": "Credential stuffing"
+        },
+        {
+          "node_id": "H",
+          "description": "Social engineering"
+        },
+        {
+          "node_id": "I",
+          "description": "Exploit weak authentication implementation"
+        },
+        {
+          "node_id": "J",
+          "description": "Target protocol vulnerabilities"
+        },
+        {
+          "node_id": "K",
+          "description": "Automated password attacks"
+        },
+        {
+          "node_id": "L",
+          "description": "Use leaked credential databases"
+        },
+        {
+          "node_id": "M",
+          "description": "Phishing for credentials"
+        },
+        {
+          "node_id": "N",
+          "description": "Bypass authentication controls"
+        },
+        {
+          "node_id": "O",
+          "description": "Gain unauthorized access"
+        },
+        {
+          "node_id": "P",
+          "description": "Compromise system confidentiality"
+        },
+        {
+          "node_id": "Q",
+          "description": "Compromise system integrity"
+        },
+        {
+          "node_id": "R",
+          "description": "Compromise system availability"
+        }
+      ],
+      "generated_content": "# Attack Tree for T001 - Authentication\n\n```mermaid\ngraph TD\n    A[\"Threat actor targeting authentication system\"] --> B[\"Reconnaissance of authentication mechanisms\"]\n    A --> C[\"Credential harvesting attempts\"]\n    \n    B --> D[\"Enumerate authentication endpoints\"]\n    B --> E[\"Identify authentication protocols\"]\n    \n    C --> F[\"Brute force attacks\"]\n    C --> G[\"Credential stuffing\"]\n    C --> H[\"Social engineering\"]\n    \n    D --> I[\"Exploit weak authentication implementation\"]\n    E --> J[\"Target protocol vulnerabilities\"]\n    F --> K[\"Automated password attacks\"]\n    G --> L[\"Use leaked credential databases\"]\n    H --> M[\"Phishing for credentials\"]\n    \n    I --> N[\"Bypass authentication controls\"]\n    J --> N\n    K --> O[\"Gain unauthorized access\"]\n    L --> O\n    M --> O\n    N --> O\n    \n    O --> P[\"Compromise system confidentiality\"]\n    O --> Q[\"Compromise system integrity\"]\n    O --> R[\"Compromise system availability\"]\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N attack\n    class P,Q,R goal\n    class A fact\n```",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 21,
+        "tech_mentions": 0
+      }
+    },
+    {
+      "threat_id": "T002",
+      "threat_category": "Cryptographic Failures",
+      "threat_description": "**Threat Statement**: A nation-state actor with advanced persistent threat capabilities, can intercept and decrypt MQTT over TLS communications, which leads to exposure of sensitive healthcare and industrial data, resulting in reduced confidentiality of patient monitors and SCADA systems.\n\n- **Threat Source**: nation-state actor\n- **Prerequisites**: advanced persistent threat capabilities\n- **Threat Action**: intercept and decrypt MQTT over TLS communications\n- **Threat Impact**: exposure of sensitive healthcare and industrial data\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: patient monitors and SCADA systems\n- **Priority**: High\n- **Category**: Cryptographic Failures\n\n---",
+      "threat_statement": "T002 - Cryptographic Failures",
+      "threat_action": "",
+      "mermaid_code": "graph TD\n    A[\"Threat actor with network access\"] --> B[\"Cryptographic vulnerability discovery\"]\n    A --> C[\"Traffic interception capability\"]\n    B --> D[\"Weak encryption algorithm exploitation\"]\n    B --> E[\"Poor key management exploitation\"]\n    B --> F[\"Implementation flaw exploitation\"]\n    C --> G[\"Man-in-the-middle attack\"]\n    C --> H[\"Passive traffic monitoring\"]\n    D --> I[\"Brute force weak ciphers\"]\n    D --> J[\"Exploit deprecated protocols\"]\n    E --> K[\"Extract hardcoded keys\"]\n    E --> L[\"Exploit key reuse\"]\n    E --> M[\"Target weak key generation\"]\n    F --> N[\"Padding oracle attack\"]\n    F --> O[\"Timing attack exploitation\"]\n    G --> P[\"Certificate spoofing\"]\n    H --> Q[\"Encrypted data collection\"]\n    I --> R[\"Data decryption achieved\"]\n    J --> R\n    K --> R\n    L --> R\n    M --> R\n    N --> R\n    O --> R\n    P --> S[\"Credential theft\"]\n    Q --> T[\"Offline cryptanalysis\"]\n    S --> U[\"Unauthorized access\"]\n    T --> R\n    R --> V[\"Confidentiality compromised\"]\n    U --> V\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,S,T,U attack\n    class V,R goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "Threat actor with network access"
+        },
+        {
+          "node_id": "B",
+          "description": "Cryptographic vulnerability discovery"
+        },
+        {
+          "node_id": "C",
+          "description": "Traffic interception capability"
+        },
+        {
+          "node_id": "D",
+          "description": "Weak encryption algorithm exploitation"
+        },
+        {
+          "node_id": "E",
+          "description": "Poor key management exploitation"
+        },
+        {
+          "node_id": "F",
+          "description": "Implementation flaw exploitation"
+        },
+        {
+          "node_id": "G",
+          "description": "Man-in-the-middle attack"
+        },
+        {
+          "node_id": "H",
+          "description": "Passive traffic monitoring"
+        },
+        {
+          "node_id": "I",
+          "description": "Brute force weak ciphers"
+        },
+        {
+          "node_id": "J",
+          "description": "Exploit deprecated protocols"
+        },
+        {
+          "node_id": "K",
+          "description": "Extract hardcoded keys"
+        },
+        {
+          "node_id": "L",
+          "description": "Exploit key reuse"
+        },
+        {
+          "node_id": "M",
+          "description": "Target weak key generation"
+        },
+        {
+          "node_id": "N",
+          "description": "Padding oracle attack"
+        },
+        {
+          "node_id": "O",
+          "description": "Timing attack exploitation"
+        },
+        {
+          "node_id": "P",
+          "description": "Certificate spoofing"
+        },
+        {
+          "node_id": "Q",
+          "description": "Encrypted data collection"
+        },
+        {
+          "node_id": "R",
+          "description": "Data decryption achieved"
+        },
+        {
+          "node_id": "S",
+          "description": "Credential theft"
+        },
+        {
+          "node_id": "T",
+          "description": "Offline cryptanalysis"
+        },
+        {
+          "node_id": "U",
+          "description": "Unauthorized access"
+        },
+        {
+          "node_id": "V",
+          "description": "Confidentiality compromised"
+        }
+      ],
+      "generated_content": "# Attack Tree for T002 - Cryptographic Failures\n\n```mermaid\ngraph TD\n    A[\"Threat actor with network access\"] --> B[\"Cryptographic vulnerability discovery\"]\n    A --> C[\"Traffic interception capability\"]\n    \n    B --> D[\"Weak encryption algorithm exploitation\"]\n    B --> E[\"Poor key management exploitation\"]\n    B --> F[\"Implementation flaw exploitation\"]\n    \n    C --> G[\"Man-in-the-middle attack\"]\n    C --> H[\"Passive traffic monitoring\"]\n    \n    D --> I[\"Brute force weak ciphers\"]\n    D --> J[\"Exploit deprecated protocols\"]\n    \n    E --> K[\"Extract hardcoded keys\"]\n    E --> L[\"Exploit key reuse\"]\n    E --> M[\"Target weak key generation\"]\n    \n    F --> N[\"Padding oracle attack\"]\n    F --> O[\"Timing attack exploitation\"]\n    \n    G --> P[\"Certificate spoofing\"]\n    H --> Q[\"Encrypted data collection\"]\n    \n    I --> R[\"Data decryption achieved\"]\n    J --> R\n    K --> R\n    L --> R\n    M --> R\n    N --> R\n    O --> R\n    P --> S[\"Credential theft\"]\n    Q --> T[\"Offline cryptanalysis\"]\n    \n    S --> U[\"Unauthorized access\"]\n    T --> R\n    R --> V[\"Confidentiality compromised\"]\n    U --> V\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,S,T,U attack\n    class V,R goal\n    class A fact\n```",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 29,
+        "tech_mentions": 0
+      }
+    },
+    {
+      "threat_id": "T003",
+      "threat_category": "Supply Chain",
+      "threat_description": "**Threat Statement**: A malicious insider with administrative access to AWS IoT Core, can push malicious firmware updates through the OTA system, which leads to complete device compromise and potential safety hazards, resulting in reduced integrity of industrial controllers and healthcare devices.\n\n- **Threat Source**: malicious insider\n- **Prerequisites**: administrative access to AWS IoT Core\n- **Threat Action**: push malicious firmware updates through the OTA system\n- **Threat Impact**: complete device compromise and potential safety hazards\n- **Reduced Goal**: integrity\n- **Impacted Assets**: industrial controllers and healthcare devices\n- **Priority**: High\n- **Category**: Supply Chain\n\n---",
+      "threat_statement": "T003 - Supply Chain",
+      "threat_action": "",
+      "mermaid_code": "graph TD\n    A[\"Threat actor identifies supply chain targets\"] --> B[\"Compromise upstream dependencies\"]\n    A --> C[\"Target builddeployment pipeline\"]\n    B --> D[\"Inject malicious code into libraries\"]\n    B --> E[\"Compromise package repositories\"]\n    C --> F[\"Infiltrate CICD systems\"]\n    C --> G[\"Compromise development tools\"]\n    D --> H[\"Malicious package distribution\"]\n    E --> H\n    F --> I[\"Inject backdoors during build\"]\n    G --> I\n    H --> J[\"Downstream application compromise\"]\n    I --> J\n    J --> K[\"Supply chain attack successful\"]\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J attack\n    class K goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "Threat actor identifies supply chain targets"
+        },
+        {
+          "node_id": "B",
+          "description": "Compromise upstream dependencies"
+        },
+        {
+          "node_id": "C",
+          "description": "Target builddeployment pipeline"
+        },
+        {
+          "node_id": "D",
+          "description": "Inject malicious code into libraries"
+        },
+        {
+          "node_id": "E",
+          "description": "Compromise package repositories"
+        },
+        {
+          "node_id": "F",
+          "description": "Infiltrate CICD systems"
+        },
+        {
+          "node_id": "G",
+          "description": "Compromise development tools"
+        },
+        {
+          "node_id": "H",
+          "description": "Malicious package distribution"
+        },
+        {
+          "node_id": "I",
+          "description": "Inject backdoors during build"
+        },
+        {
+          "node_id": "J",
+          "description": "Downstream application compromise"
+        },
+        {
+          "node_id": "K",
+          "description": "Supply chain attack successful"
+        }
+      ],
+      "generated_content": "# T003 - Supply Chain Attack Tree\n\n```mermaid\ngraph TD\n    A[\"Threat actor identifies supply chain targets\"] --> B[\"Compromise upstream dependencies\"]\n    A --> C[\"Target build/deployment pipeline\"]\n    \n    B --> D[\"Inject malicious code into libraries\"]\n    B --> E[\"Compromise package repositories\"]\n    \n    C --> F[\"Infiltrate CI/CD systems\"]\n    C --> G[\"Compromise development tools\"]\n    \n    D --> H[\"Malicious package distribution\"]\n    E --> H\n    F --> I[\"Inject backdoors during build\"]\n    G --> I\n    \n    H --> J[\"Downstream application compromise\"]\n    I --> J\n    \n    J --> K[\"Supply chain attack successful\"]\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J attack\n    class K goal\n    class A fact\n```",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 13,
+        "tech_mentions": 0
+      }
+    },
+    {
+      "threat_id": "T004",
+      "threat_category": "Denial of Service",
+      "threat_description": "**Threat Statement**: A cybercriminal with botnet resources, can launch distributed denial-of-service attacks against the communication gateway, which leads to disruption of critical device communications, resulting in reduced availability of smart meters and vehicle telematics systems.\n\n- **Threat Source**: cybercriminal\n- **Prerequisites**: botnet resources\n- **Threat Action**: launch distributed denial-of-service attacks against the communication gateway\n- **Threat Impact**: disruption of critical device communications\n- **Reduced Goal**: availability\n- **Impacted Assets**: smart meters and vehicle telematics systems\n- **Priority**: High\n- **Category**: Denial of Service\n\n---\n\n### Medium Priority Threats",
+      "threat_statement": "T004 - Denial of Service",
+      "threat_action": "",
+      "mermaid_code": "graph TD\n    A[\"Threat actor with network access\"] --> B[\"Network-based DoS attack\"]\n    A --> C[\"Application-layer DoS attack\"]\n    A --> D[\"Resource exhaustion attack\"]\n    B --> E[\"Volumetric flooding\"]\n    B --> F[\"Protocol exploitation\"]\n    E --> G[\"UDP flood\"]\n    E --> H[\"ICMP flood\"]\n    E --> I[\"TCP SYN flood\"]\n    F --> J[\"TCP connection exhaustion\"]\n    F --> K[\"Fragmented packet attack\"]\n    C --> L[\"HTTP request flooding\"]\n    C --> M[\"Slowloris attack\"]\n    C --> N[\"Application logic abuse\"]\n    L --> O[\"GETPOST request spam\"]\n    M --> P[\"Slow HTTP headers\"]\n    N --> Q[\"CPU-intensive operations\"]\n    D --> R[\"Memory exhaustion\"]\n    D --> S[\"Storage exhaustion\"]\n    D --> T[\"Bandwidth saturation\"]\n    G --> U[\"Service unavailability\"]\n    H --> U\n    I --> U\n    J --> U\n    K --> U\n    O --> U\n    P --> U\n    Q --> U\n    R --> U\n    S --> U\n    T --> U\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T attack\n    class U goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "Threat actor with network access"
+        },
+        {
+          "node_id": "B",
+          "description": "Network-based DoS attack"
+        },
+        {
+          "node_id": "C",
+          "description": "Application-layer DoS attack"
+        },
+        {
+          "node_id": "D",
+          "description": "Resource exhaustion attack"
+        },
+        {
+          "node_id": "E",
+          "description": "Volumetric flooding"
+        },
+        {
+          "node_id": "F",
+          "description": "Protocol exploitation"
+        },
+        {
+          "node_id": "G",
+          "description": "UDP flood"
+        },
+        {
+          "node_id": "H",
+          "description": "ICMP flood"
+        },
+        {
+          "node_id": "I",
+          "description": "TCP SYN flood"
+        },
+        {
+          "node_id": "J",
+          "description": "TCP connection exhaustion"
+        },
+        {
+          "node_id": "K",
+          "description": "Fragmented packet attack"
+        },
+        {
+          "node_id": "L",
+          "description": "HTTP request flooding"
+        },
+        {
+          "node_id": "M",
+          "description": "Slowloris attack"
+        },
+        {
+          "node_id": "N",
+          "description": "Application logic abuse"
+        },
+        {
+          "node_id": "O",
+          "description": "GETPOST request spam"
+        },
+        {
+          "node_id": "P",
+          "description": "Slow HTTP headers"
+        },
+        {
+          "node_id": "Q",
+          "description": "CPU-intensive operations"
+        },
+        {
+          "node_id": "R",
+          "description": "Memory exhaustion"
+        },
+        {
+          "node_id": "S",
+          "description": "Storage exhaustion"
+        },
+        {
+          "node_id": "T",
+          "description": "Bandwidth saturation"
+        },
+        {
+          "node_id": "U",
+          "description": "Service unavailability"
+        }
+      ],
+      "generated_content": "# Attack Tree for T004 - Denial of Service\n\n```mermaid\ngraph TD\n    A[\"Threat actor with network access\"] --> B[\"Network-based DoS attack\"]\n    A --> C[\"Application-layer DoS attack\"]\n    A --> D[\"Resource exhaustion attack\"]\n    \n    B --> E[\"Volumetric flooding\"]\n    B --> F[\"Protocol exploitation\"]\n    \n    E --> G[\"UDP flood\"]\n    E --> H[\"ICMP flood\"]\n    E --> I[\"TCP SYN flood\"]\n    \n    F --> J[\"TCP connection exhaustion\"]\n    F --> K[\"Fragmented packet attack\"]\n    \n    C --> L[\"HTTP request flooding\"]\n    C --> M[\"Slowloris attack\"]\n    C --> N[\"Application logic abuse\"]\n    \n    L --> O[\"GET/POST request spam\"]\n    M --> P[\"Slow HTTP headers\"]\n    N --> Q[\"CPU-intensive operations\"]\n    \n    D --> R[\"Memory exhaustion\"]\n    D --> S[\"Storage exhaustion\"]\n    D --> T[\"Bandwidth saturation\"]\n    \n    G --> U[\"Service unavailability\"]\n    H --> U\n    I --> U\n    J --> U\n    K --> U\n    O --> U\n    P --> U\n    Q --> U\n    R --> U\n    S --> U\n    T --> U\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T attack\n    class U goal\n    class A fact\n```",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 30,
+        "tech_mentions": 0
+      }
+    }
+  ],
+  "mapping_summary": {}
+}

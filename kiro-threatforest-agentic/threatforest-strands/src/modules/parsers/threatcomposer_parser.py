@@ -13,7 +13,8 @@ class ThreatComposerParser(ThreatParser):
     
     def can_parse(self, file_path: Path, content: str = None) -> bool:
         """Check if file is ThreatComposer format"""
-        if file_path.suffix.lower() != '.tc':
+        # Check for .tc or .tc.json extension
+        if not (file_path.suffix.lower() == '.tc' or file_path.name.lower().endswith('.tc.json')):
             return False
         
         if content is None:

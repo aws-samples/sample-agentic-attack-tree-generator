@@ -7,6 +7,14 @@ import json
 from datetime import datetime
 
 
+class PathEncoder(json.JSONEncoder):
+    """Custom JSON encoder to handle Path objects"""
+    def default(self, obj):
+        if isinstance(obj, Path):
+            return str(obj)
+        return super().default(obj)
+
+
 class SummaryGeneratorTool(Tool):
     """Tool for generating comprehensive summary reports"""
     
@@ -22,6 +30,15 @@ class SummaryGeneratorTool(Tool):
                      output_dir: str) -> Dict[str, Any]:
         """Execute summary generation"""
         
+        # Import progress emitter
+        try:
+            from ..core.progress import ProgressEmitter, ProgressEvent, ProgressEventType
+            progress_emitter = ProgressEmitter()
+            PROGRESS_AVAILABLE = True
+        except ImportError:
+            PROGRESS_AVAILABLE = False
+            progress_emitter = None
+        
         try:
             output_path = Path(output_dir)
             output_path.mkdir(parents=True, exist_ok=True)
@@ -35,6 +52,15 @@ class SummaryGeneratorTool(Tool):
             project_info = extracted_info.get('project_info', {})
             extraction_summary = extracted_info.get('extraction_summary', {})
             
+            # Emit progress: Starting main summary
+            if PROGRESS_AVAILABLE and progress_emitter:
+                progress_emitter.emit(ProgressEvent(
+                    type=ProgressEventType.STAGE_UPDATE,
+                    stage="summary",
+                    percentage=82.0,
+                    message="Generating analysis report"
+                ))
+            
             # Generate main summary report
             try:
                 summary_file = self._generate_main_summary(
@@ -44,28 +70,36 @@ class SummaryGeneratorTool(Tool):
                 self.logger.warning(f"Main summary generation failed: {e}")
                 summary_file = None
             
+            # Emit progress: Generating attack tree files
+            if PROGRESS_AVAILABLE and progress_emitter:
+                progress_emitter.emit(ProgressEvent(
+                    type=ProgressEventType.STAGE_UPDATE,
+                    stage="summary",
+                    percentage=88.0,
+                    message="Generating attack tree files"
+                ))
+            
             # Generate individual attack tree files
             try:
-                # Handle both mapped and unmapped attack trees
-                trees_to_process = []
-                if attack_trees and isinstance(attack_trees, dict):
-                    trees_to_process = attack_trees.get('ttc_mapped_trees', [])
-                    if not trees_to_process:
-                        trees_to_process = attack_trees.get('attack_trees', [])
-                elif attack_trees and isinstance(attack_trees, list):
-                    trees_to_process = attack_trees
-                
-                tree_files = self._generate_attack_tree_files(
-                    output_path, trees_to_process
-                )
+                trees = attack_trees.get('ttc_mapped_trees', [])
+                if not trees:
+                    trees = attack_trees.get('attack_trees', [])
+                tree_files = self._generate_attack_tree_files(output_path, trees)
             except Exception as e:
-                self.logger.warning(f"Attack tree files generation failed: {e}")
-                import traceback
-                traceback.print_exc()
+                self.logger.warning(f"Attack tree processing failed: {e}")
                 tree_files = []
             
             # Skip TTC mapping report generation
             ttc_file = None
+            
+            # Emit progress: Exporting JSON data
+            if PROGRESS_AVAILABLE and progress_emitter:
+                progress_emitter.emit(ProgressEvent(
+                    type=ProgressEventType.STAGE_UPDATE,
+                    stage="summary",
+                    percentage=95.0,
+                    message="Exporting JSON data"
+                ))
             
             # Generate JSON data export
             try:
@@ -112,6 +146,7 @@ class SummaryGeneratorTool(Tool):
         if not trees:
             trees = attack_trees.get('attack_trees', [])
         successful_trees = [t for t in trees if 'mermaid_code' in t]
+        failed_trees = [t for t in trees if 'error' in t]
         
         summary_content = f"""# ThreatForest Analysis Report
 
@@ -148,6 +183,8 @@ This report presents a comprehensive threat analysis for **{project_info.get('ap
 
 ### Generated Attack Trees
 {self._format_attack_trees_summary(successful_trees)}
+
+{self._format_failed_trees(failed_trees) if failed_trees else ''}
 
 ## Recommendations
 
@@ -190,35 +227,62 @@ This report presents a comprehensive threat analysis for **{project_info.get('ap
                 continue
                 
             threat_id = tree.get('threat_id', tree.get('id', 'unknown'))
-            threat_statement = tree.get('threat_statement', tree.get('description', 'No description available'))
+            # Use threat_statement (not threat_description which is None for ThreatComposer)
+            threat_statement = tree.get('threat_statement', tree.get('statement', 'No description available'))
             category = tree.get('threat_category', tree.get('category', 'Unknown'))
             
-            # Extract and condense threat statement to key words
+            # Extract category name from statement (e.g., "T001 - Authentication" -> "Authentication")
             import re
-            # Remove common words and extract key terms
-            short_desc = threat_statement.split('-')[0].strip() if '-' in threat_statement else threat_statement.split('\n')[0].strip()
+            if ' - ' in threat_statement:
+                category_name = threat_statement.split(' - ', 1)[1].strip()
+                name_part = category_name
+            else:
+                category_name = category
+                name_part = category
             
-            # Remove common filler words
-            stop_words = ['threat', 'an', 'a', 'the', 'can', 'could', 'may', 'might', 'who', 'with', 'to', 'of', 'in', 'on', 'at', 'for', 'by']
-            words = short_desc.lower().split()
-            key_words = [w for w in words if w not in stop_words and len(w) > 2][:4]  # Max 4 key words
+            # Clean and format the name for filename
+            name_clean = name_part.lower().replace(' ', '_')
+            name_clean = re.sub(r'[^\w_]', '', name_clean)
             
-            # Create condensed description
-            short_desc_clean = '_'.join(key_words) if key_words else 'threat'
-            short_desc_clean = re.sub(r'[^\w_]', '', short_desc_clean)
-            
-            # Use sequential number (001, 002, etc.) instead of threat_id
-            filename = f"attack_tree_{idx:03d}_{short_desc_clean}.md"
+            # Use threat ID in filename (e.g., attack_tree_T001_authentication.md)
+            filename = f"attack_tree_{threat_id}_{name_clean}.md"
                 
             file_path = output_path / filename
             
+            # Build detailed threat information section
+            threat_details = ""
+            threat_source = tree.get('threatSource', '')
+            prerequisites = tree.get('prerequisites', '')
+            threat_action = tree.get('threatAction', '')
+            threat_impact = tree.get('threatImpact', '')
+            impacted_goal = tree.get('impactedGoal', [])
+            impacted_assets = tree.get('impactedAssets', [])
+            priority = tree.get('priority', '')
+            
+            # Only add details section if we have the structured fields
+            if threat_source or prerequisites or threat_action or threat_impact:
+                goal_str = ', '.join(impacted_goal) if isinstance(impacted_goal, list) else str(impacted_goal)
+                asset_str = ', '.join(impacted_assets) if isinstance(impacted_assets, list) else str(impacted_assets)
+                
+                threat_details = f"""
+- **Threat Source**: {threat_source}
+- **Prerequisites**: {prerequisites}
+- **Threat Action**: {threat_action}
+- **Threat Impact**: {threat_impact}
+- **Reduced Goal**: {goal_str}
+- **Impacted Assets**: {asset_str}
+- **Priority**: {priority}
+- **Category**: {category_name}
+
+---
+"""
+            
             # Create content without TTC mappings
-            content = f"""# Attack Tree: {category}
+            content = f"""# Attack Tree: {category_name}
 
 **Threat ID**: {threat_id}  
-**Threat Number**: {idx}
 **Associated threat statement**: {threat_statement}
-
+{threat_details}
 ## Attack Tree Diagram
 
 ```mermaid
@@ -359,7 +423,7 @@ Review this attack tree to:
         
         json_file = output_path / "threatforest_data.json"
         with open(json_file, 'w') as f:
-            json.dump(export_data, f, indent=2)
+            json.dump(export_data, f, indent=2, cls=PathEncoder)
         
         return str(json_file)
     
@@ -385,7 +449,20 @@ Review this attack tree to:
         
         result = []
         for i, threat in enumerate(threats, 1):
-            result.append(f"{i}. **{threat.get('id')}**: {threat.get('category')}")
+            threat_id = threat.get('id', 'Unknown')
+            description = threat.get('description', threat.get('category', ''))
+            
+            # Extract just the threat statement if it contains detailed breakdown
+            if '**Threat Statement**:' in description:
+                # Get only the first line (the threat statement)
+                statement = description.split('\n')[0].replace('**Threat Statement**:', '').strip()
+            else:
+                statement = description
+            
+            result.append(f"{i}. **{threat_id}**: {statement}")
+            result.append("")
+            result.append("---")
+        
         return '\n'.join(result)
     
     def _format_attack_trees_summary(self, trees: List[Dict[str, Any]]) -> str:
@@ -398,6 +475,33 @@ Review this attack tree to:
             category = tree.get('threat_category', 'Unknown')
             mappings = len(tree.get('ttc_mappings', []))
             result.append(f"- **{threat_id}**: {category} ({mappings} TTC mappings)")
+        return '\n'.join(result)
+    
+    def _format_failed_trees(self, failed: List[Dict[str, Any]]) -> str:
+        """Format failed attack tree generation attempts"""
+        if not failed:
+            return ""
+        
+        result = ["### Failed Attack Tree Generation", ""]
+        result.append("⚠️ The following threats could not generate attack trees:")
+        result.append("")
+        
+        for tree in failed:
+            threat_id = tree.get('threat_id', 'Unknown')
+            error = tree.get('error', 'Unknown error')
+            # Simplify error message
+            if 'Throttling' in error or 'throttling' in error:
+                error_type = "API throttling/rate limiting"
+            elif 'ValidationException' in error:
+                error_type = "Model validation error"
+            else:
+                error_type = "Generation error"
+            result.append(f"- **{threat_id}**: {error_type}")
+        
+        result.append("")
+        result.append("**Recommendation**: Re-run ThreatForest with the same project directory to retry failed threats. The tool will automatically skip successful ones and only retry failures.")
+        result.append("")
+        
         return '\n'.join(result)
     
     def _format_top_techniques(self, trees: List[Dict[str, Any]]) -> str:

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Text } from 'ink';
 import { StageIndicator, StageStatus } from './StageIndicator';
 import { ProgressBar } from './ProgressBar';
-import { CacheStats } from './CacheStats';
+import { ProgressDetails } from './ProgressDetails';
 import { ParallelExecutionDisplay } from './ParallelExecutionDisplay';
 import { ETADisplay } from './ETADisplay';
 import { WorkflowState } from '../hooks/useWorkflow';
@@ -18,18 +18,19 @@ interface Stage {
 
 export const ProgressScreen: React.FC<Props> = ({ state }) => {
   const [stages, setStages] = useState<Stage[]>([
-    { name: 'File Discovery', status: 'pending' },
-    { name: 'Threat Extraction', status: 'pending' },
+    { name: 'Context Analysis', status: 'pending' },
+    { name: 'Information Extraction', status: 'pending' },
     { name: 'Attack Tree Generation', status: 'pending' },
-    { name: 'TTC Mapping', status: 'pending' }
+    { name: 'Summary Generation', status: 'pending' }
   ]);
 
   useEffect(() => {
     const stageMap: Record<string, number> = {
-      'discovery': 0,
+      'setup': 0,
+      'context': 0,
       'extraction': 1,
       'trees': 2,
-      'mapping': 3,
+      'summary': 3,
       'complete': 4
     };
 
@@ -49,29 +50,7 @@ export const ProgressScreen: React.FC<Props> = ({ state }) => {
       
       <StageIndicator stages={stages} />
       
-      {state.message && (
-        <Box marginTop={1}>
-          <Text dimColor>{state.message}</Text>
-        </Box>
-      )}
-      
-      <Box marginTop={1}>
-        <ProgressBar 
-          current={state.progress.current} 
-          total={state.progress.total}
-          label="Overall Progress"
-        />
-      </Box>
-      
-      {state.startTime && (
-        <Box marginTop={1}>
-          <ETADisplay 
-            startTime={state.startTime}
-            current={state.progress.current}
-            total={state.progress.total}
-          />
-        </Box>
-      )}
+      <ProgressDetails state={state} />
       
       {state.parallelTasks && state.parallelTasks.length > 0 && (
         <Box marginTop={1}>
@@ -81,10 +60,6 @@ export const ProgressScreen: React.FC<Props> = ({ state }) => {
           />
         </Box>
       )}
-      
-      <Box marginTop={1}>
-        <CacheStats />
-      </Box>
     </Box>
   );
 };

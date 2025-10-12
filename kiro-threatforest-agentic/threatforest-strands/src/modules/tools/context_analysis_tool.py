@@ -32,10 +32,26 @@ class ContextAnalysisTool(Tool):
         context_files = {
             "threat_models": discovered.threat_models,
             "readmes": [f for f in discovered.documentation if 'readme' in Path(f).name.lower()],
-            "architecture_diagrams": [f for f in discovered.diagrams if any(x in Path(f).name.lower() for x in ['arch', 'diagram'])],
+            "architecture_diagrams": [f for f in discovered.diagrams if 'flow' not in Path(f).name.lower() and 'dfd' not in Path(f).name.lower()],
             "data_flow_diagrams": [f for f in discovered.diagrams if 'flow' in Path(f).name.lower() or 'dfd' in Path(f).name.lower()],
             "other_docs": [f for f in discovered.documentation if 'readme' not in Path(f).name.lower()]
         }
+        
+        # Log discovered files by category
+        self.logger.info("=== DISCOVERED FILES ===")
+        self.logger.info(f"Threat Models: {len(context_files['threat_models'])}")
+        for f in context_files['threat_models']:
+            self.logger.info(f"  - {Path(f).name}")
+        self.logger.info(f"READMEs: {len(context_files['readmes'])}")
+        for f in context_files['readmes']:
+            self.logger.info(f"  - {Path(f).name}")
+        self.logger.info(f"Architecture Diagrams: {len(context_files['architecture_diagrams'])}")
+        for f in context_files['architecture_diagrams']:
+            self.logger.info(f"  - {Path(f).name}")
+        self.logger.info(f"Data Flow Diagrams: {len(context_files['data_flow_diagrams'])}")
+        for f in context_files['data_flow_diagrams']:
+            self.logger.info(f"  - {Path(f).name}")
+        self.logger.info(f"Other Documentation: {len(context_files['other_docs'])}")
         
         # Process threat models with enhanced extraction
         threat_analysis = self._process_threat_models(discovered.threat_models)

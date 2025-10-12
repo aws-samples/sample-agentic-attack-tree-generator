@@ -53,20 +53,26 @@ class ThreatForestLogger:
         """Initialize the logger with output directory
         
         Args:
-            output_dir: Directory for log files (default: ./threatforest_output)
+            output_dir: Directory for log files (default: ./output)
             json_mode: Use JSON format for logs (default: False)
             
         Returns:
             Path to the log file
         """
+        # If already initialized, return existing log file path
+        if cls._log_file_path is not None and cls._log_file_path.exists():
+            return cls._log_file_path
+            
         if output_dir is None:
-            output_dir = Path.cwd() / "threatforest_output"
+            output_dir = Path.cwd() / "output"
         
-        output_dir.mkdir(parents=True, exist_ok=True)
+        # Ensure logs go into logs/ subdirectory
+        log_dir = output_dir / "logs"
+        log_dir.mkdir(parents=True, exist_ok=True)
         
         # Create log file with timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        cls._log_file_path = output_dir / f"threatforest_run_{timestamp}.log"
+        cls._log_file_path = log_dir / f"threatforest_run_{timestamp}.log"
         cls._json_mode = json_mode
         
         # Configure root logger
@@ -74,8 +80,8 @@ class ThreatForestLogger:
         cls._logger.setLevel(logging.DEBUG)
         cls._logger.handlers.clear()  # Clear any existing handlers
         
-        # File handler with appropriate formatting
-        file_handler = logging.FileHandler(cls._log_file_path, mode='w', encoding='utf-8')
+        # File handler with append mode for multi-process logging
+        file_handler = logging.FileHandler(cls._log_file_path, mode='a', encoding='utf-8')
         file_handler.setLevel(logging.DEBUG)
         
         if json_mode:

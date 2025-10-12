@@ -21,7 +21,8 @@ from .validation import (
     AttackTreeGeneratorInput, TTCMappingInput, SummaryGeneratorInput
 )
 from .file_discovery import FileDiscovery, DiscoveredFiles
-from .cache import BedrockResponseCache, CacheEntry
+from .progress_events import ProgressEvent, ProgressEventType
+from .progress_emitter import ProgressEmitter
 
 __all__ = [
     'Tool', 'tool', 
@@ -41,5 +42,5 @@ __all__ = [
     'SetupToolInput', 'ContextAnalysisInput', 'ExtractionToolInput',
     'AttackTreeGeneratorInput', 'TTCMappingInput', 'SummaryGeneratorInput',
     'FileDiscovery', 'DiscoveredFiles',
-    'BedrockResponseCache', 'CacheEntry'
+    'ProgressEvent', 'ProgressEventType', 'ProgressEmitter'
 ]

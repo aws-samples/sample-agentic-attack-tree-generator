@@ -106,6 +106,10 @@ class InformationExtractionTool(Tool):
         import asyncio
         last_error = None
         
+        # Convert cross-region inference profile IDs to ARNs
+        if model_id.startswith('us.') or model_id.startswith('eu.'):
+            model_id = f"arn:aws:bedrock:us-east-1::foundation-model/{model_id}"
+        
         for attempt in range(self.max_retries):
             try:
                 response = bedrock_client.invoke_model(modelId=model_id, body=json.dumps(body))
@@ -281,12 +285,47 @@ class InformationExtractionTool(Tool):
             if parsed_data.get('format') == 'threatcomposer':
                 # ThreatComposer format
                 for threat in parsed_data.get('threats', []):
+                    # Extract priority from metadata array
+                    priority = 'Medium'
+                    for meta in threat.get('metadata', []):
+                        if meta.get('key') == 'Priority':
+                            priority = meta.get('value', 'Medium')
+                            break
+                    
+                    # Build threat statement from components if not present
+                    statement = threat.get('statement', '')
+                    if not statement:
+                        source = threat.get('threatSource', '')
+                        prereq = threat.get('prerequisites', '')
+                        action = threat.get('threatAction', '')
+                        impact = threat.get('threatImpact', '')
+                        goals = threat.get('impactedGoal', [])
+                        assets = threat.get('impactedAssets', [])
+                        
+                        goal_str = ', '.join(goals) if isinstance(goals, list) else str(goals)
+                        asset_str = ', '.join(assets) if isinstance(assets, list) else str(assets)
+                        
+                        statement = f"A {source} {prereq}, can {action}, which leads to {impact}, resulting in reduced {goal_str} of {asset_str}."
+                    
+                    # Extract category from tags
+                    category = ', '.join(threat.get('tags', [])) if threat.get('tags') else 'Unknown'
+                    
                     threats.append({
                         'id': threat.get('id', f"T{len(threats)+1:03d}"),
-                        'statement': threat.get('statement', ''),
-                        'severity': threat.get('priority', 'Medium'),
-                        'category': threat.get('metadata', {}).get('category', 'Unknown'),
-                        'source': 'threatcomposer'
+                        'numericId': threat.get('numericId'),
+                        'statement': statement,
+                        'description': statement,
+                        'threatSource': threat.get('threatSource', ''),
+                        'prerequisites': threat.get('prerequisites', ''),
+                        'threatAction': threat.get('threatAction', ''),
+                        'threatImpact': threat.get('threatImpact', ''),
+                        'impactedGoal': threat.get('impactedGoal', []),
+                        'impactedAssets': threat.get('impactedAssets', []),
+                        'severity': priority,
+                        'priority': priority,
+                        'category': category,
+                        'source': 'threatcomposer',
+                        'source_file': file_path
                     })
             
             elif parsed_data.get('format') in ['json', 'yaml']:
@@ -294,24 +333,56 @@ class InformationExtractionTool(Tool):
                 data = parsed_data.get('data', {})
                 threat_list = data.get('threats', [])
                 for threat in threat_list:
+                    severity = threat.get('severity', threat.get('priority', 'Medium'))
                     threats.append({
                         'id': threat.get('id', f"T{len(threats)+1:03d}"),
                         'statement': threat.get('statement', threat.get('description', '')),
-                        'severity': threat.get('severity', threat.get('priority', 'Medium')),
+                        'description': threat.get('description', threat.get('statement', '')),
+                        'threatSource': threat.get('threatSource', ''),
+                        'prerequisites': threat.get('prerequisites', ''),
+                        'threatAction': threat.get('threatAction', ''),
+                        'threatImpact': threat.get('threatImpact', ''),
+                        'impactedGoal': threat.get('impactedGoal', ''),
+                        'impactedAssets': threat.get('impactedAssets', ''),
+                        'severity': severity,
+                        'priority': threat.get('priority', severity),
                         'category': threat.get('category', 'Unknown'),
-                        'source': parsed_data['format']
+                        'source': parsed_data['format'],
+                        'source_file': file_path
                     })
             
             elif parsed_data.get('format') == 'markdown':
-                # Markdown format
+                # Markdown format - extract structured fields from description
                 for threat in parsed_data.get('threats', []):
+                    description = threat.get('description', '')
+                    
+                    # Extract structured fields from description if present
+                    threat_source = self._extract_field(description, 'Threat Source')
+                    prerequisites = self._extract_field(description, 'Prerequisites')
+                    threat_action = self._extract_field(description, 'Threat Action')
+                    threat_impact = self._extract_field(description, 'Threat Impact')
+                    impacted_goal = self._extract_field(description, 'Reduced Goal')
+                    impacted_assets = self._extract_field(description, 'Impacted Assets')
+                    priority = self._extract_field(description, 'Priority')
+                    
+                    # Get severity from threat or extracted priority
+                    severity = threat.get('severity', priority if priority else 'Medium')
+                    
                     threats.append({
-                        'id': f"T{len(threats)+1:03d}",
+                        'id': threat.get('id', f"T{len(threats)+1:03d}"),
                         'statement': threat.get('title', ''),
-                        'description': threat.get('description', ''),
-                        'severity': threat.get('severity', 'Medium'),
-                        'category': 'Markdown',
-                        'source': 'markdown'
+                        'description': description,
+                        'threatSource': threat_source,
+                        'prerequisites': prerequisites,
+                        'threatAction': threat_action,
+                        'threatImpact': threat_impact,
+                        'impactedGoal': impacted_goal,
+                        'impactedAssets': impacted_assets,
+                        'severity': severity,
+                        'priority': priority if priority else severity,
+                        'category': threat.get('category', 'Unknown'),
+                        'source': 'markdown',
+                        'source_file': parsed_data.get('file_path', 'markdown')
                     })
             
             if threats:
@@ -797,6 +868,13 @@ class InformationExtractionTool(Tool):
         
         return ""
     
+    def _extract_field(self, text: str, field_name: str) -> str:
+        """Extract a field value from markdown-style text"""
+        import re
+        pattern = rf'\*\*{field_name}\*\*:\s*(.+?)(?:\n|$)'
+        match = re.search(pattern, text)
+        return match.group(1).strip() if match else ''
+    
     def _extract_legacy_threats(self, content: str, file_path: str) -> List[Dict[str, Any]]:
         """Extract threats from legacy formats"""
         threats = []
@@ -942,13 +1020,32 @@ Focus on:
             # Parse JSON response
             try:
                 project_info = json.loads(content)
+                
+                # Log extracted project information
+                self.logger.info("=== EXTRACTED PROJECT INFORMATION ===")
+                self.logger.info(f"Application Name: {project_info.get('application_name', 'N/A')}")
+                self.logger.info(f"Sector/Industry: {project_info.get('sector', 'N/A')}")
+                self.logger.info(f"Architecture Type: {project_info.get('architecture_type', 'N/A')}")
+                self.logger.info(f"Deployment Environment: {project_info.get('deployment_environment', 'N/A')}")
+                
+                technologies = project_info.get('technologies', [])
+                self.logger.info(f"Technologies Identified: {len(technologies)}")
+                for tech in technologies[:10]:  # Log first 10
+                    self.logger.info(f"  - {tech}")
+                if len(technologies) > 10:
+                    self.logger.info(f"  ... and {len(technologies) - 10} more")
+                
                 return project_info
             except json.JSONDecodeError:
                 # Try to extract JSON from markdown code blocks
                 import re
                 json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', content, re.DOTALL)
                 if json_match:
-                    return json.loads(json_match.group(1))
+                    project_info = json.loads(json_match.group(1))
+                    self.logger.info("=== EXTRACTED PROJECT INFORMATION ===")
+                    self.logger.info(f"Application Name: {project_info.get('application_name', 'N/A')}")
+                    self.logger.info(f"Technologies: {len(project_info.get('technologies', []))}")
+                    return project_info
                 else:
                     return {"error": f"Failed to parse JSON response: {content[:200]}..."}
             
@@ -966,6 +1063,67 @@ Focus on:
         """Prepare all discovered content for Bedrock analysis"""
         content_parts = []
         
+        self.logger.info("=== PREPARING CONTENT FOR BEDROCK ANALYSIS ===")
+        
+        # Add ThreatComposer metadata if present
+        tc_file = None
+        
+        # Check manually specified threat model path
+        threat_model_path = context_files.get("threat_model_path")
+        if threat_model_path and threat_model_path.endswith('.tc.json'):
+            tc_file = threat_model_path
+        
+        # Check discovered threat models
+        if not tc_file:
+            threat_models = []
+            if "threat_models" in context_files:
+                threat_models = context_files["threat_models"]
+            elif "discovered_files" in context_files and "threat_models" in context_files["discovered_files"]:
+                threat_models = context_files["discovered_files"]["threat_models"]
+            
+            for tm_path in threat_models:
+                if tm_path.endswith('.tc.json'):
+                    tc_file = tm_path
+                    break
+        
+        # Extract ThreatComposer metadata if found
+        if tc_file:
+            try:
+                import json
+                self.logger.info(f"✓ Found ThreatComposer file: {Path(tc_file).name}")
+                with open(tc_file, 'r') as f:
+                    tc_data = json.load(f)
+                
+                # Add application info
+                if 'applicationInfo' in tc_data:
+                    app_info = tc_data['applicationInfo']
+                    self.logger.info(f"  - Application: {app_info.get('name', 'N/A')}")
+                    content_parts.append("\n=== THREATCOMPOSER APPLICATION INFO ===")
+                    content_parts.append(f"Name: {app_info.get('name', 'N/A')}")
+                    content_parts.append(f"Description: {app_info.get('description', 'N/A')[:1000]}")
+                
+                # Add architecture description
+                if 'architecture' in tc_data and tc_data['architecture'].get('description'):
+                    self.logger.info(f"  - Architecture description found")
+                    content_parts.append("\n=== THREATCOMPOSER ARCHITECTURE ===")
+                    content_parts.append(tc_data['architecture']['description'][:2000])
+                
+                # Add dataflow information
+                if 'dataflow' in tc_data and tc_data['dataflow']:
+                    self.logger.info(f"  - Dataflow information found")
+                    content_parts.append("\n=== THREATCOMPOSER DATAFLOW ===")
+                    dataflow = tc_data['dataflow']
+                    if isinstance(dataflow, dict):
+                        for key, value in list(dataflow.items())[:10]:  # Limit to 10 items
+                            content_parts.append(f"{key}: {str(value)[:500]}")
+                    elif isinstance(dataflow, list):
+                        for idx, item in enumerate(dataflow[:10]):
+                            content_parts.append(f"Flow {idx+1}: {str(item)[:500]}")
+                
+                self.logger.info(f"✓ ThreatComposer metadata extracted successfully")
+            except Exception as e:
+                self.logger.warning(f"Failed to extract ThreatComposer metadata: {e}")
+        
         # Add parsed text content
         parsed_content = context_files.get('parsed_content', {})
         for category, files in parsed_content.items():
@@ -977,10 +1135,28 @@ Focus on:
                     content_parts.append(f"\nFile: {file_path}")
                     content_parts.append(file_content[:2000])  # Limit content length
         
-        # Note about images and PDFs (will be handled separately in messages)
+        # Add data flow diagrams (.mmd files)
         discovered_files = context_files.get('discovered_files', {})
+        dfd_files = discovered_files.get('data_flow_diagrams', [])
+        if dfd_files:
+            self.logger.info(f"✓ Including {len(dfd_files)} data flow diagram(s)")
+            for dfd_path in dfd_files:
+                self.logger.info(f"  - {Path(dfd_path).name}")
+            content_parts.append(f"\n=== DATA FLOW DIAGRAMS ===")
+            for dfd_path in dfd_files:
+                try:
+                    if dfd_path.endswith('.mmd'):
+                        with open(dfd_path, 'r', encoding='utf-8') as f:
+                            dfd_content = f.read()
+                        content_parts.append(f"\nFile: {dfd_path}")
+                        content_parts.append(f"Mermaid Diagram:\n{dfd_content[:2000]}")
+                except Exception as e:
+                    self.logger.warning(f"Failed to read data flow diagram {dfd_path}: {e}")
+        
+        # Note about images and PDFs (will be handled separately in messages)
         image_files = discovered_files.get('architecture_diagrams', [])
         if image_files:
+            self.logger.info(f"✓ Including {len(image_files)} architecture diagram(s)")
             content_parts.append(f"\n=== ARCHITECTURE DIAGRAMS ===")
             content_parts.append(f"Found {len(image_files)} architecture diagrams:")
             for img_path in image_files:

@@ -23,12 +23,9 @@ export const ProgressBar: React.FC<Props> = ({
   
   return (
     <Box flexDirection="column">
-      {label && <Text>{label}</Text>}
+      {label && <Text>{label} {current}/{total}</Text>}
       <Box>
         <Text color="cyan">{bar}</Text>
-        {showPercentage && (
-          <Text> {percentage}% ({current}/{total})</Text>
-        )}
       </Box>
     </Box>
   );

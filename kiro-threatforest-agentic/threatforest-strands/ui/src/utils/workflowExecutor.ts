@@ -2,6 +2,7 @@ import { PythonBridge } from './pythonBridge';
 
 export interface WorkflowConfig {
   projectPath: string;
+  threatModelPath?: string;
   awsProfile?: string;
   bedrockModel: string;
   enableCache: boolean;
@@ -46,56 +47,71 @@ export class WorkflowExecutor {
     this.startTime = Date.now();
     
     try {
-      // Stage 1: File Discovery
-      this.updateProgress('discovery', 0, 4, 'Discovering files...');
-      const discovery = await this.bridge.discoverFiles(this.config.projectPath);
-      if (!discovery.success) throw new Error(discovery.error);
-
-      // Stage 2: Threat Extraction (parallel for multiple files)
-      this.updateProgress('extraction', 1, 4, 'Extracting threats...');
-      const threats = discovery.data?.threat_models || [];
+      // Use Strands orchestrator for full workflow execution
+      this.updateProgress('setup', 0, 5, 'Initializing workflow...');
       
-      const extractionTasks: ParallelTask[] = threats.slice(0, 3).map((file: string, idx: number) => ({
-        id: `extract-${idx}`,
-        name: `Extracting ${file}`,
-        status: 'running' as const,
-        progress: 0
-      }));
+      const result = await this.bridge.runOrchestratedWorkflow({
+        project_path: this.config.projectPath,
+        threat_model_path: this.config.threatModelPath,
+        aws_profile: this.config.awsProfile,
+        bedrock_model: this.config.bedrockModel,
+        resume: false
+      }, (event) => {
+        // Map progress event to UI update
+        const stageMap: Record<string, string> = {
+          'setup': 'setup',
+          'context_analysis': 'context',
+          'extraction': 'extraction',
+          'tree_generation': 'trees',
+          'summary': 'summary',
+          'complete': 'complete'
+        };
+        
+        const stage = stageMap[event.stage] || 'processing';
+        const current = Math.floor(event.percentage / 20);
+        
+        // Build parallel tasks for threat-level progress
+        const parallelTasks = event.details?.threat_id ? [{
+          id: event.details.threat_id,
+          name: event.message,
+          status: event.type === 'threat_complete' ? 'complete' : 
+                 event.type === 'error' ? 'error' : 'running',
+          progress: event.percentage
+        }] : undefined;
+        
+        this.updateProgress(stage, current, 5, event.message, parallelTasks);
+      });
       
-      this.updateProgress('extraction', 1, 4, 'Extracting threats in parallel...', extractionTasks);
+      if (!result.success) {
+        throw new Error(result.error);
+      }
       
-      // Simulate parallel extraction
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const data = result.data;
       
-      // Stage 3: Attack Tree Generation (parallel)
-      this.updateProgress('trees', 2, 4, 'Generating attack trees...');
+      // Update progress based on orchestrator result
+      if (data.status === 'setup_failed') {
+        throw new Error(data.message || 'Setup validation failed');
+      }
       
-      const treeTasks: ParallelTask[] = threats.slice(0, 5).map((_: any, idx: number) => ({
-        id: `tree-${idx}`,
-        name: `Attack Tree ${idx + 1}`,
-        status: 'running' as const,
-        progress: 0
-      }));
-      
-      this.updateProgress('trees', 2, 4, 'Generating attack trees in parallel...', treeTasks);
-      
-      // Simulate parallel tree generation
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Stage 4: TTC Mapping
-      this.updateProgress('mapping', 3, 4, 'Mapping to TTC...');
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Extract results from orchestrator context
+      const context = data.context || {};
+      const extractionData = context.extracted_info || {};
+      const treesData = context.attack_trees || {};
+      const summaryData = context.summary || {};
       
       // Complete
-      this.updateProgress('complete', 4, 4, 'Workflow complete');
+      this.updateProgress('complete', 5, 5, 'Workflow complete');
       
       return {
         success: true,
         data: {
-          discovery: discovery.data,
-          threatsProcessed: threats.length,
-          attackTrees: threats.length,
-          ttcMappings: threats.length,
+          context: context.context_files,
+          extraction: extractionData,
+          trees: treesData,
+          summary: summaryData,
+          outputDir: data.output_directory,
+          threatsProcessed: extractionData.extraction_summary?.high_severity_count || 0,
+          attackTrees: treesData.generation_summary?.successful_generations || 0,
           duration: Date.now() - this.startTime
         }
       };

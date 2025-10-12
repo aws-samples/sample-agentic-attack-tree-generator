@@ -48,7 +48,9 @@ class ThreatForestWizard:
         
     def _setup_logging(self):
         """Setup centralized logging"""
-        output_dir = Path.cwd() / "threatforest_output"
+        # Use threatforest-strands/output as base directory
+        strands_root = Path(__file__).parent.parent
+        output_dir = strands_root / "output"
         self.log_file_path = ThreatForestLogger.initialize(output_dir)
         self.logger = ThreatForestLogger.get_logger('Wizard')
         self.logger.info("Wizard initialized")
@@ -143,17 +145,22 @@ Let's get started with the setup!
                 profiles = self._get_aws_profiles()
                 if profiles:
                     self.logger.debug(f"Available AWS profiles: {profiles}")
-                    self.console.print(f"📋 Available AWS profiles: {', '.join(profiles)}")
+                    self.console.print("\n📋 Available AWS profiles:")
                     
                     if len(profiles) > 1:
-                        profile_choice = Prompt.ask(
-                            "Which AWS profile would you like to use?",
-                            choices=["default"] + [p for p in profiles if p != "default"],
-                            default="default"
+                        for i, profile in enumerate(profiles, 1):
+                            self.console.print(f"  {i}. {profile}")
+                        
+                        choice = Prompt.ask(
+                            "\nSelect profile number",
+                            choices=[str(i) for i in range(1, len(profiles) + 1)],
+                            default="1"
                         )
-                        self.config["aws_profile"] = profile_choice if profile_choice != "default" else None
-                        self.logger.info(f"User selected AWS profile: {profile_choice}")
+                        selected_profile = profiles[int(choice) - 1]
+                        self.config["aws_profile"] = selected_profile if selected_profile != "default" else None
+                        self.logger.info(f"User selected AWS profile: {selected_profile}")
                     else:
+                        self.console.print(f"  1. {profiles[0]}")
                         self.config["aws_profile"] = None
                         self.logger.info("Using default AWS profile")
                 else:
@@ -612,10 +619,15 @@ Let's get started with the setup!
         
         self.console.print("\n🚀 Step 6: Running ThreatForest Analysis", style="bold blue")
         
-        # Create output directory
-        project_name = Path(self.config["project_path"]).name.replace(" ", "_").lower()
-        output_dir = Path.cwd() / "threatforest_output" / project_name
+        # Use threatforest-strands/output as base directory
+        strands_root = Path(__file__).parent.parent
+        output_dir = strands_root / "output"
         output_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Create attack_trees subdirectory with project name
+        project_name = Path(self.config["project_path"]).name
+        attack_trees_dir = output_dir / "attack_trees" / project_name
+        attack_trees_dir.mkdir(parents=True, exist_ok=True)
         
         try:
             # Step 1: Context Analysis
@@ -693,6 +705,9 @@ Let's get started with the setup!
             successful_trees = [t for t in trees_result['attack_trees'] if 'mermaid_code' in t]
             self.console.print(f"🌳 Generated {len(successful_trees)} attack trees successfully")
             
+            # Save attack trees to disk
+            self._save_attack_trees(trees_result, output_dir)
+            
             # Skip TTC mapping but continue with summary generation
             self.console.print("⏭️  Skipping MITRE ATT&CK mapping as requested")
             
@@ -724,16 +739,59 @@ Let's get started with the setup!
             self.console.print(f"\n❌ Analysis failed: {e}")
             self.console.print("💡 Check your AWS credentials and try again")
     
+    def _generate_filename_from_threat(self, threat: Dict[str, Any]) -> str:
+        """Generate filename from threat action, removing filler words"""
+        # Try different possible field names for threat action
+        threat_action = (threat.get('threat_action') or 
+                        threat.get('threatAction') or 
+                        threat.get('Threat Action') or
+                        threat.get('description', ''))
+        
+        if not threat_action:
+            # Fallback to threat statement
+            threat_action = threat.get('threat_statement', threat.get('statement', 'unknown'))
+        
+        # Remove common filler words
+        filler_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 
+                       'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'were', 'be',
+                       'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will',
+                       'would', 'should', 'could', 'may', 'might', 'must', 'can', 'which',
+                       'leads', 'resulting', 'reduced', 'that', 'this', 'these', 'those'}
+        
+        # Convert to lowercase, split into words, remove filler words
+        words = threat_action.lower().split()
+        filtered_words = [w for w in words if w not in filler_words and len(w) > 2]
+        
+        # Take first 5-6 meaningful words, join with underscore
+        filename_base = '_'.join(filtered_words[:6])
+        
+        # Remove special characters
+        filename_base = ''.join(c if c.isalnum() or c == '_' else '_' for c in filename_base)
+        
+        # Remove consecutive underscores
+        while '__' in filename_base:
+            filename_base = filename_base.replace('__', '_')
+        
+        # Remove leading/trailing underscores
+        filename_base = filename_base.strip('_')
+        
+        return f"attack_tree_{filename_base}.md"
+    
     def _save_attack_trees(self, trees_result: Dict[str, Any], output_dir: Path) -> None:
         """Save attack trees to output directory"""
         if not trees_result or 'attack_trees' not in trees_result:
             print("⚠️  No attack trees to save")
             return
+        
+        # Save to attack_trees/project_name subdirectory
+        project_name = Path(self.config["project_path"]).name
+        attack_trees_dir = output_dir / "attack_trees" / project_name
+        attack_trees_dir.mkdir(parents=True, exist_ok=True)
             
         successful_trees = [tree for tree in trees_result['attack_trees'] if 'mermaid_code' in tree]
         failed_trees = [tree for tree in trees_result['attack_trees'] if 'error' in tree]
         
-        print(f"🌳 Saving {len(successful_trees)} attack trees to {output_dir}")
+        print(f"🌳 Saving {len(successful_trees)} attack trees to {attack_trees_dir}")
         
         # Save successful attack trees
         for tree in successful_trees:
@@ -741,15 +799,21 @@ Let's get started with the setup!
             threat_statement = tree.get('threat_statement', 'Unknown threat')
             mermaid_code = tree.get('mermaid_code', '')
             
-            # Create filename
-            filename = f"attack_tree_{threat_id}.md"
-            filepath = output_dir / filename
+            # Generate filename from threat action
+            filename = self._generate_filename_from_threat(tree)
+            filepath = attack_trees_dir / filename
             
             # Create markdown content
-            content = f"""# Attack Tree: {threat_statement}
+            # Use category from title for short name (e.g., "T001 - Authentication")
+            short_title = f"{threat_id} - {tree.get('threat_category', 'Unknown')}"
+            threat_description = tree.get('threat_description', tree.get('threat_statement', 'No description available'))
+            
+            content = f"""# Attack Tree: {short_title}
 
-**Threat ID**: {threat_id}
-**Category**: {tree.get('threat_category', 'Unknown')}
+**Threat ID**: {threat_id}  
+**Description**: {threat_description}
+
+---
 
 ## Attack Tree Diagram
 
@@ -757,23 +821,22 @@ Let's get started with the setup!
 {mermaid_code}
 ```
 
-## Attack Steps
+## Attack Path Analysis
 
-"""
-            
-            # Add attack steps if available
-            attack_steps = tree.get('attack_steps', [])
-            if attack_steps:
-                for i, step in enumerate(attack_steps, 1):
-                    content += f"{i}. **{step.get('node_id', 'unknown')}**: {step.get('description', 'No description')}\n"
-            else:
-                content += "No attack steps extracted.\n"
-            
-            content += f"""
-## Generation Details
+This attack tree represents the potential attack paths for the identified threat. Each node in the tree represents either:
+- **Attack Goal** (orange): The ultimate objective
+- **Attack Step** (red): Individual attack actions
+- **Fact/Condition** (blue): Prerequisites or conditions
+- **Mitigation** (green): Defensive measures
 
-- **Generated on**: {__import__('datetime').datetime.now().isoformat()}
-- **Validation**: {'Passed' if tree.get('validation', {}).get('is_valid', False) else 'Failed'}
+Review this attack tree to:
+1. Identify critical attack paths
+2. Implement appropriate security controls
+3. Monitor for indicators of these attack patterns
+4. Develop incident response procedures
+
+---
+*Generated by ThreatForest - Attack Tree Analysis*
 """
             
             # Write to file
@@ -811,8 +874,9 @@ Let's get started with the setup!
         if summary_result is None:
             summary_result = {'output_files': []}
         
-        # Count actual attack tree files in output directory
-        attack_tree_count = len(list(output_dir.glob("attack_tree_*.md")))
+        # Count actual attack tree files in attack_trees subdirectory
+        attack_trees_dir = output_dir / "attack_trees"
+        attack_tree_count = len(list(attack_trees_dir.glob("attack_tree_*.md"))) if attack_trees_dir.exists() else 0
         
         success_panel = f"""
 🎉 ThreatForest Analysis Complete!
@@ -854,8 +918,9 @@ Let's get started with the setup!
             self.console.print("⚠️  No project information available")
             return
         
-        # Count actual attack tree files in output directory
-        attack_tree_count = len(list(output_dir.glob("attack_tree_*.md")))
+        # Count actual attack tree files in attack_trees subdirectory
+        attack_trees_dir = output_dir / "attack_trees"
+        attack_tree_count = len(list(attack_trees_dir.glob("attack_tree_*.md"))) if attack_trees_dir.exists() else 0
         
         success_panel = f"""
 🎉 ThreatForest Attack Tree Generation Complete!
@@ -869,7 +934,7 @@ Let's get started with the setup!
 📁 Output Directory: {output_dir}
 
 📄 Generated Files:
-{chr(10).join(f'• {f.name}' for f in output_dir.glob("attack_tree_*.md"))}
+{chr(10).join(f'• {f.name}' for f in attack_trees_dir.glob("attack_tree_*.md")) if attack_trees_dir.exists() else 'No attack trees generated'}
 
 🔍 Next Steps:
 1. Review the generated attack trees

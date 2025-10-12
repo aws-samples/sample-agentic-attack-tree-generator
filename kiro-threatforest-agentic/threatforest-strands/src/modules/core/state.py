@@ -22,8 +22,8 @@ class ThreatForestState(BaseModel):
     
     # Workflow metadata
     current_stage: WorkflowStage = WorkflowStage.SETUP
-    started_at: datetime = Field(default_factory=datetime.now)
-    last_updated: datetime = Field(default_factory=datetime.now)
+    started_at: str = Field(default_factory=lambda: datetime.now().isoformat())
+    last_updated: str = Field(default_factory=lambda: datetime.now().isoformat())
     
     # Configuration
     project_path: str
@@ -74,7 +74,7 @@ class ThreatForestState(BaseModel):
                 f"Cannot transition from {self.current_stage} to {stage}"
             )
         self.current_stage = stage
-        self.last_updated = datetime.now()
+        self.last_updated = datetime.now().isoformat()
     
     def is_valid_for_resume(self) -> tuple[bool, str]:
         """Validate if state is valid for resuming workflow"""

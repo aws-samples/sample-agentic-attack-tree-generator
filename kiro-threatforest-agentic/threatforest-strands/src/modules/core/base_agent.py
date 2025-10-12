@@ -28,15 +28,32 @@ class Agent:
         return f"Agent(name='{self.name}', tools={list(self.tools.keys())})"
 
 
-def agent_step(dependencies: List[str] = None):
-    """Decorator to mark a method as an agent workflow step"""
+def agent_step(func_or_deps=None):
+    """Decorator to mark a method as an agent workflow step
+    
+    Can be used as:
+        @agent_step
+        async def method(self): ...
+    
+    Or with dependencies:
+        @agent_step(dependencies=['step1'])
+        async def method(self): ...
+    """
     def decorator(func: Callable):
         @wraps(func)
         async def wrapper(self, *args, **kwargs):
             return await func(self, *args, **kwargs)
         
         wrapper._is_agent_step = True
-        wrapper._dependencies = dependencies or []
+        wrapper._dependencies = dependencies if isinstance(func_or_deps, list) else []
         return wrapper
     
-    return decorator
+    # Handle both @agent_step and @agent_step(dependencies=[...])
+    if callable(func_or_deps):
+        # Used as @agent_step without parentheses
+        dependencies = []
+        return decorator(func_or_deps)
+    else:
+        # Used as @agent_step(dependencies=[...])
+        dependencies = func_or_deps or []
+        return decorator

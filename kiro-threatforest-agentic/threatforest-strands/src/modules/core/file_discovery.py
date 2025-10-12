@@ -1,10 +1,9 @@
-"""File discovery with caching for ThreatForest"""
+"""File discovery for ThreatForest"""
 import os
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Set
-from functools import lru_cache
 
 
 @dataclass
@@ -48,9 +47,8 @@ class FileDiscovery:
     MAX_FILE_SIZE = 10 * 1024 * 1024
     
     @staticmethod
-    @lru_cache(maxsize=128)
     def discover(project_path: str) -> DiscoveredFiles:
-        """Discover files in project with single-pass walk and caching
+        """Discover files in project with single-pass walk
         
         Args:
             project_path: Root directory to scan
