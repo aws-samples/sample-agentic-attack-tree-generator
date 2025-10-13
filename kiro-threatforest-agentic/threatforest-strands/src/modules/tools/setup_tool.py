@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 from ..utils.logger import ThreatForestLogger
 from ..core import Tool, tool
+from ..core.bedrock_client import BedrockClientManager
 from typing import Dict, Any, Optional, List
 
 import boto3
@@ -135,8 +136,7 @@ class SetupTool(Tool):
     def _validate_bedrock_model(self, model_id: str, profile: Optional[str] = None) -> str:
         """Validate Bedrock model access"""
         try:
-            session = boto3.Session(profile_name=profile) if profile else boto3.Session()
-            bedrock = session.client('bedrock-runtime', region_name='us-east-1')
+            bedrock = BedrockClientManager().get_client(profile_name=profile, region_name='us-east-1')
             
             # Test with a minimal request
             if "anthropic" in model_id:
@@ -160,8 +160,7 @@ class SetupTool(Tool):
     def _validate_inference_profile(self, profile_arn: str, aws_profile: Optional[str] = None) -> str:
         """Validate inference profile ARN access"""
         try:
-            session = boto3.Session(profile_name=aws_profile) if aws_profile else boto3.Session()
-            bedrock = session.client('bedrock-runtime', region_name='us-east-1')
+            bedrock = BedrockClientManager().get_client(profile_name=aws_profile, region_name='us-east-1')
             
             # Test inference profile
             body = {

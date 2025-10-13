@@ -5,6 +5,7 @@ from typing import Dict, List, Any, Optional
 from pathlib import Path
 from ..utils.logger import ThreatForestLogger
 from ..core import Tool, tool
+from ..core.bedrock_client import BedrockClientManager
 from ..parsers import (
     ParserChain, JSONThreatParser, YAMLThreatParser,
     MarkdownThreatParser, ThreatComposerParser
@@ -1002,8 +1003,7 @@ Focus on:
 """
 
         try:
-            session = boto3.Session(profile_name=aws_profile) if aws_profile else boto3.Session()
-            bedrock = session.client('bedrock-runtime', region_name='us-east-1')
+            bedrock = BedrockClientManager().get_client(profile_name=aws_profile, region_name='us-east-1')
             
             # Prepare messages with text and images
             messages = self._prepare_bedrock_messages(prompt, context_files)
@@ -1464,8 +1464,7 @@ Requirements:
 
         try:
             # Use Bedrock with multimodal capabilities (text + images)
-            session = boto3.Session(profile_name=aws_profile) if aws_profile else boto3.Session()
-            bedrock = session.client('bedrock-runtime', region_name='us-east-1')
+            bedrock = BedrockClientManager().get_client(profile_name=aws_profile, region_name='us-east-1')
             
             # Prepare messages with text and images
             messages = self._prepare_bedrock_messages(prompt, context_files)
@@ -1720,8 +1719,7 @@ You can edit this file to:
             new_file_path = original_path.parent / new_filename
             
             # Prepare Bedrock request
-            session = boto3.Session()  # Use default session like attack tree generator
-            bedrock = session.client('bedrock-runtime', region_name='us-east-1')
+            bedrock = BedrockClientManager().get_client(region_name='us-east-1')
             
             # Use model from context or default
             model_id = context_files.get('model_id', 'anthropic.claude-3-haiku-20240307-v1:0')
@@ -1855,8 +1853,7 @@ Return a complete markdown document with properly formatted threat statements us
             ])
             
             # Prepare Bedrock request
-            session = boto3.Session()
-            bedrock = session.client('bedrock-runtime', region_name='us-east-1')
+            bedrock = BedrockClientManager().get_client(region_name='us-east-1')
             
             # Use model from context or default
             model_id = context_files.get('model_id', 'anthropic.claude-3-haiku-20240307-v1:0')

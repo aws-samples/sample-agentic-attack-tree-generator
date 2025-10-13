@@ -5,6 +5,7 @@ from typing import Dict, Any, List, Optional
 from pathlib import Path
 from ..utils.logger import ThreatForestLogger
 from ..core import Tool, tool
+from ..core.bedrock_client import BedrockClientManager
 
 import boto3
 from botocore.exceptions import ClientError
@@ -234,8 +235,7 @@ class TTCMappingTool(Tool):
             import boto3
             import json
             
-            session = boto3.Session(profile_name=aws_profile) if aws_profile else boto3.Session()
-            bedrock = session.client('bedrock-runtime', region_name='us-east-1')
+            bedrock = BedrockClientManager().get_client(profile_name=aws_profile, region_name='us-east-1')
             
             body = {
                 "anthropic_version": "bedrock-2023-05-31",
@@ -428,8 +428,7 @@ For each attack step in the tree, identify the most relevant MITRE ATT&CK techni
 Focus on specific techniques with high confidence scores (0.7+)."""
 
         try:
-            session = boto3.Session(profile_name=aws_profile) if aws_profile else boto3.Session()
-            bedrock = session.client('bedrock-runtime', region_name='us-east-1')
+            bedrock = BedrockClientManager().get_client(profile_name=aws_profile, region_name='us-east-1')
             
             body = {
                 "anthropic_version": "bedrock-2023-05-31",

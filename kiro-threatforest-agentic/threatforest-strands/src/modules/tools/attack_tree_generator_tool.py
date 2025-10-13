@@ -6,6 +6,7 @@ from typing import Dict, List, Any, Optional
 from pathlib import Path
 from ..utils.logger import ThreatForestLogger
 from ..core import Tool, tool
+from ..core.bedrock_client import BedrockClientManager
 
 import boto3
 from botocore.exceptions import ClientError
@@ -277,8 +278,7 @@ class AttackTreeGeneratorTool(Tool):
         
         try:
             # Call Bedrock
-            session = boto3.Session(profile_name=aws_profile) if aws_profile else boto3.Session()
-            bedrock = session.client('bedrock-runtime', region_name='us-east-1')
+            bedrock = BedrockClientManager().get_client(profile_name=aws_profile, region_name='us-east-1')
             
             body = {
                 "anthropic_version": "bedrock-2023-05-31",
