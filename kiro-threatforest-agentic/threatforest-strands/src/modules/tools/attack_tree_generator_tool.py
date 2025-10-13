@@ -6,7 +6,7 @@ from typing import Dict, List, Any, Optional
 from pathlib import Path
 from ..utils.logger import ThreatForestLogger
 from ..core import Tool, tool
-from ..core.bedrock_client import BedrockClientManager
+from ..core.bedrock_invoker import BedrockInvoker
 
 import boto3
 from botocore.exceptions import ClientError
@@ -232,43 +232,12 @@ class AttackTreeGeneratorTool(Tool):
                                               extracted_info: Dict[str, Any],
                                               bedrock_model: str, 
                                               aws_profile: Optional[str] = None) -> Dict[str, Any]:
-        """Generate attack tree with exponential backoff retry logic"""
-        last_error = None
-        
-        for attempt in range(self.max_retries):
-            try:
-                return await self._generate_attack_tree(threat, extracted_info, bedrock_model, aws_profile)
-            except ClientError as e:
-                error_code = e.response.get('Error', {}).get('Code', '')
-                error_msg = e.response.get('Error', {}).get('Message', str(e))
-                
-                if error_code == 'ThrottlingException':
-                    self.throttled = True  # Mark that we've been throttled
-                    wait_time = self.base_backoff * (2 ** attempt)
-                    self.logger.warning(f"⚠️  Throttled by Bedrock API (attempt {attempt + 1}/{self.max_retries})")
-                    print(f"⚠️  Rate limited by AWS Bedrock - waiting {wait_time}s before retry...")
-                    
-                    if attempt < self.max_retries - 1:
-                        await asyncio.sleep(wait_time)
-                        continue
-                    else:
-                        self.logger.error(f"Max retries reached after throttling")
-                        print(f"❌ Max retries exceeded - Bedrock API throttling persists")
-                        raise Exception(f"Throttling error after {self.max_retries} retries: {error_msg}")
-                else:
-                    self.logger.error(f"Bedrock API error: {error_code} - {error_msg}")
-                    raise Exception(f"Bedrock API error ({error_code}): {error_msg}")
-            except Exception as e:
-                last_error = e
-                if attempt < self.max_retries - 1:
-                    wait_time = self.base_backoff * (2 ** attempt)
-                    self.logger.warning(f"Attempt {attempt + 1} failed, retrying in {wait_time}s: {str(e)}")
-                    await asyncio.sleep(wait_time)
-                else:
-                    self.logger.error(f"All retry attempts failed: {str(e)}")
-                    raise
-        
-        raise last_error if last_error else Exception("Unknown error in retry logic")
+        """Generate attack tree using BedrockInvoker"""
+        try:
+            return await self._generate_attack_tree(threat, extracted_info, bedrock_model, aws_profile)
+        except Exception as e:
+            self.logger.error(f"Attack tree generation failed: {str(e)}")
+            raise
     
     async def _generate_attack_tree(self, threat: Dict[str, Any], project_info: Dict[str, Any],
                                    bedrock_model: str, aws_profile: Optional[str] = None) -> Dict[str, Any]:
@@ -277,27 +246,13 @@ class AttackTreeGeneratorTool(Tool):
         prompt = self._build_attack_tree_prompt(threat, project_info)
         
         try:
-            # Call Bedrock
-            bedrock = BedrockClientManager().get_client(profile_name=aws_profile, region_name='us-east-1')
-            
-            body = {
-                "anthropic_version": "bedrock-2023-05-31",
-                "max_tokens": 65536,
-                "messages": [{"role": "user", "content": prompt}]
-            }
-            
-            # Convert cross-region inference profile IDs to ARNs
-            model_id = bedrock_model
-            if model_id.startswith('us.') or model_id.startswith('eu.'):
-                model_id = f"arn:aws:bedrock:us-east-1::foundation-model/{model_id}"
-            
-            response = bedrock.invoke_model(
-                modelId=model_id,
-                body=json.dumps(body)
+            # Use BedrockInvoker for centralized invocation
+            invoker = BedrockInvoker(rate_limit_delay=self.rate_limit_delay, max_retries=self.max_retries)
+            generated_content = await invoker.invoke_with_retry(
+                model_id=bedrock_model,
+                prompt=prompt,
+                aws_profile=aws_profile
             )
-            
-            response_body = json.loads(response['body'].read())
-            generated_content = response_body['content'][0]['text']
             
             # Extract Mermaid code from response
             self.logger.debug(f"Bedrock response length: {len(generated_content)} characters")
@@ -346,11 +301,6 @@ class AttackTreeGeneratorTool(Tool):
                 "validation": validation_result
             }
             
-        except ClientError as e:
-            error_code = e.response.get('Error', {}).get('Code', '')
-            error_msg = e.response.get('Error', {}).get('Message', str(e))
-            self.logger.error(f"Bedrock ClientError: {error_code} - {error_msg}")
-            raise
         except Exception as e:
             self.logger.error(f"Bedrock API error: {str(e)}")
             raise Exception(f"Bedrock API error: {str(e)}")

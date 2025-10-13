@@ -36,6 +36,22 @@ class InformationExtractionTool(Tool):
         self.parser_chain.register(MarkdownThreatParser(), priority=1)
         self.logger.debug("Parser chain initialized with 4 parsers")
     
+    def _load_prompt_template(self, prompt_name: str) -> str:
+        """Load prompt template from src/prompts/ directory"""
+        from pathlib import Path
+        prompt_file = Path(__file__).parent.parent.parent / "prompts" / f"{prompt_name}.md"
+        
+        if not prompt_file.exists():
+            self.logger.error(f"Prompt template not found: {prompt_file}")
+            raise FileNotFoundError(f"Prompt template not found: {prompt_name}.md")
+        
+        try:
+            with open(prompt_file, 'r', encoding='utf-8') as f:
+                return f.read()
+        except Exception as e:
+            self.logger.error(f"Failed to load prompt template {prompt_name}: {e}")
+            raise
+    
     async def execute(self, context_files: Dict[str, Any], bedrock_model: str, 
                      aws_profile: Optional[str] = None, interactive: bool = False) -> Dict[str, Any]:
         """Execute information extraction with threat generation if needed"""
@@ -969,37 +985,11 @@ class InformationExtractionTool(Tool):
         # Prepare all discovered content for Bedrock analysis
         content_for_analysis = self._prepare_all_content_for_bedrock(context_files)
         
-        prompt = f"""You are a cybersecurity expert analyzing an application. Extract key information from the provided content including text documents and architecture diagrams.
+        prompt_template = self._load_prompt_template("project-analysis")
+        prompt = f"""{prompt_template}
 
 Content to analyze:
 {content_for_analysis}
-
-Extract and return information in this JSON format:
-{{
-  "application_name": "extracted application name",
-  "sector": "industry sector (e.g., Healthcare, Finance, E-commerce)",
-  "architecture_type": "architecture pattern (e.g., Microservices, Monolithic, Serverless)",
-  "deployment_environment": "deployment type (e.g., Cloud, On-premises, Hybrid)",
-  "technologies": ["list", "of", "technologies", "identified"],
-  "security_objectives": {{
-    "confidentiality": true/false,
-    "integrity": true/false,
-    "availability": true/false
-  }},
-  "data_types": ["types", "of", "data", "handled"],
-  "external_dependencies": ["external", "services", "or", "apis"],
-  "network_architecture": "network setup description from diagrams",
-  "key_components": ["main", "system", "components", "from", "diagrams"]
-}}
-
-Focus on:
-- Application name and purpose from documentation
-- Technology stack and frameworks mentioned
-- Architecture patterns and deployment model
-- Data types and security requirements
-- External integrations and dependencies
-- Network topology and components visible in architecture diagrams
-- System boundaries and data flows from diagrams
 """
 
         try:
@@ -1359,11 +1349,8 @@ Focus on:
             content = file_info["content"]
             threat_model_content += f"\n\n--- {file_name} ---\n{content}"
         
-        prompt = f"""You are a cybersecurity expert analyzing existing threat model documentation.
-
-The following threat model files contain threat-related information but lack properly formatted threat statements.
-Please extract and convert this information into proper threat statements using this EXACT syntax:
-"A [threat source] with [pre-requisites], can [threat action], which leads to [threat impact], resulting in [reduced goal] of [impacted assets]."
+        prompt_template = self._load_prompt_template("threat-generation-existing")
+        prompt = f"""{prompt_template}
 
 Application Context:
 - Application: {project_info.get('application_name', 'Unknown')}
@@ -1371,24 +1358,7 @@ Application Context:
 
 Existing Threat Model Content:
 {threat_model_content}
-
-Generate 8-12 realistic threat statements in this JSON format:
-{{
-  "threats": [
-    {{
-      "id": "T001",
-      "statement": "A [threat source] with [pre-requisites], can [threat action], which leads to [threat impact], resulting in [reduced goal] of [impacted assets].",
-      "priority": "High|Medium|Low",
-      "category": "Data Breach|Privilege Escalation|etc"
-    }}
-  ]
-}}
-
-Focus on:
-1. Converting existing threat information into the required format
-2. Ensuring each statement follows the exact syntax
-3. Assigning appropriate priorities based on impact
-4. Using realistic threat sources and attack vectors"""
+"""
 
         try:
             response = await self._call_bedrock(prompt, bedrock_model, aws_profile)
@@ -1419,10 +1389,8 @@ Focus on:
         # Prepare comprehensive context for threat generation including all content and images
         content_summary = self._prepare_all_content_for_bedrock(context_files)
         
-        prompt = f"""You are a cybersecurity expert analyzing an application for threat modeling.
-
-Based on the following comprehensive information including documentation, configuration files, and architecture diagrams, generate 8-12 realistic threat statements using this EXACT syntax:
-"A [threat source] with [pre-requisites], can [threat action], which leads to [threat impact], resulting in [reduced goal] of [impacted assets]."
+        prompt_template = self._load_prompt_template("threat-generation-new")
+        prompt = f"""{prompt_template}
 
 Application Context:
 - Application: {project_info.get('application_name', 'Unknown')}
@@ -1433,34 +1401,7 @@ Application Context:
 
 Available Content and Documentation:
 {content_summary}
-
-Generate threats in this JSON format:
-{{
-  "threats": [
-    {{
-      "id": "T001",
-      "statement": "A malicious attacker with network access, can perform SQL injection attacks, which leads to unauthorized data access, resulting in reduced confidentiality of customer database.",
-      "priority": "High",
-      "category": "Injection",
-      "threatSource": "malicious attacker",
-      "prerequisites": "network access",
-      "threatAction": "perform SQL injection attacks",
-      "threatImpact": "unauthorized data access",
-      "impactedGoal": "confidentiality",
-      "impactedAssets": "customer database"
-    }}
-  ]
-}}
-
-Requirements:
-- Follow the EXACT syntax for each threat statement
-- Include 3-4 High priority threats (critical security issues)
-- Include 4-6 Medium priority threats (important but not critical)
-- Include 2-3 Low priority threats (minor security concerns)
-- Focus on realistic threats for the identified technologies and architecture
-- Consider threats visible in architecture diagrams and system components
-- Use information from documentation and configuration files to identify specific attack vectors
-- Ensure each threat has all required components: source, prerequisites, action, impact, goal, assets"""
+"""
 
         try:
             # Use Bedrock with multimodal capabilities (text + images)
@@ -1725,69 +1666,12 @@ You can edit this file to:
             model_id = context_files.get('model_id', 'anthropic.claude-3-haiku-20240307-v1:0')
             self.logger.debug(f"Debug: Using model ID: {model_id}")
             
-            prompt = f"""You are a cybersecurity expert. I have a threat model document that contains threat information but not in the correct format.
-
-Please reformat ALL threats in this document to use this EXACT format structure:
-
-# Generated Threat Statements - [Application Name]
-
-*This file was automatically generated by ThreatForest AI analysis.*
-
-## Application Context
-- **Application**: [Application Name]
-- **Generated**: [Current timestamp]
-- **Total Threats**: [Number]
-- **High Priority**: [Number]
-- **Medium Priority**: [Number]
-- **Low Priority**: [Number]
-
-## Threat Statements
-
-### High Priority Threats
-
-#### T001 - [Descriptive Category Name]
-
-**Threat Statement**: A [threat source] with [prerequisites], can [threat action], which leads to [threat impact], resulting in [reduced goal] of [impacted assets].
-
-- **Threat Source**: [threat source]
-- **Prerequisites**: [prerequisites]
-- **Threat Action**: [threat action]
-- **Threat Impact**: [threat impact]
-- **Reduced Goal**: [reduced goal]
-- **Impacted Assets**: [impacted assets]
-- **Priority**: High
-- **Category**: [Descriptive Category Name]
-
----
-
-#### T002 - [Next Category Name]
-
-[Same format for next threat]
-
-### Medium Priority Threats
-
-#### T00X - [Category Name]
-
-[Same format for Medium priority threats with sequential T numbers]
-
-### Low Priority Threats
-
-#### T00Y - [Category Name]
-
-[Same format for Low priority threats with sequential T numbers]
-
-CRITICAL REQUIREMENTS:
-1. Use SEQUENTIAL T001, T002, T003... identifiers (NOT UUIDs or original IDs)
-2. Use descriptive category names (e.g., "Data Breach", "Authentication", "Injection Attack") NOT generic ones
-3. Ensure threat statements follow the exact syntax: "A [source] with [prerequisites], can [action], which leads to [impact], resulting in [reduced goal] of [assets]"
-4. Group threats by priority (High, Medium, Low)
-5. Include all structured fields for each threat
-6. Use consistent markdown formatting with --- separators
+            prompt_template = self._load_prompt_template("threat-format-fixing")
+            prompt = f"""{prompt_template}
 
 Original document content:
 {content}
-
-Return a complete markdown document with properly formatted threat statements using sequential T001, T002, etc. identifiers."""
+"""
             
             body = {
                 "anthropic_version": "bedrock-2023-05-31",
@@ -1859,47 +1743,12 @@ Return a complete markdown document with properly formatted threat statements us
             model_id = context_files.get('model_id', 'anthropic.claude-3-haiku-20240307-v1:0')
             self.logger.debug(f"Debug: Using model ID: {model_id}")
             
-            prompt = f"""You are a cybersecurity expert. I have a threat model document that contains some correctly formatted threats and some incorrectly formatted threats.
+            prompt_template = self._load_prompt_template("threat-mixed-format")
+            prompt = f"""{prompt_template}
 
 PRESERVE these correctly formatted threats exactly as they are:
 {correct_threats_summary}
-
-Please reformat the document to use this EXACT format structure:
-
-# Generated Threat Statements - [Application Name]
-
-*This file was automatically generated by ThreatForest AI analysis.*
-
-## Application Context
-- **Application**: [Application Name]
-- **Generated**: [Current timestamp]
-- **Total Threats**: [Number]
-- **High Priority**: [Number]
-- **Medium Priority**: [Number]
-- **Low Priority**: [Number]
-
-## Threat Statements
-
-### High Priority Threats
-
-#### T001 - [Category Name]
-
-**Threat Statement**: A [threat source] with [prerequisites], can [threat action], which leads to [threat impact], resulting in [reduced goal] of [impacted assets].
-
-- **Threat Source**: [threat source]
-- **Prerequisites**: [prerequisites]
-- **Threat Action**: [threat action]
-- **Threat Impact**: [threat impact]
-- **Reduced Goal**: [reduced goal]
-- **Impacted Assets**: [impacted assets]
-- **Priority**: High
-- **Category**: [Category Name]
-
----
-
-[Continue with all threats in this exact format]
-
-Return a complete markdown document with all threat statements properly formatted in the exact structure shown above."""
+"""
             
             body = {
                 "anthropic_version": "bedrock-2023-05-31",

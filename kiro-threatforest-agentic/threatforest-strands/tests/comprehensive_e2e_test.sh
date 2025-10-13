@@ -10,6 +10,17 @@ echo "=========================================="
 echo "Started: $(date)"
 echo ""
 
+# Activate virtual environment
+VENV_PATH="../venv"
+if [ -d "$VENV_PATH" ]; then
+    echo "Activating virtual environment..."
+    source "$VENV_PATH/bin/activate"
+    echo "✅ Virtual environment activated"
+else
+    echo "❌ Virtual environment not found at $VENV_PATH"
+    exit 1
+fi
+
 # Configuration
 PROFILE="dicorteg+zetaworkload-test-Admin"
 TEST_DIR="test_outputs"
@@ -32,10 +43,10 @@ TESTS_FAILED=0
 log_test() {
     if [ $1 -eq 0 ]; then
         echo -e "${GREEN}✅ PASS${NC}: $2"
-        ((TESTS_PASSED++))
+        TESTS_PASSED=$((TESTS_PASSED + 1))
     else
         echo -e "${RED}❌ FAIL${NC}: $2"
-        ((TESTS_FAILED++))
+        TESTS_FAILED=$((TESTS_FAILED + 1))
     fi
 }
 
@@ -53,6 +64,8 @@ else
     echo "Please configure the profile: aws configure --profile $PROFILE"
     exit 1
 fi
+
+echo "DEBUG: After profile check, continuing to Test 1..."
 
 # Test 1: Simple Threat Model (hcls-example)
 echo ""
