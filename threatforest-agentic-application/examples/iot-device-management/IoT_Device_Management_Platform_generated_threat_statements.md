@@ -4,7 +4,7 @@
 
 ## Application Context
 - **Application**: IoT Device Management Platform
-- **Generated**: /Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/threatforest-strands
+- **Generated**: /Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/threatforest-strands
 - **Total Threats**: 12
 - **High Priority**: 4
 - **Medium Priority**: 6

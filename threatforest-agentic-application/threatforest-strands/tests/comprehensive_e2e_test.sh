@@ -73,7 +73,7 @@ echo "=========================================="
 echo "Test 1: Simple Threat Model (hcls-example)"
 echo "=========================================="
 
-PROJECT_PATH="/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/hcls-example"
+PROJECT_PATH="/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/hcls-example"
 
 if [ ! -d "$PROJECT_PATH" ]; then
     log_test 1 "Test project not found: $PROJECT_PATH"
@@ -137,7 +137,7 @@ echo "=========================================="
 echo "Test 2: ThreatComposer (genai-chatbot)"
 echo "=========================================="
 
-PROJECT_PATH="/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/genai-chatbot"
+PROJECT_PATH="/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/genai-chatbot"
 
 if [ ! -d "$PROJECT_PATH" ]; then
     log_test 1 "Test project not found: $PROJECT_PATH"

@@ -195,10 +195,10 @@ Since automated E2E test has issues, performing manual validation:
 ### Manual Test Command
 
 ```bash
-cd /Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/threatforest-strands
+cd /Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/threatforest-strands
 source venv/bin/activate
 python3 threatforest.py \
-  --project /Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/hcls-example \
+  --project /Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/hcls-example \
   --aws-profile dicorteg+zetaworkload-test-Admin \
   --bedrock-model us.anthropic.claude-sonnet-4-20250514-v1:0
 ```

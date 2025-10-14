@@ -4,7 +4,7 @@
 
 ## Application Context
 - **Application**: Electric Vehicle Charging Station Management System
-- **Generated**: /Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/threatforest-strands
+- **Generated**: /Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/threatforest-strands
 - **Total Threats**: 11
 - **High Priority**: 4
 - **Medium Priority**: 5

@@ -180,7 +180,7 @@ docs/
 
 ### Start Development
 ```bash
-cd /Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/threatforest-strands
+cd /Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/threatforest-strands
 ```
 
 ### Run Application

@@ -93,7 +93,7 @@ Complete Screen
 To test the fix:
 
 ```bash
-cd /Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/threatforest-strands
+cd /Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/threatforest-strands
 ./threatforest.py run
 ```
 

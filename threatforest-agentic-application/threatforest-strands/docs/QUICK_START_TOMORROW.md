@@ -11,7 +11,7 @@
 
 ## To Test It
 ```bash
-cd /Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/threatforest-strands/ui
+cd /Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/threatforest-strands/ui
 npm run start
 ```
 
@@ -37,7 +37,7 @@ rm -f ~/.threatforest/state/*.json
 
 ### Rebuild Everything
 ```bash
-cd /Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/threatforest-strands
+cd /Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/threatforest-strands
 find src -name "*.pyc" -delete
 find src -name "__pycache__" -type d -exec rm -rf {} +
 cd ui && npm run build:cli

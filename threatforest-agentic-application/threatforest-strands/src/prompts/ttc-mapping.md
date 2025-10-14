@@ -1,6 +1,6 @@
 ## TTC Technique Mapping 
 
-Following the attack tree creation, perform an analysis to identify potential alignments with AWS Threat Technique Catalog (TTC) techniques. This mapping should enhance rather than constrain the attack tree generation process. This data is in STIX format and stored in the stix-data folder kiro-threatforest-agentic/threatforest-strands/stix-data
+Following the attack tree creation, perform an analysis to identify potential alignments with AWS Threat Technique Catalog (TTC) techniques. This mapping should enhance rather than constrain the attack tree generation process. This data is in STIX format and stored in the stix-data folder threatforest-agentic-application/threatforest-strands/stix-data
 
 ### TTC Mapping Guidelines:
 

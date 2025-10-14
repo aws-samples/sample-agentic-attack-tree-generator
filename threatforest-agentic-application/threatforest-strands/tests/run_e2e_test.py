@@ -18,7 +18,7 @@ from modules.tools.information_extraction_tool import InformationExtractionTool
 from modules.tools.attack_tree_generator_tool import AttackTreeGeneratorTool
 
 # Test configuration
-TEST_PROJECT = Path("/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic/examples/hcls-example")
+TEST_PROJECT = Path("/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/hcls-example")
 AWS_PROFILE = "dicorteg+zetaworkload-test-Admin"
 BEDROCK_MODEL = "arn:aws:bedrock:us-east-1:654654238084:inference-profile/us.anthropic.claude-sonnet-4-20250514-v1:0"
 OUTPUT_DIR = Path(__file__).parent / "test_outputs" / "hcls-example"
