@@ -1,0 +1,3468 @@
+{
+  "attack_tree_T003_lateral_movement.md": [
+    {
+      "attack_step": "Exploit application code vulnerability",
+      "matches": [
+        {
+          "technique_id": "AT1667",
+          "name": "Application API Abuse",
+          "description": "Application API Abuse refers to techniques that leverage vulnerabilities or misconfigurations in app...",
+          "similarity": 0.49685675593206635
+        },
+        {
+          "technique_id": "T1190",
+          "name": "Exploit Public-Facing Application",
+          "description": "Adversaries may attempt to take advantage of a weakness in an Internet-facing computer or program us...",
+          "similarity": 0.43382563646305955
+        },
+        {
+          "technique_id": "T1565.003",
+          "name": "Runtime Data Manipulation",
+          "description": "Adversaries may modify systems in order to manipulate the data as it is accessed and displayed to an...",
+          "similarity": 0.3989348224455947
+        }
+      ]
+    },
+    {
+      "attack_step": "Query FHIR data repository",
+      "matches": [
+        {
+          "technique_id": "T1213",
+          "name": "Data from Information Repositories",
+          "description": "Adversaries may leverage information repositories to mine valuable information. Information reposito...",
+          "similarity": 0.3055976771658868
+        },
+        {
+          "technique_id": "AT1023.001",
+          "name": "Query RDS",
+          "description": "An adversary may attempt to discover resources that are available within RDS....",
+          "similarity": 0.25142786873799133
+        },
+        {
+          "technique_id": "AT1023.002",
+          "name": "Query DynamoDB",
+          "description": "An adversary may attempt to discover resources that are available within DynamoDB....",
+          "similarity": 0.2465880601445222
+        }
+      ]
+    },
+    {
+      "attack_step": "Pivot to HealthLake data plane",
+      "matches": [
+        {
+          "technique_id": "T1074",
+          "name": "Data Staged",
+          "description": "Adversaries may stage collected data in a central location or directory prior to Exfiltration. Data ...",
+          "similarity": 0.22936713074559273
+        },
+        {
+          "technique_id": "AT1012",
+          "name": "Region Selection and Hopping",
+          "description": "**This technique has been deprecated. Please use [Unused/Unsupported Cloud Regions](https://attack.m...",
+          "similarity": 0.2085740164030042
+        },
+        {
+          "technique_id": "T1074.002",
+          "name": "Remote Data Staging",
+          "description": "Adversaries may stage data collected from multiple systems in a central location or directory on one...",
+          "similarity": 0.1929461103159203
+        }
+      ]
+    },
+    {
+      "attack_step": "Scan for application vulnerabilities",
+      "matches": [
+        {
+          "technique_id": "T1190",
+          "name": "Exploit Public-Facing Application",
+          "description": "Adversaries may attempt to take advantage of a weakness in an Internet-facing computer or program us...",
+          "similarity": 0.41615675411148206
+        },
+        {
+          "technique_id": "T1518",
+          "name": "Software Discovery",
+          "description": "Adversaries may attempt to get a listing of software and software versions that are installed on a s...",
+          "similarity": 0.41571134992459674
+        },
+        {
+          "technique_id": "T1518.001",
+          "name": "Security Software Discovery",
+          "description": "Adversaries may attempt to get a listing of security software, configurations, defensive tools, and ...",
+          "similarity": 0.4090654738501226
+        }
+      ]
+    },
+    {
+      "attack_step": "Identify ECS infrastructure",
+      "matches": [
+        {
+          "technique_id": "T1496.A006",
+          "name": "Compute Hijacking - ECS",
+          "description": "An adversary can use ECS containers for their computation requirements with the cost of the resource...",
+          "similarity": 0.5007839457759522
+        },
+        {
+          "technique_id": "T1580",
+          "name": "Cloud Infrastructure Discovery",
+          "description": "An adversary may attempt to discover resources that are available within an infrastructure-as-a-serv...",
+          "similarity": 0.4551002786152769
+        },
+        {
+          "technique_id": "T1190.A017",
+          "name": "Amazon EKS",
+          "description": "Kubernetes clusters can be exposed to the internet intentionally or as an unintended consequence of ...",
+          "similarity": 0.4461429063351617
+        }
+      ]
+    },
+    {
+      "attack_step": "Discover ECS endpoints",
+      "matches": [
+        {
+          "technique_id": "T1496.A006",
+          "name": "Compute Hijacking - ECS",
+          "description": "An adversary can use ECS containers for their computation requirements with the cost of the resource...",
+          "similarity": 0.42349825803037205
+        },
+        {
+          "technique_id": "T1190.A017",
+          "name": "Amazon EKS",
+          "description": "Kubernetes clusters can be exposed to the internet intentionally or as an unintended consequence of ...",
+          "similarity": 0.4213436190925944
+        },
+        {
+          "technique_id": "T1580",
+          "name": "Cloud Infrastructure Discovery",
+          "description": "An adversary may attempt to discover resources that are available within an infrastructure-as-a-serv...",
+          "similarity": 0.4042177427950167
+        }
+      ]
+    },
+    {
+      "attack_step": "Exploit misconfigured IAM roles",
+      "matches": [
+        {
+          "technique_id": "AT1024",
+          "name": "IAM Principal Manipulation",
+          "description": "A principal is a person or application that can make a request for an action or operation on an AWS ...",
+          "similarity": 0.5451230035707444
+        },
+        {
+          "technique_id": "T1070.A001",
+          "name": "Delete IAM Entities",
+          "description": "Users and roles can be created with AWS Identity and Access Management (IAM) to perform unauthorized...",
+          "similarity": 0.5406285345217328
+        },
+        {
+          "technique_id": "AT1024.003",
+          "name": "IAM Role Hopping",
+          "description": "Given proper trust relationships, a role assumed with temporary credentials can be preserved indefin...",
+          "similarity": 0.5316272760290933
+        }
+      ]
+    },
+    {
+      "attack_step": "APT actor with network access",
+      "matches": [
+        {
+          "technique_id": "AT1075",
+          "name": "Create Identity Provider",
+          "description": "A threat actor using credentials with appropriate permissions is able to create an Identity Provider...",
+          "similarity": 0.29193575520642967
+        },
+        {
+          "technique_id": "T1072",
+          "name": "Software Deployment Tools",
+          "description": "Adversaries may gain access to and use centralized software suites installed within an enterprise to...",
+          "similarity": 0.2716486652034122
+        },
+        {
+          "technique_id": "T1108",
+          "name": "Redundant Access",
+          "description": "**This technique has been deprecated. Please use [Create Account](https://attack.mitre.org/technique...",
+          "similarity": 0.22387432376665453
+        }
+      ]
+    },
+    {
+      "attack_step": "Gain access to ECS host",
+      "matches": [
+        {
+          "technique_id": "T1078.A003",
+          "name": "Console Login",
+          "description": "A threat actor can use the AWS Management Console as a method of initial access into an AWS account....",
+          "similarity": 0.4966339802425554
+        },
+        {
+          "technique_id": "AT1024.001",
+          "name": "Create New IAM User/Role",
+          "description": "Adversaries may create an IAM user to maintain access to an AWS account and or resource. With a suff...",
+          "similarity": 0.46811626713796034
+        },
+        {
+          "technique_id": "AT1077",
+          "name": "Authorize VPC Security Groups",
+          "description": "A threat actor using credentials with appropriate permissions is able to permit network level access...",
+          "similarity": 0.43691340982519994
+        }
+      ]
+    },
+    {
+      "attack_step": "Network reconnaissance",
+      "matches": [
+        {
+          "technique_id": "T1040",
+          "name": "Network Sniffing",
+          "description": "Adversaries may passively sniff network traffic to capture information about an environment, includi...",
+          "similarity": 0.5177127588029706
+        },
+        {
+          "technique_id": "T1049",
+          "name": "System Network Connections Discovery",
+          "description": "Adversaries may attempt to get a listing of network connections to or from the compromised system th...",
+          "similarity": 0.48274582135007377
+        },
+        {
+          "technique_id": "T1583",
+          "name": "Acquire Infrastructure",
+          "description": "Adversaries may buy, lease, rent, or obtain infrastructure that can be used during targeting. A wide...",
+          "similarity": 0.4775654760781119
+        }
+      ]
+    },
+    {
+      "attack_step": "Compromise ECS taskcontainer",
+      "matches": [
+        {
+          "technique_id": "T1496.A006",
+          "name": "Compute Hijacking - ECS",
+          "description": "An adversary can use ECS containers for their computation requirements with the cost of the resource...",
+          "similarity": 0.4740057886777906
+        },
+        {
+          "technique_id": "T1190.A008",
+          "name": "CloudWatch Event Bus",
+          "description": "An adversary can perform supported actions on an exposed event bus....",
+          "similarity": 0.40082858531941973
+        },
+        {
+          "technique_id": "AT1024",
+          "name": "IAM Principal Manipulation",
+          "description": "A principal is a person or application that can make a request for an action or operation on an AWS ...",
+          "similarity": 0.3621464379060314
+        }
+      ]
+    },
+    {
+      "attack_step": "Exfiltrate FHIR resources",
+      "matches": [
+        {
+          "technique_id": "AT1023.003",
+          "name": "Query RedShift Cluster",
+          "description": "An adversary may attempt to discover resources that are available within a RedShift cluster....",
+          "similarity": 0.2595507512455988
+        },
+        {
+          "technique_id": "AT1012",
+          "name": "Region Selection and Hopping",
+          "description": "**This technique has been deprecated. Please use [Unused/Unsupported Cloud Regions](https://attack.m...",
+          "similarity": 0.23825495387498444
+        },
+        {
+          "technique_id": "AT1011",
+          "name": "Operation Rate Control",
+          "description": "**This technique has been deprecated. Please use [Time Based Evasion](https://attack.mitre.org/techn...",
+          "similarity": 0.2366206939268462
+        }
+      ]
+    },
+    {
+      "attack_step": "Unauthorized access to patient FHIR data",
+      "matches": [
+        {
+          "technique_id": "AT1029",
+          "name": "Data from Cloud Database",
+          "description": "Adversaries may access data from improperly secured cloud databases....",
+          "similarity": 0.337843240705655
+        },
+        {
+          "technique_id": "AT1029.002",
+          "name": "RDS",
+          "description": "Adversaries may access data from RDS....",
+          "similarity": 0.33741159199955806
+        },
+        {
+          "technique_id": "T1190.A014",
+          "name": "EMR Cluster",
+          "description": "An adversary can access publicly accessible data contained in open EMR clusters....",
+          "similarity": 0.3355072060546633
+        }
+      ]
+    },
+    {
+      "attack_step": "Steal IAM credentialstokens",
+      "matches": [
+        {
+          "technique_id": "T1550",
+          "name": "Use Alternate Authentication Material",
+          "description": "Adversaries may use alternate authentication material, such as password hashes, Kerberos tickets, an...",
+          "similarity": 0.5704068943285585
+        },
+        {
+          "technique_id": "T1528",
+          "name": "Steal Application Access Token",
+          "description": "Adversaries can steal application access tokens as a means of acquiring credentials to access remote...",
+          "similarity": 0.47950517518452407
+        },
+        {
+          "technique_id": "T1078.A001",
+          "name": "IAM Entities",
+          "description": "IAM entities are IAM resource objects that AWS uses for authentication. These include IAM users, fed...",
+          "similarity": 0.46443648019257977
+        }
+      ]
+    },
+    {
+      "attack_step": "Identify data access patterns",
+      "matches": [
+        {
+          "technique_id": "T1119",
+          "name": "Automated Collection",
+          "description": "Once established within a system or network, an adversary may use automated techniques for collectin...",
+          "similarity": 0.462377776083048
+        },
+        {
+          "technique_id": "T1565.001",
+          "name": "Stored Data Manipulation",
+          "description": "Adversaries may insert, delete, or manipulate data at rest in order to influence external outcomes o...",
+          "similarity": 0.4297689066303142
+        },
+        {
+          "technique_id": "T1565",
+          "name": "Data Manipulation",
+          "description": "Adversaries may insert, delete, or manipulate data in order to influence external outcomes or hide a...",
+          "similarity": 0.4141810689616905
+        }
+      ]
+    },
+    {
+      "attack_step": "Enumerate AWS environment",
+      "matches": [
+        {
+          "technique_id": "AT1002",
+          "name": "AWS Systems Manager Run Command",
+          "description": "AWS Systems Manager is an AWS service that can be used to view and control infrastructure on AWS. Us...",
+          "similarity": 0.5129852096842644
+        },
+        {
+          "technique_id": "AT1007",
+          "name": "Create or Modify AWS Service",
+          "description": "**This technique has been deprecated....",
+          "similarity": 0.4605416383039342
+        },
+        {
+          "technique_id": "T1580",
+          "name": "Cloud Infrastructure Discovery",
+          "description": "An adversary may attempt to discover resources that are available within an infrastructure-as-a-serv...",
+          "similarity": 0.45904569620881197
+        }
+      ]
+    },
+    {
+      "attack_step": "Exploit container escape vulnerability",
+      "matches": [
+        {
+          "technique_id": "T1496.A006",
+          "name": "Compute Hijacking - ECS",
+          "description": "An adversary can use ECS containers for their computation requirements with the cost of the resource...",
+          "similarity": 0.3905037737771558
+        },
+        {
+          "technique_id": "T1190",
+          "name": "Exploit Public-Facing Application",
+          "description": "Adversaries may attempt to take advantage of a weakness in an Internet-facing computer or program us...",
+          "similarity": 0.3771888188746297
+        },
+        {
+          "technique_id": "AT1011",
+          "name": "Operation Rate Control",
+          "description": "**This technique has been deprecated. Please use [Time Based Evasion](https://attack.mitre.org/techn...",
+          "similarity": 0.36904277165230537
+        }
+      ]
+    },
+    {
+      "attack_step": "Discover HealthLake connections",
+      "matches": [
+        {
+          "technique_id": "T1049",
+          "name": "System Network Connections Discovery",
+          "description": "Adversaries may attempt to get a listing of network connections to or from the compromised system th...",
+          "similarity": 0.3596869646562415
+        },
+        {
+          "technique_id": "T1046",
+          "name": "Network Service Discovery",
+          "description": "Adversaries may attempt to get a listing of services running on remote hosts and local network infra...",
+          "similarity": 0.33547818946478597
+        },
+        {
+          "technique_id": "T1526",
+          "name": "Cloud Service Discovery",
+          "description": "An adversary may attempt to enumerate the cloud services running on a system after gaining access. T...",
+          "similarity": 0.31315862143186957
+        }
+      ]
+    }
+  ],
+  "attack_tree_T003_supply_chain.md": [
+    {
+      "attack_step": "Integrity loss of industrial controllers and healthcare devices",
+      "matches": [
+        {
+          "technique_id": "T1485",
+          "name": "Data Destruction",
+          "description": "Adversaries may destroy data and files on specific systems or in large numbers on a network to inter...",
+          "similarity": 0.37096746708527806
+        },
+        {
+          "technique_id": "T1565.002",
+          "name": "Transmitted Data Manipulation",
+          "description": "Adversaries may alter data en route to storage or other systems in order to manipulate external outc...",
+          "similarity": 0.31442737035057106
+        },
+        {
+          "technique_id": "T1499.004",
+          "name": "Application or System Exploitation",
+          "description": "Adversaries may exploit software vulnerabilities that can cause an application or system to crash an...",
+          "similarity": 0.3103027700482826
+        }
+      ]
+    },
+    {
+      "attack_step": "Understand firmware validation process",
+      "matches": [
+        {
+          "technique_id": "T1496.004.A999",
+          "name": "Test Technique",
+          "description": "This is a test technique, subtechnique, or sub-subtechnique and is used solely for testing and devel...",
+          "similarity": 0.2559752089583873
+        },
+        {
+          "technique_id": "T1098.005",
+          "name": "Device Registration",
+          "description": "Adversaries may register a device to an adversary-controlled account. Devices may be registered in a...",
+          "similarity": 0.21142954250971321
+        },
+        {
+          "technique_id": "T1485.A002",
+          "name": "AMI Image Deletion",
+          "description": "Amazon Elastic Block Store (EBS) snapshots are replicas of volumes. An AMI (Amazon Machine Image) is...",
+          "similarity": 0.18795786010924095
+        }
+      ]
+    },
+    {
+      "attack_step": "Access AWS IoT Core console",
+      "matches": [
+        {
+          "technique_id": "T1078.A003",
+          "name": "Console Login",
+          "description": "A threat actor can use the AWS Management Console as a method of initial access into an AWS account....",
+          "similarity": 0.5615131931110677
+        },
+        {
+          "technique_id": "AT1002",
+          "name": "AWS Systems Manager Run Command",
+          "description": "AWS Systems Manager is an AWS service that can be used to view and control infrastructure on AWS. Us...",
+          "similarity": 0.43780550867627005
+        },
+        {
+          "technique_id": "T1021.008",
+          "name": "Direct Cloud VM Connections",
+          "description": "Adversaries may leverage [Valid Accounts](https://attack.mitre.org/techniques/T1078) to log directly...",
+          "similarity": 0.4277395322510455
+        }
+      ]
+    },
+    {
+      "attack_step": "Deploy malicious OTA job to healthcare devices",
+      "matches": [
+        {
+          "technique_id": "T1072",
+          "name": "Software Deployment Tools",
+          "description": "Adversaries may gain access to and use centralized software suites installed within an enterprise to...",
+          "similarity": 0.4821172406550301
+        },
+        {
+          "technique_id": "T1525",
+          "name": "Implant Internal Image",
+          "description": "Adversaries may implant cloud or container images with malicious code to establish persistence after...",
+          "similarity": 0.4016222974431999
+        },
+        {
+          "technique_id": "T1059.009",
+          "name": "Cloud API",
+          "description": "Adversaries may abuse cloud APIs to execute malicious commands. APIs available in cloud environments...",
+          "similarity": 0.38556215668692195
+        }
+      ]
+    },
+    {
+      "attack_step": "Map OTA update workflows",
+      "matches": [
+        {
+          "technique_id": "T1213.001",
+          "name": "Confluence",
+          "description": "\nAdversaries may leverage Confluence repositories to mine valuable information. Often found in devel...",
+          "similarity": 0.22825018500521377
+        },
+        {
+          "technique_id": "T1072",
+          "name": "Software Deployment Tools",
+          "description": "Adversaries may gain access to and use centralized software suites installed within an enterprise to...",
+          "similarity": 0.19791348412035875
+        },
+        {
+          "technique_id": "T1190.A008",
+          "name": "CloudWatch Event Bus",
+          "description": "An adversary can perform supported actions on an exposed event bus....",
+          "similarity": 0.19472828996740787
+        }
+      ]
+    },
+    {
+      "attack_step": "Disable or bypass signature verification",
+      "matches": [
+        {
+          "technique_id": "T1550",
+          "name": "Use Alternate Authentication Material",
+          "description": "Adversaries may use alternate authentication material, such as password hashes, Kerberos tickets, an...",
+          "similarity": 0.36431841128031045
+        },
+        {
+          "technique_id": "T1562.001",
+          "name": "Disable or Modify Tools",
+          "description": "Adversaries may disable security tools to avoid possible detection of their tools and activities. Th...",
+          "similarity": 0.3479430455096947
+        },
+        {
+          "technique_id": "AT1008",
+          "name": "Golden SAML",
+          "description": "**This technique has been deprecated. Please use [SAML Tokens](https://attack.mitre.org/techniques/T...",
+          "similarity": 0.2805963015595006
+        }
+      ]
+    },
+    {
+      "attack_step": "Manipulation of healthcare device functions",
+      "matches": [
+        {
+          "technique_id": "T1496.004.A999",
+          "name": "Test Technique",
+          "description": "This is a test technique, subtechnique, or sub-subtechnique and is used solely for testing and devel...",
+          "similarity": 0.27711314766704237
+        },
+        {
+          "technique_id": "T1072",
+          "name": "Software Deployment Tools",
+          "description": "Adversaries may gain access to and use centralized software suites installed within an enterprise to...",
+          "similarity": 0.2674589356552617
+        },
+        {
+          "technique_id": "T1565.002",
+          "name": "Transmitted Data Manipulation",
+          "description": "Adversaries may alter data en route to storage or other systems in order to manipulate external outc...",
+          "similarity": 0.25672652469705814
+        }
+      ]
+    },
+    {
+      "attack_step": "Modify firmware verification settings",
+      "matches": [
+        {
+          "technique_id": "T1098.005",
+          "name": "Device Registration",
+          "description": "Adversaries may register a device to an adversary-controlled account. Devices may be registered in a...",
+          "similarity": 0.20162849586965137
+        },
+        {
+          "technique_id": "T1562.001",
+          "name": "Disable or Modify Tools",
+          "description": "Adversaries may disable security tools to avoid possible detection of their tools and activities. Th...",
+          "similarity": 0.18980826493634503
+        },
+        {
+          "technique_id": "AT1013",
+          "name": "User Agent Spoofing and Randomization",
+          "description": "**This technique has been deprecated. Please use [Match Legitimate Name or Location](https://attack....",
+          "similarity": 0.16302651344424388
+        }
+      ]
+    },
+    {
+      "attack_step": "Select critical industrial controllers",
+      "matches": [
+        {
+          "technique_id": "T1072",
+          "name": "Software Deployment Tools",
+          "description": "Adversaries may gain access to and use centralized software suites installed within an enterprise to...",
+          "similarity": 0.3615962635811054
+        },
+        {
+          "technique_id": "T1496.001",
+          "name": "Compute Hijacking",
+          "description": "Unreleased. TBD...",
+          "similarity": 0.27250636915062654
+        },
+        {
+          "technique_id": "T1082",
+          "name": "System Information Discovery",
+          "description": "An adversary may attempt to get detailed information about the operating system and hardware, includ...",
+          "similarity": 0.2721381294618454
+        }
+      ]
+    },
+    {
+      "attack_step": "Insert malicious control logic",
+      "matches": [
+        {
+          "technique_id": "T1562",
+          "name": "Impair Defenses",
+          "description": "Adversaries may maliciously modify components of a victim environment in order to hinder or disable ...",
+          "similarity": 0.48699066832182164
+        },
+        {
+          "technique_id": "T1059",
+          "name": "Command and Scripting Interpreter",
+          "description": "Adversaries may abuse command and script interpreters to execute commands, scripts, or binaries. The...",
+          "similarity": 0.4547399154774028
+        },
+        {
+          "technique_id": "T1565",
+          "name": "Data Manipulation",
+          "description": "Adversaries may insert, delete, or manipulate data in order to influence external outcomes or hide a...",
+          "similarity": 0.442398966966089
+        }
+      ]
+    },
+    {
+      "attack_step": "Access IoT Jobs service",
+      "matches": [
+        {
+          "technique_id": "T1526",
+          "name": "Cloud Service Discovery",
+          "description": "An adversary may attempt to enumerate the cloud services running on a system after gaining access. T...",
+          "similarity": 0.3393000588767161
+        },
+        {
+          "technique_id": "T1021.007",
+          "name": "Cloud Services",
+          "description": "Adversaries may log into accessible cloud services within a compromised environment using [Valid Acc...",
+          "similarity": 0.32354781917432895
+        },
+        {
+          "technique_id": "AT1007",
+          "name": "Create or Modify AWS Service",
+          "description": "**This technique has been deprecated....",
+          "similarity": 0.3142605187293552
+        }
+      ]
+    },
+    {
+      "attack_step": "Devices download and install malicious firmware",
+      "matches": [
+        {
+          "technique_id": "T1525",
+          "name": "Implant Internal Image",
+          "description": "Adversaries may implant cloud or container images with malicious code to establish persistence after...",
+          "similarity": 0.33889163464133
+        },
+        {
+          "technique_id": "T1072",
+          "name": "Software Deployment Tools",
+          "description": "Adversaries may gain access to and use centralized software suites installed within an enterprise to...",
+          "similarity": 0.31815108677701215
+        },
+        {
+          "technique_id": "T1496.001",
+          "name": "Compute Hijacking",
+          "description": "Unreleased. TBD...",
+          "similarity": 0.3169829687285002
+        }
+      ]
+    },
+    {
+      "attack_step": "Embed persistent access mechanisms",
+      "matches": [
+        {
+          "technique_id": "AT1024.003",
+          "name": "IAM Role Hopping",
+          "description": "Given proper trust relationships, a role assumed with temporary credentials can be preserved indefin...",
+          "similarity": 0.43441646503242876
+        },
+        {
+          "technique_id": "T1550",
+          "name": "Use Alternate Authentication Material",
+          "description": "Adversaries may use alternate authentication material, such as password hashes, Kerberos tickets, an...",
+          "similarity": 0.4160641683081136
+        },
+        {
+          "technique_id": "T1137.006",
+          "name": "Add-ins",
+          "description": "Adversaries may abuse Microsoft Office add-ins to obtain persistence on a compromised system. Office...",
+          "similarity": 0.389195940314714
+        }
+      ]
+    },
+    {
+      "attack_step": "Patient safety risks",
+      "matches": [
+        {
+          "technique_id": "AT1020",
+          "name": "Network to Cloud",
+          "description": "The risk of gaining access to a physical network and then leveraging that to gain access to cloud re...",
+          "similarity": 0.3622241705230016
+        },
+        {
+          "technique_id": "T1199",
+          "name": "Trusted Relationship",
+          "description": "Adversaries may breach or otherwise leverage organizations who have access to intended victims. Acce...",
+          "similarity": 0.27714981329967253
+        },
+        {
+          "technique_id": "T1190.A018",
+          "name": "API Gateway",
+          "description": "An adversary can perform injection attacks on API gateways. This unverified input could trigger crit...",
+          "similarity": 0.2491694329273597
+        }
+      ]
+    },
+    {
+      "attack_step": "Reconnaissance of OTA infrastructure",
+      "matches": [
+        {
+          "technique_id": "T1583",
+          "name": "Acquire Infrastructure",
+          "description": "Adversaries may buy, lease, rent, or obtain infrastructure that can be used during targeting. A wide...",
+          "similarity": 0.3164837236356101
+        },
+        {
+          "technique_id": "T1190.A014",
+          "name": "EMR Cluster",
+          "description": "An adversary can access publicly accessible data contained in open EMR clusters....",
+          "similarity": 0.31473847986635906
+        },
+        {
+          "technique_id": "T1496.003",
+          "name": "SMS Pumping",
+          "description": "Adversaries may leverage messaging services for SMS pumping, which may impact system and/or hosted s...",
+          "similarity": 0.31338913208924246
+        }
+      ]
+    },
+    {
+      "attack_step": "Complete device compromise",
+      "matches": [
+        {
+          "technique_id": "T1496.001",
+          "name": "Compute Hijacking",
+          "description": "Unreleased. TBD...",
+          "similarity": 0.5150117477036803
+        },
+        {
+          "technique_id": "T1565.002",
+          "name": "Transmitted Data Manipulation",
+          "description": "Adversaries may alter data en route to storage or other systems in order to manipulate external outc...",
+          "similarity": 0.4524200573116305
+        },
+        {
+          "technique_id": "T1496.A006",
+          "name": "Compute Hijacking - ECS",
+          "description": "An adversary can use ECS containers for their computation requirements with the cost of the resource...",
+          "similarity": 0.4443330526659747
+        }
+      ]
+    },
+    {
+      "attack_step": "Safety hazards in industrial environment",
+      "matches": [
+        {
+          "technique_id": "AT1020",
+          "name": "Network to Cloud",
+          "description": "The risk of gaining access to a physical network and then leveraging that to gain access to cloud re...",
+          "similarity": 0.2701824832646364
+        },
+        {
+          "technique_id": "T1190",
+          "name": "Exploit Public-Facing Application",
+          "description": "Adversaries may attempt to take advantage of a weakness in an Internet-facing computer or program us...",
+          "similarity": 0.2265196958627171
+        },
+        {
+          "technique_id": "T1499.004",
+          "name": "Application or System Exploitation",
+          "description": "Adversaries may exploit software vulnerabilities that can cause an application or system to crash an...",
+          "similarity": 0.22359561475740722
+        }
+      ]
+    },
+    {
+      "attack_step": "Remote control of industrial processes",
+      "matches": [
+        {
+          "technique_id": "T1072",
+          "name": "Software Deployment Tools",
+          "description": "Adversaries may gain access to and use centralized software suites installed within an enterprise to...",
+          "similarity": 0.34635338270811317
+        },
+        {
+          "technique_id": "T1021",
+          "name": "Remote Services",
+          "description": "Adversaries may use [Valid Accounts](https://attack.mitre.org/techniques/T1078) to log into a servic...",
+          "similarity": 0.28284762399937435
+        },
+        {
+          "technique_id": "T1059",
+          "name": "Command and Scripting Interpreter",
+          "description": "Adversaries may abuse command and script interpreters to execute commands, scripts, or binaries. The...",
+          "similarity": 0.2530646720742276
+        }
+      ]
+    },
+    {
+      "attack_step": "Identify target device fleet",
+      "matches": [
+        {
+          "technique_id": "T1082",
+          "name": "System Information Discovery",
+          "description": "An adversary may attempt to get detailed information about the operating system and hardware, includ...",
+          "similarity": 0.4359694389027651
+        },
+        {
+          "technique_id": "T1098.005",
+          "name": "Device Registration",
+          "description": "Adversaries may register a device to an adversary-controlled account. Devices may be registered in a...",
+          "similarity": 0.4174283224175151
+        },
+        {
+          "technique_id": "T1518.001",
+          "name": "Security Software Discovery",
+          "description": "Adversaries may attempt to get a listing of security software, configurations, defensive tools, and ...",
+          "similarity": 0.3621076188695293
+        }
+      ]
+    },
+    {
+      "attack_step": "Create fraudulent signing certificate",
+      "matches": [
+        {
+          "technique_id": "T1649",
+          "name": "Steal or Forge Authentication Certificates",
+          "description": "Adversaries may steal or forge certificates used for authentication to access remote systems or reso...",
+          "similarity": 0.4371049443611134
+        },
+        {
+          "technique_id": "T1656",
+          "name": "Impersonation",
+          "description": "Adversaries may impersonate a trusted person or organization in order to persuade and trick a target...",
+          "similarity": 0.34299791607550084
+        },
+        {
+          "technique_id": "T1606.002",
+          "name": "SAML Tokens",
+          "description": "An adversary may forge SAML tokens with any permissions claims and lifetimes if they possess a valid...",
+          "similarity": 0.27899677447384025
+        }
+      ]
+    },
+    {
+      "attack_step": "Deploy malicious OTA job to industrial controllers",
+      "matches": [
+        {
+          "technique_id": "T1072",
+          "name": "Software Deployment Tools",
+          "description": "Adversaries may gain access to and use centralized software suites installed within an enterprise to...",
+          "similarity": 0.5398558833106282
+        },
+        {
+          "technique_id": "T1059.009",
+          "name": "Cloud API",
+          "description": "Adversaries may abuse cloud APIs to execute malicious commands. APIs available in cloud environments...",
+          "similarity": 0.39216298766058283
+        },
+        {
+          "technique_id": "T1666",
+          "name": "Modify Cloud Resource Hierarchy",
+          "description": "Adversaries may attempt to modify hierarchical structures in infrastructure-as-a-service (IaaS) envi...",
+          "similarity": 0.38845155773020784
+        }
+      ]
+    },
+    {
+      "attack_step": "Malicious insider with administrative access to AWS IoT Core",
+      "matches": [
+        {
+          "technique_id": "T1078.A003",
+          "name": "Console Login",
+          "description": "A threat actor can use the AWS Management Console as a method of initial access into an AWS account....",
+          "similarity": 0.5629590512873668
+        },
+        {
+          "technique_id": "T1078.A002",
+          "name": "Account Root User",
+          "description": "The account root user has complete access to all AWS services and resources in the account.\n\nComprom...",
+          "similarity": 0.5471650620404187
+        },
+        {
+          "technique_id": "AT1024.001",
+          "name": "Create New IAM User/Role",
+          "description": "Adversaries may create an IAM user to maintain access to an AWS account and or resource. With a suff...",
+          "similarity": 0.5447683826101524
+        }
+      ]
+    },
+    {
+      "attack_step": "Select critical healthcare devices",
+      "matches": [
+        {
+          "technique_id": "T1072",
+          "name": "Software Deployment Tools",
+          "description": "Adversaries may gain access to and use centralized software suites installed within an enterprise to...",
+          "similarity": 0.20144887529239655
+        },
+        {
+          "technique_id": "AT1020",
+          "name": "Network to Cloud",
+          "description": "The risk of gaining access to a physical network and then leveraging that to gain access to cloud re...",
+          "similarity": 0.19480711580195129
+        },
+        {
+          "technique_id": "T1098.005",
+          "name": "Device Registration",
+          "description": "Adversaries may register a device to an adversary-controlled account. Devices may be registered in a...",
+          "similarity": 0.19442131197726847
+        }
+      ]
+    },
+    {
+      "attack_step": "Access device registry",
+      "matches": [
+        {
+          "technique_id": "T1098.005",
+          "name": "Device Registration",
+          "description": "Adversaries may register a device to an adversary-controlled account. Devices may be registered in a...",
+          "similarity": 0.3625048623415704
+        },
+        {
+          "technique_id": "T1137.002",
+          "name": "Office Test",
+          "description": "Adversaries may abuse the Microsoft Office \"Office Test\" Registry key to obtain persistence on a com...",
+          "similarity": 0.30703349772987026
+        },
+        {
+          "technique_id": "T1490",
+          "name": "Inhibit System Recovery",
+          "description": "Adversaries may delete or remove built-in data and turn off services designed to aid in the recovery...",
+          "similarity": 0.25465143122271877
+        }
+      ]
+    },
+    {
+      "attack_step": "Create malicious firmware package",
+      "matches": [
+        {
+          "technique_id": "T1496.001",
+          "name": "Compute Hijacking",
+          "description": "Unreleased. TBD...",
+          "similarity": 0.3930708333900772
+        },
+        {
+          "technique_id": "T1525",
+          "name": "Implant Internal Image",
+          "description": "Adversaries may implant cloud or container images with malicious code to establish persistence after...",
+          "similarity": 0.3693803928453196
+        },
+        {
+          "technique_id": "T1072",
+          "name": "Software Deployment Tools",
+          "description": "Adversaries may gain access to and use centralized software suites installed within an enterprise to...",
+          "similarity": 0.3515298011718075
+        }
+      ]
+    },
+    {
+      "attack_step": "Craft backdoored firmware",
+      "matches": [
+        {
+          "technique_id": "T1496.001",
+          "name": "Compute Hijacking",
+          "description": "Unreleased. TBD...",
+          "similarity": 0.3897321267660235
+        },
+        {
+          "technique_id": "T1525",
+          "name": "Implant Internal Image",
+          "description": "Adversaries may implant cloud or container images with malicious code to establish persistence after...",
+          "similarity": 0.3436188499449963
+        },
+        {
+          "technique_id": "T1072",
+          "name": "Software Deployment Tools",
+          "description": "Adversaries may gain access to and use centralized software suites installed within an enterprise to...",
+          "similarity": 0.3005798485354199
+        }
+      ]
+    }
+  ],
+  "attack_tree_T002_cryptographic_failures.md": [
+    {
+      "attack_step": "BGP Hijacking",
+      "matches": [
+        {
+          "technique_id": "T1496.001",
+          "name": "Compute Hijacking",
+          "description": "Unreleased. TBD...",
+          "similarity": 0.42139070178646987
+        },
+        {
+          "technique_id": "T1040",
+          "name": "Network Sniffing",
+          "description": "Adversaries may passively sniff network traffic to capture information about an environment, includi...",
+          "similarity": 0.4048433925008828
+        },
+        {
+          "technique_id": "T1496.A006",
+          "name": "Compute Hijacking - ECS",
+          "description": "An adversary can use ECS containers for their computation requirements with the cost of the resource...",
+          "similarity": 0.40177406103509206
+        }
+      ]
+    },
+    {
+      "attack_step": "Deploy Malicious Infrastructure",
+      "matches": [
+        {
+          "technique_id": "T1583",
+          "name": "Acquire Infrastructure",
+          "description": "Adversaries may buy, lease, rent, or obtain infrastructure that can be used during targeting. A wide...",
+          "similarity": 0.6050451046502446
+        },
+        {
+          "technique_id": "T1072",
+          "name": "Software Deployment Tools",
+          "description": "Adversaries may gain access to and use centralized software suites installed within an enterprise to...",
+          "similarity": 0.5919573065436473
+        },
+        {
+          "technique_id": "T1496.A003",
+          "name": "Compute Hijacking - EC2 Use",
+          "description": "A threat actor can use EC2 instances for their computation requirements with the cost of the resourc...",
+          "similarity": 0.5000094636987514
+        }
+      ]
+    },
+    {
+      "attack_step": "Traffic Interception",
+      "matches": [
+        {
+          "technique_id": "T1040",
+          "name": "Network Sniffing",
+          "description": "Adversaries may passively sniff network traffic to capture information about an environment, includi...",
+          "similarity": 0.6251154860555305
+        },
+        {
+          "technique_id": "T1190.A008",
+          "name": "CloudWatch Event Bus",
+          "description": "An adversary can perform supported actions on an exposed event bus....",
+          "similarity": 0.36694221402955535
+        },
+        {
+          "technique_id": "T1048",
+          "name": "Exfiltration Over Alternative Protocol",
+          "description": "Adversaries may steal data by exfiltrating it over a different protocol than that of the existing co...",
+          "similarity": 0.36525453245741535
+        }
+      ]
+    },
+    {
+      "attack_step": "Rogue Certificate Authority",
+      "matches": [
+        {
+          "technique_id": "T1649",
+          "name": "Steal or Forge Authentication Certificates",
+          "description": "Adversaries may steal or forge certificates used for authentication to access remote systems or reso...",
+          "similarity": 0.4493455619830606
+        },
+        {
+          "technique_id": "T1491.A001",
+          "name": "Subdomain Takeover",
+          "description": "An organization is vulnerable to a Subdomain Takeover when a resource has been deleted or removed, b...",
+          "similarity": 0.32664288561015686
+        },
+        {
+          "technique_id": "AT1013",
+          "name": "User Agent Spoofing and Randomization",
+          "description": "**This technique has been deprecated. Please use [Match Legitimate Name or Location](https://attack....",
+          "similarity": 0.32130023969569593
+        }
+      ]
+    },
+    {
+      "attack_step": "Locate SCADA Systems",
+      "matches": [
+        {
+          "technique_id": "T1082",
+          "name": "System Information Discovery",
+          "description": "An adversary may attempt to get detailed information about the operating system and hardware, includ...",
+          "similarity": 0.4208848997145095
+        },
+        {
+          "technique_id": "T1518.001",
+          "name": "Security Software Discovery",
+          "description": "Adversaries may attempt to get a listing of security software, configurations, defensive tools, and ...",
+          "similarity": 0.3948646013424986
+        },
+        {
+          "technique_id": "T1526",
+          "name": "Cloud Service Discovery",
+          "description": "An adversary may attempt to enumerate the cloud services running on a system after gaining access. T...",
+          "similarity": 0.3784051889892583
+        }
+      ]
+    },
+    {
+      "attack_step": "Position for Interception",
+      "matches": [
+        {
+          "technique_id": "AT1012",
+          "name": "Region Selection and Hopping",
+          "description": "**This technique has been deprecated. Please use [Unused/Unsupported Cloud Regions](https://attack.m...",
+          "similarity": 0.16945371385529534
+        },
+        {
+          "technique_id": "T1614",
+          "name": "System Location Discovery",
+          "description": "\nAdversaries may gather information in an attempt to calculate the geographical location of a victim...",
+          "similarity": 0.16759116133675916
+        },
+        {
+          "technique_id": "T1204",
+          "name": "User Execution",
+          "description": "An adversary may rely upon specific actions by a user in order to gain execution. Users may be subje...",
+          "similarity": 0.16653391217820598
+        }
+      ]
+    },
+    {
+      "attack_step": "DNS Poisoning",
+      "matches": [
+        {
+          "technique_id": "T1583.001",
+          "name": "Domains",
+          "description": "Adversaries may acquire domains that can be used during targeting. Domain names are the human readab...",
+          "similarity": 0.5587243477055139
+        },
+        {
+          "technique_id": "T1491.A001",
+          "name": "Subdomain Takeover",
+          "description": "An organization is vulnerable to a Subdomain Takeover when a resource has been deleted or removed, b...",
+          "similarity": 0.5449467231744747
+        },
+        {
+          "technique_id": "T1498",
+          "name": "Network Denial of Service",
+          "description": "Adversaries may perform Network Denial of Service (DoS) attacks to degrade or block the availability...",
+          "similarity": 0.4991456213246794
+        }
+      ]
+    },
+    {
+      "attack_step": "Decrypt MQTT Traffic",
+      "matches": [
+        {
+          "technique_id": "T1048",
+          "name": "Exfiltration Over Alternative Protocol",
+          "description": "Adversaries may steal data by exfiltrating it over a different protocol than that of the existing co...",
+          "similarity": 0.272281086197473
+        },
+        {
+          "technique_id": "T1190.A002",
+          "name": "SQS Queue",
+          "description": "Open SQS queues expose the contents of the queue to the entire internet. An adversary could read sen...",
+          "similarity": 0.2616699305136231
+        },
+        {
+          "technique_id": "T1040",
+          "name": "Network Sniffing",
+          "description": "Adversaries may passively sniff network traffic to capture information about an environment, includi...",
+          "similarity": 0.2603149199838969
+        }
+      ]
+    },
+    {
+      "attack_step": "ARP Spoofing",
+      "matches": [
+        {
+          "technique_id": "AT1013",
+          "name": "User Agent Spoofing and Randomization",
+          "description": "**This technique has been deprecated. Please use [Match Legitimate Name or Location](https://attack....",
+          "similarity": 0.3680950645349346
+        },
+        {
+          "technique_id": "T1040",
+          "name": "Network Sniffing",
+          "description": "Adversaries may passively sniff network traffic to capture information about an environment, includi...",
+          "similarity": 0.31731650322772886
+        },
+        {
+          "technique_id": "T1498.002",
+          "name": "Reflection Amplification",
+          "description": "Adversaries may attempt to cause a denial of service (DoS) by reflecting a high-volume of network tr...",
+          "similarity": 0.2897999536636679
+        }
+      ]
+    },
+    {
+      "attack_step": "Locate Patient Monitors",
+      "matches": [
+        {
+          "technique_id": "T1614",
+          "name": "System Location Discovery",
+          "description": "\nAdversaries may gather information in an attempt to calculate the geographical location of a victim...",
+          "similarity": 0.21767983486167058
+        },
+        {
+          "technique_id": "T1190.A014",
+          "name": "EMR Cluster",
+          "description": "An adversary can access publicly accessible data contained in open EMR clusters....",
+          "similarity": 0.20482852673504814
+        },
+        {
+          "technique_id": "AT1023.003",
+          "name": "Query RedShift Cluster",
+          "description": "An adversary may attempt to discover resources that are available within a RedShift cluster....",
+          "similarity": 0.19807238236514257
+        }
+      ]
+    },
+    {
+      "attack_step": "Access Patient Monitor Readings",
+      "matches": [
+        {
+          "technique_id": "T1538",
+          "name": "Cloud Service Dashboard",
+          "description": "An adversary may use a cloud service dashboard GUI with stolen credentials to gain useful informatio...",
+          "similarity": 0.1989091960822565
+        },
+        {
+          "technique_id": "AT1029.003",
+          "name": "Redshift",
+          "description": "Adversaries may access data from Redshift....",
+          "similarity": 0.19109648543838845
+        },
+        {
+          "technique_id": "T1190.A014",
+          "name": "EMR Cluster",
+          "description": "An adversary can access publicly accessible data contained in open EMR clusters....",
+          "similarity": 0.18961033725458626
+        }
+      ]
+    },
+    {
+      "attack_step": "Nation-state actor with APT capabilities",
+      "matches": [
+        {
+          "technique_id": "AT1075",
+          "name": "Create Identity Provider",
+          "description": "A threat actor using credentials with appropriate permissions is able to create an Identity Provider...",
+          "similarity": 0.4371284328325701
+        },
+        {
+          "technique_id": "T1072",
+          "name": "Software Deployment Tools",
+          "description": "Adversaries may gain access to and use centralized software suites installed within an enterprise to...",
+          "similarity": 0.3922201279889521
+        },
+        {
+          "technique_id": "T1583",
+          "name": "Acquire Infrastructure",
+          "description": "Adversaries may buy, lease, rent, or obtain infrastructure that can be used during targeting. A wide...",
+          "similarity": 0.37767065292370317
+        }
+      ]
+    },
+    {
+      "attack_step": "Exposure of Sensitive Healthcare and Industrial Data",
+      "matches": [
+        {
+          "technique_id": "AT1029",
+          "name": "Data from Cloud Database",
+          "description": "Adversaries may access data from improperly secured cloud databases....",
+          "similarity": 0.47388963538634643
+        },
+        {
+          "technique_id": "T1213",
+          "name": "Data from Information Repositories",
+          "description": "Adversaries may leverage information repositories to mine valuable information. Information reposito...",
+          "similarity": 0.47227872809778043
+        },
+        {
+          "technique_id": "AT1020",
+          "name": "Network to Cloud",
+          "description": "The risk of gaining access to a physical network and then leveraging that to gain access to cloud re...",
+          "similarity": 0.41874363798733105
+        }
+      ]
+    },
+    {
+      "attack_step": "Map Network Topology",
+      "matches": [
+        {
+          "technique_id": "T1049",
+          "name": "System Network Connections Discovery",
+          "description": "Adversaries may attempt to get a listing of network connections to or from the compromised system th...",
+          "similarity": 0.31105604359652284
+        },
+        {
+          "technique_id": "AT1020",
+          "name": "Network to Cloud",
+          "description": "The risk of gaining access to a physical network and then leveraging that to gain access to cloud re...",
+          "similarity": 0.2846926013527991
+        },
+        {
+          "technique_id": "T1046",
+          "name": "Network Service Discovery",
+          "description": "Adversaries may attempt to get a listing of services running on remote hosts and local network infra...",
+          "similarity": 0.27161872021870204
+        }
+      ]
+    },
+    {
+      "attack_step": "Access SCADA Commands and Telemetry",
+      "matches": [
+        {
+          "technique_id": "T1072",
+          "name": "Software Deployment Tools",
+          "description": "Adversaries may gain access to and use centralized software suites installed within an enterprise to...",
+          "similarity": 0.4203133553316333
+        },
+        {
+          "technique_id": "T1048",
+          "name": "Exfiltration Over Alternative Protocol",
+          "description": "Adversaries may steal data by exfiltrating it over a different protocol than that of the existing co...",
+          "similarity": 0.3429111995063213
+        },
+        {
+          "technique_id": "T1059",
+          "name": "Command and Scripting Interpreter",
+          "description": "Adversaries may abuse command and script interpreters to execute commands, scripts, or binaries. The...",
+          "similarity": 0.3368348181671526
+        }
+      ]
+    },
+    {
+      "attack_step": "Identify MQTT Infrastructure",
+      "matches": [
+        {
+          "technique_id": "T1190.A002",
+          "name": "SQS Queue",
+          "description": "Open SQS queues expose the contents of the queue to the entire internet. An adversary could read sen...",
+          "similarity": 0.37529833148814934
+        },
+        {
+          "technique_id": "AT1026.001",
+          "name": "Disable or Modify Simple Queue Service",
+          "description": "Amazon Simple Queue Service (Amazon SQS) is a reliable, highly-scalable hosted queue for storing mes...",
+          "similarity": 0.332943950247486
+        },
+        {
+          "technique_id": "T1046",
+          "name": "Network Service Discovery",
+          "description": "Adversaries may attempt to get a listing of services running on remote hosts and local network infra...",
+          "similarity": 0.32374399368877443
+        }
+      ]
+    },
+    {
+      "attack_step": "Reconnaissance Phase",
+      "matches": [
+        {
+          "technique_id": "T1074",
+          "name": "Data Staged",
+          "description": "Adversaries may stage collected data in a central location or directory prior to Exfiltration. Data ...",
+          "similarity": 0.3161242000241686
+        },
+        {
+          "technique_id": "AT1023.003",
+          "name": "Query RedShift Cluster",
+          "description": "An adversary may attempt to discover resources that are available within a RedShift cluster....",
+          "similarity": 0.29672074272332855
+        },
+        {
+          "technique_id": "AT1029.003",
+          "name": "Redshift",
+          "description": "Adversaries may access data from Redshift....",
+          "similarity": 0.29410459460783944
+        }
+      ]
+    },
+    {
+      "attack_step": "Exploit Weak Cipher Suites",
+      "matches": [
+        {
+          "technique_id": "T1048",
+          "name": "Exfiltration Over Alternative Protocol",
+          "description": "Adversaries may steal data by exfiltrating it over a different protocol than that of the existing co...",
+          "similarity": 0.3140544952179798
+        },
+        {
+          "technique_id": "T1496.001",
+          "name": "Compute Hijacking",
+          "description": "Unreleased. TBD...",
+          "similarity": 0.2782260368313465
+        },
+        {
+          "technique_id": "AT1011",
+          "name": "Operation Rate Control",
+          "description": "**This technique has been deprecated. Please use [Time Based Evasion](https://attack.mitre.org/techn...",
+          "similarity": 0.2682489825559956
+        }
+      ]
+    },
+    {
+      "attack_step": "Extract Industrial Control Data",
+      "matches": [
+        {
+          "technique_id": "T1082",
+          "name": "System Information Discovery",
+          "description": "An adversary may attempt to get detailed information about the operating system and hardware, includ...",
+          "similarity": 0.31782669266820857
+        },
+        {
+          "technique_id": "T1565",
+          "name": "Data Manipulation",
+          "description": "Adversaries may insert, delete, or manipulate data in order to influence external outcomes or hide a...",
+          "similarity": 0.2739742837554204
+        },
+        {
+          "technique_id": "T1119",
+          "name": "Automated Collection",
+          "description": "Once established within a system or network, an adversary may use automated techniques for collectin...",
+          "similarity": 0.27035844649744983
+        }
+      ]
+    },
+    {
+      "attack_step": "Confidentiality Breach of Patient Monitors and SCADA Systems",
+      "matches": [
+        {
+          "technique_id": "T1565.002",
+          "name": "Transmitted Data Manipulation",
+          "description": "Adversaries may alter data en route to storage or other systems in order to manipulate external outc...",
+          "similarity": 0.4153956638898367
+        },
+        {
+          "technique_id": "T1565",
+          "name": "Data Manipulation",
+          "description": "Adversaries may insert, delete, or manipulate data in order to influence external outcomes or hide a...",
+          "similarity": 0.3930454707206376
+        },
+        {
+          "technique_id": "AT1020",
+          "name": "Network to Cloud",
+          "description": "The risk of gaining access to a physical network and then leveraging that to gain access to cloud re...",
+          "similarity": 0.3802313779193155
+        }
+      ]
+    },
+    {
+      "attack_step": "Certificate Manipulation",
+      "matches": [
+        {
+          "technique_id": "T1649",
+          "name": "Steal or Forge Authentication Certificates",
+          "description": "Adversaries may steal or forge certificates used for authentication to access remote systems or reso...",
+          "similarity": 0.46156852625062234
+        },
+        {
+          "technique_id": "T1484.002",
+          "name": "Trust Modification",
+          "description": "Adversaries may add new domain trusts, modify the properties of existing domain trusts, or otherwise...",
+          "similarity": 0.27349930259234984
+        },
+        {
+          "technique_id": "T1190.A015",
+          "name": "SNS Topic",
+          "description": "An adversary can read, write, and or delete publicly accessible data contained in open SNS topics....",
+          "similarity": 0.25866235383920405
+        }
+      ]
+    },
+    {
+      "attack_step": "Compromise Network Position",
+      "matches": [
+        {
+          "technique_id": "T1565.002",
+          "name": "Transmitted Data Manipulation",
+          "description": "Adversaries may alter data en route to storage or other systems in order to manipulate external outc...",
+          "similarity": 0.36133735028593916
+        },
+        {
+          "technique_id": "T1040",
+          "name": "Network Sniffing",
+          "description": "Adversaries may passively sniff network traffic to capture information about an environment, includi...",
+          "similarity": 0.35435097286655753
+        },
+        {
+          "technique_id": "T1614",
+          "name": "System Location Discovery",
+          "description": "\nAdversaries may gather information in an attempt to calculate the geographical location of a victim...",
+          "similarity": 0.35273038757489467
+        }
+      ]
+    },
+    {
+      "attack_step": "Extract Healthcare Data",
+      "matches": [
+        {
+          "technique_id": "T1119",
+          "name": "Automated Collection",
+          "description": "Once established within a system or network, an adversary may use automated techniques for collectin...",
+          "similarity": 0.23362907486975745
+        },
+        {
+          "technique_id": "T1213",
+          "name": "Data from Information Repositories",
+          "description": "Adversaries may leverage information repositories to mine valuable information. Information reposito...",
+          "similarity": 0.22639512488463487
+        },
+        {
+          "technique_id": "T1114.002",
+          "name": "Remote Email Collection",
+          "description": "Adversaries may target an Exchange server, Office 365, or Google Workspace to collect sensitive info...",
+          "similarity": 0.20423829590745757
+        }
+      ]
+    },
+    {
+      "attack_step": "TLS Downgrade Attack",
+      "matches": [
+        {
+          "technique_id": "T1499.002",
+          "name": "Service Exhaustion Flood",
+          "description": "Adversaries may target the different network services provided by systems to conduct a denial of ser...",
+          "similarity": 0.3630383624069514
+        },
+        {
+          "technique_id": "AT1008",
+          "name": "Golden SAML",
+          "description": "**This technique has been deprecated. Please use [SAML Tokens](https://attack.mitre.org/techniques/T...",
+          "similarity": 0.32266852790201433
+        },
+        {
+          "technique_id": "AT1011",
+          "name": "Operation Rate Control",
+          "description": "**This technique has been deprecated. Please use [Time Based Evasion](https://attack.mitre.org/techn...",
+          "similarity": 0.2647823793450323
+        }
+      ]
+    },
+    {
+      "attack_step": "Man-in-the-Middle Proxy",
+      "matches": [
+        {
+          "technique_id": "T1583",
+          "name": "Acquire Infrastructure",
+          "description": "Adversaries may buy, lease, rent, or obtain infrastructure that can be used during targeting. A wide...",
+          "similarity": 0.43506120356627037
+        },
+        {
+          "technique_id": "T1040",
+          "name": "Network Sniffing",
+          "description": "Adversaries may passively sniff network traffic to capture information about an environment, includi...",
+          "similarity": 0.43131868218761743
+        },
+        {
+          "technique_id": "T1048",
+          "name": "Exfiltration Over Alternative Protocol",
+          "description": "Adversaries may steal data by exfiltrating it over a different protocol than that of the existing co...",
+          "similarity": 0.3919006176612969
+        }
+      ]
+    }
+  ],
+  "attack_tree_T001_data_breach.md": [
+    {
+      "attack_step": "Create automated script for bulk download",
+      "matches": [
+        {
+          "technique_id": "T1119",
+          "name": "Automated Collection",
+          "description": "Once established within a system or network, an adversary may use automated techniques for collectin...",
+          "similarity": 0.286943024933195
+        },
+        {
+          "technique_id": "T1048",
+          "name": "Exfiltration Over Alternative Protocol",
+          "description": "Adversaries may steal data by exfiltrating it over a different protocol than that of the existing co...",
+          "similarity": 0.23863368380732072
+        },
+        {
+          "technique_id": "T1059",
+          "name": "Command and Scripting Interpreter",
+          "description": "Adversaries may abuse command and script interpreters to execute commands, scripts, or binaries. The...",
+          "similarity": 0.16215087231848052
+        }
+      ]
+    },
+    {
+      "attack_step": "Download patient health records via SFTP",
+      "matches": [
+        {
+          "technique_id": "T1048",
+          "name": "Exfiltration Over Alternative Protocol",
+          "description": "Adversaries may steal data by exfiltrating it over a different protocol than that of the existing co...",
+          "similarity": 0.2623437145618687
+        },
+        {
+          "technique_id": "T1119",
+          "name": "Automated Collection",
+          "description": "Once established within a system or network, an adversary may use automated techniques for collectin...",
+          "similarity": 0.19503173109108876
+        },
+        {
+          "technique_id": "T1074.002",
+          "name": "Remote Data Staging",
+          "description": "Adversaries may stage data collected from multiple systems in a central location or directory on one...",
+          "similarity": 0.16026249931012884
+        }
+      ]
+    },
+    {
+      "attack_step": "Browse and identify PHI files",
+      "matches": [
+        {
+          "technique_id": "T1119",
+          "name": "Automated Collection",
+          "description": "Once established within a system or network, an adversary may use automated techniques for collectin...",
+          "similarity": 0.3690639855014703
+        },
+        {
+          "technique_id": "T1087",
+          "name": "Account Discovery",
+          "description": "Adversaries may attempt to get a listing of valid accounts, usernames, or email addresses on a syste...",
+          "similarity": 0.3528720981744943
+        },
+        {
+          "technique_id": "T1518.001",
+          "name": "Security Software Discovery",
+          "description": "Adversaries may attempt to get a listing of security software, configurations, defensive tools, and ...",
+          "similarity": 0.32560581024954677
+        }
+      ]
+    },
+    {
+      "attack_step": "Unauthorized disclosure of PHI",
+      "matches": [
+        {
+          "technique_id": "T1534",
+          "name": "Internal Spearphishing",
+          "description": "After they already have access to accounts or systems within the environment, adversaries may use in...",
+          "similarity": 0.36508969972082844
+        },
+        {
+          "technique_id": "T1566",
+          "name": "Phishing",
+          "description": "Adversaries may send phishing messages to gain access to victim systems. All forms of phishing are e...",
+          "similarity": 0.3627790243486567
+        },
+        {
+          "technique_id": "T1213",
+          "name": "Data from Information Repositories",
+          "description": "Adversaries may leverage information repositories to mine valuable information. Information reposito...",
+          "similarity": 0.35014078967109175
+        }
+      ]
+    },
+    {
+      "attack_step": "Map patient data storage locations",
+      "matches": [
+        {
+          "technique_id": "T1614",
+          "name": "System Location Discovery",
+          "description": "\nAdversaries may gather information in an attempt to calculate the geographical location of a victim...",
+          "similarity": 0.2835305133877436
+        },
+        {
+          "technique_id": "T1530",
+          "name": "Data from Cloud Storage",
+          "description": "Adversaries may access data from cloud storage.\n\nMany IaaS providers offer solutions for online data...",
+          "similarity": 0.2661987246353267
+        },
+        {
+          "technique_id": "T1119",
+          "name": "Automated Collection",
+          "description": "Once established within a system or network, an adversary may use automated techniques for collectin...",
+          "similarity": 0.24951240309264724
+        }
+      ]
+    },
+    {
+      "attack_step": "Confidentiality breach of patient health records",
+      "matches": [
+        {
+          "technique_id": "AT1029",
+          "name": "Data from Cloud Database",
+          "description": "Adversaries may access data from improperly secured cloud databases....",
+          "similarity": 0.3829327096704629
+        },
+        {
+          "technique_id": "T1213",
+          "name": "Data from Information Repositories",
+          "description": "Adversaries may leverage information repositories to mine valuable information. Information reposito...",
+          "similarity": 0.3526924382784239
+        },
+        {
+          "technique_id": "T1565",
+          "name": "Data Manipulation",
+          "description": "Adversaries may insert, delete, or manipulate data in order to influence external outcomes or hide a...",
+          "similarity": 0.33987459502315964
+        }
+      ]
+    },
+    {
+      "attack_step": "Identify accessible SFTP servers",
+      "matches": [
+        {
+          "technique_id": "T1049",
+          "name": "System Network Connections Discovery",
+          "description": "Adversaries may attempt to get a listing of network connections to or from the compromised system th...",
+          "similarity": 0.43871086986967045
+        },
+        {
+          "technique_id": "T1046",
+          "name": "Network Service Discovery",
+          "description": "Adversaries may attempt to get a listing of services running on remote hosts and local network infra...",
+          "similarity": 0.4169876994757003
+        },
+        {
+          "technique_id": "T1108",
+          "name": "Redundant Access",
+          "description": "**This technique has been deprecated. Please use [Create Account](https://attack.mitre.org/technique...",
+          "similarity": 0.3092456091551535
+        }
+      ]
+    },
+    {
+      "attack_step": "Enumerate SFTP endpoint permissions",
+      "matches": [
+        {
+          "technique_id": "T1069.003",
+          "name": "Cloud Groups",
+          "description": "Adversaries may attempt to find cloud groups and permission settings. The knowledge of cloud permiss...",
+          "similarity": 0.3116550819365376
+        },
+        {
+          "technique_id": "T1087.004",
+          "name": "Cloud Account",
+          "description": "Adversaries may attempt to get a listing of cloud accounts. Cloud accounts are those created and con...",
+          "similarity": 0.2830605777276011
+        },
+        {
+          "technique_id": "T1049",
+          "name": "System Network Connections Discovery",
+          "description": "Adversaries may attempt to get a listing of network connections to or from the compromised system th...",
+          "similarity": 0.260021999800601
+        }
+      ]
+    },
+    {
+      "attack_step": "Reconnaissance of AWS Transfer SFTP infrastructure",
+      "matches": [
+        {
+          "technique_id": "AT1019",
+          "name": "Cloud to Network",
+          "description": "The risk of gaining cloud resource access and jumping to the customer's physical network is signific...",
+          "similarity": 0.4231187779263298
+        },
+        {
+          "technique_id": "T1537",
+          "name": "Transfer Data to Cloud Account",
+          "description": "Adversaries may exfiltrate data by transferring the data, including through sharing/syncing and crea...",
+          "similarity": 0.42079118745773053
+        },
+        {
+          "technique_id": "T1021.008",
+          "name": "Direct Cloud VM Connections",
+          "description": "Adversaries may leverage [Valid Accounts](https://attack.mitre.org/techniques/T1078) to log directly...",
+          "similarity": 0.4009925776523779
+        }
+      ]
+    },
+    {
+      "attack_step": "Mass exfiltration of patient data",
+      "matches": [
+        {
+          "technique_id": "T1119",
+          "name": "Automated Collection",
+          "description": "Once established within a system or network, an adversary may use automated techniques for collectin...",
+          "similarity": 0.41740261486189834
+        },
+        {
+          "technique_id": "T1565",
+          "name": "Data Manipulation",
+          "description": "Adversaries may insert, delete, or manipulate data in order to influence external outcomes or hide a...",
+          "similarity": 0.4082229954054545
+        },
+        {
+          "technique_id": "T1074",
+          "name": "Data Staged",
+          "description": "Adversaries may stage collected data in a central location or directory prior to Exfiltration. Data ...",
+          "similarity": 0.3774164193908727
+        }
+      ]
+    },
+    {
+      "attack_step": "Malicious insider with legitimate access credentials",
+      "matches": [
+        {
+          "technique_id": "T1552",
+          "name": "Unsecured Credentials",
+          "description": "Adversaries may search compromised systems to find and obtain insecurely stored credentials. These c...",
+          "similarity": 0.49014258874848604
+        },
+        {
+          "technique_id": "T1534",
+          "name": "Internal Spearphishing",
+          "description": "After they already have access to accounts or systems within the environment, adversaries may use in...",
+          "similarity": 0.48850948741981715
+        },
+        {
+          "technique_id": "T1199",
+          "name": "Trusted Relationship",
+          "description": "Adversaries may breach or otherwise leverage organizations who have access to intended victims. Acce...",
+          "similarity": 0.48779143234296407
+        }
+      ]
+    },
+    {
+      "attack_step": "Exfiltrate PHI to external location",
+      "matches": [
+        {
+          "technique_id": "T1048",
+          "name": "Exfiltration Over Alternative Protocol",
+          "description": "Adversaries may steal data by exfiltrating it over a different protocol than that of the existing co...",
+          "similarity": 0.4160048120369136
+        },
+        {
+          "technique_id": "AT1027",
+          "name": "Transfer Data out of Cloud Account",
+          "description": "Adversaries may exfiltrate data by transferring the data, including backups of cloud environments, t...",
+          "similarity": 0.3102696401479674
+        },
+        {
+          "technique_id": "T1534",
+          "name": "Internal Spearphishing",
+          "description": "After they already have access to accounts or systems within the environment, adversaries may use in...",
+          "similarity": 0.3053639918152499
+        }
+      ]
+    },
+    {
+      "attack_step": "Direct access to SFTP endpoints",
+      "matches": [
+        {
+          "technique_id": "T1108",
+          "name": "Redundant Access",
+          "description": "**This technique has been deprecated. Please use [Create Account](https://attack.mitre.org/technique...",
+          "similarity": 0.3559202344311565
+        },
+        {
+          "technique_id": "T1021.008",
+          "name": "Direct Cloud VM Connections",
+          "description": "Adversaries may leverage [Valid Accounts](https://attack.mitre.org/techniques/T1078) to log directly...",
+          "similarity": 0.338726417420953
+        },
+        {
+          "technique_id": "T1048",
+          "name": "Exfiltration Over Alternative Protocol",
+          "description": "Adversaries may steal data by exfiltrating it over a different protocol than that of the existing co...",
+          "similarity": 0.3238569391150157
+        }
+      ]
+    },
+    {
+      "attack_step": "Authenticate to AWS Transfer SFTP endpoint",
+      "matches": [
+        {
+          "technique_id": "AT1028",
+          "name": "Create or Modify EC2 Key Pair",
+          "description": "Adversaries may add adversary-controlled credentials to EC2 to maintain persistent access to victim ...",
+          "similarity": 0.4086010381196293
+        },
+        {
+          "technique_id": "AT1024.001",
+          "name": "Create New IAM User/Role",
+          "description": "Adversaries may create an IAM user to maintain access to an AWS account and or resource. With a suff...",
+          "similarity": 0.4069876629093791
+        },
+        {
+          "technique_id": "AT1077",
+          "name": "Authorize VPC Security Groups",
+          "description": "A threat actor using credentials with appropriate permissions is able to permit network level access...",
+          "similarity": 0.37347628996192866
+        }
+      ]
+    },
+    {
+      "attack_step": "Locate PHI file directories",
+      "matches": [
+        {
+          "technique_id": "T1087",
+          "name": "Account Discovery",
+          "description": "Adversaries may attempt to get a listing of valid accounts, usernames, or email addresses on a syste...",
+          "similarity": 0.348712640320972
+        },
+        {
+          "technique_id": "T1552",
+          "name": "Unsecured Credentials",
+          "description": "Adversaries may search compromised systems to find and obtain insecurely stored credentials. These c...",
+          "similarity": 0.315118326025695
+        },
+        {
+          "technique_id": "T1080",
+          "name": "Taint Shared Content",
+          "description": "\nAdversaries may deliver payloads to remote systems by adding content to shared storage locations, s...",
+          "similarity": 0.27799338075753877
+        }
+      ]
+    }
+  ],
+  "attack_tree_T002_data_integrity.md": [
+    {
+      "attack_step": "Execute corrupted ETL workflow",
+      "matches": [
+        {
+          "technique_id": "AT1011",
+          "name": "Operation Rate Control",
+          "description": "**This technique has been deprecated. Please use [Time Based Evasion](https://attack.mitre.org/techn...",
+          "similarity": 0.23586258829782808
+        },
+        {
+          "technique_id": "T1562.001",
+          "name": "Disable or Modify Tools",
+          "description": "Adversaries may disable security tools to avoid possible detection of their tools and activities. Th...",
+          "similarity": 0.21449160475112977
+        },
+        {
+          "technique_id": "AT1002",
+          "name": "AWS Systems Manager Run Command",
+          "description": "AWS Systems Manager is an AWS service that can be used to view and control infrastructure on AWS. Us...",
+          "similarity": 0.21348803228165678
+        }
+      ]
+    },
+    {
+      "attack_step": "Reconnaissance: Identify AWS Glue resources",
+      "matches": [
+        {
+          "technique_id": "T1580",
+          "name": "Cloud Infrastructure Discovery",
+          "description": "An adversary may attempt to discover resources that are available within an infrastructure-as-a-serv...",
+          "similarity": 0.5517336705840874
+        },
+        {
+          "technique_id": "T1496.A007",
+          "name": "Cloud Service Hijacking - Bedrock Usage",
+          "description": "Threat actors can abuse Amazon Bedrock, a managed machine learning service, to leverage its computat...",
+          "similarity": 0.5010608011807427
+        },
+        {
+          "technique_id": "T1552.005",
+          "name": "Cloud Instance Metadata API",
+          "description": "Adversaries may attempt to access the Cloud Instance Metadata API to collect credentials and other s...",
+          "similarity": 0.49149026130374973
+        }
+      ]
+    },
+    {
+      "attack_step": "Authenticate to AWS environment",
+      "matches": [
+        {
+          "technique_id": "AT1024.001",
+          "name": "Create New IAM User/Role",
+          "description": "Adversaries may create an IAM user to maintain access to an AWS account and or resource. With a suff...",
+          "similarity": 0.6723663175363614
+        },
+        {
+          "technique_id": "T1078.A003",
+          "name": "Console Login",
+          "description": "A threat actor can use the AWS Management Console as a method of initial access into an AWS account....",
+          "similarity": 0.586935690684971
+        },
+        {
+          "technique_id": "AT1075",
+          "name": "Create Identity Provider",
+          "description": "A threat actor using credentials with appropriate permissions is able to create an Identity Provider...",
+          "similarity": 0.5785790392979523
+        }
+      ]
+    },
+    {
+      "attack_step": "Inject malicious scripts",
+      "matches": [
+        {
+          "technique_id": "T1059",
+          "name": "Command and Scripting Interpreter",
+          "description": "Adversaries may abuse command and script interpreters to execute commands, scripts, or binaries. The...",
+          "similarity": 0.5436124704150833
+        },
+        {
+          "technique_id": "T1189",
+          "name": "Drive-by Compromise",
+          "description": "Adversaries may gain access to a system through a user visiting a website over the normal course of ...",
+          "similarity": 0.4323011769415846
+        },
+        {
+          "technique_id": "T1204",
+          "name": "User Execution",
+          "description": "An adversary may rely upon specific actions by a user in order to gain execution. Users may be subje...",
+          "similarity": 0.41728783759134486
+        }
+      ]
+    },
+    {
+      "attack_step": "Modify data mappings",
+      "matches": [
+        {
+          "technique_id": "T1565",
+          "name": "Data Manipulation",
+          "description": "Adversaries may insert, delete, or manipulate data in order to influence external outcomes or hide a...",
+          "similarity": 0.43124033757103847
+        },
+        {
+          "technique_id": "T1565.001",
+          "name": "Stored Data Manipulation",
+          "description": "Adversaries may insert, delete, or manipulate data at rest in order to influence external outcomes o...",
+          "similarity": 0.3949807734277333
+        },
+        {
+          "technique_id": "T1565.003",
+          "name": "Runtime Data Manipulation",
+          "description": "Adversaries may modify systems in order to manipulate the data as it is accessed and displayed to an...",
+          "similarity": 0.38890175285709844
+        }
+      ]
+    },
+    {
+      "attack_step": "Map data processing pipelines",
+      "matches": [
+        {
+          "technique_id": "T1074",
+          "name": "Data Staged",
+          "description": "Adversaries may stage collected data in a central location or directory prior to Exfiltration. Data ...",
+          "similarity": 0.3627477601312233
+        },
+        {
+          "technique_id": "T1074.002",
+          "name": "Remote Data Staging",
+          "description": "Adversaries may stage data collected from multiple systems in a central location or directory on one...",
+          "similarity": 0.3308122329484756
+        },
+        {
+          "technique_id": "T1119",
+          "name": "Automated Collection",
+          "description": "Once established within a system or network, an adversary may use automated techniques for collectin...",
+          "similarity": 0.27220983308595065
+        }
+      ]
+    },
+    {
+      "attack_step": "Data warehouse information integrity compromised",
+      "matches": [
+        {
+          "technique_id": "T1565",
+          "name": "Data Manipulation",
+          "description": "Adversaries may insert, delete, or manipulate data in order to influence external outcomes or hide a...",
+          "similarity": 0.5767627562350466
+        },
+        {
+          "technique_id": "T1565.001",
+          "name": "Stored Data Manipulation",
+          "description": "Adversaries may insert, delete, or manipulate data at rest in order to influence external outcomes o...",
+          "similarity": 0.5444567910240118
+        },
+        {
+          "technique_id": "T1565.002",
+          "name": "Transmitted Data Manipulation",
+          "description": "Adversaries may alter data en route to storage or other systems in order to manipulate external outc...",
+          "similarity": 0.5008574618265867
+        }
+      ]
+    },
+    {
+      "attack_step": "Attack Path 1: Modify existing ETL jobs",
+      "matches": [
+        {
+          "technique_id": "T1565",
+          "name": "Data Manipulation",
+          "description": "Adversaries may insert, delete, or manipulate data in order to influence external outcomes or hide a...",
+          "similarity": 0.38499208899458354
+        },
+        {
+          "technique_id": "T1565.002",
+          "name": "Transmitted Data Manipulation",
+          "description": "Adversaries may alter data en route to storage or other systems in order to manipulate external outc...",
+          "similarity": 0.37626361028686695
+        },
+        {
+          "technique_id": "T1565.003",
+          "name": "Runtime Data Manipulation",
+          "description": "Adversaries may modify systems in order to manipulate the data as it is accessed and displayed to an...",
+          "similarity": 0.3600541493987679
+        }
+      ]
+    },
+    {
+      "attack_step": "Attack Path 2: Create malicious workflow",
+      "matches": [
+        {
+          "technique_id": "T1204",
+          "name": "User Execution",
+          "description": "An adversary may rely upon specific actions by a user in order to gain execution. Users may be subje...",
+          "similarity": 0.459268238397632
+        },
+        {
+          "technique_id": "T1565",
+          "name": "Data Manipulation",
+          "description": "Adversaries may insert, delete, or manipulate data in order to influence external outcomes or hide a...",
+          "similarity": 0.43668930756772295
+        },
+        {
+          "technique_id": "T1565.002",
+          "name": "Transmitted Data Manipulation",
+          "description": "Adversaries may alter data en route to storage or other systems in order to manipulate external outc...",
+          "similarity": 0.43261294624270186
+        }
+      ]
+    },
+    {
+      "attack_step": "Schedule unauthorized data processing",
+      "matches": [
+        {
+          "technique_id": "T1565",
+          "name": "Data Manipulation",
+          "description": "Adversaries may insert, delete, or manipulate data in order to influence external outcomes or hide a...",
+          "similarity": 0.5011855311385677
+        },
+        {
+          "technique_id": "T1565.001",
+          "name": "Stored Data Manipulation",
+          "description": "Adversaries may insert, delete, or manipulate data at rest in order to influence external outcomes o...",
+          "similarity": 0.4696376329520938
+        },
+        {
+          "technique_id": "T1119",
+          "name": "Automated Collection",
+          "description": "Once established within a system or network, an adversary may use automated techniques for collectin...",
+          "similarity": 0.45614134344756163
+        }
+      ]
+    },
+    {
+      "attack_step": "Corrupt healthcare analytics datasets",
+      "matches": [
+        {
+          "technique_id": "T1565",
+          "name": "Data Manipulation",
+          "description": "Adversaries may insert, delete, or manipulate data in order to influence external outcomes or hide a...",
+          "similarity": 0.41978575876684043
+        },
+        {
+          "technique_id": "AT1029",
+          "name": "Data from Cloud Database",
+          "description": "Adversaries may access data from improperly secured cloud databases....",
+          "similarity": 0.3814010115571074
+        },
+        {
+          "technique_id": "T1213",
+          "name": "Data from Information Repositories",
+          "description": "Adversaries may leverage information repositories to mine valuable information. Information reposito...",
+          "similarity": 0.3713265365096135
+        }
+      ]
+    },
+    {
+      "attack_step": "Execute malicious workflow",
+      "matches": [
+        {
+          "technique_id": "T1204",
+          "name": "User Execution",
+          "description": "An adversary may rely upon specific actions by a user in order to gain execution. Users may be subje...",
+          "similarity": 0.45923376283876793
+        },
+        {
+          "technique_id": "T1072",
+          "name": "Software Deployment Tools",
+          "description": "Adversaries may gain access to and use centralized software suites installed within an enterprise to...",
+          "similarity": 0.4156315785883679
+        },
+        {
+          "technique_id": "T1059",
+          "name": "Command and Scripting Interpreter",
+          "description": "Adversaries may abuse command and script interpreters to execute commands, scripts, or binaries. The...",
+          "similarity": 0.4151171524390185
+        }
+      ]
+    },
+    {
+      "attack_step": "Cybercriminal with compromised IAM credentials",
+      "matches": [
+        {
+          "technique_id": "AT1024",
+          "name": "IAM Principal Manipulation",
+          "description": "A principal is a person or application that can make a request for an action or operation on an AWS ...",
+          "similarity": 0.5217765624314851
+        },
+        {
+          "technique_id": "T1070.A001",
+          "name": "Delete IAM Entities",
+          "description": "Users and roles can be created with AWS Identity and Access Management (IAM) to perform unauthorized...",
+          "similarity": 0.5000815108960118
+        },
+        {
+          "technique_id": "AT1024.003",
+          "name": "IAM Role Hopping",
+          "description": "Given proper trust relationships, a role assumed with temporary credentials can be preserved indefin...",
+          "similarity": 0.4949636392160223
+        }
+      ]
+    },
+    {
+      "attack_step": "Alter transformation logic",
+      "matches": [
+        {
+          "technique_id": "T1565",
+          "name": "Data Manipulation",
+          "description": "Adversaries may insert, delete, or manipulate data in order to influence external outcomes or hide a...",
+          "similarity": 0.25667831155438037
+        },
+        {
+          "technique_id": "T1565.002",
+          "name": "Transmitted Data Manipulation",
+          "description": "Adversaries may alter data en route to storage or other systems in order to manipulate external outc...",
+          "similarity": 0.24509044098378888
+        },
+        {
+          "technique_id": "T1484.002",
+          "name": "Trust Modification",
+          "description": "Adversaries may add new domain trusts, modify the properties of existing domain trusts, or otherwise...",
+          "similarity": 0.23343425823019437
+        }
+      ]
+    },
+    {
+      "attack_step": "Deploy rogue Glue job",
+      "matches": [
+        {
+          "technique_id": "T1072",
+          "name": "Software Deployment Tools",
+          "description": "Adversaries may gain access to and use centralized software suites installed within an enterprise to...",
+          "similarity": 0.3175503753064578
+        },
+        {
+          "technique_id": "T1496.A007",
+          "name": "Cloud Service Hijacking - Bedrock Usage",
+          "description": "Threat actors can abuse Amazon Bedrock, a managed machine learning service, to leverage its computat...",
+          "similarity": 0.2963348954547261
+        },
+        {
+          "technique_id": "T1525",
+          "name": "Implant Internal Image",
+          "description": "Adversaries may implant cloud or container images with malicious code to establish persistence after...",
+          "similarity": 0.28503988647184836
+        }
+      ]
+    },
+    {
+      "attack_step": "Enumerate ETL jobs and workflows",
+      "matches": [
+        {
+          "technique_id": "AT1002",
+          "name": "AWS Systems Manager Run Command",
+          "description": "AWS Systems Manager is an AWS service that can be used to view and control infrastructure on AWS. Us...",
+          "similarity": 0.18388351207817105
+        },
+        {
+          "technique_id": "T1654",
+          "name": "Log Enumeration",
+          "description": "Adversaries may enumerate system and service logs to find useful data. These logs may highlight vari...",
+          "similarity": 0.18334891821337998
+        },
+        {
+          "technique_id": "T1114.002",
+          "name": "Remote Email Collection",
+          "description": "Adversaries may target an Exchange server, Office 365, or Google Workspace to collect sensitive info...",
+          "similarity": 0.160545319528393
+        }
+      ]
+    }
+  ],
+  "attack_tree_T004_denial_of_service.md": [
+    {
+      "attack_step": "Disruption of critical device communications",
+      "matches": [
+        {
+          "technique_id": "T1499.004",
+          "name": "Application or System Exploitation",
+          "description": "Adversaries may exploit software vulnerabilities that can cause an application or system to crash an...",
+          "similarity": 0.439366645062612
+        },
+        {
+          "technique_id": "T1496.A006",
+          "name": "Compute Hijacking - ECS",
+          "description": "An adversary can use ECS containers for their computation requirements with the cost of the resource...",
+          "similarity": 0.4298439662673473
+        },
+        {
+          "technique_id": "T1496.001",
+          "name": "Compute Hijacking",
+          "description": "Unreleased. TBD...",
+          "similarity": 0.4285915039368391
+        }
+      ]
+    },
+    {
+      "attack_step": "Exhaust gateway resources",
+      "matches": [
+        {
+          "technique_id": "T1190.A018",
+          "name": "API Gateway",
+          "description": "An adversary can perform injection attacks on API gateways. This unverified input could trigger crit...",
+          "similarity": 0.4184199144315853
+        },
+        {
+          "technique_id": "T1499.003",
+          "name": "Application Exhaustion Flood",
+          "description": "Adversaries may target resource intensive features of applications to cause a denial of service (DoS...",
+          "similarity": 0.4100824230357095
+        },
+        {
+          "technique_id": "AT1667.001",
+          "name": "API Gateway",
+          "description": "The API Gateway subtechnique involves creating unauthorized Amazon API Gateway resources and associa...",
+          "similarity": 0.39297749674701854
+        }
+      ]
+    },
+    {
+      "attack_step": "Vehicle telematics systems disconnected",
+      "matches": [
+        {
+          "technique_id": "T1499.004",
+          "name": "Application or System Exploitation",
+          "description": "Adversaries may exploit software vulnerabilities that can cause an application or system to crash an...",
+          "similarity": 0.24850978856951278
+        },
+        {
+          "technique_id": "T1496.003",
+          "name": "SMS Pumping",
+          "description": "Adversaries may leverage messaging services for SMS pumping, which may impact system and/or hosted s...",
+          "similarity": 0.24405021568750412
+        },
+        {
+          "technique_id": "T1496.A002",
+          "name": "SMS/Text Messaging",
+          "description": "SMS Pumping is a type of telecommunications fraud where a malicious entity forms an agreement with a...",
+          "similarity": 0.2436571121209799
+        }
+      ]
+    },
+    {
+      "attack_step": "Deploy DDoS malware",
+      "matches": [
+        {
+          "technique_id": "T1498.001",
+          "name": "Direct Network Flood",
+          "description": "Adversaries may attempt to cause a denial of service (DoS) by directly sending a high-volume of netw...",
+          "similarity": 0.5911347997554277
+        },
+        {
+          "technique_id": "T1498",
+          "name": "Network Denial of Service",
+          "description": "Adversaries may perform Network Denial of Service (DoS) attacks to degrade or block the availability...",
+          "similarity": 0.5576882207006462
+        },
+        {
+          "technique_id": "T1499",
+          "name": "Endpoint Denial of Service",
+          "description": "Adversaries may perform Endpoint Denial of Service (DoS) attacks to degrade or block the availabilit...",
+          "similarity": 0.540403226148251
+        }
+      ]
+    },
+    {
+      "attack_step": "Identify gateway IP addresses",
+      "matches": [
+        {
+          "technique_id": "T1049",
+          "name": "System Network Connections Discovery",
+          "description": "Adversaries may attempt to get a listing of network connections to or from the compromised system th...",
+          "similarity": 0.39134315518768215
+        },
+        {
+          "technique_id": "AT1667.001",
+          "name": "API Gateway",
+          "description": "The API Gateway subtechnique involves creating unauthorized Amazon API Gateway resources and associa...",
+          "similarity": 0.3233567400114331
+        },
+        {
+          "technique_id": "T1190.A018",
+          "name": "API Gateway",
+          "description": "An adversary can perform injection attacks on API gateways. This unverified input could trigger crit...",
+          "similarity": 0.3216700812694702
+        }
+      ]
+    },
+    {
+      "attack_step": "Botnet infrastructure preparation",
+      "matches": [
+        {
+          "technique_id": "T1583",
+          "name": "Acquire Infrastructure",
+          "description": "Adversaries may buy, lease, rent, or obtain infrastructure that can be used during targeting. A wide...",
+          "similarity": 0.6036831520393151
+        },
+        {
+          "technique_id": "T1498.001",
+          "name": "Direct Network Flood",
+          "description": "Adversaries may attempt to cause a denial of service (DoS) by directly sending a high-volume of netw...",
+          "similarity": 0.4956482384729003
+        },
+        {
+          "technique_id": "T1499",
+          "name": "Endpoint Denial of Service",
+          "description": "Adversaries may perform Endpoint Denial of Service (DoS) attacks to degrade or block the availabilit...",
+          "similarity": 0.45963765952060265
+        }
+      ]
+    },
+    {
+      "attack_step": "Establish command and control servers",
+      "matches": [
+        {
+          "technique_id": "T1072",
+          "name": "Software Deployment Tools",
+          "description": "Adversaries may gain access to and use centralized software suites installed within an enterprise to...",
+          "similarity": 0.42988957987792104
+        },
+        {
+          "technique_id": "T1059",
+          "name": "Command and Scripting Interpreter",
+          "description": "Adversaries may abuse command and script interpreters to execute commands, scripts, or binaries. The...",
+          "similarity": 0.41620918495523856
+        },
+        {
+          "technique_id": "T1651",
+          "name": "Cloud Administration Command",
+          "description": "Adversaries may abuse cloud management services to execute commands within virtual machines. Resourc...",
+          "similarity": 0.3714261338804272
+        }
+      ]
+    },
+    {
+      "attack_step": "Discover bandwidth capacity",
+      "matches": [
+        {
+          "technique_id": "T1049",
+          "name": "System Network Connections Discovery",
+          "description": "Adversaries may attempt to get a listing of network connections to or from the compromised system th...",
+          "similarity": 0.29935774856288877
+        },
+        {
+          "technique_id": "T1498.001",
+          "name": "Direct Network Flood",
+          "description": "Adversaries may attempt to cause a denial of service (DoS) by directly sending a high-volume of netw...",
+          "similarity": 0.25378146798236784
+        },
+        {
+          "technique_id": "T1498.002",
+          "name": "Reflection Amplification",
+          "description": "Adversaries may attempt to cause a denial of service (DoS) by reflecting a high-volume of network tr...",
+          "similarity": 0.2506360802615421
+        }
+      ]
+    },
+    {
+      "attack_step": "Launch volumetric attack",
+      "matches": [
+        {
+          "technique_id": "AT1012",
+          "name": "Region Selection and Hopping",
+          "description": "**This technique has been deprecated. Please use [Unused/Unsupported Cloud Regions](https://attack.m...",
+          "similarity": 0.34584232862512815
+        },
+        {
+          "technique_id": "T1498.001",
+          "name": "Direct Network Flood",
+          "description": "Adversaries may attempt to cause a denial of service (DoS) by directly sending a high-volume of netw...",
+          "similarity": 0.3259174160697087
+        },
+        {
+          "technique_id": "T1496.A006",
+          "name": "Compute Hijacking - ECS",
+          "description": "An adversary can use ECS containers for their computation requirements with the cost of the resource...",
+          "similarity": 0.3048511519389526
+        }
+      ]
+    },
+    {
+      "attack_step": "Recruitcompromise IoT devices",
+      "matches": [
+        {
+          "technique_id": "T1098.005",
+          "name": "Device Registration",
+          "description": "Adversaries may register a device to an adversary-controlled account. Devices may be registered in a...",
+          "similarity": 0.38926680865288404
+        },
+        {
+          "technique_id": "AT1075",
+          "name": "Create Identity Provider",
+          "description": "A threat actor using credentials with appropriate permissions is able to create an Identity Provider...",
+          "similarity": 0.22936472574943592
+        },
+        {
+          "technique_id": "T1496.A002",
+          "name": "SMS/Text Messaging",
+          "description": "SMS Pumping is a type of telecommunications fraud where a malicious entity forms an agreement with a...",
+          "similarity": 0.21887264353434888
+        }
+      ]
+    },
+    {
+      "attack_step": "Saturate gateway bandwidth",
+      "matches": [
+        {
+          "technique_id": "T1498.001",
+          "name": "Direct Network Flood",
+          "description": "Adversaries may attempt to cause a denial of service (DoS) by directly sending a high-volume of netw...",
+          "similarity": 0.3723425049888925
+        },
+        {
+          "technique_id": "T1498",
+          "name": "Network Denial of Service",
+          "description": "Adversaries may perform Network Denial of Service (DoS) attacks to degrade or block the availability...",
+          "similarity": 0.365756909656816
+        },
+        {
+          "technique_id": "T1499.002",
+          "name": "Service Exhaustion Flood",
+          "description": "Adversaries may target the different network services provided by systems to conduct a denial of ser...",
+          "similarity": 0.35772351466944746
+        }
+      ]
+    },
+    {
+      "attack_step": "Map network topology",
+      "matches": [
+        {
+          "technique_id": "T1049",
+          "name": "System Network Connections Discovery",
+          "description": "Adversaries may attempt to get a listing of network connections to or from the compromised system th...",
+          "similarity": 0.3110561017388493
+        },
+        {
+          "technique_id": "AT1020",
+          "name": "Network to Cloud",
+          "description": "The risk of gaining access to a physical network and then leveraging that to gain access to cloud re...",
+          "similarity": 0.2846926366700559
+        },
+        {
+          "technique_id": "T1046",
+          "name": "Network Service Discovery",
+          "description": "Adversaries may attempt to get a listing of services running on remote hosts and local network infra...",
+          "similarity": 0.27161872018249
+        }
+      ]
+    },
+    {
+      "attack_step": "Reconnaissance of communication gateway",
+      "matches": [
+        {
+          "technique_id": "AT1667.001",
+          "name": "API Gateway",
+          "description": "The API Gateway subtechnique involves creating unauthorized Amazon API Gateway resources and associa...",
+          "similarity": 0.3496830776737042
+        },
+        {
+          "technique_id": "T1040",
+          "name": "Network Sniffing",
+          "description": "Adversaries may passively sniff network traffic to capture information about an environment, includi...",
+          "similarity": 0.34884107113475854
+        },
+        {
+          "technique_id": "T1190.A018",
+          "name": "API Gateway",
+          "description": "An adversary can perform injection attacks on API gateways. This unverified input could trigger crit...",
+          "similarity": 0.3366771715182297
+        }
+      ]
+    },
+    {
+      "attack_step": "Launch protocol exploitation attack",
+      "matches": [
+        {
+          "technique_id": "T1059",
+          "name": "Command and Scripting Interpreter",
+          "description": "Adversaries may abuse command and script interpreters to execute commands, scripts, or binaries. The...",
+          "similarity": 0.4400146410687725
+        },
+        {
+          "technique_id": "T1204",
+          "name": "User Execution",
+          "description": "An adversary may rely upon specific actions by a user in order to gain execution. Users may be subje...",
+          "similarity": 0.4283562878559342
+        },
+        {
+          "technique_id": "T1546",
+          "name": "Event Triggered Execution",
+          "description": "Adversaries may establish persistence and/or elevate privileges using system mechanisms that trigger...",
+          "similarity": 0.42468834269799216
+        }
+      ]
+    },
+    {
+      "attack_step": "Smart meters lose connectivity",
+      "matches": [
+        {
+          "technique_id": "T1098.005",
+          "name": "Device Registration",
+          "description": "Adversaries may register a device to an adversary-controlled account. Devices may be registered in a...",
+          "similarity": 0.168636796096938
+        },
+        {
+          "technique_id": "T1562.A001",
+          "name": "Disable or Modify GuardDuty",
+          "description": "Amazon GuardDuty is a continuous security monitoring service that analyzes and processes the followi...",
+          "similarity": 0.16256461356848337
+        },
+        {
+          "technique_id": "T1190.A014",
+          "name": "EMR Cluster",
+          "description": "An adversary can access publicly accessible data contained in open EMR clusters....",
+          "similarity": 0.15569853171313028
+        }
+      ]
+    },
+    {
+      "attack_step": "Reduced availability of smart meters and vehicle telematics systems",
+      "matches": [
+        {
+          "technique_id": "T1098.005",
+          "name": "Device Registration",
+          "description": "Adversaries may register a device to an adversary-controlled account. Devices may be registered in a...",
+          "similarity": 0.328072085902739
+        },
+        {
+          "technique_id": "T1190.A014",
+          "name": "EMR Cluster",
+          "description": "An adversary can access publicly accessible data contained in open EMR clusters....",
+          "similarity": 0.29124919550157025
+        },
+        {
+          "technique_id": "AT1020",
+          "name": "Network to Cloud",
+          "description": "The risk of gaining access to a physical network and then leveraging that to gain access to cloud re...",
+          "similarity": 0.2753387994303513
+        }
+      ]
+    },
+    {
+      "attack_step": "Cybercriminal with botnet resources",
+      "matches": [
+        {
+          "technique_id": "T1583",
+          "name": "Acquire Infrastructure",
+          "description": "Adversaries may buy, lease, rent, or obtain infrastructure that can be used during targeting. A wide...",
+          "similarity": 0.5171605100254553
+        },
+        {
+          "technique_id": "T1496",
+          "name": "Resource Hijacking",
+          "description": "Adversaries may leverage the resources of co-opted systems in order to solve resource intensive prob...",
+          "similarity": 0.4735147396972076
+        },
+        {
+          "technique_id": "T1498.001",
+          "name": "Direct Network Flood",
+          "description": "Adversaries may attempt to cause a denial of service (DoS) by directly sending a high-volume of netw...",
+          "similarity": 0.43621382334626857
+        }
+      ]
+    }
+  ],
+  "attack_tree_T004_privilege_escalation.md": [
+    {
+      "attack_step": "Query regulated healthcare datasets",
+      "matches": [
+        {
+          "technique_id": "T1213",
+          "name": "Data from Information Repositories",
+          "description": "Adversaries may leverage information repositories to mine valuable information. Information reposito...",
+          "similarity": 0.30745943305615575
+        },
+        {
+          "technique_id": "AT1023.001",
+          "name": "Query RDS",
+          "description": "An adversary may attempt to discover resources that are available within RDS....",
+          "similarity": 0.303554658657362
+        },
+        {
+          "technique_id": "AT1029.002",
+          "name": "RDS",
+          "description": "Adversaries may access data from RDS....",
+          "similarity": 0.27333247230391294
+        }
+      ]
+    },
+    {
+      "attack_step": "Exploit Lake Formation permission escalation",
+      "matches": [
+        {
+          "technique_id": "T1548",
+          "name": "Abuse Elevation Control Mechanism",
+          "description": "Adversaries may circumvent mechanisms designed to control elevate privileges to gain higher-level pe...",
+          "similarity": 0.3964049509833934
+        },
+        {
+          "technique_id": "AT1077",
+          "name": "Authorize VPC Security Groups",
+          "description": "A threat actor using credentials with appropriate permissions is able to permit network level access...",
+          "similarity": 0.3481444356851465
+        },
+        {
+          "technique_id": "T1496.A006",
+          "name": "Compute Hijacking - ECS",
+          "description": "An adversary can use ECS containers for their computation requirements with the cost of the resource...",
+          "similarity": 0.32092016300718684
+        }
+      ]
+    },
+    {
+      "attack_step": "Discover existing Lake Formation grants",
+      "matches": [
+        {
+          "technique_id": "T1580",
+          "name": "Cloud Infrastructure Discovery",
+          "description": "An adversary may attempt to discover resources that are available within an infrastructure-as-a-serv...",
+          "similarity": 0.2325646251413296
+        },
+        {
+          "technique_id": "T1526",
+          "name": "Cloud Service Discovery",
+          "description": "An adversary may attempt to enumerate the cloud services running on a system after gaining access. T...",
+          "similarity": 0.20740056445171026
+        },
+        {
+          "technique_id": "AT1023",
+          "name": "Cloud Database Discovery",
+          "description": "An adversary may attempt to discover resources that are available within database services....",
+          "similarity": 0.20400732907917066
+        }
+      ]
+    },
+    {
+      "attack_step": "Assume role with broader Lake Formation permissions",
+      "matches": [
+        {
+          "technique_id": "T1199.A002",
+          "name": "Role Assumption and Federated Access",
+          "description": "A role is an IAM identity that you can create in your account that has specific permissions. An IAM ...",
+          "similarity": 0.39733224848194754
+        },
+        {
+          "technique_id": "T1069.003",
+          "name": "Cloud Groups",
+          "description": "Adversaries may attempt to find cloud groups and permission settings. The knowledge of cloud permiss...",
+          "similarity": 0.31331068911888355
+        },
+        {
+          "technique_id": "T1548.005",
+          "name": "Temporary Elevated Cloud Access",
+          "description": "Adversaries may abuse permission configurations that allow them to gain temporarily elevated access ...",
+          "similarity": 0.31273718158605623
+        }
+      ]
+    },
+    {
+      "attack_step": "Confidentiality of patient analytics data compromised",
+      "matches": [
+        {
+          "technique_id": "AT1029",
+          "name": "Data from Cloud Database",
+          "description": "Adversaries may access data from improperly secured cloud databases....",
+          "similarity": 0.4603642847531824
+        },
+        {
+          "technique_id": "T1565",
+          "name": "Data Manipulation",
+          "description": "Adversaries may insert, delete, or manipulate data in order to influence external outcomes or hide a...",
+          "similarity": 0.4463140467769383
+        },
+        {
+          "technique_id": "T1213",
+          "name": "Data from Information Repositories",
+          "description": "Adversaries may leverage information repositories to mine valuable information. Information reposito...",
+          "similarity": 0.39828738575780304
+        }
+      ]
+    },
+    {
+      "attack_step": "Exfiltrate patient analytics data",
+      "matches": [
+        {
+          "technique_id": "AT1027",
+          "name": "Transfer Data out of Cloud Account",
+          "description": "Adversaries may exfiltrate data by transferring the data, including backups of cloud environments, t...",
+          "similarity": 0.34585845743151106
+        },
+        {
+          "technique_id": "T1565",
+          "name": "Data Manipulation",
+          "description": "Adversaries may insert, delete, or manipulate data in order to influence external outcomes or hide a...",
+          "similarity": 0.3305384555457119
+        },
+        {
+          "technique_id": "T1074",
+          "name": "Data Staged",
+          "description": "Adversaries may stage collected data in a central location or directory prior to Exfiltration. Data ...",
+          "similarity": 0.32965979868468687
+        }
+      ]
+    },
+    {
+      "attack_step": "Escalate to admin-level data access",
+      "matches": [
+        {
+          "technique_id": "T1565",
+          "name": "Data Manipulation",
+          "description": "Adversaries may insert, delete, or manipulate data in order to influence external outcomes or hide a...",
+          "similarity": 0.41214825371266756
+        },
+        {
+          "technique_id": "T1565.001",
+          "name": "Stored Data Manipulation",
+          "description": "Adversaries may insert, delete, or manipulate data at rest in order to influence external outcomes o...",
+          "similarity": 0.3919997297292747
+        },
+        {
+          "technique_id": "T1548",
+          "name": "Abuse Elevation Control Mechanism",
+          "description": "Adversaries may circumvent mechanisms designed to control elevate privileges to gain higher-level pe...",
+          "similarity": 0.36318161609712984
+        }
+      ]
+    },
+    {
+      "attack_step": "Identify data lake catalog structure",
+      "matches": [
+        {
+          "technique_id": "T1213",
+          "name": "Data from Information Repositories",
+          "description": "Adversaries may leverage information repositories to mine valuable information. Information reposito...",
+          "similarity": 0.29597251787627354
+        },
+        {
+          "technique_id": "T1526.A001",
+          "name": "S3 Objects and Buckets",
+          "description": "Amazon S3 is a simple key-value store designed to store as many objects as you want.\n\nAdversaries ma...",
+          "similarity": 0.2878911572757681
+        },
+        {
+          "technique_id": "T1119",
+          "name": "Automated Collection",
+          "description": "Once established within a system or network, an adversary may use automated techniques for collectin...",
+          "similarity": 0.28762021927035203
+        }
+      ]
+    },
+    {
+      "attack_step": "Identify IAM policy misconfigurations",
+      "matches": [
+        {
+          "technique_id": "AT1025",
+          "name": "IAM Policy Manipulation",
+          "description": "A policy is an entity that, when attached to an identity or resource, defines their permissions. You...",
+          "similarity": 0.5368161630281737
+        },
+        {
+          "technique_id": "AT1016",
+          "name": "Identity and Access Management (IAM) Discovery",
+          "description": "AWS Identity and Access Management (IAM) enables you to manage access to AWS services and resources ...",
+          "similarity": 0.46022901191145643
+        },
+        {
+          "technique_id": "T1556.009",
+          "name": "Conditional Access Policies",
+          "description": "Adversaries may disable or modify conditional access policies to enable persistent access to comprom...",
+          "similarity": 0.44502121014878215
+        }
+      ]
+    },
+    {
+      "attack_step": "Enumerate current IAM permissions",
+      "matches": [
+        {
+          "technique_id": "AT1016",
+          "name": "Identity and Access Management (IAM) Discovery",
+          "description": "AWS Identity and Access Management (IAM) enables you to manage access to AWS services and resources ...",
+          "similarity": 0.5065598535579283
+        },
+        {
+          "technique_id": "T1069.003",
+          "name": "Cloud Groups",
+          "description": "Adversaries may attempt to find cloud groups and permission settings. The knowledge of cloud permiss...",
+          "similarity": 0.4568666442510894
+        },
+        {
+          "technique_id": "T1087.004",
+          "name": "Cloud Account",
+          "description": "Adversaries may attempt to get a listing of cloud accounts. Cloud accounts are those created and con...",
+          "similarity": 0.44065533382611166
+        }
+      ]
+    },
+    {
+      "attack_step": "Map healthcare dataset locations",
+      "matches": [
+        {
+          "technique_id": "T1614",
+          "name": "System Location Discovery",
+          "description": "\nAdversaries may gather information in an attempt to calculate the geographical location of a victim...",
+          "similarity": 0.27955701507971903
+        },
+        {
+          "technique_id": "T1535",
+          "name": "Unused/Unsupported Cloud Regions",
+          "description": "Adversaries may create cloud instances in unused geographic service regions in order to evade detect...",
+          "similarity": 0.2048091135194104
+        },
+        {
+          "technique_id": "T1190.A014",
+          "name": "EMR Cluster",
+          "description": "An adversary can access publicly accessible data contained in open EMR clusters....",
+          "similarity": 0.19019587807520194
+        }
+      ]
+    },
+    {
+      "attack_step": "Modify Lake Formation tag-based access",
+      "matches": [
+        {
+          "technique_id": "T1556.009",
+          "name": "Conditional Access Policies",
+          "description": "Adversaries may disable or modify conditional access policies to enable persistent access to comprom...",
+          "similarity": 0.2829072486317322
+        },
+        {
+          "technique_id": "T1190.A015",
+          "name": "SNS Topic",
+          "description": "An adversary can read, write, and or delete publicly accessible data contained in open SNS topics....",
+          "similarity": 0.2632898395811762
+        },
+        {
+          "technique_id": "T1108",
+          "name": "Redundant Access",
+          "description": "**This technique has been deprecated. Please use [Create Account](https://attack.mitre.org/technique...",
+          "similarity": 0.22191749730298482
+        }
+      ]
+    },
+    {
+      "attack_step": "Bypass column-level security",
+      "matches": [
+        {
+          "technique_id": "T1565.001",
+          "name": "Stored Data Manipulation",
+          "description": "Adversaries may insert, delete, or manipulate data at rest in order to influence external outcomes o...",
+          "similarity": 0.4658593374888772
+        },
+        {
+          "technique_id": "T1565",
+          "name": "Data Manipulation",
+          "description": "Adversaries may insert, delete, or manipulate data in order to influence external outcomes or hide a...",
+          "similarity": 0.4237258234750329
+        },
+        {
+          "technique_id": "AT1029",
+          "name": "Data from Cloud Database",
+          "description": "Adversaries may access data from improperly secured cloud databases....",
+          "similarity": 0.42052594807095695
+        }
+      ]
+    },
+    {
+      "attack_step": "Unauthorized access to regulated healthcare datasets achieved",
+      "matches": [
+        {
+          "technique_id": "AT1029",
+          "name": "Data from Cloud Database",
+          "description": "Adversaries may access data from improperly secured cloud databases....",
+          "similarity": 0.525385082529938
+        },
+        {
+          "technique_id": "AT1029.002",
+          "name": "RDS",
+          "description": "Adversaries may access data from RDS....",
+          "similarity": 0.4802188221800097
+        },
+        {
+          "technique_id": "T1213",
+          "name": "Data from Information Repositories",
+          "description": "Adversaries may leverage information repositories to mine valuable information. Information reposito...",
+          "similarity": 0.46473772763516275
+        }
+      ]
+    },
+    {
+      "attack_step": "Exploit IAM PassRole vulnerability",
+      "matches": [
+        {
+          "technique_id": "AT1016",
+          "name": "Identity and Access Management (IAM) Discovery",
+          "description": "AWS Identity and Access Management (IAM) enables you to manage access to AWS services and resources ...",
+          "similarity": 0.4791147908131193
+        },
+        {
+          "technique_id": "AT1024",
+          "name": "IAM Principal Manipulation",
+          "description": "A principal is a person or application that can make a request for an action or operation on an AWS ...",
+          "similarity": 0.4759530544088011
+        },
+        {
+          "technique_id": "T1070.A001",
+          "name": "Delete IAM Entities",
+          "description": "Users and roles can be created with AWS Identity and Access Management (IAM) to perform unauthorized...",
+          "similarity": 0.4422346524041381
+        }
+      ]
+    },
+    {
+      "attack_step": "Malicious attacker with compromised service account",
+      "matches": [
+        {
+          "technique_id": "T1098",
+          "name": "Account Manipulation",
+          "description": "Adversaries may manipulate accounts to maintain and/or elevate access to victim systems. Account man...",
+          "similarity": 0.5153058961924332
+        },
+        {
+          "technique_id": "T1556",
+          "name": "Modify Authentication Process",
+          "description": "Adversaries may modify authentication mechanisms and processes to access user credentials or enable ...",
+          "similarity": 0.5098096189768391
+        },
+        {
+          "technique_id": "T1078.004",
+          "name": "Valid Cloud Accounts",
+          "description": "Valid accounts in cloud environments may allow adversaries to perform actions to achieve Initial Acc...",
+          "similarity": 0.48739055517314817
+        }
+      ]
+    },
+    {
+      "attack_step": "Grant self elevated data permissions",
+      "matches": [
+        {
+          "technique_id": "T1548",
+          "name": "Abuse Elevation Control Mechanism",
+          "description": "Adversaries may circumvent mechanisms designed to control elevate privileges to gain higher-level pe...",
+          "similarity": 0.3601885081388029
+        },
+        {
+          "technique_id": "T1548.005",
+          "name": "Temporary Elevated Cloud Access",
+          "description": "Adversaries may abuse permission configurations that allow them to gain temporarily elevated access ...",
+          "similarity": 0.3504953834389035
+        },
+        {
+          "technique_id": "AT1024",
+          "name": "IAM Principal Manipulation",
+          "description": "A principal is a person or application that can make a request for an action or operation on an AWS ...",
+          "similarity": 0.336720289289743
+        }
+      ]
+    },
+    {
+      "attack_step": "Reconnaissance of Lake Formation environment",
+      "matches": [
+        {
+          "technique_id": "T1535",
+          "name": "Unused/Unsupported Cloud Regions",
+          "description": "Adversaries may create cloud instances in unused geographic service regions in order to evade detect...",
+          "similarity": 0.14191792671062323
+        },
+        {
+          "technique_id": "T1049",
+          "name": "System Network Connections Discovery",
+          "description": "Adversaries may attempt to get a listing of network connections to or from the compromised system th...",
+          "similarity": 0.13935739332606084
+        },
+        {
+          "technique_id": "T1578.002",
+          "name": "Create Cloud Instance",
+          "description": "An adversary may create a new instance or virtual machine (VM) within the compute service of a cloud...",
+          "similarity": 0.13368476583326325
+        }
+      ]
+    }
+  ],
+  "attack_tree_T001_authentication.md": [
+    {
+      "attack_step": "Exploit weak certificate validation",
+      "matches": [
+        {
+          "technique_id": "T1649",
+          "name": "Steal or Forge Authentication Certificates",
+          "description": "Adversaries may steal or forge certificates used for authentication to access remote systems or reso...",
+          "similarity": 0.3829364013851654
+        },
+        {
+          "technique_id": "AT1008",
+          "name": "Golden SAML",
+          "description": "**This technique has been deprecated. Please use [SAML Tokens](https://attack.mitre.org/techniques/T...",
+          "similarity": 0.3402097327571593
+        },
+        {
+          "technique_id": "T1550",
+          "name": "Use Alternate Authentication Material",
+          "description": "Adversaries may use alternate authentication material, such as password hashes, Kerberos tickets, an...",
+          "similarity": 0.31317828229867073
+        }
+      ]
+    },
+    {
+      "attack_step": "Obtain additional device identities",
+      "matches": [
+        {
+          "technique_id": "T1098.005",
+          "name": "Device Registration",
+          "description": "Adversaries may register a device to an adversary-controlled account. Devices may be registered in a...",
+          "similarity": 0.44256123808725895
+        },
+        {
+          "technique_id": "T1082",
+          "name": "System Information Discovery",
+          "description": "An adversary may attempt to get detailed information about the operating system and hardware, includ...",
+          "similarity": 0.38933062908940164
+        },
+        {
+          "technique_id": "T1496.001",
+          "name": "Compute Hijacking",
+          "description": "Unreleased. TBD...",
+          "similarity": 0.2697239780734959
+        }
+      ]
+    },
+    {
+      "attack_step": "Establish trusted connection with control systems",
+      "matches": [
+        {
+          "technique_id": "T1072",
+          "name": "Software Deployment Tools",
+          "description": "Adversaries may gain access to and use centralized software suites installed within an enterprise to...",
+          "similarity": 0.42602209051114637
+        },
+        {
+          "technique_id": "T1199",
+          "name": "Trusted Relationship",
+          "description": "Adversaries may breach or otherwise leverage organizations who have access to intended victims. Acce...",
+          "similarity": 0.4199829357124052
+        },
+        {
+          "technique_id": "AT1019",
+          "name": "Cloud to Network",
+          "description": "The risk of gaining cloud resource access and jumping to the customer's physical network is signific...",
+          "similarity": 0.39261791074181274
+        }
+      ]
+    },
+    {
+      "attack_step": "Certificate validation bypass",
+      "matches": [
+        {
+          "technique_id": "T1649",
+          "name": "Steal or Forge Authentication Certificates",
+          "description": "Adversaries may steal or forge certificates used for authentication to access remote systems or reso...",
+          "similarity": 0.3606239434672948
+        },
+        {
+          "technique_id": "T1550",
+          "name": "Use Alternate Authentication Material",
+          "description": "Adversaries may use alternate authentication material, such as password hashes, Kerberos tickets, an...",
+          "similarity": 0.2819538036183644
+        },
+        {
+          "technique_id": "AT1013",
+          "name": "User Agent Spoofing and Randomization",
+          "description": "**This technique has been deprecated. Please use [Match Legitimate Name or Location](https://attack....",
+          "similarity": 0.2536103332176127
+        }
+      ]
+    },
+    {
+      "attack_step": "Impersonate legitimate IoT device",
+      "matches": [
+        {
+          "technique_id": "T1098.005",
+          "name": "Device Registration",
+          "description": "Adversaries may register a device to an adversary-controlled account. Devices may be registered in a...",
+          "similarity": 0.44159061792164905
+        },
+        {
+          "technique_id": "T1550",
+          "name": "Use Alternate Authentication Material",
+          "description": "Adversaries may use alternate authentication material, such as password hashes, Kerberos tickets, an...",
+          "similarity": 0.35713017271887326
+        },
+        {
+          "technique_id": "AT1075",
+          "name": "Create Identity Provider",
+          "description": "A threat actor using credentials with appropriate permissions is able to create an Identity Provider...",
+          "similarity": 0.3529259279294155
+        }
+      ]
+    },
+    {
+      "attack_step": "Execute unauthorized control actions",
+      "matches": [
+        {
+          "technique_id": "T1072",
+          "name": "Software Deployment Tools",
+          "description": "Adversaries may gain access to and use centralized software suites installed within an enterprise to...",
+          "similarity": 0.39047604781259393
+        },
+        {
+          "technique_id": "T1548",
+          "name": "Abuse Elevation Control Mechanism",
+          "description": "Adversaries may circumvent mechanisms designed to control elevate privileges to gain higher-level pe...",
+          "similarity": 0.389289346590509
+        },
+        {
+          "technique_id": "T1546",
+          "name": "Event Triggered Execution",
+          "description": "Adversaries may establish persistence and/or elevate privileges using system mechanisms that trigger...",
+          "similarity": 0.3713123697853303
+        }
+      ]
+    },
+    {
+      "attack_step": "Compromise integrity of device data and control systems",
+      "matches": [
+        {
+          "technique_id": "T1565.002",
+          "name": "Transmitted Data Manipulation",
+          "description": "Adversaries may alter data en route to storage or other systems in order to manipulate external outc...",
+          "similarity": 0.575021673235877
+        },
+        {
+          "technique_id": "T1496.001",
+          "name": "Compute Hijacking",
+          "description": "Unreleased. TBD...",
+          "similarity": 0.495709898358975
+        },
+        {
+          "technique_id": "T1565",
+          "name": "Data Manipulation",
+          "description": "Adversaries may insert, delete, or manipulate data in order to influence external outcomes or hide a...",
+          "similarity": 0.48560166570262686
+        }
+      ]
+    },
+    {
+      "attack_step": "Scale attack across IoT network",
+      "matches": [
+        {
+          "technique_id": "AT1020",
+          "name": "Network to Cloud",
+          "description": "The risk of gaining access to a physical network and then leveraging that to gain access to cloud re...",
+          "similarity": 0.38298820218627594
+        },
+        {
+          "technique_id": "T1498.001",
+          "name": "Direct Network Flood",
+          "description": "Adversaries may attempt to cause a denial of service (DoS) by directly sending a high-volume of netw...",
+          "similarity": 0.3538043653698452
+        },
+        {
+          "technique_id": "T1190.A008",
+          "name": "CloudWatch Event Bus",
+          "description": "An adversary can perform supported actions on an exposed event bus....",
+          "similarity": 0.3527212410845541
+        }
+      ]
+    },
+    {
+      "attack_step": "Malicious attacker with compromised X.509 certificates",
+      "matches": [
+        {
+          "technique_id": "T1649",
+          "name": "Steal or Forge Authentication Certificates",
+          "description": "Adversaries may steal or forge certificates used for authentication to access remote systems or reso...",
+          "similarity": 0.44179619952423815
+        },
+        {
+          "technique_id": "T1496.A006",
+          "name": "Compute Hijacking - ECS",
+          "description": "An adversary can use ECS containers for their computation requirements with the cost of the resource...",
+          "similarity": 0.33391128214203386
+        },
+        {
+          "technique_id": "T1656",
+          "name": "Impersonation",
+          "description": "Adversaries may impersonate a trusted person or organization in order to persuade and trick a target...",
+          "similarity": 0.32582899228165946
+        }
+      ]
+    },
+    {
+      "attack_step": "Send unauthorized device commands",
+      "matches": [
+        {
+          "technique_id": "T1059",
+          "name": "Command and Scripting Interpreter",
+          "description": "Adversaries may abuse command and script interpreters to execute commands, scripts, or binaries. The...",
+          "similarity": 0.4127454704583307
+        },
+        {
+          "technique_id": "T1072",
+          "name": "Software Deployment Tools",
+          "description": "Adversaries may gain access to and use centralized software suites installed within an enterprise to...",
+          "similarity": 0.4125751124946155
+        },
+        {
+          "technique_id": "T1078.A003",
+          "name": "Console Login",
+          "description": "A threat actor can use the AWS Management Console as a method of initial access into an AWS account....",
+          "similarity": 0.36229752855398356
+        }
+      ]
+    },
+    {
+      "attack_step": "Direct certificate usage",
+      "matches": [
+        {
+          "technique_id": "T1649",
+          "name": "Steal or Forge Authentication Certificates",
+          "description": "Adversaries may steal or forge certificates used for authentication to access remote systems or reso...",
+          "similarity": 0.4041318815592024
+        },
+        {
+          "technique_id": "T1048",
+          "name": "Exfiltration Over Alternative Protocol",
+          "description": "Adversaries may steal data by exfiltrating it over a different protocol than that of the existing co...",
+          "similarity": 0.23821293852487843
+        },
+        {
+          "technique_id": "T1108",
+          "name": "Redundant Access",
+          "description": "**This technique has been deprecated. Please use [Create Account](https://attack.mitre.org/technique...",
+          "similarity": 0.23435234805507305
+        }
+      ]
+    },
+    {
+      "attack_step": "Maintain persistent access",
+      "matches": [
+        {
+          "technique_id": "T1550",
+          "name": "Use Alternate Authentication Material",
+          "description": "Adversaries may use alternate authentication material, such as password hashes, Kerberos tickets, an...",
+          "similarity": 0.4322112037324069
+        },
+        {
+          "technique_id": "AT1024.003",
+          "name": "IAM Role Hopping",
+          "description": "Given proper trust relationships, a role assumed with temporary credentials can be preserved indefin...",
+          "similarity": 0.38137961010724775
+        },
+        {
+          "technique_id": "T1137.006",
+          "name": "Add-ins",
+          "description": "Adversaries may abuse Microsoft Office add-ins to obtain persistence on a compromised system. Office...",
+          "similarity": 0.368209248389991
+        }
+      ]
+    },
+    {
+      "attack_step": "Inject malicious sensor data",
+      "matches": [
+        {
+          "technique_id": "T1565",
+          "name": "Data Manipulation",
+          "description": "Adversaries may insert, delete, or manipulate data in order to influence external outcomes or hide a...",
+          "similarity": 0.5229242747097597
+        },
+        {
+          "technique_id": "T1565.002",
+          "name": "Transmitted Data Manipulation",
+          "description": "Adversaries may alter data en route to storage or other systems in order to manipulate external outc...",
+          "similarity": 0.5146970719750892
+        },
+        {
+          "technique_id": "T1565.003",
+          "name": "Runtime Data Manipulation",
+          "description": "Adversaries may modify systems in order to manipulate the data as it is accessed and displayed to an...",
+          "similarity": 0.44808183079309677
+        }
+      ]
+    },
+    {
+      "attack_step": "Corrupt sensor readings",
+      "matches": [
+        {
+          "technique_id": "T1565.002",
+          "name": "Transmitted Data Manipulation",
+          "description": "Adversaries may alter data en route to storage or other systems in order to manipulate external outc...",
+          "similarity": 0.19081276650338297
+        },
+        {
+          "technique_id": "T1565",
+          "name": "Data Manipulation",
+          "description": "Adversaries may insert, delete, or manipulate data in order to influence external outcomes or hide a...",
+          "similarity": 0.16597956840033798
+        },
+        {
+          "technique_id": "T1562.A001",
+          "name": "Disable or Modify GuardDuty",
+          "description": "Amazon GuardDuty is a continuous security monitoring service that analyzes and processes the followi...",
+          "similarity": 0.16210586903798588
+        }
+      ]
+    },
+    {
+      "attack_step": "Present stolen certificates to IoT gateway",
+      "matches": [
+        {
+          "technique_id": "T1649",
+          "name": "Steal or Forge Authentication Certificates",
+          "description": "Adversaries may steal or forge certificates used for authentication to access remote systems or reso...",
+          "similarity": 0.36953843691704125
+        },
+        {
+          "technique_id": "AT1667.001",
+          "name": "API Gateway",
+          "description": "The API Gateway subtechnique involves creating unauthorized Amazon API Gateway resources and associa...",
+          "similarity": 0.3460911708162443
+        },
+        {
+          "technique_id": "AT1075",
+          "name": "Create Identity Provider",
+          "description": "A threat actor using credentials with appropriate permissions is able to create an Identity Provider...",
+          "similarity": 0.3338410349785148
+        }
+      ]
+    }
+  ]
+}
