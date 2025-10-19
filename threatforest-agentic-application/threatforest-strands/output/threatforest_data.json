@@ -1,28 +1,30 @@
 {
   "metadata": {
-    "generated_at": "2025-10-16T23:00:07.692266",
+    "generated_at": "2025-10-19T12:47:47.615526",
     "generator": "ThreatForest",
     "version": "1.0"
   },
   "project_info": {
-    "application_name": "IoT Device Management Platform",
-    "sector": "IoT/Multi-Industry (Smart Cities, Industrial Automation, Healthcare)",
+    "application_name": "Electric Vehicle Charging Station Management System",
+    "sector": "Energy/Electric Vehicle Infrastructure",
     "architecture_type": "Microservices",
-    "deployment_environment": "Cloud (AWS)",
+    "deployment_environment": "Cloud",
     "technologies": [
-      "MQTT over TLS",
-      "CoAP",
-      "Python",
-      "FastAPI",
-      "Celery",
-      "MongoDB",
-      "InfluxDB",
-      "Apache Kafka",
-      "AWS IoT Core",
+      "Amazon ECS",
+      "AWS Fargate",
+      "Network Load Balancer",
+      "Application Load Balancer",
+      "Elastic Load Balancing",
       "AWS Lambda",
-      "X.509 certificates",
-      "Grafana",
-      "Prometheus"
+      "Amazon DynamoDB",
+      "Amazon CloudFront",
+      "Amazon S3",
+      "Amazon API Gateway",
+      "Amazon Cognito",
+      "AWS Certificate Manager",
+      "Amazon CloudWatch",
+      "Amazon QLDB",
+      "OCPP (Open Charge Point Protocol)"
     ],
     "security_objectives": {
       "confidentiality": true,
@@ -30,49 +32,52 @@
       "availability": true
     },
     "data_types": [
-      "Sensor data (temperature, humidity, pressure, motion)",
-      "Device configurations",
-      "User information",
-      "Time-series data",
-      "Firmware versions",
-      "Patient health data (HIPAA applicable)",
-      "Industrial control data (SCADA, PLC)",
-      "Smart meter consumption data (electricity, water, gas)",
-      "Vehicle telematics data (GPS, fleet management)"
+      "EVSE credentials (encrypted)",
+      "User identities",
+      "Charging transactions",
+      "EVSE metrics",
+      "EVSE logs",
+      "Firmware files",
+      "Charging site configurations",
+      "Balancing algorithms",
+      "Power grid capacity data",
+      "EVSE certificates"
     ],
     "external_dependencies": [
-      "AWS IoT Core",
-      "AWS Lambda",
-      "MQTT brokers",
-      "CoAP endpoints",
-      "Certificate authorities (for X.509)"
+      "Charging stations (EVSE)",
+      "Fleet management systems",
+      "Smart meters",
+      "Roaming networks"
     ],
-    "network_architecture": "Cloud-based distributed architecture utilizing message broker pattern with Apache Kafka for real-time streaming, MQTT/CoAP protocols for device communication over TLS, and AWS IoT Core as cloud gateway. Time-series data storage separated from operational database.",
+    "network_architecture": "Multi-tier cloud architecture with external charging stations connecting through Network Load Balancer to containerized services on ECS/Fargate. Web application served via CloudFront CDN with API Gateway for REST APIs. Internal microservices communicate through Application Load Balancer. Clear separation between public-facing components (web app, OCPP handlers) and internal microservices (EVSE management, smart charging, transaction management). External integrations with fleet management, smart meters, and roaming networks.",
     "key_components": [
-      "Device Registry (identity management, provisioning, lifecycle)",
-      "Communication Gateway (protocol translation, message routing)",
-      "Data Processing Engine (real-time analytics, anomaly detection)",
-      "Firmware Management (OTA updates, version control)",
-      "Security Service (certificate management, device authentication)",
-      "Dashboard (monitoring, configuration management)",
-      "Message Broker (Apache Kafka)",
-      "Database Layer (MongoDB, InfluxDB)",
-      "Smart Sensors",
-      "Industrial Controllers (PLCs, SCADA)",
-      "Smart Meters",
-      "Healthcare Devices",
-      "Vehicle Telematics"
+      "OCPP connection handler (Component 1)",
+      "Web application (Component 2)",
+      "EVSE registry (Component 3)",
+      "EVSE management microservice (Component 4)",
+      "Smart charging microservice (Component 5)",
+      "Transaction management and audit microservice (Component 6)",
+      "Elastic Load Balancing (Component 7)",
+      "Charging stations (EVSE)",
+      "Charge point operators interface",
+      "Fleet management integration",
+      "Smart meters integration",
+      "Roaming networks integration"
     ],
-    "\"application_name\"": "\"IoT Device Management Platform\",",
-    "\"industry\"": "\"IoT/Multiple Industries\",",
+    "\"application_name\"": "\"Electric Vehicle Supply Equipment (EVSE) Management System\",",
+    "\"industry\"": "\"Automotive/Energy\",",
     "\"architecture_type\"": "\"Microservices\",",
-    "\"components\"": "[",
-    "\"technologies\"": "{"
+    "\"components\"": "{",
+    "\"infrastructure_components\"": "[",
+    "\"technologies\"": "{",
+    "\"destination\"": "\"Web application\",",
+    "\"source\"": "\"Web application\",",
+    "\"architecture\"": "\"Serverless and containerized microservices\","
   },
   "extraction_summary": {
-    "total_threats": 12,
+    "total_threats": 11,
     "high_severity_count": 4,
-    "technologies_identified": 13,
+    "technologies_identified": 15,
     "has_security_objectives": true,
     "user_validated": false
   },
@@ -80,245 +85,230 @@
     "all_threats": [
       {
         "id": "T001",
-        "description": "A malicious attacker with compromised X.509 certificates, can impersonate legitimate IoT devices, which leads to injection of malicious sensor data and unauthorized device commands, resulting in reduced integrity of device data and control systems.",
-        "statement": "A malicious attacker with compromised X.509 certificates, can impersonate legitimate IoT devices, which leads to injection of malicious sensor data and unauthorized device commands, resulting in reduced integrity of device data and control systems.",
+        "description": "A malicious attacker with compromised EVSE credentials, can send malicious OCPP messages to the connection handler, which leads to unauthorized control of charging operations, resulting in reduced integrity of charging station infrastructure.",
+        "statement": "A malicious attacker with compromised EVSE credentials, can send malicious OCPP messages to the connection handler, which leads to unauthorized control of charging operations, resulting in reduced integrity of charging station infrastructure.",
         "threatSource": "malicious attacker",
-        "prerequisites": "compromised X.509 certificates",
-        "threatAction": "impersonate legitimate IoT devices",
-        "threatImpact": "injection of malicious sensor data and unauthorized device commands",
+        "prerequisites": "compromised EVSE credentials",
+        "threatAction": "send malicious OCPP messages to the connection handler",
+        "threatImpact": "unauthorized control of charging operations",
         "impactedGoal": "integrity",
-        "impactedAssets": "device data and control systems",
+        "impactedAssets": "charging station infrastructure",
         "severity": "High",
         "priority": "High",
         "category": "Authentication",
-        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
       },
       {
         "id": "T002",
-        "description": "A nation-state actor with advanced persistent threat capabilities, can intercept and decrypt MQTT over TLS communications, which leads to exposure of sensitive healthcare and industrial data, resulting in reduced confidentiality of patient monitors and SCADA systems.",
-        "statement": "A nation-state actor with advanced persistent threat capabilities, can intercept and decrypt MQTT over TLS communications, which leads to exposure of sensitive healthcare and industrial data, resulting in reduced confidentiality of patient monitors and SCADA systems.",
-        "threatSource": "nation-state actor",
-        "prerequisites": "advanced persistent threat capabilities",
-        "threatAction": "intercept and decrypt MQTT over TLS communications",
-        "threatImpact": "exposure of sensitive healthcare and industrial data",
+        "description": "A rogue insider with access to DynamoDB encryption keys, can decrypt stored EVSE credentials, which leads to compromise of charging station authentication, resulting in reduced confidentiality of EVSE registry.",
+        "statement": "A rogue insider with access to DynamoDB encryption keys, can decrypt stored EVSE credentials, which leads to compromise of charging station authentication, resulting in reduced confidentiality of EVSE registry.",
+        "threatSource": "rogue insider",
+        "prerequisites": "access to DynamoDB encryption keys",
+        "threatAction": "decrypt stored EVSE credentials",
+        "threatImpact": "compromise of charging station authentication",
         "impactedGoal": "confidentiality",
-        "impactedAssets": "patient monitors and SCADA systems",
+        "impactedAssets": "EVSE registry",
         "severity": "High",
         "priority": "High",
-        "category": "Cryptographic Failures",
-        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+        "category": "Data Exposure",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
       },
       {
         "id": "T003",
-        "description": "A malicious insider with administrative access to AWS IoT Core, can push malicious firmware updates through the OTA system, which leads to complete device compromise and potential safety hazards, resulting in reduced integrity of industrial controllers and healthcare devices.",
-        "statement": "A malicious insider with administrative access to AWS IoT Core, can push malicious firmware updates through the OTA system, which leads to complete device compromise and potential safety hazards, resulting in reduced integrity of industrial controllers and healthcare devices.",
-        "threatSource": "malicious insider",
-        "prerequisites": "administrative access to AWS IoT Core",
-        "threatAction": "push malicious firmware updates through the OTA system",
-        "threatImpact": "complete device compromise and potential safety hazards",
+        "description": "A sophisticated attacker with network interception capabilities, can perform man-in-the-middle attacks on OCPP communications, which leads to manipulation of charging transactions, resulting in reduced integrity of transaction management and audit data.",
+        "statement": "A sophisticated attacker with network interception capabilities, can perform man-in-the-middle attacks on OCPP communications, which leads to manipulation of charging transactions, resulting in reduced integrity of transaction management and audit data.",
+        "threatSource": "sophisticated attacker",
+        "prerequisites": "network interception capabilities",
+        "threatAction": "perform man-in-the-middle attacks on OCPP communications",
+        "threatImpact": "manipulation of charging transactions",
         "impactedGoal": "integrity",
-        "impactedAssets": "industrial controllers and healthcare devices",
+        "impactedAssets": "transaction management and audit data",
         "severity": "High",
         "priority": "High",
-        "category": "Supply Chain",
-        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+        "category": "Communication Security",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
       },
       {
         "id": "T004",
-        "description": "A cybercriminal with botnet resources, can launch distributed denial-of-service attacks against the communication gateway, which leads to disruption of critical device communications, resulting in reduced availability of smart meters and vehicle telematics systems.",
-        "statement": "A cybercriminal with botnet resources, can launch distributed denial-of-service attacks against the communication gateway, which leads to disruption of critical device communications, resulting in reduced availability of smart meters and vehicle telematics systems.",
-        "threatSource": "cybercriminal",
-        "prerequisites": "botnet resources",
-        "threatAction": "launch distributed denial-of-service attacks against the communication gateway",
-        "threatImpact": "disruption of critical device communications",
-        "impactedGoal": "availability",
-        "impactedAssets": "smart meters and vehicle telematics systems",
+        "description": "A malicious actor with compromised AWS Certificate Manager access, can issue fraudulent certificates for unauthorized EVSEs, which leads to rogue charging stations joining the network, resulting in reduced integrity of EVSE authentication system.",
+        "statement": "A malicious actor with compromised AWS Certificate Manager access, can issue fraudulent certificates for unauthorized EVSEs, which leads to rogue charging stations joining the network, resulting in reduced integrity of EVSE authentication system.",
+        "threatSource": "malicious actor",
+        "prerequisites": "compromised AWS Certificate Manager access",
+        "threatAction": "issue fraudulent certificates for unauthorized EVSEs",
+        "threatImpact": "rogue charging stations joining the network",
+        "impactedGoal": "integrity",
+        "impactedAssets": "EVSE authentication system",
         "severity": "High",
         "priority": "High",
-        "category": "Denial of Service",
-        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+        "category": "Certificate Management",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
       },
       {
         "id": "T005",
-        "description": "A malicious attacker with network access to Kafka message broker, can inject false sensor readings into data streams, which leads to incorrect analytics and decision making, resulting in reduced integrity of data processing engine and time-series data.",
-        "statement": "A malicious attacker with network access to Kafka message broker, can inject false sensor readings into data streams, which leads to incorrect analytics and decision making, resulting in reduced integrity of data processing engine and time-series data.",
-        "threatSource": "malicious attacker",
-        "prerequisites": "network access to Kafka message broker",
-        "threatAction": "inject false sensor readings into data streams",
-        "threatImpact": "incorrect analytics and decision making",
+        "description": "A cybercriminal with API Gateway access tokens, can exploit unvalidated API endpoints, which leads to unauthorized modification of charging site configurations, resulting in reduced integrity of smart charging algorithms.",
+        "statement": "A cybercriminal with API Gateway access tokens, can exploit unvalidated API endpoints, which leads to unauthorized modification of charging site configurations, resulting in reduced integrity of smart charging algorithms.",
+        "threatSource": "cybercriminal",
+        "prerequisites": "API Gateway access tokens",
+        "threatAction": "exploit unvalidated API endpoints",
+        "threatImpact": "unauthorized modification of charging site configurations",
         "impactedGoal": "integrity",
-        "impactedAssets": "data processing engine and time-series data",
+        "impactedAssets": "smart charging algorithms",
         "severity": "Medium",
         "priority": "Medium",
-        "category": "Injection",
-        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+        "category": "API Security",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
       },
       {
         "id": "T006",
-        "description": "A threat actor with compromised MongoDB credentials, can access and exfiltrate device configuration data, which leads to exposure of network topology and security parameters, resulting in reduced confidentiality of device registry and configuration data.",
-        "statement": "A threat actor with compromised MongoDB credentials, can access and exfiltrate device configuration data, which leads to exposure of network topology and security parameters, resulting in reduced confidentiality of device registry and configuration data.",
-        "threatSource": "threat actor",
-        "prerequisites": "compromised MongoDB credentials",
-        "threatAction": "access and exfiltrate device configuration data",
-        "threatImpact": "exposure of network topology and security parameters",
+        "description": "A malicious user with compromised Cognito credentials, can access sensitive charging point operator data through the web application, which leads to exposure of operational information, resulting in reduced confidentiality of fleet management data.",
+        "statement": "A malicious user with compromised Cognito credentials, can access sensitive charging point operator data through the web application, which leads to exposure of operational information, resulting in reduced confidentiality of fleet management data.",
+        "threatSource": "malicious user",
+        "prerequisites": "compromised Cognito credentials",
+        "threatAction": "access sensitive charging point operator data through the web application",
+        "threatImpact": "exposure of operational information",
         "impactedGoal": "confidentiality",
-        "impactedAssets": "device registry and configuration data",
+        "impactedAssets": "fleet management data",
         "severity": "Medium",
         "priority": "Medium",
-        "category": "Broken Access Control",
-        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+        "category": "Identity Management",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
       },
       {
         "id": "T007",
-        "description": "A malicious actor with access to Lambda functions, can modify data processing logic to corrupt sensor readings, which leads to inaccurate monitoring and false alarms, resulting in reduced integrity of smart sensors and anomaly detection system.",
-        "statement": "A malicious actor with access to Lambda functions, can modify data processing logic to corrupt sensor readings, which leads to inaccurate monitoring and false alarms, resulting in reduced integrity of smart sensors and anomaly detection system.",
-        "threatSource": "malicious actor",
-        "prerequisites": "access to Lambda functions",
-        "threatAction": "modify data processing logic to corrupt sensor readings",
-        "threatImpact": "inaccurate monitoring and false alarms",
-        "impactedGoal": "integrity",
-        "impactedAssets": "smart sensors and anomaly detection system",
+        "description": "A threat actor with Lambda function access, can modify OCPP message routing logic, which leads to disruption of charging station communications, resulting in reduced availability of OCPP connection handler.",
+        "statement": "A threat actor with Lambda function access, can modify OCPP message routing logic, which leads to disruption of charging station communications, resulting in reduced availability of OCPP connection handler.",
+        "threatSource": "threat actor",
+        "prerequisites": "Lambda function access",
+        "threatAction": "modify OCPP message routing logic",
+        "threatImpact": "disruption of charging station communications",
+        "impactedGoal": "availability",
+        "impactedAssets": "OCPP connection handler",
         "severity": "Medium",
         "priority": "Medium",
-        "category": "Code Injection",
-        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+        "category": "Function Security",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
       },
       {
         "id": "T008",
-        "description": "A cybercriminal with CoAP protocol knowledge, can exploit weak device authentication to gain unauthorized access, which leads to device manipulation and data theft, resulting in reduced confidentiality of industrial automation systems.",
-        "statement": "A cybercriminal with CoAP protocol knowledge, can exploit weak device authentication to gain unauthorized access, which leads to device manipulation and data theft, resulting in reduced confidentiality of industrial automation systems.",
-        "threatSource": "cybercriminal",
-        "prerequisites": "CoAP protocol knowledge",
-        "threatAction": "exploit weak device authentication to gain unauthorized access",
-        "threatImpact": "device manipulation and data theft",
-        "impactedGoal": "confidentiality",
-        "impactedAssets": "industrial automation systems",
+        "description": "A malicious attacker with DDoS capabilities, can overwhelm the Network Load Balancer, which leads to service disruption for charging stations, resulting in reduced availability of charging station infrastructure.",
+        "statement": "A malicious attacker with DDoS capabilities, can overwhelm the Network Load Balancer, which leads to service disruption for charging stations, resulting in reduced availability of charging station infrastructure.",
+        "threatSource": "malicious attacker",
+        "prerequisites": "DDoS capabilities",
+        "threatAction": "overwhelm the Network Load Balancer",
+        "threatImpact": "service disruption for charging stations",
+        "impactedGoal": "availability",
+        "impactedAssets": "charging station infrastructure",
         "severity": "Medium",
         "priority": "Medium",
-        "category": "Insecure Communication",
-        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+        "category": "Denial of Service",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
       },
       {
         "id": "T009",
-        "description": "A threat actor with access to InfluxDB instance, can modify historical time-series data, which leads to compromised trend analysis and reporting, resulting in reduced integrity of monitoring dashboards and compliance reports.",
-        "statement": "A threat actor with access to InfluxDB instance, can modify historical time-series data, which leads to compromised trend analysis and reporting, resulting in reduced integrity of monitoring dashboards and compliance reports.",
-        "threatSource": "threat actor",
-        "prerequisites": "access to InfluxDB instance",
-        "threatAction": "modify historical time-series data",
-        "threatImpact": "compromised trend analysis and reporting",
+        "description": "A competitor with S3 bucket access, can tamper with firmware files, which leads to installation of malicious firmware on EVSEs, resulting in reduced integrity of EVSE management system.",
+        "statement": "A competitor with S3 bucket access, can tamper with firmware files, which leads to installation of malicious firmware on EVSEs, resulting in reduced integrity of EVSE management system.",
+        "threatSource": "competitor",
+        "prerequisites": "S3 bucket access",
+        "threatAction": "tamper with firmware files",
+        "threatImpact": "installation of malicious firmware on EVSEs",
         "impactedGoal": "integrity",
-        "impactedAssets": "monitoring dashboards and compliance reports",
+        "impactedAssets": "EVSE management system",
         "severity": "Medium",
         "priority": "Medium",
-        "category": "Data Integrity",
-        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+        "category": "Supply Chain",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
       },
       {
         "id": "T010",
-        "description": "A malicious user with valid dashboard credentials, can access unauthorized device information across different organizations, which leads to data privacy violations, resulting in reduced confidentiality of multi-tenant device data.",
-        "statement": "A malicious user with valid dashboard credentials, can access unauthorized device information across different organizations, which leads to data privacy violations, resulting in reduced confidentiality of multi-tenant device data.",
-        "threatSource": "malicious user",
-        "prerequisites": "valid dashboard credentials",
-        "threatAction": "access unauthorized device information across different organizations",
-        "threatImpact": "data privacy violations",
+        "description": "A curious employee with CloudWatch access, can extract sensitive metrics and operational patterns, which leads to exposure of business intelligence, resulting in reduced confidentiality of charging operations data.",
+        "statement": "A curious employee with CloudWatch access, can extract sensitive metrics and operational patterns, which leads to exposure of business intelligence, resulting in reduced confidentiality of charging operations data.",
+        "threatSource": "curious employee",
+        "prerequisites": "CloudWatch access",
+        "threatAction": "extract sensitive metrics and operational patterns",
+        "threatImpact": "exposure of business intelligence",
         "impactedGoal": "confidentiality",
-        "impactedAssets": "multi-tenant device data",
-        "severity": "Medium",
-        "priority": "Medium",
-        "category": "Broken Access Control",
-        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+        "impactedAssets": "charging operations data",
+        "severity": "Low",
+        "priority": "Low",
+        "category": "Data Leakage",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
       },
       {
         "id": "T011",
-        "description": "A script kiddie with basic network scanning tools, can discover exposed Prometheus metrics endpoints, which leads to information disclosure about system performance and topology, resulting in reduced confidentiality of infrastructure monitoring data.",
-        "statement": "A script kiddie with basic network scanning tools, can discover exposed Prometheus metrics endpoints, which leads to information disclosure about system performance and topology, resulting in reduced confidentiality of infrastructure monitoring data.",
+        "description": "A script kiddie with basic web application testing tools, can perform directory traversal attacks on CloudFront cached content, which leads to unauthorized access to static files, resulting in reduced confidentiality of web application assets.",
+        "statement": "A script kiddie with basic web application testing tools, can perform directory traversal attacks on CloudFront cached content, which leads to unauthorized access to static files, resulting in reduced confidentiality of web application assets.",
         "threatSource": "script kiddie",
-        "prerequisites": "basic network scanning tools",
-        "threatAction": "discover exposed Prometheus metrics endpoints",
-        "threatImpact": "information disclosure about system performance and topology",
+        "prerequisites": "basic web application testing tools",
+        "threatAction": "perform directory traversal attacks on CloudFront cached content",
+        "threatImpact": "unauthorized access to static files",
         "impactedGoal": "confidentiality",
-        "impactedAssets": "infrastructure monitoring data",
+        "impactedAssets": "web application assets",
         "severity": "Low",
         "priority": "Low",
-        "category": "Information Disclosure",
-        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
-      },
-      {
-        "id": "T012",
-        "description": "A curious employee with read-only Grafana access, can view sensitive operational metrics beyond their authorization level, which leads to unauthorized information disclosure, resulting in reduced confidentiality of system performance data.",
-        "statement": "A curious employee with read-only Grafana access, can view sensitive operational metrics beyond their authorization level, which leads to unauthorized information disclosure, resulting in reduced confidentiality of system performance data.",
-        "threatSource": "curious employee",
-        "prerequisites": "read-only Grafana access",
-        "threatAction": "view sensitive operational metrics beyond their authorization level",
-        "threatImpact": "unauthorized information disclosure",
-        "impactedGoal": "confidentiality",
-        "impactedAssets": "system performance data",
-        "severity": "Low",
-        "priority": "Low",
-        "category": "Information Disclosure",
-        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+        "category": "Web Security",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
       }
     ],
     "high_severity": [
       {
         "id": "T001",
-        "description": "A malicious attacker with compromised X.509 certificates, can impersonate legitimate IoT devices, which leads to injection of malicious sensor data and unauthorized device commands, resulting in reduced integrity of device data and control systems.",
-        "statement": "A malicious attacker with compromised X.509 certificates, can impersonate legitimate IoT devices, which leads to injection of malicious sensor data and unauthorized device commands, resulting in reduced integrity of device data and control systems.",
+        "description": "A malicious attacker with compromised EVSE credentials, can send malicious OCPP messages to the connection handler, which leads to unauthorized control of charging operations, resulting in reduced integrity of charging station infrastructure.",
+        "statement": "A malicious attacker with compromised EVSE credentials, can send malicious OCPP messages to the connection handler, which leads to unauthorized control of charging operations, resulting in reduced integrity of charging station infrastructure.",
         "threatSource": "malicious attacker",
-        "prerequisites": "compromised X.509 certificates",
-        "threatAction": "impersonate legitimate IoT devices",
-        "threatImpact": "injection of malicious sensor data and unauthorized device commands",
+        "prerequisites": "compromised EVSE credentials",
+        "threatAction": "send malicious OCPP messages to the connection handler",
+        "threatImpact": "unauthorized control of charging operations",
         "impactedGoal": "integrity",
-        "impactedAssets": "device data and control systems",
+        "impactedAssets": "charging station infrastructure",
         "severity": "High",
         "priority": "High",
         "category": "Authentication",
-        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
       },
       {
         "id": "T002",
-        "description": "A nation-state actor with advanced persistent threat capabilities, can intercept and decrypt MQTT over TLS communications, which leads to exposure of sensitive healthcare and industrial data, resulting in reduced confidentiality of patient monitors and SCADA systems.",
-        "statement": "A nation-state actor with advanced persistent threat capabilities, can intercept and decrypt MQTT over TLS communications, which leads to exposure of sensitive healthcare and industrial data, resulting in reduced confidentiality of patient monitors and SCADA systems.",
-        "threatSource": "nation-state actor",
-        "prerequisites": "advanced persistent threat capabilities",
-        "threatAction": "intercept and decrypt MQTT over TLS communications",
-        "threatImpact": "exposure of sensitive healthcare and industrial data",
+        "description": "A rogue insider with access to DynamoDB encryption keys, can decrypt stored EVSE credentials, which leads to compromise of charging station authentication, resulting in reduced confidentiality of EVSE registry.",
+        "statement": "A rogue insider with access to DynamoDB encryption keys, can decrypt stored EVSE credentials, which leads to compromise of charging station authentication, resulting in reduced confidentiality of EVSE registry.",
+        "threatSource": "rogue insider",
+        "prerequisites": "access to DynamoDB encryption keys",
+        "threatAction": "decrypt stored EVSE credentials",
+        "threatImpact": "compromise of charging station authentication",
         "impactedGoal": "confidentiality",
-        "impactedAssets": "patient monitors and SCADA systems",
+        "impactedAssets": "EVSE registry",
         "severity": "High",
         "priority": "High",
-        "category": "Cryptographic Failures",
-        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+        "category": "Data Exposure",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
       },
       {
         "id": "T003",
-        "description": "A malicious insider with administrative access to AWS IoT Core, can push malicious firmware updates through the OTA system, which leads to complete device compromise and potential safety hazards, resulting in reduced integrity of industrial controllers and healthcare devices.",
-        "statement": "A malicious insider with administrative access to AWS IoT Core, can push malicious firmware updates through the OTA system, which leads to complete device compromise and potential safety hazards, resulting in reduced integrity of industrial controllers and healthcare devices.",
-        "threatSource": "malicious insider",
-        "prerequisites": "administrative access to AWS IoT Core",
-        "threatAction": "push malicious firmware updates through the OTA system",
-        "threatImpact": "complete device compromise and potential safety hazards",
+        "description": "A sophisticated attacker with network interception capabilities, can perform man-in-the-middle attacks on OCPP communications, which leads to manipulation of charging transactions, resulting in reduced integrity of transaction management and audit data.",
+        "statement": "A sophisticated attacker with network interception capabilities, can perform man-in-the-middle attacks on OCPP communications, which leads to manipulation of charging transactions, resulting in reduced integrity of transaction management and audit data.",
+        "threatSource": "sophisticated attacker",
+        "prerequisites": "network interception capabilities",
+        "threatAction": "perform man-in-the-middle attacks on OCPP communications",
+        "threatImpact": "manipulation of charging transactions",
         "impactedGoal": "integrity",
-        "impactedAssets": "industrial controllers and healthcare devices",
+        "impactedAssets": "transaction management and audit data",
         "severity": "High",
         "priority": "High",
-        "category": "Supply Chain",
-        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+        "category": "Communication Security",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
       },
       {
         "id": "T004",
-        "description": "A cybercriminal with botnet resources, can launch distributed denial-of-service attacks against the communication gateway, which leads to disruption of critical device communications, resulting in reduced availability of smart meters and vehicle telematics systems.",
-        "statement": "A cybercriminal with botnet resources, can launch distributed denial-of-service attacks against the communication gateway, which leads to disruption of critical device communications, resulting in reduced availability of smart meters and vehicle telematics systems.",
-        "threatSource": "cybercriminal",
-        "prerequisites": "botnet resources",
-        "threatAction": "launch distributed denial-of-service attacks against the communication gateway",
-        "threatImpact": "disruption of critical device communications",
-        "impactedGoal": "availability",
-        "impactedAssets": "smart meters and vehicle telematics systems",
+        "description": "A malicious actor with compromised AWS Certificate Manager access, can issue fraudulent certificates for unauthorized EVSEs, which leads to rogue charging stations joining the network, resulting in reduced integrity of EVSE authentication system.",
+        "statement": "A malicious actor with compromised AWS Certificate Manager access, can issue fraudulent certificates for unauthorized EVSEs, which leads to rogue charging stations joining the network, resulting in reduced integrity of EVSE authentication system.",
+        "threatSource": "malicious actor",
+        "prerequisites": "compromised AWS Certificate Manager access",
+        "threatAction": "issue fraudulent certificates for unauthorized EVSEs",
+        "threatImpact": "rogue charging stations joining the network",
+        "impactedGoal": "integrity",
+        "impactedAssets": "EVSE authentication system",
         "severity": "High",
         "priority": "High",
-        "category": "Denial of Service",
-        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/iot-device-management/IoT_Device_Management_Platform_generated_threat_statements.md"
+        "category": "Certificate Management",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
       }
     ]
   },
@@ -326,80 +316,84 @@
     {
       "threat_id": "T001",
       "threat_category": "Authentication",
-      "threat_description": "A malicious attacker with compromised X.509 certificates, can impersonate legitimate IoT devices, which leads to injection of malicious sensor data and unauthorized device commands, resulting in reduced integrity of device data and control systems.",
-      "threat_statement": "A malicious attacker with compromised X.509 certificates, can impersonate legitimate IoT devices, which leads to injection of malicious sensor data and unauthorized device commands, resulting in reduced integrity of device data and control systems.",
-      "threat_action": "impersonate legitimate IoT devices",
+      "threat_description": "A malicious attacker with compromised EVSE credentials, can send malicious OCPP messages to the connection handler, which leads to unauthorized control of charging operations, resulting in reduced integrity of charging station infrastructure.",
+      "threat_statement": "A malicious attacker with compromised EVSE credentials, can send malicious OCPP messages to the connection handler, which leads to unauthorized control of charging operations, resulting in reduced integrity of charging station infrastructure.",
+      "threat_action": "send malicious OCPP messages to the connection handler",
       "threatSource": "malicious attacker",
-      "prerequisites": "compromised X.509 certificates",
-      "threatAction": "impersonate legitimate IoT devices",
-      "threatImpact": "injection of malicious sensor data and unauthorized device commands",
+      "prerequisites": "compromised EVSE credentials",
+      "threatAction": "send malicious OCPP messages to the connection handler",
+      "threatImpact": "unauthorized control of charging operations",
       "impactedGoal": "integrity",
-      "impactedAssets": "device data and control systems",
+      "impactedAssets": "charging station infrastructure",
       "priority": "High",
-      "mermaid_code": "graph TD\n    A[\"Malicious attacker with compromised X.509 certificates\"] --> B[\"Certificate validation bypass\"]\n    A --> C[\"Direct certificate usage\"]\n    B --> D[\"Exploit weak certificate validation\"]\n    C --> E[\"Present stolen certificates to IoT gateway\"]\n    D --> F[\"Impersonate legitimate IoT device\"]\n    E --> F\n    F --> G[\"Establish trusted connection with control systems\"]\n    G --> H[\"Inject malicious sensor data\"]\n    G --> I[\"Send unauthorized device commands\"]\n    H --> J[\"Corrupt sensor readings\"]\n    I --> K[\"Execute unauthorized control actions\"]\n    J --> L[\"Compromise integrity of device data and control systems\"]\n    K --> L\n    A --> M[\"Obtain additional device identities\"]\n    M --> N[\"Scale attack across IoT network\"]\n    N --> F\n    F --> O[\"Maintain persistent access\"]\n    O --> H\n    O --> I\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,M,N,O attack\n    class L goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "mermaid_code": "graph TD\n    A[\"Malicious attacker with compromised EVSE credentials\"] --> B[\"Establish connection to OCPP backend\"]\n    B --> C[\"Authenticate using stolen credentials\"]\n    C --> D[\"Inject malicious OCPP messages\"]\n    D --> E[\"Send unauthorized charging commands\"]\n    D --> F[\"Manipulate charging parameters\"]\n    D --> G[\"Send fake status updates\"]\n    E --> H[\"Startstop charging sessions without authorization\"]\n    E --> I[\"Override legitimate user commands\"]\n    F --> J[\"Modify charging power levels\"]\n    F --> K[\"Alter billingmetering data\"]\n    F --> L[\"Change charging profiles\"]\n    G --> M[\"Report false availability status\"]\n    G --> N[\"Spoof error conditions\"]\n    H --> O[\"Unauthorized control of charging operations\"]\n    I --> O\n    J --> O\n    K --> O\n    L --> O\n    M --> O\n    N --> O\n    O --> P[\"Integrity compromise of charging station infrastructure\"]\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N attack\n    class O,P goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
       "attack_steps": [
         {
           "node_id": "A",
-          "description": "Malicious attacker with compromised X.509 certificates"
+          "description": "Malicious attacker with compromised EVSE credentials"
         },
         {
           "node_id": "B",
-          "description": "Certificate validation bypass"
+          "description": "Establish connection to OCPP backend"
         },
         {
           "node_id": "C",
-          "description": "Direct certificate usage"
+          "description": "Authenticate using stolen credentials"
         },
         {
           "node_id": "D",
-          "description": "Exploit weak certificate validation"
+          "description": "Inject malicious OCPP messages"
         },
         {
           "node_id": "E",
-          "description": "Present stolen certificates to IoT gateway"
+          "description": "Send unauthorized charging commands"
         },
         {
           "node_id": "F",
-          "description": "Impersonate legitimate IoT device"
+          "description": "Manipulate charging parameters"
         },
         {
           "node_id": "G",
-          "description": "Establish trusted connection with control systems"
+          "description": "Send fake status updates"
         },
         {
           "node_id": "H",
-          "description": "Inject malicious sensor data"
+          "description": "Startstop charging sessions without authorization"
         },
         {
           "node_id": "I",
-          "description": "Send unauthorized device commands"
+          "description": "Override legitimate user commands"
         },
         {
           "node_id": "J",
-          "description": "Corrupt sensor readings"
+          "description": "Modify charging power levels"
         },
         {
           "node_id": "K",
-          "description": "Execute unauthorized control actions"
+          "description": "Alter billingmetering data"
         },
         {
           "node_id": "L",
-          "description": "Compromise integrity of device data and control systems"
+          "description": "Change charging profiles"
         },
         {
           "node_id": "M",
-          "description": "Obtain additional device identities"
+          "description": "Report false availability status"
         },
         {
           "node_id": "N",
-          "description": "Scale attack across IoT network"
+          "description": "Spoof error conditions"
         },
         {
           "node_id": "O",
-          "description": "Maintain persistent access"
+          "description": "Unauthorized control of charging operations"
+        },
+        {
+          "node_id": "P",
+          "description": "Integrity compromise of charging station infrastructure"
         }
       ],
-      "generated_content": "# Attack Tree for T001: IoT Device Impersonation via Compromised X.509 Certificates\n\n```mermaid\ngraph TD\n    A[\"Malicious attacker with compromised X.509 certificates\"] --> B[\"Certificate validation bypass\"]\n    A --> C[\"Direct certificate usage\"]\n    \n    B --> D[\"Exploit weak certificate validation\"]\n    C --> E[\"Present stolen certificates to IoT gateway\"]\n    \n    D --> F[\"Impersonate legitimate IoT device\"]\n    E --> F\n    \n    F --> G[\"Establish trusted connection with control systems\"]\n    \n    G --> H[\"Inject malicious sensor data\"]\n    G --> I[\"Send unauthorized device commands\"]\n    \n    H --> J[\"Corrupt sensor readings\"]\n    I --> K[\"Execute unauthorized control actions\"]\n    \n    J --> L[\"Compromise integrity of device data and control systems\"]\n    K --> L\n    \n    A --> M[\"Obtain additional device identities\"]\n    M --> N[\"Scale attack across IoT network\"]\n    N --> F\n    \n    F --> O[\"Maintain persistent access\"]\n    O --> H\n    O --> I\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,M,N,O attack\n    class L goal\n    class A fact\n```",
+      "generated_content": "# Attack Tree for T001: Unauthorized Control of Charging Operations\n\n```mermaid\ngraph TD\n    A[\"Malicious attacker with compromised EVSE credentials\"] --> B[\"Establish connection to OCPP backend\"]\n    \n    B --> C[\"Authenticate using stolen credentials\"]\n    C --> D[\"Inject malicious OCPP messages\"]\n    \n    D --> E[\"Send unauthorized charging commands\"]\n    D --> F[\"Manipulate charging parameters\"]\n    D --> G[\"Send fake status updates\"]\n    \n    E --> H[\"Start/stop charging sessions without authorization\"]\n    E --> I[\"Override legitimate user commands\"]\n    \n    F --> J[\"Modify charging power levels\"]\n    F --> K[\"Alter billing/metering data\"]\n    F --> L[\"Change charging profiles\"]\n    \n    G --> M[\"Report false availability status\"]\n    G --> N[\"Spoof error conditions\"]\n    \n    H --> O[\"Unauthorized control of charging operations\"]\n    I --> O\n    J --> O\n    K --> O\n    L --> O\n    M --> O\n    N --> O\n    \n    O --> P[\"Integrity compromise of charging station infrastructure\"]\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N attack\n    class O,P goal\n    class A fact\n```",
       "validation": {
         "is_valid": true,
         "errors": [],
@@ -412,127 +406,91 @@
           "goal": 1,
           "fact": 1
         },
-        "connection_count": 19,
+        "connection_count": 21,
         "tech_mentions": 0
       }
     },
     {
       "threat_id": "T002",
-      "threat_category": "Cryptographic Failures",
-      "threat_description": "A nation-state actor with advanced persistent threat capabilities, can intercept and decrypt MQTT over TLS communications, which leads to exposure of sensitive healthcare and industrial data, resulting in reduced confidentiality of patient monitors and SCADA systems.",
-      "threat_statement": "A nation-state actor with advanced persistent threat capabilities, can intercept and decrypt MQTT over TLS communications, which leads to exposure of sensitive healthcare and industrial data, resulting in reduced confidentiality of patient monitors and SCADA systems.",
-      "threat_action": "intercept and decrypt MQTT over TLS communications",
-      "threatSource": "nation-state actor",
-      "prerequisites": "advanced persistent threat capabilities",
-      "threatAction": "intercept and decrypt MQTT over TLS communications",
-      "threatImpact": "exposure of sensitive healthcare and industrial data",
+      "threat_category": "Data Exposure",
+      "threat_description": "A rogue insider with access to DynamoDB encryption keys, can decrypt stored EVSE credentials, which leads to compromise of charging station authentication, resulting in reduced confidentiality of EVSE registry.",
+      "threat_statement": "A rogue insider with access to DynamoDB encryption keys, can decrypt stored EVSE credentials, which leads to compromise of charging station authentication, resulting in reduced confidentiality of EVSE registry.",
+      "threat_action": "decrypt stored EVSE credentials",
+      "threatSource": "rogue insider",
+      "prerequisites": "access to DynamoDB encryption keys",
+      "threatAction": "decrypt stored EVSE credentials",
+      "threatImpact": "compromise of charging station authentication",
       "impactedGoal": "confidentiality",
-      "impactedAssets": "patient monitors and SCADA systems",
+      "impactedAssets": "EVSE registry",
       "priority": "High",
-      "mermaid_code": "graph TD\n    A[\"Nation-state actor with APT capabilities\"] --> B[\"Reconnaissance Phase\"]\n    A --> C[\"Position for Interception\"]\n    B --> D[\"Identify MQTT Infrastructure\"]\n    B --> E[\"Map Network Topology\"]\n    D --> F[\"Locate Patient Monitors\"]\n    D --> G[\"Locate SCADA Systems\"]\n    C --> H[\"Compromise Network Position\"]\n    C --> I[\"Deploy Malicious Infrastructure\"]\n    H --> J[\"BGP Hijacking\"]\n    H --> K[\"DNS Poisoning\"]\n    H --> L[\"ARP Spoofing\"]\n    I --> M[\"Rogue Certificate Authority\"]\n    I --> N[\"Man-in-the-Middle Proxy\"]\n    E --> O[\"Traffic Interception\"]\n    F --> O\n    G --> O\n    J --> O\n    K --> O\n    L --> O\n    O --> P[\"TLS Downgrade Attack\"]\n    O --> Q[\"Certificate Manipulation\"]\n    O --> R[\"Exploit Weak Cipher Suites\"]\n    M --> Q\n    N --> P\n    P --> S[\"Decrypt MQTT Traffic\"]\n    Q --> S\n    R --> S\n    S --> T[\"Extract Healthcare Data\"]\n    S --> U[\"Extract Industrial Control Data\"]\n    T --> V[\"Access Patient Monitor Readings\"]\n    U --> W[\"Access SCADA Commands and Telemetry\"]\n    V --> X[\"Exposure of Sensitive Healthcare and Industrial Data\"]\n    W --> X\n    X --> Y[\"Confidentiality Breach of Patient Monitors and SCADA Systems\"]\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X attack\n    class Y goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "mermaid_code": "graph TD\n    A[\"Rogue insider with access to DynamoDB encryption keys\"] --> B[\"Locate encrypted EVSE credentials in DynamoDB\"]\n    A --> C[\"Obtain encryption key material\"]\n    B --> D[\"Extract encrypted credential data\"]\n    C --> E[\"Access key management system\"]\n    C --> F[\"Retrieve keys from local cachememory\"]\n    D --> G[\"Decrypt EVSE credentials\"]\n    E --> G\n    F --> G\n    G --> H[\"Extract charging station authentication tokens\"]\n    G --> I[\"Extract API keys and secrets\"]\n    H --> J[\"Impersonate legitimate charging stations\"]\n    I --> J\n    J --> K[\"Compromise charging station authentication\"]\n    K --> L[\"Unauthorized access to EVSE registry\"]\n    K --> M[\"Manipulate charging station data\"]\n    L --> N[\"Complete compromise of EVSE registry confidentiality\"]\n    M --> N\n    B --> O[\"Query DynamoDB tables directly\"]\n    O --> D\n    A --> P[\"Abuse legitimate access privileges\"]\n    P --> B\n    P --> C\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,O,P attack\n    class N goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
       "attack_steps": [
         {
           "node_id": "A",
-          "description": "Nation-state actor with APT capabilities"
+          "description": "Rogue insider with access to DynamoDB encryption keys"
         },
         {
           "node_id": "B",
-          "description": "Reconnaissance Phase"
+          "description": "Locate encrypted EVSE credentials in DynamoDB"
         },
         {
           "node_id": "C",
-          "description": "Position for Interception"
+          "description": "Obtain encryption key material"
         },
         {
           "node_id": "D",
-          "description": "Identify MQTT Infrastructure"
+          "description": "Extract encrypted credential data"
         },
         {
           "node_id": "E",
-          "description": "Map Network Topology"
+          "description": "Access key management system"
         },
         {
           "node_id": "F",
-          "description": "Locate Patient Monitors"
+          "description": "Retrieve keys from local cachememory"
         },
         {
           "node_id": "G",
-          "description": "Locate SCADA Systems"
+          "description": "Decrypt EVSE credentials"
         },
         {
           "node_id": "H",
-          "description": "Compromise Network Position"
+          "description": "Extract charging station authentication tokens"
         },
         {
           "node_id": "I",
-          "description": "Deploy Malicious Infrastructure"
+          "description": "Extract API keys and secrets"
         },
         {
           "node_id": "J",
-          "description": "BGP Hijacking"
+          "description": "Impersonate legitimate charging stations"
         },
         {
           "node_id": "K",
-          "description": "DNS Poisoning"
+          "description": "Compromise charging station authentication"
         },
         {
           "node_id": "L",
-          "description": "ARP Spoofing"
+          "description": "Unauthorized access to EVSE registry"
         },
         {
           "node_id": "M",
-          "description": "Rogue Certificate Authority"
+          "description": "Manipulate charging station data"
         },
         {
           "node_id": "N",
-          "description": "Man-in-the-Middle Proxy"
+          "description": "Complete compromise of EVSE registry confidentiality"
         },
         {
           "node_id": "O",
-          "description": "Traffic Interception"
+          "description": "Query DynamoDB tables directly"
         },
         {
           "node_id": "P",
-          "description": "TLS Downgrade Attack"
-        },
-        {
-          "node_id": "Q",
-          "description": "Certificate Manipulation"
-        },
-        {
-          "node_id": "R",
-          "description": "Exploit Weak Cipher Suites"
-        },
-        {
-          "node_id": "S",
-          "description": "Decrypt MQTT Traffic"
-        },
-        {
-          "node_id": "T",
-          "description": "Extract Healthcare Data"
-        },
-        {
-          "node_id": "U",
-          "description": "Extract Industrial Control Data"
-        },
-        {
-          "node_id": "V",
-          "description": "Access Patient Monitor Readings"
-        },
-        {
-          "node_id": "W",
-          "description": "Access SCADA Commands and Telemetry"
-        },
-        {
-          "node_id": "X",
-          "description": "Exposure of Sensitive Healthcare and Industrial Data"
-        },
-        {
-          "node_id": "Y",
-          "description": "Confidentiality Breach of Patient Monitors and SCADA Systems"
+          "description": "Abuse legitimate access privileges"
         }
       ],
-      "generated_content": "# Attack Tree for Threat T002: MQTT TLS Interception by Nation-State Actor\n\n```mermaid\ngraph TD\n    A[\"Nation-state actor with APT capabilities\"] --> B[\"Reconnaissance Phase\"]\n    A --> C[\"Position for Interception\"]\n    \n    B --> D[\"Identify MQTT Infrastructure\"]\n    B --> E[\"Map Network Topology\"]\n    \n    D --> F[\"Locate Patient Monitors\"]\n    D --> G[\"Locate SCADA Systems\"]\n    \n    C --> H[\"Compromise Network Position\"]\n    C --> I[\"Deploy Malicious Infrastructure\"]\n    \n    H --> J[\"BGP Hijacking\"]\n    H --> K[\"DNS Poisoning\"]\n    H --> L[\"ARP Spoofing\"]\n    \n    I --> M[\"Rogue Certificate Authority\"]\n    I --> N[\"Man-in-the-Middle Proxy\"]\n    \n    E --> O[\"Traffic Interception\"]\n    F --> O\n    G --> O\n    J --> O\n    K --> O\n    L --> O\n    \n    O --> P[\"TLS Downgrade Attack\"]\n    O --> Q[\"Certificate Manipulation\"]\n    O --> R[\"Exploit Weak Cipher Suites\"]\n    \n    M --> Q\n    N --> P\n    \n    P --> S[\"Decrypt MQTT Traffic\"]\n    Q --> S\n    R --> S\n    \n    S --> T[\"Extract Healthcare Data\"]\n    S --> U[\"Extract Industrial Control Data\"]\n    \n    T --> V[\"Access Patient Monitor Readings\"]\n    U --> W[\"Access SCADA Commands and Telemetry\"]\n    \n    V --> X[\"Exposure of Sensitive Healthcare and Industrial Data\"]\n    W --> X\n    \n    X --> Y[\"Confidentiality Breach of Patient Monitors and SCADA Systems\"]\n\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X attack\n    class Y goal\n    class A fact\n```",
+      "generated_content": "# Attack Tree for T002: Rogue Insider EVSE Credential Decryption\n\n```mermaid\ngraph TD\n    A[\"Rogue insider with access to DynamoDB encryption keys\"] --> B[\"Locate encrypted EVSE credentials in DynamoDB\"]\n    A --> C[\"Obtain encryption key material\"]\n    \n    B --> D[\"Extract encrypted credential data\"]\n    C --> E[\"Access key management system\"]\n    C --> F[\"Retrieve keys from local cache/memory\"]\n    \n    D --> G[\"Decrypt EVSE credentials\"]\n    E --> G\n    F --> G\n    \n    G --> H[\"Extract charging station authentication tokens\"]\n    G --> I[\"Extract API keys and secrets\"]\n    \n    H --> J[\"Impersonate legitimate charging stations\"]\n    I --> J\n    \n    J --> K[\"Compromise charging station authentication\"]\n    \n    K --> L[\"Unauthorized access to EVSE registry\"]\n    K --> M[\"Manipulate charging station data\"]\n    \n    L --> N[\"Complete compromise of EVSE registry confidentiality\"]\n    M --> N\n    \n    B --> O[\"Query DynamoDB tables directly\"]\n    O --> D\n    \n    A --> P[\"Abuse legitimate access privileges\"]\n    P --> B\n    P --> C\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,O,P attack\n    class N goal\n    class A fact\n```",
       "validation": {
         "is_valid": true,
         "errors": [],
@@ -545,232 +503,111 @@
           "goal": 1,
           "fact": 1
         },
-        "connection_count": 34,
+        "connection_count": 22,
         "tech_mentions": 0
       }
     },
     {
       "threat_id": "T003",
-      "threat_category": "Supply Chain",
-      "threat_description": "A malicious insider with administrative access to AWS IoT Core, can push malicious firmware updates through the OTA system, which leads to complete device compromise and potential safety hazards, resulting in reduced integrity of industrial controllers and healthcare devices.",
-      "threat_statement": "A malicious insider with administrative access to AWS IoT Core, can push malicious firmware updates through the OTA system, which leads to complete device compromise and potential safety hazards, resulting in reduced integrity of industrial controllers and healthcare devices.",
-      "threat_action": "push malicious firmware updates through the OTA system",
-      "threatSource": "malicious insider",
-      "prerequisites": "administrative access to AWS IoT Core",
-      "threatAction": "push malicious firmware updates through the OTA system",
-      "threatImpact": "complete device compromise and potential safety hazards",
+      "threat_category": "Communication Security",
+      "threat_description": "A sophisticated attacker with network interception capabilities, can perform man-in-the-middle attacks on OCPP communications, which leads to manipulation of charging transactions, resulting in reduced integrity of transaction management and audit data.",
+      "threat_statement": "A sophisticated attacker with network interception capabilities, can perform man-in-the-middle attacks on OCPP communications, which leads to manipulation of charging transactions, resulting in reduced integrity of transaction management and audit data.",
+      "threat_action": "perform man-in-the-middle attacks on OCPP communications",
+      "threatSource": "sophisticated attacker",
+      "prerequisites": "network interception capabilities",
+      "threatAction": "perform man-in-the-middle attacks on OCPP communications",
+      "threatImpact": "manipulation of charging transactions",
       "impactedGoal": "integrity",
-      "impactedAssets": "industrial controllers and healthcare devices",
+      "impactedAssets": "transaction management and audit data",
       "priority": "High",
-      "mermaid_code": "graph TD\n    A[\"Malicious insider with administrative access to AWS IoT Core\"] --> B[\"Reconnaissance of OTA infrastructure\"]\n    A --> C[\"Access AWS IoT Core console\"]\n    B --> D[\"Identify target device fleet\"]\n    B --> E[\"Map OTA update workflows\"]\n    C --> F[\"Access IoT Jobs service\"]\n    C --> G[\"Access device registry\"]\n    D --> H[\"Select critical industrial controllers\"]\n    D --> I[\"Select critical healthcare devices\"]\n    E --> J[\"Understand firmware validation process\"]\n    F --> K[\"Create malicious firmware package\"]\n    G --> K\n    J --> K\n    K --> L[\"Craft backdoored firmware\"]\n    K --> M[\"Disable or bypass signature verification\"]\n    L --> N[\"Embed persistent access mechanisms\"]\n    L --> O[\"Insert malicious control logic\"]\n    M --> P[\"Create fraudulent signing certificate\"]\n    M --> Q[\"Modify firmware verification settings\"]\n    H --> R[\"Deploy malicious OTA job to industrial controllers\"]\n    I --> S[\"Deploy malicious OTA job to healthcare devices\"]\n    N --> R\n    O --> R\n    P --> R\n    Q --> R\n    N --> S\n    O --> S\n    P --> S\n    Q --> S\n    R --> T[\"Devices download and install malicious firmware\"]\n    S --> T\n    T --> U[\"Complete device compromise\"]\n    U --> V[\"Remote control of industrial processes\"]\n    U --> W[\"Manipulation of healthcare device functions\"]\n    V --> X[\"Safety hazards in industrial environment\"]\n    W --> Y[\"Patient safety risks\"]\n    X --> Z[\"Integrity loss of industrial controllers and healthcare devices\"]\n    Y --> Z\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y attack\n    class Z goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "mermaid_code": "graph TD\n    A[\"Sophisticated attacker with network interception capabilities\"] --> B[\"Network positioning\"]\n    A --> C[\"Protocol analysis\"]\n    B --> D[\"Gain physical access to charging network\"]\n    B --> E[\"Compromise network infrastructure\"]\n    D --> F[\"Install rogue access point\"]\n    D --> G[\"Tap into Ethernet connections\"]\n    E --> H[\"Exploit router vulnerabilities\"]\n    E --> I[\"Compromise WiFi network\"]\n    C --> J[\"Analyze OCPP protocol structure\"]\n    J --> K[\"Identify unencrypted OCPP traffic\"]\n    J --> L[\"Map OCPP message formats\"]\n    F --> M[\"Intercept OCPP communications\"]\n    G --> M\n    H --> M\n    I --> M\n    K --> M\n    M --> N[\"Perform man-in-the-middle attack\"]\n    L --> N\n    N --> O[\"Inject malicious OCPP messages\"]\n    N --> P[\"Modify transaction data in transit\"]\n    N --> Q[\"Alter meter values\"]\n    O --> R[\"Manipulate charging transactions\"]\n    P --> R\n    Q --> R\n    R --> S[\"Corrupt transaction management data\"]\n    R --> T[\"Falsify audit logs\"]\n    S --> U[\"Loss of transaction integrity\"]\n    T --> U\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T attack\n    class U goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
       "attack_steps": [
         {
           "node_id": "A",
-          "description": "Malicious insider with administrative access to AWS IoT Core"
+          "description": "Sophisticated attacker with network interception capabilities"
         },
         {
           "node_id": "B",
-          "description": "Reconnaissance of OTA infrastructure"
+          "description": "Network positioning"
         },
         {
           "node_id": "C",
-          "description": "Access AWS IoT Core console"
+          "description": "Protocol analysis"
         },
         {
           "node_id": "D",
-          "description": "Identify target device fleet"
+          "description": "Gain physical access to charging network"
         },
         {
           "node_id": "E",
-          "description": "Map OTA update workflows"
+          "description": "Compromise network infrastructure"
         },
         {
           "node_id": "F",
-          "description": "Access IoT Jobs service"
+          "description": "Install rogue access point"
         },
         {
           "node_id": "G",
-          "description": "Access device registry"
+          "description": "Tap into Ethernet connections"
         },
         {
           "node_id": "H",
-          "description": "Select critical industrial controllers"
+          "description": "Exploit router vulnerabilities"
         },
         {
           "node_id": "I",
-          "description": "Select critical healthcare devices"
+          "description": "Compromise WiFi network"
         },
         {
           "node_id": "J",
-          "description": "Understand firmware validation process"
+          "description": "Analyze OCPP protocol structure"
         },
         {
           "node_id": "K",
-          "description": "Create malicious firmware package"
+          "description": "Identify unencrypted OCPP traffic"
         },
         {
           "node_id": "L",
-          "description": "Craft backdoored firmware"
+          "description": "Map OCPP message formats"
         },
         {
           "node_id": "M",
-          "description": "Disable or bypass signature verification"
+          "description": "Intercept OCPP communications"
         },
         {
           "node_id": "N",
-          "description": "Embed persistent access mechanisms"
+          "description": "Perform man-in-the-middle attack"
         },
         {
           "node_id": "O",
-          "description": "Insert malicious control logic"
+          "description": "Inject malicious OCPP messages"
         },
         {
           "node_id": "P",
-          "description": "Create fraudulent signing certificate"
+          "description": "Modify transaction data in transit"
         },
         {
           "node_id": "Q",
-          "description": "Modify firmware verification settings"
+          "description": "Alter meter values"
         },
         {
           "node_id": "R",
-          "description": "Deploy malicious OTA job to industrial controllers"
+          "description": "Manipulate charging transactions"
         },
         {
           "node_id": "S",
-          "description": "Deploy malicious OTA job to healthcare devices"
+          "description": "Corrupt transaction management data"
         },
         {
           "node_id": "T",
-          "description": "Devices download and install malicious firmware"
+          "description": "Falsify audit logs"
         },
         {
           "node_id": "U",
-          "description": "Complete device compromise"
-        },
-        {
-          "node_id": "V",
-          "description": "Remote control of industrial processes"
-        },
-        {
-          "node_id": "W",
-          "description": "Manipulation of healthcare device functions"
-        },
-        {
-          "node_id": "X",
-          "description": "Safety hazards in industrial environment"
-        },
-        {
-          "node_id": "Y",
-          "description": "Patient safety risks"
-        },
-        {
-          "node_id": "Z",
-          "description": "Integrity loss of industrial controllers and healthcare devices"
+          "description": "Loss of transaction integrity"
         }
       ],
-      "generated_content": "# Attack Tree for Threat T003: Malicious Insider OTA Firmware Attack\n\n```mermaid\ngraph TD\n    A[\"Malicious insider with administrative access to AWS IoT Core\"] --> B[\"Reconnaissance of OTA infrastructure\"]\n    A --> C[\"Access AWS IoT Core console\"]\n    \n    B --> D[\"Identify target device fleet\"]\n    B --> E[\"Map OTA update workflows\"]\n    \n    C --> F[\"Access IoT Jobs service\"]\n    C --> G[\"Access device registry\"]\n    \n    D --> H[\"Select critical industrial controllers\"]\n    D --> I[\"Select critical healthcare devices\"]\n    \n    E --> J[\"Understand firmware validation process\"]\n    \n    F --> K[\"Create malicious firmware package\"]\n    G --> K\n    J --> K\n    \n    K --> L[\"Craft backdoored firmware\"]\n    K --> M[\"Disable or bypass signature verification\"]\n    \n    L --> N[\"Embed persistent access mechanisms\"]\n    L --> O[\"Insert malicious control logic\"]\n    \n    M --> P[\"Create fraudulent signing certificate\"]\n    M --> Q[\"Modify firmware verification settings\"]\n    \n    H --> R[\"Deploy malicious OTA job to industrial controllers\"]\n    I --> S[\"Deploy malicious OTA job to healthcare devices\"]\n    \n    N --> R\n    O --> R\n    P --> R\n    Q --> R\n    \n    N --> S\n    O --> S\n    P --> S\n    Q --> S\n    \n    R --> T[\"Devices download and install malicious firmware\"]\n    S --> T\n    \n    T --> U[\"Complete device compromise\"]\n    \n    U --> V[\"Remote control of industrial processes\"]\n    U --> W[\"Manipulation of healthcare device functions\"]\n    \n    V --> X[\"Safety hazards in industrial environment\"]\n    W --> Y[\"Patient safety risks\"]\n    \n    X --> Z[\"Integrity loss of industrial controllers and healthcare devices\"]\n    Y --> Z\n\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y attack\n    class Z goal\n    class A fact\n```",
-      "validation": {
-        "is_valid": true,
-        "errors": [],
-        "warnings": [
-          "Only 1 attack nodes (recommended: 5+)",
-          "Only 1 fact nodes (recommended: 3+)"
-        ],
-        "node_counts": {
-          "attack": 1,
-          "goal": 1,
-          "fact": 1
-        },
-        "connection_count": 37,
-        "tech_mentions": 0
-      }
-    },
-    {
-      "threat_id": "T004",
-      "threat_category": "Denial of Service",
-      "threat_description": "A cybercriminal with botnet resources, can launch distributed denial-of-service attacks against the communication gateway, which leads to disruption of critical device communications, resulting in reduced availability of smart meters and vehicle telematics systems.",
-      "threat_statement": "A cybercriminal with botnet resources, can launch distributed denial-of-service attacks against the communication gateway, which leads to disruption of critical device communications, resulting in reduced availability of smart meters and vehicle telematics systems.",
-      "threat_action": "launch distributed denial-of-service attacks against the communication gateway",
-      "threatSource": "cybercriminal",
-      "prerequisites": "botnet resources",
-      "threatAction": "launch distributed denial-of-service attacks against the communication gateway",
-      "threatImpact": "disruption of critical device communications",
-      "impactedGoal": "availability",
-      "impactedAssets": "smart meters and vehicle telematics systems",
-      "priority": "High",
-      "mermaid_code": "graph TD\n    A[\"Cybercriminal with botnet resources\"] --> B[\"Reconnaissance of communication gateway\"]\n    A --> C[\"Botnet infrastructure preparation\"]\n    B --> D[\"Identify gateway IP addresses\"]\n    B --> E[\"Map network topology\"]\n    B --> F[\"Discover bandwidth capacity\"]\n    C --> G[\"Recruitcompromise IoT devices\"]\n    C --> H[\"Establish command and control servers\"]\n    C --> I[\"Deploy DDoS malware\"]\n    D --> J[\"Launch volumetric attack\"]\n    E --> J\n    F --> J\n    G --> J\n    H --> J\n    I --> J\n    D --> K[\"Launch protocol exploitation attack\"]\n    E --> K\n    H --> K\n    I --> K\n    J --> L[\"Saturate gateway bandwidth\"]\n    K --> L\n    J --> M[\"Exhaust gateway resources\"]\n    K --> M\n    L --> N[\"Disruption of critical device communications\"]\n    M --> N\n    N --> O[\"Smart meters lose connectivity\"]\n    N --> P[\"Vehicle telematics systems disconnected\"]\n    O --> Q[\"Reduced availability of smart meters and vehicle telematics systems\"]\n    P --> Q\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P attack\n    class Q goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
-      "attack_steps": [
-        {
-          "node_id": "A",
-          "description": "Cybercriminal with botnet resources"
-        },
-        {
-          "node_id": "B",
-          "description": "Reconnaissance of communication gateway"
-        },
-        {
-          "node_id": "C",
-          "description": "Botnet infrastructure preparation"
-        },
-        {
-          "node_id": "D",
-          "description": "Identify gateway IP addresses"
-        },
-        {
-          "node_id": "E",
-          "description": "Map network topology"
-        },
-        {
-          "node_id": "F",
-          "description": "Discover bandwidth capacity"
-        },
-        {
-          "node_id": "G",
-          "description": "Recruitcompromise IoT devices"
-        },
-        {
-          "node_id": "H",
-          "description": "Establish command and control servers"
-        },
-        {
-          "node_id": "I",
-          "description": "Deploy DDoS malware"
-        },
-        {
-          "node_id": "J",
-          "description": "Launch volumetric attack"
-        },
-        {
-          "node_id": "K",
-          "description": "Launch protocol exploitation attack"
-        },
-        {
-          "node_id": "L",
-          "description": "Saturate gateway bandwidth"
-        },
-        {
-          "node_id": "M",
-          "description": "Exhaust gateway resources"
-        },
-        {
-          "node_id": "N",
-          "description": "Disruption of critical device communications"
-        },
-        {
-          "node_id": "O",
-          "description": "Smart meters lose connectivity"
-        },
-        {
-          "node_id": "P",
-          "description": "Vehicle telematics systems disconnected"
-        },
-        {
-          "node_id": "Q",
-          "description": "Reduced availability of smart meters and vehicle telematics systems"
-        }
-      ],
-      "generated_content": "# Attack Tree for Threat T004: DDoS Attack on Communication Gateway\n\n```mermaid\ngraph TD\n    A[\"Cybercriminal with botnet resources\"] --> B[\"Reconnaissance of communication gateway\"]\n    A --> C[\"Botnet infrastructure preparation\"]\n    \n    B --> D[\"Identify gateway IP addresses\"]\n    B --> E[\"Map network topology\"]\n    B --> F[\"Discover bandwidth capacity\"]\n    \n    C --> G[\"Recruit/compromise IoT devices\"]\n    C --> H[\"Establish command and control servers\"]\n    C --> I[\"Deploy DDoS malware\"]\n    \n    D --> J[\"Launch volumetric attack\"]\n    E --> J\n    F --> J\n    G --> J\n    H --> J\n    I --> J\n    \n    D --> K[\"Launch protocol exploitation attack\"]\n    E --> K\n    H --> K\n    I --> K\n    \n    J --> L[\"Saturate gateway bandwidth\"]\n    K --> L\n    \n    J --> M[\"Exhaust gateway resources\"]\n    K --> M\n    \n    L --> N[\"Disruption of critical device communications\"]\n    M --> N\n    \n    N --> O[\"Smart meters lose connectivity\"]\n    N --> P[\"Vehicle telematics systems disconnected\"]\n    \n    O --> Q[\"Reduced availability of smart meters and vehicle telematics systems\"]\n    P --> Q\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P attack\n    class Q goal\n    class A fact\n```",
+      "generated_content": "# Attack Tree for T003: OCPP Man-in-the-Middle Attack\n\n```mermaid\ngraph TD\n    A[\"Sophisticated attacker with network interception capabilities\"] --> B[\"Network positioning\"]\n    A --> C[\"Protocol analysis\"]\n    \n    B --> D[\"Gain physical access to charging network\"]\n    B --> E[\"Compromise network infrastructure\"]\n    \n    D --> F[\"Install rogue access point\"]\n    D --> G[\"Tap into Ethernet connections\"]\n    \n    E --> H[\"Exploit router vulnerabilities\"]\n    E --> I[\"Compromise WiFi network\"]\n    \n    C --> J[\"Analyze OCPP protocol structure\"]\n    J --> K[\"Identify unencrypted OCPP traffic\"]\n    J --> L[\"Map OCPP message formats\"]\n    \n    F --> M[\"Intercept OCPP communications\"]\n    G --> M\n    H --> M\n    I --> M\n    K --> M\n    \n    M --> N[\"Perform man-in-the-middle attack\"]\n    L --> N\n    \n    N --> O[\"Inject malicious OCPP messages\"]\n    N --> P[\"Modify transaction data in transit\"]\n    N --> Q[\"Alter meter values\"]\n    \n    O --> R[\"Manipulate charging transactions\"]\n    P --> R\n    Q --> R\n    \n    R --> S[\"Corrupt transaction management data\"]\n    R --> T[\"Falsify audit logs\"]\n    \n    S --> U[\"Loss of transaction integrity\"]\n    T --> U\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T attack\n    class U goal\n    class A fact\n```",
       "validation": {
         "is_valid": true,
         "errors": [],
@@ -784,6 +621,95 @@
           "fact": 1
         },
         "connection_count": 28,
+        "tech_mentions": 0
+      }
+    },
+    {
+      "threat_id": "T004",
+      "threat_category": "Certificate Management",
+      "threat_description": "A malicious actor with compromised AWS Certificate Manager access, can issue fraudulent certificates for unauthorized EVSEs, which leads to rogue charging stations joining the network, resulting in reduced integrity of EVSE authentication system.",
+      "threat_statement": "A malicious actor with compromised AWS Certificate Manager access, can issue fraudulent certificates for unauthorized EVSEs, which leads to rogue charging stations joining the network, resulting in reduced integrity of EVSE authentication system.",
+      "threat_action": "issue fraudulent certificates for unauthorized EVSEs",
+      "threatSource": "malicious actor",
+      "prerequisites": "compromised AWS Certificate Manager access",
+      "threatAction": "issue fraudulent certificates for unauthorized EVSEs",
+      "threatImpact": "rogue charging stations joining the network",
+      "impactedGoal": "integrity",
+      "impactedAssets": "EVSE authentication system",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"Malicious actor with compromised AWS Certificate Manager access\"] --> B[\"Enumerate existing EVSE certificates\"]\n    A --> C[\"Analyze certificate issuance patterns\"]\n    B --> D[\"Identify valid certificate parameters\"]\n    C --> D\n    D --> E[\"Craft fraudulent certificate requests\"]\n    E --> F[\"Issue unauthorized EVSE certificates via ACM\"]\n    F --> G[\"Deploy rogue charging stations\"]\n    F --> H[\"Clone legitimate EVSE identities\"]\n    G --> I[\"Present fraudulent certificates to network\"]\n    H --> I\n    I --> J[\"Bypass EVSE authentication checks\"]\n    J --> K[\"Rogue charging stations join network\"]\n    K --> L[\"Compromise integrity of EVSE authentication system\"]\n    A --> M[\"Exploit ACM API permissions\"]\n    M --> N[\"Automate certificate generation\"]\n    N --> F\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,M,N attack\n    class L goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "Malicious actor with compromised AWS Certificate Manager access"
+        },
+        {
+          "node_id": "B",
+          "description": "Enumerate existing EVSE certificates"
+        },
+        {
+          "node_id": "C",
+          "description": "Analyze certificate issuance patterns"
+        },
+        {
+          "node_id": "D",
+          "description": "Identify valid certificate parameters"
+        },
+        {
+          "node_id": "E",
+          "description": "Craft fraudulent certificate requests"
+        },
+        {
+          "node_id": "F",
+          "description": "Issue unauthorized EVSE certificates via ACM"
+        },
+        {
+          "node_id": "G",
+          "description": "Deploy rogue charging stations"
+        },
+        {
+          "node_id": "H",
+          "description": "Clone legitimate EVSE identities"
+        },
+        {
+          "node_id": "I",
+          "description": "Present fraudulent certificates to network"
+        },
+        {
+          "node_id": "J",
+          "description": "Bypass EVSE authentication checks"
+        },
+        {
+          "node_id": "K",
+          "description": "Rogue charging stations join network"
+        },
+        {
+          "node_id": "L",
+          "description": "Compromise integrity of EVSE authentication system"
+        },
+        {
+          "node_id": "M",
+          "description": "Exploit ACM API permissions"
+        },
+        {
+          "node_id": "N",
+          "description": "Automate certificate generation"
+        }
+      ],
+      "generated_content": "# Attack Tree for Threat T004: Fraudulent EVSE Certificate Issuance\n\n```mermaid\ngraph TD\n    A[\"Malicious actor with compromised AWS Certificate Manager access\"] --> B[\"Enumerate existing EVSE certificates\"]\n    A --> C[\"Analyze certificate issuance patterns\"]\n    \n    B --> D[\"Identify valid certificate parameters\"]\n    C --> D\n    \n    D --> E[\"Craft fraudulent certificate requests\"]\n    E --> F[\"Issue unauthorized EVSE certificates via ACM\"]\n    \n    F --> G[\"Deploy rogue charging stations\"]\n    F --> H[\"Clone legitimate EVSE identities\"]\n    \n    G --> I[\"Present fraudulent certificates to network\"]\n    H --> I\n    \n    I --> J[\"Bypass EVSE authentication checks\"]\n    J --> K[\"Rogue charging stations join network\"]\n    \n    K --> L[\"Compromise integrity of EVSE authentication system\"]\n    \n    A --> M[\"Exploit ACM API permissions\"]\n    M --> N[\"Automate certificate generation\"]\n    N --> F\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,M,N attack\n    class L goal\n    class A fact\n```",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 16,
         "tech_mentions": 0
       }
     }

@@ -81,6 +81,15 @@ class ThreatForestWizard:
         # Welcome
         self._show_welcome()
         
+        # Step 0: Mode Selection
+        mode = self._select_mode()
+        
+        if mode == "enrich":
+            # TTC Enrichment mode - skip to enrichment
+            await self._run_enrichment_only()
+            return
+        
+        # Full analysis mode - continue with normal flow
         # Step 1: AWS Setup
         await self._setup_aws_credentials()
         
@@ -101,6 +110,34 @@ class ThreatForestWizard:
             await self._run_analysis()
         else:
             self.console.print("👋 Analysis cancelled. Run the wizard again when ready!")
+    
+    def _select_mode(self):
+        """Select wizard mode"""
+        self.console.print("\n🎯 Select Mode", style="bold blue")
+        self.console.print("Choose what you want to do:")
+        
+        table = Table(title="Available Modes")
+        table.add_column("Option", style="cyan")
+        table.add_column("Mode", style="green")
+        table.add_column("Description", style="yellow")
+        
+        table.add_row("1", "Full Analysis", "Generate attack trees from project (complete workflow)")
+        table.add_row("2", "TTC Enrichment", "Enrich existing attack trees with technique mappings")
+        
+        self.console.print(table)
+        
+        choice = Prompt.ask(
+            "Select mode",
+            choices=["1", "2"],
+            default="1"
+        )
+        
+        if choice == "2":
+            self.logger.info("User selected TTC enrichment mode")
+            return "enrich"
+        else:
+            self.logger.info("User selected full analysis mode")
+            return "full"
     
     def _show_welcome(self):
         """Show welcome message"""
@@ -708,8 +745,11 @@ Let's get started with the setup!
             # Save attack trees to disk
             self._save_attack_trees(trees_result, output_dir)
             
-            # Skip TTC mapping but continue with summary generation
-            self.console.print("⏭️  Skipping MITRE ATT&CK mapping as requested")
+            # Step 3.5: TTC Enrichment (Optional)
+            if Confirm.ask("\n🎯 Enrich attack trees with TTC technique mappings?"):
+                await self._enrich_with_ttc(output_dir)
+            else:
+                self.console.print("⏭️  Skipping TTC enrichment")
             
             # Step 4: Summary Generation (without TTC mapping)
             with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}")) as progress:
@@ -856,6 +896,209 @@ Review this attack tree to:
                 print(f"  - {threat_id}: {error}")
         
         print(f"🌳 Attack tree generation complete: {len(successful_trees)} successful, {len(failed_trees)} failed")
+    
+    async def _enrich_with_ttc(self, output_dir: Path):
+        """Enrich attack trees with TTC technique mappings"""
+        from modules.ttc_mappings import TTCMatcher, AttackTreeEnricher
+        
+        self.console.print("\n🎯 TTC Enrichment", style="bold blue")
+        
+        # Find attack tree files
+        project_name = Path(self.config["project_path"]).name
+        attack_trees_dir = output_dir / "attack_trees" / project_name
+        
+        if not attack_trees_dir.exists():
+            self.console.print("❌ No attack trees found to enrich")
+            return
+        
+        attack_tree_files = list(attack_trees_dir.glob("attack_tree_*.md"))
+        
+        if not attack_tree_files:
+            self.console.print("❌ No attack tree files found")
+            return
+        
+        self.console.print(f"📁 Found {len(attack_tree_files)} attack trees to enrich")
+        
+        # Initialize matcher with pre-generated embeddings
+        embeddings_path = Path(__file__).parent / "modules" / "ttc_mappings" / "data" / "ttc_embeddings.json"
+        
+        if not embeddings_path.exists():
+            self.console.print(f"❌ Embeddings file not found: {embeddings_path}")
+            self.console.print("💡 Run: python -m modules.ttc_mappings.cli create stix-data/aaf-bundle.json -o {embeddings_path}")
+            return
+        
+        with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}")) as progress:
+            task = progress.add_task("🔧 Loading TTC matcher...", total=None)
+            
+            try:
+                matcher = TTCMatcher(
+                    embeddings_path=str(embeddings_path),
+                    min_similarity=0.35
+                )
+                enricher = AttackTreeEnricher(matcher)
+                
+                progress.update(task, description="✅ TTC matcher loaded")
+            except Exception as e:
+                progress.update(task, description=f"❌ Failed to load matcher: {e}")
+                self.console.print(f"❌ Error: {e}")
+                return
+        
+        # Create enriched output directory
+        enriched_dir = attack_trees_dir.parent / f"{project_name}_enriched"
+        enriched_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Enrich each attack tree
+        enriched_count = 0
+        failed_count = 0
+        
+        with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}")) as progress:
+            task = progress.add_task(f"🎯 Enriching {len(attack_tree_files)} attack trees...", total=len(attack_tree_files))
+            
+            for tree_file in attack_tree_files:
+                try:
+                    output_file = enriched_dir / f"enriched_{tree_file.name}"
+                    enricher.enrich_file(str(tree_file), str(output_file))
+                    enriched_count += 1
+                    progress.advance(task)
+                except Exception as e:
+                    self.logger.error(f"Failed to enrich {tree_file.name}: {e}")
+                    failed_count += 1
+                    progress.advance(task)
+            
+            progress.update(task, description=f"✅ Enrichment complete: {enriched_count} successful, {failed_count} failed")
+        
+        self.console.print(f"\n✅ Enriched {enriched_count} attack trees")
+        self.console.print(f"📁 Enriched files saved to: {enriched_dir}")
+        
+        if failed_count > 0:
+            self.console.print(f"⚠️  {failed_count} files failed to enrich")
+    
+    async def _run_enrichment_only(self):
+        """Run TTC enrichment on existing attack trees"""
+        from modules.ttc_mappings import TTCMatcher, AttackTreeEnricher
+        
+        self.console.print("\n🎯 TTC Enrichment Mode", style="bold blue")
+        self.console.print("This mode enriches existing attack trees with TTC technique mappings.")
+        
+        # Use threatforest-strands/output as base directory
+        strands_root = Path(__file__).parent.parent
+        output_dir = strands_root / "output" / "attack_trees"
+        
+        if not output_dir.exists():
+            self.console.print(f"❌ Attack trees directory not found: {output_dir}")
+            self.console.print("💡 Run full analysis first to generate attack trees")
+            return
+        
+        # Find project directories
+        project_dirs = [d for d in output_dir.iterdir() if d.is_dir() and not d.name.endswith("_enriched")]
+        
+        if not project_dirs:
+            self.console.print(f"❌ No project directories found in {output_dir}")
+            return
+        
+        # Show available projects
+        self.console.print("\n📁 Available Projects:")
+        for i, proj_dir in enumerate(project_dirs, 1):
+            tree_count = len(list(proj_dir.glob("attack_tree_*.md")))
+            self.console.print(f"  {i}. {proj_dir.name} ({tree_count} attack trees)")
+        
+        if len(project_dirs) == 1:
+            selected_dir = project_dirs[0]
+            self.console.print(f"\n✅ Auto-selected: {selected_dir.name}")
+        else:
+            choice = Prompt.ask(
+                "\nSelect project",
+                choices=[str(i) for i in range(1, len(project_dirs) + 1)],
+                default="1"
+            )
+            selected_dir = project_dirs[int(choice) - 1]
+        
+        # Find attack tree files
+        attack_tree_files = list(selected_dir.glob("attack_tree_*.md"))
+        
+        if not attack_tree_files:
+            self.console.print(f"❌ No attack tree files found in {selected_dir}")
+            return
+        
+        self.console.print(f"\n📄 Found {len(attack_tree_files)} attack trees to enrich")
+        
+        # Initialize matcher with pre-generated embeddings
+        embeddings_path = Path(__file__).parent / "modules" / "ttc_mappings" / "data" / "ttc_embeddings.json"
+        
+        if not embeddings_path.exists():
+            self.console.print(f"❌ Embeddings file not found: {embeddings_path}")
+            self.console.print("💡 Run: python -m modules.ttc_mappings.cli create stix-data/aaf-bundle.json -o {embeddings_path}")
+            return
+        
+        with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}")) as progress:
+            task = progress.add_task("🔧 Loading TTC matcher...", total=None)
+            
+            try:
+                matcher = TTCMatcher(
+                    embeddings_path=str(embeddings_path),
+                    min_similarity=0.35
+                )
+                enricher = AttackTreeEnricher(matcher)
+                
+                progress.update(task, description="✅ TTC matcher loaded")
+            except Exception as e:
+                progress.update(task, description=f"❌ Failed to load matcher: {e}")
+                self.console.print(f"❌ Error: {e}")
+                return
+        
+        # Create enriched output directory
+        enriched_dir = output_dir / f"{selected_dir.name}_enriched"
+        enriched_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Enrich each attack tree
+        enriched_count = 0
+        failed_count = 0
+        
+        with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}")) as progress:
+            task = progress.add_task(f"🎯 Enriching {len(attack_tree_files)} attack trees...", total=len(attack_tree_files))
+            
+            for tree_file in attack_tree_files:
+                try:
+                    output_file = enriched_dir / f"enriched_{tree_file.name}"
+                    enricher.enrich_file(str(tree_file), str(output_file))
+                    enriched_count += 1
+                    progress.advance(task)
+                except Exception as e:
+                    self.logger.error(f"Failed to enrich {tree_file.name}: {e}")
+                    failed_count += 1
+                    progress.advance(task)
+            
+            progress.update(task, description=f"✅ Enrichment complete: {enriched_count} successful, {failed_count} failed")
+        
+        # Show success summary
+        success_panel = f"""
+🎉 TTC Enrichment Complete!
+
+📊 Results:
+• Project: {selected_dir.name}
+• Attack trees processed: {len(attack_tree_files)}
+• Successfully enriched: {enriched_count}
+• Failed: {failed_count}
+
+📁 Output Directory: {enriched_dir}
+
+🔍 What was added:
+• Technique IDs in mermaid diagrams (e.g., T1190.A012)
+• Technique mapping tables with confidence levels
+• Kill chain phase information
+
+💡 Next Steps:
+1. Review enriched attack trees
+2. Validate technique mappings
+3. Use for security control planning
+        """
+        
+        self.console.print(Panel(success_panel, title="✅ Enrichment Complete", border_style="green"))
+        
+        if Confirm.ask("Open output directory?"):
+            import webbrowser
+            webbrowser.open(f"file://{enriched_dir}")
+    
     
     def _show_success_summary_no_ttc(self, output_dir: Path, summary_result: Dict[str, Any], 
                                     extraction_result: Dict[str, Any]):

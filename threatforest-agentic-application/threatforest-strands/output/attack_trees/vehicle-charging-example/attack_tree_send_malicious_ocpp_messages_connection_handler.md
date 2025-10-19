@@ -1,16 +1,7 @@
-# Attack Tree: Authentication
+# Attack Tree: T001 - Authentication
 
 **Threat ID**: T001  
-**Associated threat statement**: A malicious attacker with compromised EVSE credentials, can send malicious OCPP messages to the connection handler, which leads to unauthorized control of charging operations, resulting in reduced integrity of charging station infrastructure.
-
-- **Threat Source**: malicious attacker
-- **Prerequisites**: compromised EVSE credentials
-- **Threat Action**: send malicious OCPP messages to the connection handler
-- **Threat Impact**: unauthorized control of charging operations
-- **Reduced Goal**: integrity
-- **Impacted Assets**: charging station infrastructure
-- **Priority**: High
-- **Category**: Authentication
+**Description**: A malicious attacker with compromised EVSE credentials, can send malicious OCPP messages to the connection handler, which leads to unauthorized control of charging operations, resulting in reduced integrity of charging station infrastructure.
 
 ---
 

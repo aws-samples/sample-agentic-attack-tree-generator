@@ -1,32 +1,34 @@
 # ThreatForest Analysis Report
 
-**Generated on:** 2025-10-16 23:00:07
+**Generated on:** 2025-10-19 12:47:47
 
 ## Executive Summary
 
-This report presents a comprehensive threat analysis for **IoT Device Management Platform**, including attack tree modeling.
+This report presents a comprehensive threat analysis for **Electric Vehicle Charging Station Management System**, including attack tree modeling.
 
 ## Project Information
 
-- **Application Name**: IoT Device Management Platform
+- **Application Name**: Electric Vehicle Charging Station Management System
 - **Architecture Type**: Microservices
-- **Deployment Environment**: Cloud (AWS)
-- **Industry Sector**: IoT/Multi-Industry (Smart Cities, Industrial Automation, Healthcare)
+- **Deployment Environment**: Cloud
+- **Industry Sector**: Energy/Electric Vehicle Infrastructure
 
 ### Technology Stack
-- MQTT over TLS
-- CoAP
-- Python
-- FastAPI
-- Celery
-- MongoDB
-- InfluxDB
-- Apache Kafka
-- AWS IoT Core
+- Amazon ECS
+- AWS Fargate
+- Network Load Balancer
+- Application Load Balancer
+- Elastic Load Balancing
 - AWS Lambda
-- X.509 certificates
-- Grafana
-- Prometheus
+- Amazon DynamoDB
+- Amazon CloudFront
+- Amazon S3
+- Amazon API Gateway
+- Amazon Cognito
+- AWS Certificate Manager
+- Amazon CloudWatch
+- Amazon QLDB
+- OCPP (Open Charge Point Protocol)
 
 ### Security Objectives
 - **Confidentiality**: ✅ Required
@@ -36,21 +38,21 @@ This report presents a comprehensive threat analysis for **IoT Device Management
 ## Threat Analysis Results
 
 ### Threat Summary
-- **Total Threats Identified**: 12
+- **Total Threats Identified**: 11
 - **High Severity Threats**: 4
 - **Attack Trees Generated**: 4
 
 ### High Severity Threats
-1. **T001**: A malicious attacker with compromised X.509 certificates, can impersonate legitimate IoT devices, which leads to injection of malicious sensor data and unauthorized device commands, resulting in reduced integrity of device data and control systems.
+1. **T001**: A malicious attacker with compromised EVSE credentials, can send malicious OCPP messages to the connection handler, which leads to unauthorized control of charging operations, resulting in reduced integrity of charging station infrastructure.
 
 ---
-2. **T002**: A nation-state actor with advanced persistent threat capabilities, can intercept and decrypt MQTT over TLS communications, which leads to exposure of sensitive healthcare and industrial data, resulting in reduced confidentiality of patient monitors and SCADA systems.
+2. **T002**: A rogue insider with access to DynamoDB encryption keys, can decrypt stored EVSE credentials, which leads to compromise of charging station authentication, resulting in reduced confidentiality of EVSE registry.
 
 ---
-3. **T003**: A malicious insider with administrative access to AWS IoT Core, can push malicious firmware updates through the OTA system, which leads to complete device compromise and potential safety hazards, resulting in reduced integrity of industrial controllers and healthcare devices.
+3. **T003**: A sophisticated attacker with network interception capabilities, can perform man-in-the-middle attacks on OCPP communications, which leads to manipulation of charging transactions, resulting in reduced integrity of transaction management and audit data.
 
 ---
-4. **T004**: A cybercriminal with botnet resources, can launch distributed denial-of-service attacks against the communication gateway, which leads to disruption of critical device communications, resulting in reduced availability of smart meters and vehicle telematics systems.
+4. **T004**: A malicious actor with compromised AWS Certificate Manager access, can issue fraudulent certificates for unauthorized EVSEs, which leads to rogue charging stations joining the network, resulting in reduced integrity of EVSE authentication system.
 
 ---
 
@@ -58,9 +60,9 @@ This report presents a comprehensive threat analysis for **IoT Device Management
 
 ### Generated Attack Trees
 - **T001**: Authentication (0 TTC mappings)
-- **T002**: Cryptographic Failures (0 TTC mappings)
-- **T003**: Supply Chain (0 TTC mappings)
-- **T004**: Denial of Service (0 TTC mappings)
+- **T002**: Data Exposure (0 TTC mappings)
+- **T003**: Communication Security (0 TTC mappings)
+- **T004**: Certificate Management (0 TTC mappings)
 
 
 
