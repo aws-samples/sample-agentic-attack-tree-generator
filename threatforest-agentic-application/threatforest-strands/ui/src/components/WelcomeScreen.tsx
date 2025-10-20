@@ -3,6 +3,7 @@ import { Box, Text } from 'ink';
 import TextInput from 'ink-text-input';
 import { PythonBridge } from '../utils/pythonBridge';
 import { ResumePrompt } from './ResumePrompt';
+import { ModeSelector } from './ModeSelector';
 
 interface Props {
   onNext: (state: any) => void;
@@ -15,6 +16,7 @@ export const WelcomeScreen: React.FC<Props> = ({ onNext, onResume }) => {
   const [loading, setLoading] = useState(true);
   const [showPrompt, setShowPrompt] = useState(false);
   const [readyToStart, setReadyToStart] = useState(false);
+  const [showModeSelector, setShowModeSelector] = useState(false);
   const [startInput, setStartInput] = useState('');
 
   useEffect(() => {
@@ -48,12 +50,34 @@ export const WelcomeScreen: React.FC<Props> = ({ onNext, onResume }) => {
 
   const handleStartSubmit = (value: string) => {
     if (value.toLowerCase() === 'start' || value.toLowerCase() === 's') {
-      onNext({});
+      setShowModeSelector(true);
     }
+  };
+
+  const handleModeSelect = (mode: 'full' | 'enrich' | 'mitigate') => {
+    onNext({ mode });
   };
 
   if (showPrompt && savedState) {
     return <ResumePrompt state={savedState} onResume={handleResume} onRestart={handleRestart} />;
+  }
+
+  if (showModeSelector) {
+    return (
+      <Box flexDirection="column" borderStyle="round" borderColor="green" padding={1}>
+        <Text bold color="green">🌳 ThreatForest Mode Selection</Text>
+        <ModeSelector onSelect={handleModeSelect} />
+      </Box>
+    );
+  }
+
+  if (showModeSelector) {
+    return (
+      <Box flexDirection="column" borderStyle="round" borderColor="green" padding={1}>
+        <Text bold color="green">🌳 ThreatForest Mode Selection</Text>
+        <ModeSelector onSelect={handleModeSelect} />
+      </Box>
+    );
   }
 
   return (

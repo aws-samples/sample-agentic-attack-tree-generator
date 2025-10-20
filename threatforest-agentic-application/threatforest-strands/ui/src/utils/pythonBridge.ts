@@ -87,6 +87,191 @@ except Exception as e:
     });
   }
 
+  // TTC Enrichment
+  async enrichAttackTrees(inputDir: string, outputDir: string, onProgress?: (current: number, total: number, message: string) => void): Promise<PythonResult> {
+    return new Promise((resolve) => {
+      const script = `
+import sys
+import json
+from pathlib import Path
+sys.path.insert(0, '${this.projectRoot}')
+
+from src.modules.ttc_mappings import TTCMatcher, AttackTreeEnricher
+
+try:
+    embeddings_path = Path('${this.projectRoot}') / 'src' / 'modules' / 'ttc_mappings' / 'data' / 'ttc_embeddings.json'
+    
+    if not embeddings_path.exists():
+        raise FileNotFoundError(f"Embeddings not found: {embeddings_path}")
+    
+    print(json.dumps({'type': 'progress', 'current': 0, 'total': 0, 'message': 'Loading TTC matcher...'}), flush=True)
+    
+    matcher = TTCMatcher(embeddings_path=str(embeddings_path), min_similarity=0.35)
+    enricher = AttackTreeEnricher(matcher)
+    
+    input_path = Path('${inputDir}')
+    output_path = Path('${outputDir}')
+    output_path.mkdir(parents=True, exist_ok=True)
+    
+    files = list(input_path.glob('attack_tree_*.md'))
+    total = len(files)
+    enriched = 0
+    
+    print(json.dumps({'type': 'progress', 'current': 0, 'total': total, 'message': f'Found {total} attack trees to enrich'}), flush=True)
+    
+    for i, file in enumerate(files, 1):
+        print(json.dumps({'type': 'progress', 'current': i, 'total': total, 'message': f'Enriching {file.name}...'}), flush=True)
+        output_file = output_path / f"enriched_{file.name}"
+        enricher.enrich_file(str(file), str(output_file))
+        enriched += 1
+    
+    print(json.dumps({
+        'success': True, 
+        'data': {
+            'enriched_count': enriched,
+            'output_dir': str(output_path)
+        }
+    }))
+except Exception as e:
+    import traceback
+    print(json.dumps({'success': False, 'error': str(e), 'traceback': traceback.format_exc()}))
+`;
+
+      const python = spawn(this.pythonPath, ['-c', script]);
+      let output = '';
+      let error = '';
+
+      python.stdout.on('data', (data) => {
+        const lines = data.toString().split('\n');
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          
+          try {
+            const parsed = JSON.parse(line);
+            if (parsed.type === 'progress' && onProgress) {
+              onProgress(parsed.current, parsed.total, parsed.message);
+            } else if (parsed.success !== undefined) {
+              output = line;
+            }
+          } catch (e) {
+            // Not JSON, accumulate as output
+            output += line;
+          }
+        }
+      });
+      
+      python.stderr.on('data', (data) => error += data.toString());
+
+      python.on('close', (code) => {
+        if (code !== 0) {
+          resolve({ success: false, error: error || 'Enrichment failed' });
+        } else {
+          try {
+            const result = JSON.parse(output);
+            resolve(result);
+          } catch (e) {
+            resolve({ success: false, error: 'Failed to parse output' });
+          }
+        }
+      });
+    });
+  }
+
+  // Mitigation Mapping
+  async addMitigations(inputDir: string, outputDir: string, onProgress?: (current: number, total: number, message: string) => void): Promise<PythonResult> {
+    return new Promise((resolve) => {
+      const script = `
+import sys
+import json
+from pathlib import Path
+sys.path.insert(0, '${this.projectRoot}')
+
+from src.modules.ttc_mappings.mitigation_mapper import MitigationMapper
+
+try:
+    bundle_path = Path('${this.projectRoot}') / 'stix-data' / 'aaf-bundle.json'
+    
+    if not bundle_path.exists():
+        raise FileNotFoundError(f"STIX bundle not found: {bundle_path}")
+    
+    print(json.dumps({'type': 'progress', 'current': 0, 'total': 0, 'message': 'Loading mitigation mapper...'}), flush=True)
+    
+    mapper = MitigationMapper(str(bundle_path))
+    
+    input_path = Path('${inputDir}')
+    output_path = Path('${outputDir}')
+    output_path.mkdir(parents=True, exist_ok=True)
+    
+    files = list(input_path.glob('*.md'))
+    total = len(files)
+    processed = 0
+    techniques_with_mitigations = 0
+    
+    print(json.dumps({'type': 'progress', 'current': 0, 'total': total, 'message': f'Found {total} files to process'}), flush=True)
+    
+    for i, file in enumerate(files, 1):
+        print(json.dumps({'type': 'progress', 'current': i, 'total': total, 'message': f'Processing {file.name}...'}), flush=True)
+        output_file = output_path / f"mitigated_{file.name}"
+        result = mapper.process_enriched_file(str(file), str(output_file))
+        
+        if result['mitigations_found']:
+            techniques_with_mitigations += len(result['techniques'])
+        
+        processed += 1
+    
+    print(json.dumps({
+        'success': True,
+        'data': {
+            'processed_count': processed,
+            'techniques_with_mitigations': techniques_with_mitigations,
+            'output_dir': str(output_path)
+        }
+    }))
+except Exception as e:
+    import traceback
+    print(json.dumps({'success': False, 'error': str(e), 'traceback': traceback.format_exc()}))
+`;
+
+      const python = spawn(this.pythonPath, ['-c', script]);
+      let output = '';
+      let error = '';
+
+      python.stdout.on('data', (data) => {
+        const lines = data.toString().split('\n');
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          
+          try {
+            const parsed = JSON.parse(line);
+            if (parsed.type === 'progress' && onProgress) {
+              onProgress(parsed.current, parsed.total, parsed.message);
+            } else if (parsed.success !== undefined) {
+              output = line;
+            }
+          } catch (e) {
+            // Not JSON, accumulate as output
+            output += line;
+          }
+        }
+      });
+      
+      python.stderr.on('data', (data) => error += data.toString());
+
+      python.on('close', (code) => {
+        if (code !== 0) {
+          resolve({ success: false, error: error || 'Mitigation mapping failed' });
+        } else {
+          try {
+            const result = JSON.parse(output);
+            resolve(result);
+          } catch (e) {
+            resolve({ success: false, error: 'Failed to parse output' });
+          }
+        }
+      });
+    });
+  }
+
   // FileDiscovery integration
   async discoverFiles(projectPath: string): Promise<PythonResult> {
     // FileDiscovery.discover() is a static method, not an instance method
