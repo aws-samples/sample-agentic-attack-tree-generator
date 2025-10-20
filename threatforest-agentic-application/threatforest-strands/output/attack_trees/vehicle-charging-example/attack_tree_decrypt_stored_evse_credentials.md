@@ -9,33 +9,32 @@
 
 ```mermaid
 graph TD
-    A["Rogue insider with access to DynamoDB encryption keys"] --> B["Locate encrypted EVSE credentials in DynamoDB"]
-    A --> C["Obtain encryption key material"]
-    B --> D["Extract encrypted credential data"]
-    C --> E["Access key management system"]
-    C --> F["Retrieve keys from local cachememory"]
-    D --> G["Decrypt EVSE credentials"]
-    E --> G
-    F --> G
-    G --> H["Extract charging station authentication tokens"]
-    G --> I["Extract API keys and secrets"]
-    H --> J["Impersonate legitimate charging stations"]
-    I --> J
-    J --> K["Compromise charging station authentication"]
-    K --> L["Unauthorized access to EVSE registry"]
-    K --> M["Manipulate charging station data"]
-    L --> N["Complete compromise of EVSE registry confidentiality"]
-    M --> N
-    B --> O["Query DynamoDB tables directly"]
-    O --> D
-    A --> P["Abuse legitimate access privileges"]
-    P --> B
-    P --> C
+    A["Rogue insider with access to DynamoDB encryption keys"] --> B["Locate encryption key storage"]
+    A --> C["Identify DynamoDB tables containing EVSE credentials"]
+    B --> D["Extract encryption keys from AWS KMS"]
+    B --> E["Extract encryption keys from secrets manager"]
+    B --> F["Access keys from local key cache"]
+    C --> G["Query DynamoDB for EVSE registry data"]
+    D --> H["Decrypt EVSE credentials"]
+    E --> H
+    F --> H
+    G --> H
+    H --> I["Extract charging station authentication tokens"]
+    H --> J["Extract charging station certificates"]
+    H --> K["Extract charging station API keys"]
+    I --> L["Impersonate charging stations"]
+    J --> L
+    K --> L
+    L --> M["Compromise charging station authentication"]
+    M --> N["Unauthorized access to EVSE registry"]
+    M --> O["Exfiltrate confidential EVSE data"]
+    N --> P["Confidentiality breach of EVSE registry"]
+    O --> P
     classDef attack fill:#ffcccc
     classDef goal fill:#ffcc99
     classDef fact fill:#ccccff
-    class B,C,D,E,F,G,H,I,J,K,L,M,O,P attack
-    class N goal
+    class B,C,D,E,F,G,H,I,J,K,L,M,N,O attack
+    class P goal
     class A fact
     classDef mitigation fill:#ccffcc
 ```

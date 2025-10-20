@@ -19,21 +19,22 @@
 ```mermaid
 graph TD
     A["Malicious actor with compromised AWS Certificate Manager access"] --> B["Enumerate existing EVSE certificates"]
-    A --> C["Analyze certificate issuance patterns"]
-    B --> D["Identify valid certificate parameters"]
+    A --> C["Identify certificate issuance patterns"]
+    B --> D["Analyze certificate structure and attributes"]
     C --> D
-    D --> E["Craft fraudulent certificate requests"]
-    E --> F["Issue unauthorized EVSE certificates via ACM"]
-    F --> G["Deploy rogue charging stations"]
-    F --> H["Clone legitimate EVSE identities"]
-    G --> I["Present fraudulent certificates to network"]
-    H --> I
+    D --> E["Craft fraudulent certificate request for rogue EVSE"]
+    E --> F["Issue fraudulent certificate via ACM"]
+    E --> G["Clone legitimate EVSE certificate metadata"]
+    F --> H["Deploy rogue charging station with fraudulent certificate"]
+    G --> H
+    H --> I["Attempt network authentication"]
     I --> J["Bypass EVSE authentication checks"]
-    J --> K["Rogue charging stations join network"]
-    K --> L["Compromise integrity of EVSE authentication system"]
+    J --> K["Rogue charging station joins network"]
+    K --> L["EVSE authentication system integrity compromised"]
     A --> M["Exploit ACM API permissions"]
-    M --> N["Automate certificate generation"]
-    N --> F
+    M --> F
+    B --> N["Identify certificate validation weaknesses"]
+    N --> J
     classDef attack fill:#ffcccc
     classDef goal fill:#ffcc99
     classDef fact fill:#ccccff

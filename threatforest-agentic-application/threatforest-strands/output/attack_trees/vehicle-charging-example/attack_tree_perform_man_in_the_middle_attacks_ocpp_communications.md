@@ -10,38 +10,44 @@
 ```mermaid
 graph TD
     A["Sophisticated attacker with network interception capabilities"] --> B["Network positioning"]
-    A --> C["Protocol analysis"]
-    B --> D["Gain physical access to charging network"]
-    B --> E["Compromise network infrastructure"]
-    D --> F["Install rogue access point"]
-    D --> G["Tap into Ethernet connections"]
-    E --> H["Exploit router vulnerabilities"]
-    E --> I["Compromise WiFi network"]
-    C --> J["Analyze OCPP protocol structure"]
-    J --> K["Identify unencrypted OCPP traffic"]
-    J --> L["Map OCPP message formats"]
-    F --> M["Intercept OCPP communications"]
-    G --> M
+    A --> C["OCPP protocol reconnaissance"]
+    B --> D["Gain access to network segment"]
+    B --> E["Position between charging station and backend"]
+    D --> F["Compromise network infrastructure"]
+    D --> G["Exploit unsecured WiFinetwork"]
+    D --> H["Physical access to network equipment"]
+    C --> I["Analyze OCPP message structure"]
+    C --> J["Identify unencrypted communications"]
+    E --> K["ARP spoofing attack"]
+    E --> L["DNS spoofing attack"]
+    E --> M["Rogue gateway deployment"]
+    F --> K
+    G --> K
     H --> M
-    I --> M
-    K --> M
-    M --> N["Perform man-in-the-middle attack"]
+    I --> N["Intercept OCPP messages"]
+    J --> N
+    K --> N
     L --> N
-    N --> O["Inject malicious OCPP messages"]
-    N --> P["Modify transaction data in transit"]
-    N --> Q["Alter meter values"]
-    O --> R["Manipulate charging transactions"]
-    P --> R
-    Q --> R
-    R --> S["Corrupt transaction management data"]
-    R --> T["Falsify audit logs"]
-    S --> U["Loss of transaction integrity"]
-    T --> U
+    M --> N
+    N --> O["Man-in-the-middle established"]
+    O --> P["Transaction data manipulation"]
+    O --> Q["Command injection"]
+    P --> R["Modify charging session data"]
+    P --> S["Alter metering values"]
+    P --> T["Change pricing information"]
+    Q --> U["Inject unauthorized startstop commands"]
+    Q --> V["Modify remote configuration"]
+    R --> W["Manipulated charging transactions"]
+    S --> W
+    T --> W
+    U --> W
+    V --> W
+    W --> X["Compromised transaction management and audit data integrity"]
     classDef attack fill:#ffcccc
     classDef goal fill:#ffcc99
     classDef fact fill:#ccccff
-    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T attack
-    class U goal
+    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W attack
+    class X goal
     class A fact
     classDef mitigation fill:#ccffcc
 ```

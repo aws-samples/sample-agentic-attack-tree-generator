@@ -33,6 +33,7 @@ graph TD
     class Goal goal
     class Start fact
     classDef mitigation fill:#ccffcc
+    classDef mitigation fill:#ADD8E6,stroke:#4682B4,stroke-width:2px
 ```
 
 ## Attack Path Analysis

@@ -1,6 +1,6 @@
 # ThreatForest Analysis Report
 
-**Generated on:** 2025-10-19 12:47:47
+**Generated on:** 2025-10-20 16:00:09
 
 ## Executive Summary
 
@@ -11,7 +11,7 @@ This report presents a comprehensive threat analysis for **Electric Vehicle Char
 - **Application Name**: Electric Vehicle Charging Station Management System
 - **Architecture Type**: Microservices
 - **Deployment Environment**: Cloud
-- **Industry Sector**: Energy/Electric Vehicle Infrastructure
+- **Industry Sector**: Energy/Transportation
 
 ### Technology Stack
 - Amazon ECS

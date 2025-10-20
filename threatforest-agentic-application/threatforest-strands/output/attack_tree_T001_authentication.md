@@ -18,33 +18,29 @@
 
 ```mermaid
 graph TD
-    A["Malicious attacker with compromised EVSE credentials"] --> B["Establish connection to OCPP backend"]
-    B --> C["Authenticate using stolen credentials"]
-    C --> D["Inject malicious OCPP messages"]
-    D --> E["Send unauthorized charging commands"]
-    D --> F["Manipulate charging parameters"]
-    D --> G["Send fake status updates"]
-    E --> H["Startstop charging sessions without authorization"]
-    E --> I["Override legitimate user commands"]
-    F --> J["Modify charging power levels"]
-    F --> K["Alter billingmetering data"]
-    F --> L["Change charging profiles"]
-    G --> M["Report false availability status"]
-    G --> N["Spoof error conditions"]
-    H --> O["Unauthorized control of charging operations"]
-    I --> O
-    J --> O
-    K --> O
-    L --> O
-    M --> O
-    N --> O
-    O --> P["Integrity compromise of charging station infrastructure"]
+    Start["Malicious attacker with compromised EVSE credentials"] --> Recon["Reconnaissance of OCPP protocol implementation"]
+    Recon --> Path1A["Craft malicious charging control messages"]
+    Recon --> Path1B["Craft malicious firmware update messages"]
+    Recon --> Path1C["Craft malicious configuration change messages"]
+    Path1A --> Auth1["Authenticate to connection handler using compromised credentials"]
+    Path1B --> Auth2["Authenticate to connection handler using compromised credentials"]
+    Path1C --> Auth3["Authenticate to connection handler using compromised credentials"]
+    Auth1 --> Send1["Send RemoteStartTransactionRemoteStopTransaction commands"]
+    Auth2 --> Send2["Send UpdateFirmware commands"]
+    Auth3 --> Send3["Send ChangeConfiguration commands"]
+    Send1 --> Exploit1["Manipulate charging sessions"]
+    Send2 --> Exploit2["Deploy malicious firmware"]
+    Send3 --> Exploit3["Alter charging station parameters"]
+    Exploit1 --> Impact["Unauthorized control of charging operations"]
+    Exploit2 --> Impact
+    Exploit3 --> Impact
+    Impact --> Goal["Compromise integrity of charging station infrastructure"]
     classDef attack fill:#ffcccc
     classDef goal fill:#ffcc99
     classDef fact fill:#ccccff
-    class B,C,D,E,F,G,H,I,J,K,L,M,N attack
-    class O,P goal
-    class A fact
+    class Recon,Path1A,Path1B,Path1C,Auth1,Auth2,Auth3,Send1,Send2,Send3,Exploit1,Exploit2,Exploit3,Impact attack
+    class Goal goal
+    class Start fact
     classDef mitigation fill:#ccffcc
 ```
 
