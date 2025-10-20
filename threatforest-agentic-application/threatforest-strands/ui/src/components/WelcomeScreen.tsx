@@ -103,6 +103,8 @@ export const WelcomeScreen: React.FC<Props> = ({ onNext, onResume }) => {
         <Text>• 🌳 Creates detailed attack trees for high-severity threats</Text>
         <Text>• 📄 Aligns attack steps to known intelligence sources such as the AWS TTC,</Text>
         <Text>     MITRE ATT&CK, or Wiz Cloud Security Framework</Text>
+        <Text>• 🛡️ Maps mitigations from MITRE D3FEND and security frameworks</Text>
+        <Text>• 🔍 Provides detection strategies for each attack technique</Text>
       </Box>
       
       <Box marginTop={1}>

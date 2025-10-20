@@ -24,9 +24,9 @@ export const ModeSelector: React.FC<Props> = ({ onSelect }) => {
     <Box flexDirection="column" marginTop={1}>
       <Text bold color="cyan">Select Mode:</Text>
       <Box flexDirection="column" marginLeft={2} marginTop={1}>
-        <Text>1. Full Analysis - Generate attack trees from project</Text>
-        <Text>2. Enrich - Add TTC technique mappings to existing attack trees</Text>
-        <Text>3. Mitigate - Add mitigation recommendations to enriched trees</Text>
+        <Text>1. 🌳 Full Analysis - Generate attack trees from project</Text>
+        <Text>2. 🎯 Enrich - Add TTC technique mappings to existing attack trees</Text>
+        <Text>3. 🛡️ Mitigate - Add mitigation recommendations to enriched trees</Text>
       </Box>
       <Box marginTop={1}>
         <Text color="green">&gt; </Text>

@@ -206,6 +206,7 @@ try:
     total = len(files)
     processed = 0
     techniques_with_mitigations = 0
+    total_mitigations = 0
     
     print(json.dumps({'type': 'progress', 'current': 0, 'total': total, 'message': f'Found {total} files to process'}), flush=True)
     
@@ -216,6 +217,8 @@ try:
         
         if result['mitigations_found']:
             techniques_with_mitigations += len(result['techniques'])
+            for tech in result['techniques']:
+                total_mitigations += len(tech.get('mitigations', []))
         
         processed += 1
     
@@ -224,6 +227,7 @@ try:
         'data': {
             'processed_count': processed,
             'techniques_with_mitigations': techniques_with_mitigations,
+            'total_mitigations': total_mitigations,
             'output_dir': str(output_path)
         }
     }))

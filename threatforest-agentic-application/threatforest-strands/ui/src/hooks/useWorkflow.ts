@@ -12,6 +12,9 @@ export type WorkflowStage =
 export interface WorkflowState {
   stage: WorkflowStage;
   progress: { current: number; total: number };
+  current?: number;
+  total?: number;
+  percentage?: number;
   error?: string;
   data?: any;
   message?: string;
@@ -83,10 +86,21 @@ export const useWorkflow = (config?: WorkflowConfig) => {
     setState(prev => ({ ...prev, error: undefined }));
   }, []);
 
+  const updateState = useCallback((updates: Partial<WorkflowState>) => {
+    setState(prev => ({
+      ...prev,
+      ...updates,
+      progress: updates.current !== undefined && updates.total !== undefined
+        ? { current: updates.current, total: updates.total }
+        : prev.progress
+    }));
+  }, []);
+
   return {
     state,
     executeWorkflow,
     checkResume,
-    clearError
+    clearError,
+    updateState
   };
 };

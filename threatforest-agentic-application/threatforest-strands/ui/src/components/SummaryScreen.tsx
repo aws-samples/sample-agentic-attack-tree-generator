@@ -9,6 +9,33 @@ interface Props {
 export const SummaryScreen: React.FC<Props> = ({ state }) => {
   const data = state.data || {};
   
+  const getNextSteps = () => {
+    const mode = data.mode;
+    
+    if (mode === 'enrich') {
+      return [
+        '• Review enriched attack trees with TTC mappings in output directory',
+        '• Check logs in output/logs directory',
+        '• Add mitigations using Option 3 (Mitigation Mapping)'
+      ];
+    }
+    
+    if (mode === 'mitigate') {
+      return [
+        '• Review mitigated attack trees in output directory',
+        '• Check logs in output/logs directory',
+        '• Implement mitigations and detections based on recommendations'
+      ];
+    }
+    
+    // Default full workflow
+    return [
+      '• Review attack trees and summary report in output directory',
+      '• Check logs in output/logs directory',
+      '• Enrich attack trees with TTCs using Option 2 (TTC Enrichment)'
+    ];
+  };
+  
   return (
     <Box flexDirection="column" padding={1}>
       <Box borderStyle="double" borderColor="green" padding={1} flexDirection="column">
@@ -18,6 +45,9 @@ export const SummaryScreen: React.FC<Props> = ({ state }) => {
           <Text bold>📊 Summary:</Text>
           <Text>• Threats Processed: {data.threatsProcessed || 0}</Text>
           <Text>• Attack Trees Generated: {data.attackTrees || 0}</Text>
+          {data.totalMitigations !== undefined && (
+            <Text>• Total Mitigations: {data.totalMitigations}</Text>
+          )}
           {data.discovery && (
             <>
               <Text>• Threat Models Found: {data.discovery.threat_models?.length || 0}</Text>
@@ -33,9 +63,9 @@ export const SummaryScreen: React.FC<Props> = ({ state }) => {
         
         <Box marginTop={1} flexDirection="column">
           <Text bold>Next Steps:</Text>
-          <Text>• Review attack trees and summary report in output directory</Text>
-          <Text>• Check logs in output/logs directory</Text>
-          <Text>• Implement security controls based on identified threats</Text>
+          {getNextSteps().map((step, idx) => (
+            <Text key={idx}>{step}</Text>
+          ))}
         </Box>
       </Box>
     </Box>

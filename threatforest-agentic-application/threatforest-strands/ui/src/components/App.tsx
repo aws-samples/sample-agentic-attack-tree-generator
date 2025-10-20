@@ -24,11 +24,8 @@ export interface AppState {
 export const App: React.FC = () => {
   const [screen, setScreen] = useState<Screen>('welcome');
   const [appState, setAppState] = useState<AppState>({});
-  const [simpleProgress, setSimpleProgress] = useState<string>('');
-  const [progressCurrent, setProgressCurrent] = useState<number>(0);
-  const [progressTotal, setProgressTotal] = useState<number>(0);
   const [simpleError, setSimpleError] = useState<string>('');
-  const { state: workflowState, executeWorkflow, clearError } = useWorkflow();
+  const { state: workflowState, executeWorkflow, clearError, updateState } = useWorkflow();
 
   const handleNext = async (newState: Partial<AppState>) => {
     const updatedState = { ...appState, ...newState };
@@ -84,30 +81,66 @@ export const App: React.FC = () => {
       : `${process.cwd()}/../output/mitigated`);
     
     const handleProgress = (current: number, total: number, message: string) => {
-      setProgressCurrent(current);
-      setProgressTotal(total);
-      setSimpleProgress(message);
+      const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
+      updateState({
+        stage: mode === 'enrich' ? 'trees' : 'summary',
+        current,
+        total,
+        message,
+        percentage
+      });
     };
     
     try {
       if (mode === 'enrich') {
-        setSimpleProgress('🎯 Starting TTC enrichment...');
+        updateState({ 
+          stage: 'trees', 
+          message: '🎯 Starting TTC enrichment...', 
+          current: 0, 
+          total: 0,
+          data: { mode: 'enrich' }
+        });
         
         const result = await bridge.enrichAttackTrees(finalInputDir, finalOutputDir, handleProgress);
         
         if (result.success) {
-          setSimpleProgress(`✅ Enriched ${result.data.enriched_count} attack trees`);
+          updateState({ 
+            stage: 'complete',
+            message: `✅ Enriched ${result.data.enriched_count} attack trees`,
+            data: {
+              ...workflowState.data,
+              attackTrees: result.data.enriched_count,
+              threatsProcessed: result.data.enriched_count,
+              outputDir: result.data.output_dir
+            }
+          });
           setTimeout(() => setScreen('summary'), 1000);
         } else {
           throw new Error(result.error);
         }
       } else if (mode === 'mitigate') {
-        setSimpleProgress('🛡️ Starting mitigation mapping...');
+        updateState({ 
+          stage: 'summary', 
+          message: '🛡️ Starting mitigation mapping...', 
+          current: 0, 
+          total: 0,
+          data: { mode: 'mitigate' }
+        });
         
         const result = await bridge.addMitigations(finalInputDir, finalOutputDir, handleProgress);
         
         if (result.success) {
-          setSimpleProgress(`✅ Added mitigations to ${result.data.processed_count} files`);
+          updateState({ 
+            stage: 'complete',
+            message: `✅ Added mitigations to ${result.data.processed_count} files`,
+            data: {
+              ...workflowState.data,
+              attackTrees: result.data.processed_count,
+              threatsProcessed: result.data.techniques_with_mitigations || result.data.processed_count,
+              totalMitigations: result.data.total_mitigations || 0,
+              outputDir: result.data.output_dir
+            }
+          });
           setTimeout(() => setScreen('summary'), 1000);
         } else {
           throw new Error(result.error);
@@ -131,27 +164,7 @@ export const App: React.FC = () => {
         <PathSelector mode={appState.mode} onSubmit={handlePathSubmit} />
       )}
       {screen === 'config' && <ConfigurationScreen onNext={handleNext} state={appState} />}
-      {screen === 'progress' && (
-        appState.mode === 'enrich' || appState.mode === 'mitigate' ? (
-          <Box flexDirection="column" borderStyle="round" borderColor="cyan" padding={1}>
-            <Text bold color="cyan">
-              {appState.mode === 'enrich' ? '🎯 TTC Enrichment' : '🛡️ Mitigation Mapping'}
-            </Text>
-            <Box marginTop={1}>
-              <Text>{simpleProgress}</Text>
-            </Box>
-            {progressTotal > 0 && (
-              <Box marginTop={1}>
-                <Text>
-                  Progress: {progressCurrent}/{progressTotal} ({Math.round((progressCurrent / progressTotal) * 100)}%)
-                </Text>
-              </Box>
-            )}
-          </Box>
-        ) : (
-          <ProgressScreen state={workflowState} />
-        )
-      )}
+      {screen === 'progress' && <ProgressScreen state={workflowState} />}
       {screen === 'summary' && <SummaryScreen state={workflowState} />}
       {screen === 'error' && (simpleError || workflowState.error) && (
         <ErrorDisplay 

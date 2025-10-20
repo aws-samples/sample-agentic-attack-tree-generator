@@ -59,6 +59,7 @@ export const ProgressDetails: React.FC<Props> = ({ state }) => {
           text: state.message || 'Generating attack trees...'
         };
       case 'mapping':
+      case 'summary':
         return {
           icon: '🗺️',
           text: state.message || 'Mapping to MITRE ATT&CK...'
@@ -66,12 +67,12 @@ export const ProgressDetails: React.FC<Props> = ({ state }) => {
       case 'complete':
         return {
           icon: '✅',
-          text: 'Analysis complete!'
+          text: state.message || 'Analysis complete!'
         };
       default:
         return {
           icon: '⏳',
-          text: 'Processing...'
+          text: state.message || 'Processing...'
         };
     }
   };
