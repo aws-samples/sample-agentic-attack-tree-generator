@@ -7,6 +7,10 @@ from mitigation_enricher import MitigationEnricher
 
 
 def main():
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+    from config import config
+    
     parser = argparse.ArgumentParser(
         description='Enrich attack trees with mitigations from STIX bundle'
     )
@@ -16,8 +20,8 @@ def main():
     )
     parser.add_argument(
         '--stix-bundle',
-        default='stix-data/aaf-bundle.json',
-        help='Path to STIX bundle (default: stix-data/aaf-bundle.json)'
+        default=None,
+        help=f'Path to STIX bundle (default: {config.stix_bundle_path})'
     )
     parser.add_argument(
         '--output',
@@ -35,7 +39,8 @@ def main():
         attack_tree = json.load(f)
     
     # Enrich with mitigations
-    enricher = MitigationEnricher(args.stix_bundle)
+    bundle_path = args.stix_bundle if args.stix_bundle else str(config.stix_bundle_path)
+    enricher = MitigationEnricher(bundle_path)
     enriched_tree = enricher.enrich_attack_tree(attack_tree)
     
     # Determine output path

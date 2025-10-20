@@ -1,0 +1,727 @@
+{
+  "metadata": {
+    "generated_at": "2025-10-21T00:20:46.433399",
+    "generator": "ThreatForest",
+    "version": "1.0"
+  },
+  "project_info": {
+    "application_name": "Electric Vehicle Charging Station Management System",
+    "sector": "Energy/Transportation",
+    "architecture_type": "Microservices",
+    "deployment_environment": "Cloud",
+    "technologies": [
+      "Amazon ECS",
+      "AWS Fargate",
+      "Network Load Balancer",
+      "Application Load Balancer",
+      "Elastic Load Balancing",
+      "AWS Lambda",
+      "Amazon DynamoDB",
+      "Amazon CloudFront",
+      "Amazon S3",
+      "Amazon API Gateway",
+      "Amazon Cognito",
+      "AWS Certificate Manager",
+      "Amazon CloudWatch",
+      "Amazon QLDB",
+      "OCPP (Open Charge Point Protocol)"
+    ],
+    "security_objectives": {
+      "confidentiality": true,
+      "integrity": true,
+      "availability": true
+    },
+    "data_types": [
+      "EVSE credentials (encrypted)",
+      "User identities",
+      "Charging transactions",
+      "EVSE metrics",
+      "EVSE logs",
+      "Firmware files",
+      "Charging site configurations",
+      "Balancing algorithms",
+      "Power grid capacity data",
+      "EVSE certificates"
+    ],
+    "external_dependencies": [
+      "Charging stations (EVSE)",
+      "Fleet management systems",
+      "Smart meters",
+      "Roaming networks"
+    ],
+    "network_architecture": "Cloud-based microservices architecture with multiple load balancers. Network Load Balancer fronts OCPP connection handler for charging station communications. Application Load Balancer (component 7) routes traffic between microservices. External actors (charge point operators, fleet management, smart meters, roaming networks) connect through various endpoints. Internal communication between microservices through load balancing.",
+    "key_components": [
+      "OCPP connection handler (component 1) - handles charging station protocol communications with ELB, Fargate, DynamoDB, Lambda",
+      "Web application (component 2) - operator interface using CloudFront, API Gateway, Cognito, S3",
+      "EVSE registry (component 3) - manages charging station registry with Fargate, DynamoDB, Certificate Manager",
+      "EVSE management (component 4) - delivers metrics and logs using Fargate, DynamoDB, CloudWatch, S3",
+      "Smart charging (component 5) - handles charging optimization with Fargate and DynamoDB",
+      "Transaction management and audit (component 6) - immutable transaction logging using Fargate and QLDB",
+      "Elastic Load Balancing (component 7) - central routing and load balancing between microservices"
+    ]
+  },
+  "extraction_summary": {
+    "total_threats": 11,
+    "high_severity_count": 4,
+    "technologies_identified": 15,
+    "has_security_objectives": true,
+    "user_validated": false
+  },
+  "threats": {
+    "all_threats": [
+      {
+        "id": "T001",
+        "statement": "T001 - Authentication",
+        "description": "**Threat Statement**: A malicious attacker with compromised EVSE credentials, can send malicious OCPP messages to the connection handler, which leads to unauthorized control of charging operations, resulting in reduced integrity of charging station infrastructure.\n\n- **Threat Source**: malicious attacker\n- **Prerequisites**: compromised EVSE credentials\n- **Threat Action**: send malicious OCPP messages to the connection handler\n- **Threat Impact**: unauthorized control of charging operations\n- **Reduced Goal**: integrity\n- **Impacted Assets**: charging station infrastructure\n- **Priority**: High\n- **Category**: Authentication\n\n---",
+        "threatSource": "malicious attacker",
+        "prerequisites": "compromised EVSE credentials",
+        "threatAction": "send malicious OCPP messages to the connection handler",
+        "threatImpact": "unauthorized control of charging operations",
+        "impactedGoal": "integrity",
+        "impactedAssets": "charging station infrastructure",
+        "severity": "High",
+        "priority": "High",
+        "category": "Authentication",
+        "source": "markdown",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
+      },
+      {
+        "id": "T002",
+        "statement": "T002 - Data Exposure",
+        "description": "**Threat Statement**: A rogue insider with access to DynamoDB encryption keys, can decrypt stored EVSE credentials, which leads to compromise of charging station authentication, resulting in reduced confidentiality of EVSE registry.\n\n- **Threat Source**: rogue insider\n- **Prerequisites**: access to DynamoDB encryption keys\n- **Threat Action**: decrypt stored EVSE credentials\n- **Threat Impact**: compromise of charging station authentication\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: EVSE registry\n- **Priority**: High\n- **Category**: Data Exposure\n\n---",
+        "threatSource": "rogue insider",
+        "prerequisites": "access to DynamoDB encryption keys",
+        "threatAction": "decrypt stored EVSE credentials",
+        "threatImpact": "compromise of charging station authentication",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "EVSE registry",
+        "severity": "High",
+        "priority": "High",
+        "category": "Data Exposure",
+        "source": "markdown",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
+      },
+      {
+        "id": "T003",
+        "statement": "T003 - Communication Security",
+        "description": "**Threat Statement**: A sophisticated attacker with network interception capabilities, can perform man-in-the-middle attacks on OCPP communications, which leads to manipulation of charging transactions, resulting in reduced integrity of transaction management and audit data.\n\n- **Threat Source**: sophisticated attacker\n- **Prerequisites**: network interception capabilities\n- **Threat Action**: perform man-in-the-middle attacks on OCPP communications\n- **Threat Impact**: manipulation of charging transactions\n- **Reduced Goal**: integrity\n- **Impacted Assets**: transaction management and audit data\n- **Priority**: High\n- **Category**: Communication Security\n\n---",
+        "threatSource": "sophisticated attacker",
+        "prerequisites": "network interception capabilities",
+        "threatAction": "perform man-in-the-middle attacks on OCPP communications",
+        "threatImpact": "manipulation of charging transactions",
+        "impactedGoal": "integrity",
+        "impactedAssets": "transaction management and audit data",
+        "severity": "High",
+        "priority": "High",
+        "category": "Communication Security",
+        "source": "markdown",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
+      },
+      {
+        "id": "T004",
+        "statement": "T004 - Certificate Management",
+        "description": "**Threat Statement**: A malicious actor with compromised AWS Certificate Manager access, can issue fraudulent certificates for unauthorized EVSEs, which leads to rogue charging stations joining the network, resulting in reduced integrity of EVSE authentication system.\n\n- **Threat Source**: malicious actor\n- **Prerequisites**: compromised AWS Certificate Manager access\n- **Threat Action**: issue fraudulent certificates for unauthorized EVSEs\n- **Threat Impact**: rogue charging stations joining the network\n- **Reduced Goal**: integrity\n- **Impacted Assets**: EVSE authentication system\n- **Priority**: High\n- **Category**: Certificate Management\n\n---\n\n### Medium Priority Threats",
+        "threatSource": "malicious actor",
+        "prerequisites": "compromised AWS Certificate Manager access",
+        "threatAction": "issue fraudulent certificates for unauthorized EVSEs",
+        "threatImpact": "rogue charging stations joining the network",
+        "impactedGoal": "integrity",
+        "impactedAssets": "EVSE authentication system",
+        "severity": "High",
+        "priority": "High",
+        "category": "Certificate Management",
+        "source": "markdown",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
+      },
+      {
+        "id": "T005",
+        "statement": "T005 - API Security",
+        "description": "**Threat Statement**: A cybercriminal with API Gateway access tokens, can exploit unvalidated API endpoints, which leads to unauthorized modification of charging site configurations, resulting in reduced integrity of smart charging algorithms.\n\n- **Threat Source**: cybercriminal\n- **Prerequisites**: API Gateway access tokens\n- **Threat Action**: exploit unvalidated API endpoints\n- **Threat Impact**: unauthorized modification of charging site configurations\n- **Reduced Goal**: integrity\n- **Impacted Assets**: smart charging algorithms\n- **Priority**: Medium\n- **Category**: API Security\n\n---",
+        "threatSource": "cybercriminal",
+        "prerequisites": "API Gateway access tokens",
+        "threatAction": "exploit unvalidated API endpoints",
+        "threatImpact": "unauthorized modification of charging site configurations",
+        "impactedGoal": "integrity",
+        "impactedAssets": "smart charging algorithms",
+        "severity": "Medium",
+        "priority": "Medium",
+        "category": "API Security",
+        "source": "markdown",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
+      },
+      {
+        "id": "T006",
+        "statement": "T006 - Identity Management",
+        "description": "**Threat Statement**: A malicious user with compromised Cognito credentials, can access sensitive charging point operator data through the web application, which leads to exposure of operational information, resulting in reduced confidentiality of fleet management data.\n\n- **Threat Source**: malicious user\n- **Prerequisites**: compromised Cognito credentials\n- **Threat Action**: access sensitive charging point operator data through the web application\n- **Threat Impact**: exposure of operational information\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: fleet management data\n- **Priority**: Medium\n- **Category**: Identity Management\n\n---",
+        "threatSource": "malicious user",
+        "prerequisites": "compromised Cognito credentials",
+        "threatAction": "access sensitive charging point operator data through the web application",
+        "threatImpact": "exposure of operational information",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "fleet management data",
+        "severity": "Medium",
+        "priority": "Medium",
+        "category": "Identity Management",
+        "source": "markdown",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
+      },
+      {
+        "id": "T007",
+        "statement": "T007 - Function Security",
+        "description": "**Threat Statement**: A threat actor with Lambda function access, can modify OCPP message routing logic, which leads to disruption of charging station communications, resulting in reduced availability of OCPP connection handler.\n\n- **Threat Source**: threat actor\n- **Prerequisites**: Lambda function access\n- **Threat Action**: modify OCPP message routing logic\n- **Threat Impact**: disruption of charging station communications\n- **Reduced Goal**: availability\n- **Impacted Assets**: OCPP connection handler\n- **Priority**: Medium\n- **Category**: Function Security\n\n---",
+        "threatSource": "threat actor",
+        "prerequisites": "Lambda function access",
+        "threatAction": "modify OCPP message routing logic",
+        "threatImpact": "disruption of charging station communications",
+        "impactedGoal": "availability",
+        "impactedAssets": "OCPP connection handler",
+        "severity": "Medium",
+        "priority": "Medium",
+        "category": "Function Security",
+        "source": "markdown",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
+      },
+      {
+        "id": "T008",
+        "statement": "T008 - Denial of Service",
+        "description": "**Threat Statement**: A malicious attacker with DDoS capabilities, can overwhelm the Network Load Balancer, which leads to service disruption for charging stations, resulting in reduced availability of charging station infrastructure.\n\n- **Threat Source**: malicious attacker\n- **Prerequisites**: DDoS capabilities\n- **Threat Action**: overwhelm the Network Load Balancer\n- **Threat Impact**: service disruption for charging stations\n- **Reduced Goal**: availability\n- **Impacted Assets**: charging station infrastructure\n- **Priority**: Medium\n- **Category**: Denial of Service\n\n---",
+        "threatSource": "malicious attacker",
+        "prerequisites": "DDoS capabilities",
+        "threatAction": "overwhelm the Network Load Balancer",
+        "threatImpact": "service disruption for charging stations",
+        "impactedGoal": "availability",
+        "impactedAssets": "charging station infrastructure",
+        "severity": "Medium",
+        "priority": "Medium",
+        "category": "Denial of Service",
+        "source": "markdown",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
+      },
+      {
+        "id": "T009",
+        "statement": "T009 - Supply Chain",
+        "description": "**Threat Statement**: A competitor with S3 bucket access, can tamper with firmware files, which leads to installation of malicious firmware on EVSEs, resulting in reduced integrity of EVSE management system.\n\n- **Threat Source**: competitor\n- **Prerequisites**: S3 bucket access\n- **Threat Action**: tamper with firmware files\n- **Threat Impact**: installation of malicious firmware on EVSEs\n- **Reduced Goal**: integrity\n- **Impacted Assets**: EVSE management system\n- **Priority**: Medium\n- **Category**: Supply Chain\n\n---\n\n### Low Priority Threats",
+        "threatSource": "competitor",
+        "prerequisites": "S3 bucket access",
+        "threatAction": "tamper with firmware files",
+        "threatImpact": "installation of malicious firmware on EVSEs",
+        "impactedGoal": "integrity",
+        "impactedAssets": "EVSE management system",
+        "severity": "Medium",
+        "priority": "Medium",
+        "category": "Supply Chain",
+        "source": "markdown",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
+      },
+      {
+        "id": "T010",
+        "statement": "T010 - Data Leakage",
+        "description": "**Threat Statement**: A curious employee with CloudWatch access, can extract sensitive metrics and operational patterns, which leads to exposure of business intelligence, resulting in reduced confidentiality of charging operations data.\n\n- **Threat Source**: curious employee\n- **Prerequisites**: CloudWatch access\n- **Threat Action**: extract sensitive metrics and operational patterns\n- **Threat Impact**: exposure of business intelligence\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: charging operations data\n- **Priority**: Low\n- **Category**: Data Leakage\n\n---",
+        "threatSource": "curious employee",
+        "prerequisites": "CloudWatch access",
+        "threatAction": "extract sensitive metrics and operational patterns",
+        "threatImpact": "exposure of business intelligence",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "charging operations data",
+        "severity": "Low",
+        "priority": "Low",
+        "category": "Data Leakage",
+        "source": "markdown",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
+      },
+      {
+        "id": "T011",
+        "statement": "T011 - Web Security",
+        "description": "**Threat Statement**: A script kiddie with basic web application testing tools, can perform directory traversal attacks on CloudFront cached content, which leads to unauthorized access to static files, resulting in reduced confidentiality of web application assets.\n\n- **Threat Source**: script kiddie\n- **Prerequisites**: basic web application testing tools\n- **Threat Action**: perform directory traversal attacks on CloudFront cached content\n- **Threat Impact**: unauthorized access to static files\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: web application assets\n- **Priority**: Low\n- **Category**: Web Security\n\n---\n\n\n## Usage Notes\n\nThese threat statements were generated using AI analysis of your application context. They follow the standard threat modeling syntax:\n\n**\"A [threat source] with [pre-requisites], can [threat action], which leads to [threat impact], resulting in [reduced goal] of [impacted assets].\"**\n\n### Next Steps\n1. Review and validate these threat statements\n2. Modify or add threats as needed for your specific context\n3. Use these threats as input for attack tree generation\n4. Consider implementing mitigations for high-priority threats\n\n### Customization\nYou can edit this file to:\n- Add more specific threat statements\n- Adjust priority levels\n- Include additional context or mitigations\n- Remove threats that don't apply to your application",
+        "threatSource": "script kiddie",
+        "prerequisites": "basic web application testing tools",
+        "threatAction": "perform directory traversal attacks on CloudFront cached content",
+        "threatImpact": "unauthorized access to static files",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "web application assets",
+        "severity": "Low",
+        "priority": "Low",
+        "category": "Web Security",
+        "source": "markdown",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
+      }
+    ],
+    "high_severity": [
+      {
+        "id": "T001",
+        "statement": "T001 - Authentication",
+        "description": "**Threat Statement**: A malicious attacker with compromised EVSE credentials, can send malicious OCPP messages to the connection handler, which leads to unauthorized control of charging operations, resulting in reduced integrity of charging station infrastructure.\n\n- **Threat Source**: malicious attacker\n- **Prerequisites**: compromised EVSE credentials\n- **Threat Action**: send malicious OCPP messages to the connection handler\n- **Threat Impact**: unauthorized control of charging operations\n- **Reduced Goal**: integrity\n- **Impacted Assets**: charging station infrastructure\n- **Priority**: High\n- **Category**: Authentication\n\n---",
+        "threatSource": "malicious attacker",
+        "prerequisites": "compromised EVSE credentials",
+        "threatAction": "send malicious OCPP messages to the connection handler",
+        "threatImpact": "unauthorized control of charging operations",
+        "impactedGoal": "integrity",
+        "impactedAssets": "charging station infrastructure",
+        "severity": "High",
+        "priority": "High",
+        "category": "Authentication",
+        "source": "markdown",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
+      },
+      {
+        "id": "T002",
+        "statement": "T002 - Data Exposure",
+        "description": "**Threat Statement**: A rogue insider with access to DynamoDB encryption keys, can decrypt stored EVSE credentials, which leads to compromise of charging station authentication, resulting in reduced confidentiality of EVSE registry.\n\n- **Threat Source**: rogue insider\n- **Prerequisites**: access to DynamoDB encryption keys\n- **Threat Action**: decrypt stored EVSE credentials\n- **Threat Impact**: compromise of charging station authentication\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: EVSE registry\n- **Priority**: High\n- **Category**: Data Exposure\n\n---",
+        "threatSource": "rogue insider",
+        "prerequisites": "access to DynamoDB encryption keys",
+        "threatAction": "decrypt stored EVSE credentials",
+        "threatImpact": "compromise of charging station authentication",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "EVSE registry",
+        "severity": "High",
+        "priority": "High",
+        "category": "Data Exposure",
+        "source": "markdown",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
+      },
+      {
+        "id": "T003",
+        "statement": "T003 - Communication Security",
+        "description": "**Threat Statement**: A sophisticated attacker with network interception capabilities, can perform man-in-the-middle attacks on OCPP communications, which leads to manipulation of charging transactions, resulting in reduced integrity of transaction management and audit data.\n\n- **Threat Source**: sophisticated attacker\n- **Prerequisites**: network interception capabilities\n- **Threat Action**: perform man-in-the-middle attacks on OCPP communications\n- **Threat Impact**: manipulation of charging transactions\n- **Reduced Goal**: integrity\n- **Impacted Assets**: transaction management and audit data\n- **Priority**: High\n- **Category**: Communication Security\n\n---",
+        "threatSource": "sophisticated attacker",
+        "prerequisites": "network interception capabilities",
+        "threatAction": "perform man-in-the-middle attacks on OCPP communications",
+        "threatImpact": "manipulation of charging transactions",
+        "impactedGoal": "integrity",
+        "impactedAssets": "transaction management and audit data",
+        "severity": "High",
+        "priority": "High",
+        "category": "Communication Security",
+        "source": "markdown",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
+      },
+      {
+        "id": "T004",
+        "statement": "T004 - Certificate Management",
+        "description": "**Threat Statement**: A malicious actor with compromised AWS Certificate Manager access, can issue fraudulent certificates for unauthorized EVSEs, which leads to rogue charging stations joining the network, resulting in reduced integrity of EVSE authentication system.\n\n- **Threat Source**: malicious actor\n- **Prerequisites**: compromised AWS Certificate Manager access\n- **Threat Action**: issue fraudulent certificates for unauthorized EVSEs\n- **Threat Impact**: rogue charging stations joining the network\n- **Reduced Goal**: integrity\n- **Impacted Assets**: EVSE authentication system\n- **Priority**: High\n- **Category**: Certificate Management\n\n---\n\n### Medium Priority Threats",
+        "threatSource": "malicious actor",
+        "prerequisites": "compromised AWS Certificate Manager access",
+        "threatAction": "issue fraudulent certificates for unauthorized EVSEs",
+        "threatImpact": "rogue charging stations joining the network",
+        "impactedGoal": "integrity",
+        "impactedAssets": "EVSE authentication system",
+        "severity": "High",
+        "priority": "High",
+        "category": "Certificate Management",
+        "source": "markdown",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/threatforest-agentic-application/examples/vehicle-charging-example/Electric_Vehicle_Charging_Station_Management_System_generated_threat_statements.md"
+      }
+    ]
+  },
+  "attack_trees": [
+    {
+      "threat_id": "T001",
+      "threat_category": "Authentication",
+      "threat_description": "**Threat Statement**: A malicious attacker with compromised EVSE credentials, can send malicious OCPP messages to the connection handler, which leads to unauthorized control of charging operations, resulting in reduced integrity of charging station infrastructure.\n\n- **Threat Source**: malicious attacker\n- **Prerequisites**: compromised EVSE credentials\n- **Threat Action**: send malicious OCPP messages to the connection handler\n- **Threat Impact**: unauthorized control of charging operations\n- **Reduced Goal**: integrity\n- **Impacted Assets**: charging station infrastructure\n- **Priority**: High\n- **Category**: Authentication\n\n---",
+      "threat_statement": "T001 - Authentication",
+      "threat_action": "send malicious OCPP messages to the connection handler",
+      "threatSource": "malicious attacker",
+      "prerequisites": "compromised EVSE credentials",
+      "threatAction": "send malicious OCPP messages to the connection handler",
+      "threatImpact": "unauthorized control of charging operations",
+      "impactedGoal": "integrity",
+      "impactedAssets": "charging station infrastructure",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"Malicious attacker with compromised EVSE credentials\"] --> B[\"Establish authenticated OCPP connection\"]\n    B --> C[\"Craft malicious OCPP messages\"]\n    C --> D1[\"Send unauthorized StartTransaction commands\"]\n    C --> D2[\"Send malicious RemoteStartTransaction requests\"]\n    C --> D3[\"Send unauthorized StopTransaction commands\"]\n    C --> D4[\"Manipulate charging parameters\"]\n    D1 --> E1[\"Initiate unauthorized charging sessions\"]\n    D2 --> E2[\"Override legitimate user sessions\"]\n    D3 --> E3[\"Terminate active charging sessions\"]\n    D4 --> E4[\"Modify power delivery settings\"]\n    E1 --> F[\"Unauthorized control of charging operations\"]\n    E2 --> F\n    E3 --> F\n    E4 --> F\n    F --> G[\"Compromise integrity of charging station infrastructure\"]\n    A --> H[\"Credential acquisition phase\"]\n    H --> I1[\"Phishing EVSE operators\"]\n    H --> I2[\"Exploiting weak credential storage\"]\n    H --> I3[\"Intercepting unencrypted credentials\"]\n    H --> I4[\"Social engineering attacks\"]\n    I1 --> A\n    I2 --> A\n    I3 --> A\n    I4 --> A\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D1,D2,D3,D4,E1,E2,E3,E4,H,I1,I2,I3,I4 attack\n    class F,G goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "Malicious attacker with compromised EVSE credentials"
+        },
+        {
+          "node_id": "B",
+          "description": "Establish authenticated OCPP connection"
+        },
+        {
+          "node_id": "C",
+          "description": "Craft malicious OCPP messages"
+        },
+        {
+          "node_id": "D1",
+          "description": "Send unauthorized StartTransaction commands"
+        },
+        {
+          "node_id": "D2",
+          "description": "Send malicious RemoteStartTransaction requests"
+        },
+        {
+          "node_id": "D3",
+          "description": "Send unauthorized StopTransaction commands"
+        },
+        {
+          "node_id": "D4",
+          "description": "Manipulate charging parameters"
+        },
+        {
+          "node_id": "E1",
+          "description": "Initiate unauthorized charging sessions"
+        },
+        {
+          "node_id": "E2",
+          "description": "Override legitimate user sessions"
+        },
+        {
+          "node_id": "E3",
+          "description": "Terminate active charging sessions"
+        },
+        {
+          "node_id": "E4",
+          "description": "Modify power delivery settings"
+        },
+        {
+          "node_id": "F",
+          "description": "Unauthorized control of charging operations"
+        },
+        {
+          "node_id": "G",
+          "description": "Compromise integrity of charging station infrastructure"
+        },
+        {
+          "node_id": "H",
+          "description": "Credential acquisition phase"
+        },
+        {
+          "node_id": "I1",
+          "description": "Phishing EVSE operators"
+        },
+        {
+          "node_id": "I2",
+          "description": "Exploiting weak credential storage"
+        },
+        {
+          "node_id": "I3",
+          "description": "Intercepting unencrypted credentials"
+        },
+        {
+          "node_id": "I4",
+          "description": "Social engineering attacks"
+        }
+      ],
+      "generated_content": "# Attack Tree for T001 - Authentication Compromise\n\n```mermaid\ngraph TD\n    A[\"Malicious attacker with compromised EVSE credentials\"] --> B[\"Establish authenticated OCPP connection\"]\n    \n    B --> C[\"Craft malicious OCPP messages\"]\n    \n    C --> D1[\"Send unauthorized StartTransaction commands\"]\n    C --> D2[\"Send malicious RemoteStartTransaction requests\"]\n    C --> D3[\"Send unauthorized StopTransaction commands\"]\n    C --> D4[\"Manipulate charging parameters\"]\n    \n    D1 --> E1[\"Initiate unauthorized charging sessions\"]\n    D2 --> E2[\"Override legitimate user sessions\"]\n    D3 --> E3[\"Terminate active charging sessions\"]\n    D4 --> E4[\"Modify power delivery settings\"]\n    \n    E1 --> F[\"Unauthorized control of charging operations\"]\n    E2 --> F\n    E3 --> F\n    E4 --> F\n    \n    F --> G[\"Compromise integrity of charging station infrastructure\"]\n    \n    A --> H[\"Credential acquisition phase\"]\n    H --> I1[\"Phishing EVSE operators\"]\n    H --> I2[\"Exploiting weak credential storage\"]\n    H --> I3[\"Intercepting unencrypted credentials\"]\n    H --> I4[\"Social engineering attacks\"]\n    \n    I1 --> A\n    I2 --> A\n    I3 --> A\n    I4 --> A\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D1,D2,D3,D4,E1,E2,E3,E4,H,I1,I2,I3,I4 attack\n    class F,G goal\n    class A fact\n```",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 24,
+        "tech_mentions": 0
+      }
+    },
+    {
+      "threat_id": "T002",
+      "threat_category": "Data Exposure",
+      "threat_description": "**Threat Statement**: A rogue insider with access to DynamoDB encryption keys, can decrypt stored EVSE credentials, which leads to compromise of charging station authentication, resulting in reduced confidentiality of EVSE registry.\n\n- **Threat Source**: rogue insider\n- **Prerequisites**: access to DynamoDB encryption keys\n- **Threat Action**: decrypt stored EVSE credentials\n- **Threat Impact**: compromise of charging station authentication\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: EVSE registry\n- **Priority**: High\n- **Category**: Data Exposure\n\n---",
+      "threat_statement": "T002 - Data Exposure",
+      "threat_action": "decrypt stored EVSE credentials",
+      "threatSource": "rogue insider",
+      "prerequisites": "access to DynamoDB encryption keys",
+      "threatAction": "decrypt stored EVSE credentials",
+      "threatImpact": "compromise of charging station authentication",
+      "impactedGoal": "confidentiality",
+      "impactedAssets": "EVSE registry",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"Rogue insider with access to DynamoDB encryption keys\"] --> B[\"Locate encrypted EVSE credentials in DynamoDB\"]\n    A --> C[\"Obtain encryption key material\"]\n    B --> D[\"Extract encrypted credential data\"]\n    C --> D\n    D --> E[\"Decrypt stored EVSE credentials\"]\n    E --> F[\"Access charging station authentication tokens\"]\n    E --> G[\"Extract EVSE API credentials\"]\n    F --> H[\"Impersonate legitimate charging stations\"]\n    G --> H\n    H --> I[\"Compromise charging station authentication\"]\n    I --> J[\"Unauthorized access to EVSE registry\"]\n    J --> K[\"Data exposure: Loss of EVSE registry confidentiality\"]\n    B --> L[\"Query DynamoDB tables for EVSE data\"]\n    L --> D\n    C --> M[\"Access AWS KMS keys\"]\n    C --> N[\"Retrieve encryption keys from key management system\"]\n    M --> E\n    N --> E\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,L,M,N attack\n    class K goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "Rogue insider with access to DynamoDB encryption keys"
+        },
+        {
+          "node_id": "B",
+          "description": "Locate encrypted EVSE credentials in DynamoDB"
+        },
+        {
+          "node_id": "C",
+          "description": "Obtain encryption key material"
+        },
+        {
+          "node_id": "D",
+          "description": "Extract encrypted credential data"
+        },
+        {
+          "node_id": "E",
+          "description": "Decrypt stored EVSE credentials"
+        },
+        {
+          "node_id": "F",
+          "description": "Access charging station authentication tokens"
+        },
+        {
+          "node_id": "G",
+          "description": "Extract EVSE API credentials"
+        },
+        {
+          "node_id": "H",
+          "description": "Impersonate legitimate charging stations"
+        },
+        {
+          "node_id": "I",
+          "description": "Compromise charging station authentication"
+        },
+        {
+          "node_id": "J",
+          "description": "Unauthorized access to EVSE registry"
+        },
+        {
+          "node_id": "K",
+          "description": "Data exposure: Loss of EVSE registry confidentiality"
+        },
+        {
+          "node_id": "L",
+          "description": "Query DynamoDB tables for EVSE data"
+        },
+        {
+          "node_id": "M",
+          "description": "Access AWS KMS keys"
+        },
+        {
+          "node_id": "N",
+          "description": "Retrieve encryption keys from key management system"
+        }
+      ],
+      "generated_content": "# Attack Tree for T002 - Data Exposure\n\n## Threat: Rogue Insider Compromising EVSE Credentials\n\n```mermaid\ngraph TD\n    A[\"Rogue insider with access to DynamoDB encryption keys\"] --> B[\"Locate encrypted EVSE credentials in DynamoDB\"]\n    A --> C[\"Obtain encryption key material\"]\n    \n    B --> D[\"Extract encrypted credential data\"]\n    C --> D\n    \n    D --> E[\"Decrypt stored EVSE credentials\"]\n    \n    E --> F[\"Access charging station authentication tokens\"]\n    E --> G[\"Extract EVSE API credentials\"]\n    \n    F --> H[\"Impersonate legitimate charging stations\"]\n    G --> H\n    \n    H --> I[\"Compromise charging station authentication\"]\n    \n    I --> J[\"Unauthorized access to EVSE registry\"]\n    \n    J --> K[\"Data exposure: Loss of EVSE registry confidentiality\"]\n    \n    B --> L[\"Query DynamoDB tables for EVSE data\"]\n    L --> D\n    \n    C --> M[\"Access AWS KMS keys\"]\n    C --> N[\"Retrieve encryption keys from key management system\"]\n    M --> E\n    N --> E\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,L,M,N attack\n    class K goal\n    class A fact\n```\n\nThis attack tree illustrates how a rogue insider with access to DynamoDB encryption keys can systematically compromise the EVSE (Electric Vehicle Supply Equipment) registry by decrypting stored credentials, leading to unauthorized access and loss of confidentiality of charging station authentication data.",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 18,
+        "tech_mentions": 0
+      }
+    },
+    {
+      "threat_id": "T003",
+      "threat_category": "Communication Security",
+      "threat_description": "**Threat Statement**: A sophisticated attacker with network interception capabilities, can perform man-in-the-middle attacks on OCPP communications, which leads to manipulation of charging transactions, resulting in reduced integrity of transaction management and audit data.\n\n- **Threat Source**: sophisticated attacker\n- **Prerequisites**: network interception capabilities\n- **Threat Action**: perform man-in-the-middle attacks on OCPP communications\n- **Threat Impact**: manipulation of charging transactions\n- **Reduced Goal**: integrity\n- **Impacted Assets**: transaction management and audit data\n- **Priority**: High\n- **Category**: Communication Security\n\n---",
+      "threat_statement": "T003 - Communication Security",
+      "threat_action": "perform man-in-the-middle attacks on OCPP communications",
+      "threatSource": "sophisticated attacker",
+      "prerequisites": "network interception capabilities",
+      "threatAction": "perform man-in-the-middle attacks on OCPP communications",
+      "threatImpact": "manipulation of charging transactions",
+      "impactedGoal": "integrity",
+      "impactedAssets": "transaction management and audit data",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"Sophisticated attacker with network interception capabilities\"] --> B[\"Network positioning\"]\n    A --> C[\"OCPP protocol analysis\"]\n    B --> D[\"Gain network access to charging infrastructure\"]\n    B --> E[\"Position in communication path\"]\n    D --> F[\"Compromise network device\"]\n    D --> G[\"Deploy rogue access point\"]\n    D --> H[\"Exploit network misconfiguration\"]\n    E --> I[\"ARP spoofing\"]\n    E --> J[\"DNS hijacking\"]\n    E --> K[\"BGP hijacking\"]\n    C --> L[\"Identify OCPP message structure\"]\n    C --> M[\"Analyze authentication mechanisms\"]\n    F --> N[\"Intercept OCPP communications\"]\n    G --> N\n    H --> N\n    I --> N\n    J --> N\n    K --> N\n    L --> O[\"Craft malicious OCPP messages\"]\n    M --> O\n    N --> P[\"Execute man-in-the-middle attack\"]\n    O --> P\n    P --> Q[\"Inject falsified charging commands\"]\n    P --> R[\"Modify transaction data\"]\n    P --> S[\"Alter pricing information\"]\n    Q --> T[\"Manipulation of charging transactions\"]\n    R --> T\n    S --> T\n    T --> U[\"Compromise transaction management integrity\"]\n    T --> V[\"Corrupt audit data\"]\n    U --> W[\"Loss of integrity of transaction management and audit data\"]\n    V --> W\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V attack\n    class W goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "Sophisticated attacker with network interception capabilities"
+        },
+        {
+          "node_id": "B",
+          "description": "Network positioning"
+        },
+        {
+          "node_id": "C",
+          "description": "OCPP protocol analysis"
+        },
+        {
+          "node_id": "D",
+          "description": "Gain network access to charging infrastructure"
+        },
+        {
+          "node_id": "E",
+          "description": "Position in communication path"
+        },
+        {
+          "node_id": "F",
+          "description": "Compromise network device"
+        },
+        {
+          "node_id": "G",
+          "description": "Deploy rogue access point"
+        },
+        {
+          "node_id": "H",
+          "description": "Exploit network misconfiguration"
+        },
+        {
+          "node_id": "I",
+          "description": "ARP spoofing"
+        },
+        {
+          "node_id": "J",
+          "description": "DNS hijacking"
+        },
+        {
+          "node_id": "K",
+          "description": "BGP hijacking"
+        },
+        {
+          "node_id": "L",
+          "description": "Identify OCPP message structure"
+        },
+        {
+          "node_id": "M",
+          "description": "Analyze authentication mechanisms"
+        },
+        {
+          "node_id": "N",
+          "description": "Intercept OCPP communications"
+        },
+        {
+          "node_id": "O",
+          "description": "Craft malicious OCPP messages"
+        },
+        {
+          "node_id": "P",
+          "description": "Execute man-in-the-middle attack"
+        },
+        {
+          "node_id": "Q",
+          "description": "Inject falsified charging commands"
+        },
+        {
+          "node_id": "R",
+          "description": "Modify transaction data"
+        },
+        {
+          "node_id": "S",
+          "description": "Alter pricing information"
+        },
+        {
+          "node_id": "T",
+          "description": "Manipulation of charging transactions"
+        },
+        {
+          "node_id": "U",
+          "description": "Compromise transaction management integrity"
+        },
+        {
+          "node_id": "V",
+          "description": "Corrupt audit data"
+        },
+        {
+          "node_id": "W",
+          "description": "Loss of integrity of transaction management and audit data"
+        }
+      ],
+      "generated_content": "# Attack Tree for T003 - Communication Security\n\n```mermaid\ngraph TD\n    A[\"Sophisticated attacker with network interception capabilities\"] --> B[\"Network positioning\"]\n    A --> C[\"OCPP protocol analysis\"]\n    \n    B --> D[\"Gain network access to charging infrastructure\"]\n    B --> E[\"Position in communication path\"]\n    \n    D --> F[\"Compromise network device\"]\n    D --> G[\"Deploy rogue access point\"]\n    D --> H[\"Exploit network misconfiguration\"]\n    \n    E --> I[\"ARP spoofing\"]\n    E --> J[\"DNS hijacking\"]\n    E --> K[\"BGP hijacking\"]\n    \n    C --> L[\"Identify OCPP message structure\"]\n    C --> M[\"Analyze authentication mechanisms\"]\n    \n    F --> N[\"Intercept OCPP communications\"]\n    G --> N\n    H --> N\n    I --> N\n    J --> N\n    K --> N\n    \n    L --> O[\"Craft malicious OCPP messages\"]\n    M --> O\n    \n    N --> P[\"Execute man-in-the-middle attack\"]\n    O --> P\n    \n    P --> Q[\"Inject falsified charging commands\"]\n    P --> R[\"Modify transaction data\"]\n    P --> S[\"Alter pricing information\"]\n    \n    Q --> T[\"Manipulation of charging transactions\"]\n    R --> T\n    S --> T\n    \n    T --> U[\"Compromise transaction management integrity\"]\n    T --> V[\"Corrupt audit data\"]\n    \n    U --> W[\"Loss of integrity of transaction management and audit data\"]\n    V --> W\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V attack\n    class W goal\n    class A fact\n```",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 32,
+        "tech_mentions": 0
+      }
+    },
+    {
+      "threat_id": "T004",
+      "threat_category": "Certificate Management",
+      "threat_description": "**Threat Statement**: A malicious actor with compromised AWS Certificate Manager access, can issue fraudulent certificates for unauthorized EVSEs, which leads to rogue charging stations joining the network, resulting in reduced integrity of EVSE authentication system.\n\n- **Threat Source**: malicious actor\n- **Prerequisites**: compromised AWS Certificate Manager access\n- **Threat Action**: issue fraudulent certificates for unauthorized EVSEs\n- **Threat Impact**: rogue charging stations joining the network\n- **Reduced Goal**: integrity\n- **Impacted Assets**: EVSE authentication system\n- **Priority**: High\n- **Category**: Certificate Management\n\n---\n\n### Medium Priority Threats",
+      "threat_statement": "T004 - Certificate Management",
+      "threat_action": "issue fraudulent certificates for unauthorized EVSEs",
+      "threatSource": "malicious actor",
+      "prerequisites": "compromised AWS Certificate Manager access",
+      "threatAction": "issue fraudulent certificates for unauthorized EVSEs",
+      "threatImpact": "rogue charging stations joining the network",
+      "impactedGoal": "integrity",
+      "impactedAssets": "EVSE authentication system",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    Start[\"Malicious actor with compromised AWS Certificate Manager access\"]\n    Start --> Recon[\"Reconnaissance of certificate infrastructure\"]\n    Start --> DirectIssue[\"Direct fraudulent certificate issuance\"]\n    Recon --> IdentifyEVSE[\"Identify legitimate EVSE certificate patterns\"]\n    Recon --> MapCA[\"Map certificate authority structure\"]\n    IdentifyEVSE --> CraftRequest[\"Craft fraudulent certificate requests\"]\n    MapCA --> CraftRequest\n    CraftRequest --> IssueMultiple[\"Issue multiple fraudulent EVSE certificates\"]\n    DirectIssue --> IssueMultiple\n    IssueMultiple --> DeployRogue[\"Deploy rogue charging stations with fraudulent certs\"]\n    DeployRogue --> NetworkAuth[\"Authenticate rogue EVSEs to network\"]\n    NetworkAuth --> Goal[\"Rogue charging stations join network - EVSE authentication system integrity compromised\"]\n    Start --> ModifyExisting[\"Modify existing certificate policies\"]\n    ModifyExisting --> WeakenValidation[\"Weaken certificate validation requirements\"]\n    WeakenValidation --> IssueMultiple\n    Start --> ExportPrivateKeys[\"Export private keys from ACM\"]\n    ExportPrivateKeys --> CloneLegitimate[\"Clone legitimate EVSE certificates\"]\n    CloneLegitimate --> DeployRogue\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class Recon,IdentifyEVSE,MapCA,CraftRequest,IssueMultiple,DirectIssue,DeployRogue,NetworkAuth,ModifyExisting,WeakenValidation,ExportPrivateKeys,CloneLegitimate attack\n    class Goal goal\n    class Start fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "Start",
+          "description": "Malicious actor with compromised AWS Certificate Manager access"
+        },
+        {
+          "node_id": "Recon",
+          "description": "Reconnaissance of certificate infrastructure"
+        },
+        {
+          "node_id": "DirectIssue",
+          "description": "Direct fraudulent certificate issuance"
+        },
+        {
+          "node_id": "IdentifyEVSE",
+          "description": "Identify legitimate EVSE certificate patterns"
+        },
+        {
+          "node_id": "MapCA",
+          "description": "Map certificate authority structure"
+        },
+        {
+          "node_id": "CraftRequest",
+          "description": "Craft fraudulent certificate requests"
+        },
+        {
+          "node_id": "IssueMultiple",
+          "description": "Issue multiple fraudulent EVSE certificates"
+        },
+        {
+          "node_id": "DeployRogue",
+          "description": "Deploy rogue charging stations with fraudulent certs"
+        },
+        {
+          "node_id": "NetworkAuth",
+          "description": "Authenticate rogue EVSEs to network"
+        },
+        {
+          "node_id": "Goal",
+          "description": "Rogue charging stations join network - EVSE authentication system integrity compromised"
+        },
+        {
+          "node_id": "ModifyExisting",
+          "description": "Modify existing certificate policies"
+        },
+        {
+          "node_id": "WeakenValidation",
+          "description": "Weaken certificate validation requirements"
+        },
+        {
+          "node_id": "ExportPrivateKeys",
+          "description": "Export private keys from ACM"
+        },
+        {
+          "node_id": "CloneLegitimate",
+          "description": "Clone legitimate EVSE certificates"
+        }
+      ],
+      "generated_content": "# Attack Tree for T004 - Certificate Management\n\n```mermaid\ngraph TD\n    Start[\"Malicious actor with compromised AWS Certificate Manager access\"]\n    \n    Start --> Recon[\"Reconnaissance of certificate infrastructure\"]\n    Start --> DirectIssue[\"Direct fraudulent certificate issuance\"]\n    \n    Recon --> IdentifyEVSE[\"Identify legitimate EVSE certificate patterns\"]\n    Recon --> MapCA[\"Map certificate authority structure\"]\n    \n    IdentifyEVSE --> CraftRequest[\"Craft fraudulent certificate requests\"]\n    MapCA --> CraftRequest\n    \n    CraftRequest --> IssueMultiple[\"Issue multiple fraudulent EVSE certificates\"]\n    DirectIssue --> IssueMultiple\n    \n    IssueMultiple --> DeployRogue[\"Deploy rogue charging stations with fraudulent certs\"]\n    \n    DeployRogue --> NetworkAuth[\"Authenticate rogue EVSEs to network\"]\n    \n    NetworkAuth --> Goal[\"Rogue charging stations join network - EVSE authentication system integrity compromised\"]\n    \n    Start --> ModifyExisting[\"Modify existing certificate policies\"]\n    ModifyExisting --> WeakenValidation[\"Weaken certificate validation requirements\"]\n    WeakenValidation --> IssueMultiple\n    \n    Start --> ExportPrivateKeys[\"Export private keys from ACM\"]\n    ExportPrivateKeys --> CloneLegitimate[\"Clone legitimate EVSE certificates\"]\n    CloneLegitimate --> DeployRogue\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class Recon,IdentifyEVSE,MapCA,CraftRequest,IssueMultiple,DirectIssue,DeployRogue,NetworkAuth,ModifyExisting,WeakenValidation,ExportPrivateKeys,CloneLegitimate attack\n    class Goal goal\n    class Start fact\n```",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 17,
+        "tech_mentions": 0
+      }
+    }
+  ],
+  "mapping_summary": {}
+}

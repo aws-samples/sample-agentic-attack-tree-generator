@@ -6,9 +6,10 @@ import { ProgressScreen } from './ProgressScreen';
 import { SummaryScreen } from './SummaryScreen';
 import { ErrorDisplay } from './ErrorDisplay';
 import { PathSelector } from './PathSelector';
+import { ResumePrompt } from './ResumePrompt';
 import { useWorkflow } from '../hooks/useWorkflow';
 
-export type Screen = 'welcome' | 'config' | 'pathSelect' | 'progress' | 'summary' | 'error';
+export type Screen = 'welcome' | 'config' | 'pathSelect' | 'progress' | 'summary' | 'error' | 'continue';
 export type Mode = 'full' | 'enrich' | 'mitigate';
 
 export interface AppState {
@@ -54,7 +55,7 @@ export const App: React.FC = () => {
       const result = await executeWorkflow(config);
       
       if (result.success) {
-        setScreen('summary');
+        setScreen('continue');
       } else {
         setScreen('error');
       }
@@ -108,7 +109,7 @@ export const App: React.FC = () => {
             stage: 'complete',
             message: `✅ Enriched ${result.data.enriched_count} attack trees`,
             data: {
-              ...workflowState.data,
+              mode: 'enrich',
               attackTrees: result.data.enriched_count,
               threatsProcessed: result.data.enriched_count,
               outputDir: result.data.output_dir
@@ -134,7 +135,7 @@ export const App: React.FC = () => {
             stage: 'complete',
             message: `✅ Added mitigations to ${result.data.processed_count} files`,
             data: {
-              ...workflowState.data,
+              mode: 'mitigate',
               attackTrees: result.data.processed_count,
               threatsProcessed: result.data.techniques_with_mitigations || result.data.processed_count,
               totalMitigations: result.data.total_mitigations || 0,
@@ -157,6 +158,82 @@ export const App: React.FC = () => {
     setScreen('config');
   };
 
+  const handleContinue = async (shouldContinue: boolean) => {
+    if (!shouldContinue) {
+      setScreen('summary');
+      return;
+    }
+
+    // Run Options 2 and 3 sequentially
+    const { PythonBridge } = await import('../utils/pythonBridge');
+    const bridge = new PythonBridge();
+    
+    const attackTreesDir = `${process.cwd()}/../output/attack_trees`;
+    const enrichedDir = `${process.cwd()}/../output/enriched`;
+    const mitigatedDir = `${process.cwd()}/../output/mitigated`;
+    
+    const handleProgress = (current: number, total: number, message: string) => {
+      const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
+      updateState({
+        stage: 'trees',
+        current,
+        total,
+        message,
+        percentage
+      });
+    };
+    
+    try {
+      setScreen('progress');
+      
+      // Step 1: TTC Enrichment
+      updateState({ 
+        stage: 'trees', 
+        message: '🎯 Starting TTC enrichment...', 
+        current: 0, 
+        total: 0,
+        data: { mode: 'enrich' }
+      });
+      
+      const enrichResult = await bridge.enrichAttackTrees(attackTreesDir, enrichedDir, handleProgress);
+      
+      if (!enrichResult.success) {
+        throw new Error(enrichResult.error);
+      }
+      
+      // Step 2: Mitigation Mapping
+      updateState({ 
+        stage: 'summary', 
+        message: '🛡️ Starting mitigation mapping...', 
+        current: 0, 
+        total: 0,
+        data: { mode: 'mitigate' }
+      });
+      
+      const mitigateResult = await bridge.addMitigations(enrichedDir, mitigatedDir, handleProgress);
+      
+      if (mitigateResult.success) {
+        updateState({ 
+          stage: 'complete',
+          message: `✅ Complete workflow finished`,
+          data: {
+            mode: 'full',
+            attackTrees: mitigateResult.data.processed_count,
+            threatsProcessed: mitigateResult.data.techniques_with_mitigations || mitigateResult.data.processed_count,
+            totalMitigations: mitigateResult.data.total_mitigations || 0,
+            outputDir: mitigatedDir
+          }
+        });
+        setTimeout(() => setScreen('summary'), 1000);
+      } else {
+        throw new Error(mitigateResult.error);
+      }
+    } catch (error) {
+      setSimpleError(error instanceof Error ? error.message : 'Unknown error');
+      setScreen('error');
+    }
+  };
+
   return (
     <Box flexDirection="column" padding={1}>
       {screen === 'welcome' && <WelcomeScreen onNext={handleNext} />}
@@ -164,6 +241,13 @@ export const App: React.FC = () => {
         <PathSelector mode={appState.mode} onSubmit={handlePathSubmit} />
       )}
       {screen === 'config' && <ConfigurationScreen onNext={handleNext} state={appState} />}
+      {screen === 'continue' && (
+        <ResumePrompt 
+          message="Option 1 complete! Continue with TTC Enrichment (Option 2) and Mitigation Mapping (Option 3)?"
+          onResume={() => handleContinue(true)}
+          onSkip={() => handleContinue(false)}
+        />
+      )}
       {screen === 'progress' && <ProgressScreen state={workflowState} />}
       {screen === 'summary' && <SummaryScreen state={workflowState} />}
       {screen === 'error' && (simpleError || workflowState.error) && (

@@ -7,7 +7,10 @@ def main():
     print("🎯 ThreatForest Mitigation Mapper Demo\n")
     
     # Initialize mapper
-    bundle_path = Path(__file__).parent.parent.parent.parent / "stix-data" / "aaf-bundle.json"
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+    from config import config
+    bundle_path = config.stix_bundle_path
     mapper = MitigationMapper(str(bundle_path))
     
     # Add demo mitigations for techniques in the attack trees

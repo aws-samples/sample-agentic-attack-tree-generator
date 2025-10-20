@@ -16,16 +16,19 @@ class TTCMatcher:
     
     def __init__(self, 
                  embeddings_path: Optional[str] = None,
-                 model_name: str = 'Qwen/Qwen3-Embedding-0.6B',
+                 model_name: Optional[str] = None,
                  min_similarity: float = 0.35):
         """
         Initialize TTC matcher
         
         Args:
             embeddings_path: Path to pre-generated embeddings JSON
-            model_name: Sentence transformer model to use
+            model_name: Sentence transformer model to use (defaults to config)
             min_similarity: Minimum similarity threshold (default 0.35)
         """
+        if model_name is None:
+            from ...config import config
+            model_name = config.embeddings_model
         self.model_name = model_name
         self.min_similarity = min_similarity
         self.model = None

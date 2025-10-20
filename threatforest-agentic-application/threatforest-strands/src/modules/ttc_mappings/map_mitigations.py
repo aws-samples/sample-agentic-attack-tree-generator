@@ -6,8 +6,12 @@ from mitigation_mapper import MitigationMapper
 
 
 def main():
-    # Default paths
-    bundle_path = Path(__file__).parent.parent.parent.parent / "stix-data" / "aaf-bundle.json"
+    # Load config
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+    from config import config
+    
+    # Default paths from config
+    bundle_path = config.stix_bundle_path
     enriched_dir = Path(__file__).parent.parent.parent.parent / "output" / "enriched_v2"
     output_dir = Path(__file__).parent.parent.parent.parent / "output" / "mitigated"
     

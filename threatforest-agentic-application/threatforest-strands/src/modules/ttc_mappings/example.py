@@ -81,7 +81,12 @@ def example_create_embeddings():
     print("Example 3: Creating Embeddings")
     print("=" * 70)
     
-    stix_bundle = Path(__file__).parent.parent.parent.parent / 'stix-data' / 'aaf-bundle.json'
+    # Load config
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+    from config import config
+    
+    stix_bundle = config.stix_bundle_path
     
     if not stix_bundle.exists():
         print(f"⚠️  STIX bundle not found at {stix_bundle}")
