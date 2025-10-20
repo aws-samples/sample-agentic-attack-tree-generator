@@ -16,7 +16,7 @@ export const SummaryScreen: React.FC<Props> = ({ state }) => {
       return [
         '• Review enriched attack trees with TTC mappings in output directory',
         '• Check logs in output/logs directory',
-        '• Add mitigations using Option 3 (Mitigation Mapping)'
+        '• Add mitigations and detections using Option 3 (Mitigation and Detection Mapping)'
       ];
     }
     

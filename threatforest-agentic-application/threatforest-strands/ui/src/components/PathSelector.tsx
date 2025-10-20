@@ -38,38 +38,26 @@ export const PathSelector: React.FC<Props> = ({ mode, onSubmit }) => {
       
       {step === 'input' ? (
         <Box flexDirection="column" marginTop={1}>
-          <Text>
-            Enter input directory (or press Enter for default):
-          </Text>
+          <Text>Enter input directory (or press Enter for default):</Text>
           <Text dimColor>Default: {defaultInput}</Text>
-          <Box marginTop={1}>
-            <Text color="green">&gt; </Text>
-            <TextInput
-              value={inputDir}
-              onChange={setInputDir}
-              onSubmit={handleInputSubmit}
-              placeholder={defaultInput}
-            />
-          </Box>
+          <Text color="green" marginTop={1}>&gt; <TextInput
+            value={inputDir}
+            onChange={setInputDir}
+            onSubmit={handleInputSubmit}
+            placeholder={defaultInput}
+          /></Text>
         </Box>
       ) : (
         <Box flexDirection="column" marginTop={1}>
           <Text>Input: {inputDir || defaultInput}</Text>
-          <Box marginTop={1}>
-            <Text>
-              Enter output directory (or press Enter for default):
-            </Text>
-            <Text dimColor>Default: {defaultOutput}</Text>
-            <Box marginTop={1}>
-              <Text color="green">&gt; </Text>
-              <TextInput
-                value={outputDir}
-                onChange={setOutputDir}
-                onSubmit={handleOutputSubmit}
-                placeholder={defaultOutput}
-              />
-            </Box>
-          </Box>
+          <Text marginTop={1}>Enter output directory (or press Enter for default):</Text>
+          <Text dimColor>Default: {defaultOutput}</Text>
+          <Text color="green" marginTop={1}>&gt; <TextInput
+            value={outputDir}
+            onChange={setOutputDir}
+            onSubmit={handleOutputSubmit}
+            placeholder={defaultOutput}
+          /></Text>
         </Box>
       )}
     </Box>

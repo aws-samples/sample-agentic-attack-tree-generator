@@ -107,12 +107,12 @@ export const ConfigurationScreen: React.FC<Props> = ({ onNext, state }) => {
       {step === 0 && (
         <Box flexDirection="column">
           <Text>Choose the directory that contains your project:</Text>
-          <TextInput
+          <Text color="green" marginTop={1}>&gt; <TextInput
             value={projectPath}
             onChange={setProjectPath}
             onSubmit={handleSubmit}
             placeholder="Enter project path"
-          />
+          /></Text>
         </Box>
       )}
       
@@ -124,14 +124,12 @@ export const ConfigurationScreen: React.FC<Props> = ({ onNext, state }) => {
           <Text dimColor>Recommended: Use Threat Composer export file</Text>
           <Text dimColor>URL: https://awslabs.github.io/threat-composer/workspaces/default/dashboard</Text>
           <Text dimColor>Or provide any threat model document path (press Enter to skip)</Text>
-          <Box marginTop={1}>
-            <TextInput
-              value={threatModelPath}
-              onChange={setThreatModelPath}
-              onSubmit={handleSubmit}
-              placeholder="Path to threat model (optional)"
-            />
-          </Box>
+          <Text color="green" marginTop={1}>&gt; <TextInput
+            value={threatModelPath}
+            onChange={setThreatModelPath}
+            onSubmit={handleSubmit}
+            placeholder="Path to threat model (optional)"
+          /></Text>
         </Box>
       )}
       
