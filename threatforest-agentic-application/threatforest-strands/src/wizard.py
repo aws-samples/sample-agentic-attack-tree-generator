@@ -89,6 +89,11 @@ class ThreatForestWizard:
             await self._run_enrichment_only()
             return
         
+        if mode == "mitigate":
+            # Mitigation mapping mode - skip to mitigation
+            await self._run_mitigation_only()
+            return
+        
         # Full analysis mode - continue with normal flow
         # Step 1: AWS Setup
         await self._setup_aws_credentials()
@@ -123,18 +128,22 @@ class ThreatForestWizard:
         
         table.add_row("1", "Full Analysis", "Generate attack trees from project (complete workflow)")
         table.add_row("2", "TTC Enrichment", "Enrich existing attack trees with technique mappings")
+        table.add_row("3", "Mitigation Mapping", "Add mitigations to enriched attack trees")
         
         self.console.print(table)
         
         choice = Prompt.ask(
             "Select mode",
-            choices=["1", "2"],
+            choices=["1", "2", "3"],
             default="1"
         )
         
         if choice == "2":
             self.logger.info("User selected TTC enrichment mode")
             return "enrich"
+        elif choice == "3":
+            self.logger.info("User selected mitigation mapping mode")
+            return "mitigate"
         else:
             self.logger.info("User selected full analysis mode")
             return "full"
@@ -1243,6 +1252,131 @@ Review this attack tree to:
         if Confirm.ask("Open output directory?"):
             import webbrowser
             webbrowser.open(f"file://{output_dir}")
+    
+    async def _run_mitigation_only(self):
+        """Run mitigation mapping on enriched attack trees"""
+        from modules.ttc_mappings.mitigation_mapper import MitigationMapper
+        
+        self.console.print("\n🛡️ Mitigation Mapping Mode", style="bold blue")
+        self.console.print("This mode adds mitigations to enriched attack trees.")
+        
+        # Use threatforest-strands paths
+        strands_root = Path(__file__).parent.parent
+        default_enriched_dir = strands_root / "output" / "enriched_v2"
+        bundle_path = strands_root / "stix-data" / "aaf-bundle.json"
+        
+        # Check if bundle exists
+        if not bundle_path.exists():
+            self.console.print(f"❌ STIX bundle not found: {bundle_path}")
+            return
+        
+        # Ask user for input directory
+        self.console.print("\n📁 Select attack trees directory:")
+        self.console.print(f"   Default: {default_enriched_dir}")
+        
+        custom_path = Prompt.ask(
+            "Enter path to attack trees (or press Enter for default)",
+            default=""
+        )
+        
+        enriched_dir = Path(custom_path) if custom_path else default_enriched_dir
+        
+        # Check if directory exists
+        if not enriched_dir.exists():
+            self.console.print(f"❌ Directory not found: {enriched_dir}")
+            return
+        
+        # Find attack tree files
+        attack_tree_files = list(enriched_dir.glob("*.md"))
+        
+        if not attack_tree_files:
+            self.console.print(f"❌ No markdown files found in {enriched_dir}")
+            return
+        
+        self.console.print(f"\n📄 Found {len(attack_tree_files)} attack tree files")
+        
+        # Ask user for output directory
+        default_output = strands_root / "output" / "mitigated"
+        
+        self.console.print("\n📁 Select output directory:")
+        self.console.print(f"   Default: {default_output}")
+        
+        custom_output = Prompt.ask(
+            "Enter output path (or press Enter for default)",
+            default=""
+        )
+        
+        mitigated_dir = Path(custom_output) if custom_output else default_output
+        
+        # Initialize mitigation mapper
+        with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}")) as progress:
+            task = progress.add_task("🔧 Loading mitigation mapper...", total=None)
+            
+            try:
+                mapper = MitigationMapper(str(bundle_path))
+                progress.update(task, description="✅ Mitigation mapper loaded")
+            except Exception as e:
+                progress.update(task, description=f"❌ Failed to load mapper: {e}")
+                self.console.print(f"❌ Error: {e}")
+                return
+        
+        # Create output directory
+        mitigated_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Process each attack tree
+        mitigated_count = 0
+        failed_count = 0
+        techniques_with_mitigations = 0
+        
+        with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}")) as progress:
+            task = progress.add_task(f"🛡️ Adding mitigations to {len(attack_tree_files)} attack trees...", total=len(attack_tree_files))
+            
+            for tree_file in attack_tree_files:
+                try:
+                    output_file = mitigated_dir / f"mitigated_{tree_file.name}"
+                    result = mapper.process_enriched_file(str(tree_file), str(output_file))
+                    
+                    if result['mitigations_found']:
+                        techniques_with_mitigations += len(result['techniques'])
+                    
+                    mitigated_count += 1
+                    progress.advance(task)
+                except Exception as e:
+                    self.logger.error(f"Failed to add mitigations to {tree_file.name}: {e}")
+                    failed_count += 1
+                    progress.advance(task)
+            
+            progress.update(task, description=f"✅ Mitigation mapping complete: {mitigated_count} successful, {failed_count} failed")
+        
+        # Show success summary
+        success_panel = f"""
+🎉 Mitigation Mapping Complete!
+
+📊 Results:
+• Attack trees processed: {len(attack_tree_files)}
+• Successfully processed: {mitigated_count}
+• Failed: {failed_count}
+• Techniques with mitigations: {techniques_with_mitigations}
+
+📁 Input Directory: {enriched_dir}
+📁 Output Directory: {mitigated_dir}
+
+🔍 What was added:
+• Blue mitigation nodes in Mermaid diagrams (🛡️)
+• Dotted lines connecting attacks to mitigations
+• Mitigation rows in technique mapping tables
+
+💡 Next Steps:
+1. Review mitigated attack trees
+2. Validate mitigation recommendations
+3. Implement security controls
+        """
+        
+        self.console.print(Panel(success_panel, title="✅ Mitigation Mapping Complete", border_style="green"))
+        
+        if Confirm.ask("Open output directory?"):
+            import webbrowser
+            webbrowser.open(f"file://{mitigated_dir}")
     
     def _get_aws_profiles(self) -> list:
         """Get available AWS profiles"""
