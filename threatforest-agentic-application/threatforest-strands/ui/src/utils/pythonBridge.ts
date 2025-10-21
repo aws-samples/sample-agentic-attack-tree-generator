@@ -187,9 +187,10 @@ from pathlib import Path
 sys.path.insert(0, '${this.projectRoot}')
 
 from src.modules.ttc_mappings.mitigation_mapper import MitigationMapper
+from src.config import config
 
 try:
-    bundle_path = Path('${this.projectRoot}') / 'stix-data' / 'aaf-bundle.json'
+    bundle_path = config.stix_bundle_path
     
     if not bundle_path.exists():
         raise FileNotFoundError(f"STIX bundle not found: {bundle_path}")

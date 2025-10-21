@@ -933,7 +933,7 @@ Review this attack tree to:
         
         if not embeddings_path.exists():
             self.console.print(f"❌ Embeddings file not found: {embeddings_path}")
-            self.console.print("💡 Run: python -m modules.ttc_mappings.cli create stix-data/aaf-bundle.json -o {embeddings_path}")
+            self.console.print(f"💡 Run: python -m modules.ttc_mappings.cli create data/threat-intelligence/aaf-bundle.json -o {embeddings_path}")
             return
         
         with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}")) as progress:
@@ -1036,7 +1036,7 @@ Review this attack tree to:
         
         if not embeddings_path.exists():
             self.console.print(f"❌ Embeddings file not found: {embeddings_path}")
-            self.console.print("💡 Run: python -m modules.ttc_mappings.cli create stix-data/aaf-bundle.json -o {embeddings_path}")
+            self.console.print(f"💡 Run: python -m modules.ttc_mappings.cli create data/threat-intelligence/aaf-bundle.json -o {embeddings_path}")
             return
         
         with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}")) as progress:
@@ -1256,6 +1256,7 @@ Review this attack tree to:
     async def _run_mitigation_only(self):
         """Run mitigation mapping on enriched attack trees"""
         from modules.ttc_mappings.mitigation_mapper import MitigationMapper
+        from config import config
         
         self.console.print("\n🛡️ Mitigation Mapping Mode", style="bold blue")
         self.console.print("This mode adds mitigations to enriched attack trees.")
@@ -1263,7 +1264,7 @@ Review this attack tree to:
         # Use threatforest-strands paths
         strands_root = Path(__file__).parent.parent
         default_enriched_dir = strands_root / "output" / "enriched_v2"
-        bundle_path = strands_root / "stix-data" / "aaf-bundle.json"
+        bundle_path = config.stix_bundle_path
         
         # Check if bundle exists
         if not bundle_path.exists():
