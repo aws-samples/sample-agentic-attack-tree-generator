@@ -6,10 +6,10 @@ import { ProgressScreen } from './ProgressScreen';
 import { SummaryScreen } from './SummaryScreen';
 import { ErrorDisplay } from './ErrorDisplay';
 import { PathSelector } from './PathSelector';
-import { ResumePrompt } from './ResumePrompt';
+import { ContinuePrompt } from './ContinuePrompt';
 import { useWorkflow } from '../hooks/useWorkflow';
 
-export type Screen = 'welcome' | 'config' | 'pathSelect' | 'progress' | 'summary' | 'error' | 'continue';
+export type Screen = 'welcome' | 'config' | 'pathSelect' | 'progress' | 'summary' | 'error' | 'continue' | 'continueToMitigate';
 export type Mode = 'full' | 'enrich' | 'mitigate';
 
 export interface AppState {
@@ -164,13 +164,12 @@ export const App: React.FC = () => {
       return;
     }
 
-    // Run Options 2 and 3 sequentially
     const { PythonBridge } = await import('../utils/pythonBridge');
     const bridge = new PythonBridge();
     
-    const attackTreesDir = `${process.cwd()}/../output/attack_trees`;
-    const enrichedDir = `${process.cwd()}/../output/enriched`;
-    const mitigatedDir = `${process.cwd()}/../output/mitigated`;
+    // Use the output directory from Option 1's completed workflow
+    const attackTreesDir = workflowState.data?.outputDir || `${appState.projectPath}/threatforest/attack_trees`;
+    const enrichedDir = `${appState.projectPath}/threatforest/enriched`;
     
     const handleProgress = (current: number, total: number, message: string) => {
       const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
@@ -186,7 +185,6 @@ export const App: React.FC = () => {
     try {
       setScreen('progress');
       
-      // Step 1: TTC Enrichment
       updateState({ 
         stage: 'trees', 
         message: '🎯 Starting TTC enrichment...', 
@@ -201,7 +199,51 @@ export const App: React.FC = () => {
         throw new Error(enrichResult.error);
       }
       
-      // Step 2: Mitigation Mapping
+      updateState({ 
+        stage: 'complete',
+        message: `✅ Enriched ${enrichResult.data.enriched_count} attack trees`,
+        data: {
+          mode: 'enrich',
+          attackTrees: enrichResult.data.enriched_count,
+          threatsProcessed: enrichResult.data.enriched_count,
+          outputDir: enrichResult.data.output_dir
+        }
+      });
+      
+      setScreen('continueToMitigate');
+    } catch (error) {
+      setSimpleError(error instanceof Error ? error.message : 'Unknown error');
+      setScreen('error');
+    }
+  };
+
+  const handleContinueToMitigate = async (shouldContinue: boolean) => {
+    if (!shouldContinue) {
+      setScreen('summary');
+      return;
+    }
+
+    const { PythonBridge } = await import('../utils/pythonBridge');
+    const bridge = new PythonBridge();
+    
+    // Use the output directory from Option 2's completed workflow
+    const enrichedDir = workflowState.data?.outputDir || `${appState.projectPath}/threatforest/enriched`;
+    const mitigatedDir = `${appState.projectPath}/threatforest/mitigated`;
+    
+    const handleProgress = (current: number, total: number, message: string) => {
+      const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
+      updateState({
+        stage: 'summary',
+        current,
+        total,
+        message,
+        percentage
+      });
+    };
+    
+    try {
+      setScreen('progress');
+      
       updateState({ 
         stage: 'summary', 
         message: '🛡️ Starting mitigation mapping...', 
@@ -242,10 +284,17 @@ export const App: React.FC = () => {
       )}
       {screen === 'config' && <ConfigurationScreen onNext={handleNext} state={appState} />}
       {screen === 'continue' && (
-        <ResumePrompt 
-          message="Option 1 complete! Continue with TTC Enrichment (Option 2) and Mitigation Mapping (Option 3)?"
-          onResume={() => handleContinue(true)}
+        <ContinuePrompt 
+          message="Option 1 complete! Continue with TTC Enrichment (Option 2)?"
+          onContinue={() => handleContinue(true)}
           onSkip={() => handleContinue(false)}
+        />
+      )}
+      {screen === 'continueToMitigate' && (
+        <ContinuePrompt 
+          message="Option 2 complete! Continue with Mitigation Mapping (Option 3)?"
+          onContinue={() => handleContinueToMitigate(true)}
+          onSkip={() => handleContinueToMitigate(false)}
         />
       )}
       {screen === 'progress' && <ProgressScreen state={workflowState} />}

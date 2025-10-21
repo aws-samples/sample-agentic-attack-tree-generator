@@ -20,7 +20,7 @@ export const SummaryScreen: React.FC<Props> = ({ state }) => {
       ];
     }
     
-    if (mode === 'mitigate') {
+    if (mode === 'mitigate' || mode === 'full') {
       return [
         '• Review mitigated attack trees in output directory',
         '• Check logs in output/logs directory',
@@ -28,7 +28,7 @@ export const SummaryScreen: React.FC<Props> = ({ state }) => {
       ];
     }
     
-    // Default full workflow
+    // Default for Option 1 only
     return [
       '• Review attack trees and summary report in output directory',
       '• Check logs in output/logs directory',

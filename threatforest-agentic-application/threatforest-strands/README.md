@@ -1,6 +1,6 @@
-# 🌳 ThreatForest Interactive Wizard
+# 🌳 ThreatForest Interactive UI
 
-The ThreatForest Wizard provides a user-friendly, step-by-step interface for running automated threat modeling and attack tree generation with enhanced support for various threat model formats.
+ThreatForest provides a React-based terminal UI for automated threat modeling and attack tree generation with three workflow options that can be run independently or sequentially.
 
 ## 🚀 Quick Start
 
@@ -55,42 +55,58 @@ Create a `threats.json` file in your project directory:
 }
 ```
 
-### Step 3: Run the Wizard
+### Step 3: Build and Run ThreatForest
 
 ```bash
-# Make sure virtual environment is activated (you should see (venv) in your prompt)
-python threatforest_wizard.py
+# Build the React UI (first time only)
+cd ui
+npm install
+npm run build:cli
+cd ..
+
+# Run ThreatForest
+python threatforest.py
 ```
 
 ### Step 4: Follow the Interactive Steps
 
-The wizard will guide you through:
-1. **AWS Configuration** - Select profile and verify Bedrock access
-2. **Model Selection** - Choose AI model (Claude Sonnet 4 recommended)
-3. **Project Path** - Select directory with your threat model files
-4. **Review** - Confirm settings and discovered files
-5. **Analysis** - Run complete ThreatForest workflow
+The UI will guide you through:
+1. **Mode Selection** - Choose workflow option (Full/Enrich/Mitigate)
+2. **Configuration** - AWS profile, Bedrock model, project path
+3. **Analysis** - Run selected workflow with progress tracking
+4. **Continue Options** - After Option 1, optionally continue to Options 2 & 3
 
 ## 📋 Expected Workflow
 
 ### Typical Session
 ```bash
 $ source venv/bin/activate
-$ python threatforest_wizard.py
+$ python threatforest.py
 
 🌳 Welcome to ThreatForest!
-...
-📁 Step 3: Project Path Selection
-📋 Enhanced Scanning /path/to/your/project...
-🎯 Found 1 threat model files:
-   • ThreatComposer_Workspace_MyApp.tc (ThreatComposer)
-📖 Found 1 README files
-🏗️ Found 2 diagram files
-✅ Threat models found - analysis will be comprehensive!
 
-🚀 Ready to run ThreatForest analysis? [y/N]: y
-...
-✅ Analysis complete! Reports generated in outputs/
+Select Mode:
+1. 🌳 Full Analysis - Generate attack trees from project
+2. 🎯 Enrich - Add TTC technique mappings to existing attack trees
+3. 🛡️ Mitigate - Add mitigation recommendations to enriched trees
+
+> 1
+
+[Configuration screen...]
+[Analysis runs...]
+
+✅ Option 1 complete! Continue with TTC Enrichment (Option 2)?
+> Yes
+
+[Option 2 runs...]
+
+✅ Option 2 complete! Continue with Mitigation Mapping (Option 3)?
+> Yes
+
+[Option 3 runs...]
+
+✅ Complete workflow finished
+📁 Output Location: /path/to/project/threatforest/mitigated
 ```
 
 ## 📁 Recommended Context Files
@@ -174,41 +190,38 @@ ThreatForest is flexible and works with various input combinations. **Threat mod
 - `database-schema.md`
 - `deployment-guide.md`
 
-## 🎯 What the Wizard Does
+## 🎯 Workflow Options
 
-The wizard guides you through 5 simple steps:
+ThreatForest offers three workflow options that can be run independently or sequentially:
 
-### 📋 Step 1: AWS Configuration
-- **Checks existing AWS credentials**
-- **Lists available AWS profiles**
-- **Tests Bedrock access permissions**
-- **Provides setup guidance if needed**
+### Option 1: 🌳 Full Analysis
+Generate attack trees from your project:
+- Analyzes project context (documentation, diagrams, threat models)
+- Extracts threats using AI
+- Generates attack trees for high-priority threats
+- **Output**: `project/threatforest/attack_trees/`
 
-### 🤖 Step 2: AI Model Selection
-Choose from 4 Bedrock models:
-- **Claude Sonnet 4** ⭐ (Recommended - Best balance)
-- **Claude Opus 4.1** 🚀 (Most powerful)
-- **Claude 3.5 Sonnet** ⚡ (Fast)
-- **Claude 3 Haiku** 💨 (Fastest)
+### Option 2: 🎯 TTC Enrichment
+Add MITRE ATT&CK TTC technique mappings to existing attack trees:
+- Reads attack trees from Option 1 output
+- Maps attack paths to TTC techniques
+- Enriches trees with technique IDs and descriptions
+- **Input**: `project/threatforest/attack_trees/`
+- **Output**: `project/threatforest/enriched/`
 
-### 📁 Step 3: Enhanced Project Path Selection
-- **Smart file discovery** with format detection
-- **Threat model prioritization** (ThreatComposer, JSON, YAML)
-- **File preview** showing discovered threat models and formats
-- **Validation guidance** for optimal analysis
+### Option 3: 🛡️ Mitigation Mapping
+Add mitigation recommendations to enriched trees:
+- Reads enriched attack trees from Option 2 output
+- Adds mitigation strategies for each TTC technique
+- Provides actionable security recommendations
+- **Input**: `project/threatforest/enriched/`
+- **Output**: `project/threatforest/mitigated/`
 
-### 📋 Step 4: Configuration Review
-- **Summary of all settings**
-- **File discovery results**
-- **Threat model preview**
-- **Final confirmation**
-
-### 🚀 Step 5: Analysis Execution
-- **Step 1**: Enhanced context analysis with flexible file handling
-- **Step 2**: AI-powered information extraction
-- **Step 3**: Attack tree generation for high-priority threats
-- **Step 4**: MITRE ATT&CK technique mapping
-- **Step 5**: Comprehensive report generation
+### Sequential Workflow
+After completing Option 1, you'll be prompted to continue with Option 2, then Option 3. You can:
+- Run all three sequentially for complete analysis
+- Stop after any option to review intermediate results
+- Run options independently by selecting them from the main menu
 
 ## 📊 File Discovery Examples
 
@@ -367,7 +380,7 @@ With your context files prepared, run the wizard:
 
 ```bash
 source venv/bin/activate
-python threatforest_wizard.py
+python threatforest.py
 ```
 
 The enhanced ThreatForest will automatically discover and process your threat models, creating comprehensive attack trees and security reports!

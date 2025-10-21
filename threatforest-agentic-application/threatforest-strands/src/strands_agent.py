@@ -196,9 +196,8 @@ class ThreatForestOrchestrator(Agent):
             app_name = extraction_result.get("project_info", {}).get("application_name", "unknown_app")
             project_name = self.config.project_path.name.replace(' ', '_').lower()
             
-            # Use threatforest-strands/output directory instead of project parent
-            strands_root = Path(__file__).parent.parent
-            output_dir = strands_root / "output" / "attack_trees" / project_name
+            # Use project_path/threatforest directory structure
+            output_dir = self.config.project_path / "threatforest" / "attack_trees"
             output_dir.mkdir(parents=True, exist_ok=True)
             
             # Emit tree generation start
