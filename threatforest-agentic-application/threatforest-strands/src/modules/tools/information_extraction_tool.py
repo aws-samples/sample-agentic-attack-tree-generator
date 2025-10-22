@@ -10,8 +10,6 @@ from ..parsers import (
     ParserChain, JSONThreatParser, YAMLThreatParser,
     MarkdownThreatParser, ThreatComposerParser
 )
-
-import boto3
 from botocore.exceptions import ClientError
 
 
@@ -125,7 +123,8 @@ class InformationExtractionTool(Tool):
         
         # Convert cross-region inference profile IDs to ARNs
         if model_id.startswith('us.') or model_id.startswith('eu.'):
-            model_id = f"arn:aws:bedrock:us-east-1::foundation-model/{model_id}"
+            region = bedrock_client.meta.region_name
+            model_id = f"arn:aws:bedrock:{region}::foundation-model/{model_id}"
         
         for attempt in range(self.max_retries):
             try:
@@ -993,7 +992,7 @@ Content to analyze:
 """
 
         try:
-            bedrock = BedrockClientManager().get_client(profile_name=aws_profile, region_name='us-east-1')
+            bedrock = BedrockClientManager().get_client(profile_name=aws_profile)
             
             # Prepare messages with text and images
             messages = self._prepare_bedrock_messages(prompt, context_files)
@@ -1405,7 +1404,7 @@ Available Content and Documentation:
 
         try:
             # Use Bedrock with multimodal capabilities (text + images)
-            bedrock = BedrockClientManager().get_client(profile_name=aws_profile, region_name='us-east-1')
+            bedrock = BedrockClientManager().get_client(profile_name=aws_profile)
             
             # Prepare messages with text and images
             messages = self._prepare_bedrock_messages(prompt, context_files)
@@ -1650,20 +1649,18 @@ You can edit this file to:
     def _reformat_threats_via_bedrock(self, original_file: str, content: str, context_files: Dict[str, Any]) -> str:
         """Reformat threat file via Bedrock when all threats are incorrectly formatted"""
         try:
-            import boto3
-            import json
-            from pathlib import Path
-            
             # Create new filename
             original_path = Path(original_file)
             new_filename = f"{original_path.stem}_reformatted_threat_statements.md"
             new_file_path = original_path.parent / new_filename
             
             # Prepare Bedrock request
-            bedrock = BedrockClientManager().get_client(region_name='us-east-1')
+            bedrock = BedrockClientManager().get_client()
             
             # Use model from context or default
-            model_id = context_files.get('model_id', 'anthropic.claude-3-haiku-20240307-v1:0')
+            model_id = context_files.get('model_id')
+            if not model_id:
+                raise ValueError("bedrock_model must be provided in context_files")
             self.logger.debug(f"Debug: Using model ID: {model_id}")
             
             prompt_template = self._load_prompt_template("threat-format-fixing")
@@ -1722,10 +1719,6 @@ Original document content:
     def _reformat_mixed_threats_via_bedrock(self, original_file: str, content: str, correct_threats: List[Dict], context_files: Dict[str, Any]) -> str:
         """Reformat threat file via Bedrock when there are mixed correct/incorrect threats"""
         try:
-            import boto3
-            import json
-            from pathlib import Path
-            
             # Create new filename
             original_path = Path(original_file)
             new_filename = f"{original_path.stem}_reformatted_threat_statements.md"
@@ -1737,10 +1730,12 @@ Original document content:
             ])
             
             # Prepare Bedrock request
-            bedrock = BedrockClientManager().get_client(region_name='us-east-1')
+            bedrock = BedrockClientManager().get_client()
             
             # Use model from context or default
-            model_id = context_files.get('model_id', 'anthropic.claude-3-haiku-20240307-v1:0')
+            model_id = context_files.get('model_id')
+            if not model_id:
+                raise ValueError("bedrock_model must be provided in context_files")
             self.logger.debug(f"Debug: Using model ID: {model_id}")
             
             prompt_template = self._load_prompt_template("threat-mixed-format")

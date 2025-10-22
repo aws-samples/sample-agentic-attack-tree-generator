@@ -283,16 +283,19 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 
-# Run wizard
-python threatforest_wizard.py
+# Run ThreatForest UI
+python threatforest.py
 ```
 
-### Wizard Steps
-1. **AWS Configuration**: Select profile, verify Bedrock access
-2. **Model Selection**: Choose AI model (Claude Sonnet 4 recommended)
-3. **Project Path**: Select directory with threat models and docs
-4. **Review**: Confirm settings and discovered files
-5. **Analysis**: Run complete ThreatForest workflow
+**Note**: The old CLI wizard (`python threatforest_wizard.py`) is deprecated. Use the interactive UI instead.
+
+### UI Workflow Steps
+1. **Welcome Screen**: Introduction and mode selection
+2. **AWS Configuration**: Select profile, verify Bedrock access
+3. **Model Selection**: Choose AI model (Claude Sonnet 4 recommended)
+4. **Project Path**: Select directory with threat models and docs
+5. **Review**: Confirm settings and discovered files
+6. **Analysis**: Run complete ThreatForest workflow
 
 ### Expected Runtime
 - **Setup & Context**: 10-30 seconds

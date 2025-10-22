@@ -6,9 +6,9 @@ echo "AUTOMATED E2E TEST - Priority 1 Validation"
 echo "============================================================"
 
 # Configuration
-BASE_DIR="/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/kiro-threatforest-agentic"
-PROJECT_PATH="$BASE_DIR/examples/hcls-example"
-OUTPUT_DIR="/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/test_output"
+BASE_DIR="/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/threatforest-strands"
+PROJECT_PATH="/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/hcls-example"
+OUTPUT_DIR="$BASE_DIR/tests/test_output"
 PROFILE="dicorteg+zetaworkload-test-Admin"
 MODEL_ID="us.anthropic.claude-sonnet-4-20250514-v1:0"
 

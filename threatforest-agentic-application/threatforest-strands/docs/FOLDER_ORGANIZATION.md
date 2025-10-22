@@ -75,7 +75,12 @@ threatforest-strands/
 The `archive/` folder contains:
 - Old `threatforest/` folder structure (before reorganization)
 - Old scripts from `scripts/` folder
-- Deprecated files (`__init__.py`, `threatforest_wizard.py`)
+
+**Deprecated Files (Phase 0 Cleanup - Oct 2025):**
+- `src/threatforest_wizard.py` - Old CLI entry point (replaced by threatforest.py UI)
+- `src/wizard.py` - Legacy CLI wizard (kept for test compatibility)
+- `src/modules/cli/` - Empty directory
+- Unused embedding files (~26 MB removed)
 
 These are kept for reference but not used in the new structure.
 

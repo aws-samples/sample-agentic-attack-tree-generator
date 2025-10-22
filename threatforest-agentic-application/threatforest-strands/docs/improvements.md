@@ -2986,9 +2986,11 @@ python -m pytest tests/test_file_discovery.py -v
 # Test progress tracking
 python -m pytest tests/test_progress.py -v
 
-# Visual test
-python threatforest_wizard.py --test-progress
+# Visual test (deprecated - use UI instead)
+# python threatforest_wizard.py --test-progress
 ```
+
+**Note**: CLI wizard is deprecated. Use `python threatforest.py` for interactive UI.
 
 ---
 

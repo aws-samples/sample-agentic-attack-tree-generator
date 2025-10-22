@@ -20,9 +20,9 @@ from .modules.tools.summary_generator_tool import SummaryGeneratorTool
 class ThreatForestConfig:
     """Configuration for ThreatForest execution"""
     project_path: Path
+    bedrock_model: str  # Required - must be provided by caller
     threat_model_path: Optional[str] = None
     aws_profile: Optional[str] = None
-    bedrock_model: str = "us.anthropic.claude-sonnet-4-20250514-v1:0"
     output_dir: Optional[Path] = None
     ttc_threshold: float = 0.8
     resume: bool = False  # Enable resume from checkpoint
@@ -135,7 +135,9 @@ class ThreatForestOrchestrator(Agent):
             if not self.state.context_complete:
                 self.state.advance_to(WorkflowStage.CONTEXT_ANALYSIS)
                 context_result = await self.use_tool("context_analysis", {
-                    "project_path": str(self.config.project_path)
+                    "project_path": str(self.config.project_path),
+                    "bedrock_model": self.config.bedrock_model,
+                    "aws_profile": self.config.aws_profile
                 })
                 self.state.context_files = context_result
                 self.state.context_complete = True

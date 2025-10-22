@@ -5,6 +5,7 @@ import subprocess
 from pathlib import Path
 from ..utils.logger import ThreatForestLogger
 from ..core import Tool, tool, FileDiscovery
+from ..core.bedrock_client import BedrockClientManager
 from typing import Dict, List, Any, Optional
 
 
@@ -20,7 +21,7 @@ class ContextAnalysisTool(Tool):
         self.supported_formats = ['.json', '.tc', '.yaml', '.yml', '.md', '.txt']
         self.threat_keywords = ['threat', 'risk', 'vulnerability', 'attack', 'security']
     
-    async def execute(self, project_path: str) -> Dict[str, Any]:
+    async def execute(self, project_path: str, bedrock_model: str, aws_profile: Optional[str] = None) -> Dict[str, Any]:
         """Execute enhanced context analysis using FileDiscovery"""
         project_dir = Path(project_path)
         
@@ -77,7 +78,7 @@ class ContextAnalysisTool(Tool):
             "threat_analysis": threat_analysis,
             "parsed_content": parsed_files,
             "summary": self._generate_enhanced_summary(threat_analysis, parsed_files, context_files),
-            "enhanced_context": self._extract_enhanced_context_via_bedrock(context_files)
+            "enhanced_context": self._extract_enhanced_context_via_bedrock(context_files, bedrock_model, aws_profile)
         }
         """Discover threat-related files using enhanced detection"""
         threat_files = []
@@ -430,13 +431,22 @@ class ContextAnalysisTool(Tool):
         
         return '\n'.join(summary)
     
-    def _extract_enhanced_context_via_bedrock(self, context_files: Dict[str, Any]) -> Dict[str, Any]:
+    def _load_prompt_template(self, prompt_name: str) -> str:
+        """Load prompt template from src/prompts/ directory"""
+        prompt_file = Path(__file__).parent.parent.parent / "prompts" / f"{prompt_name}.md"
+        
+        if not prompt_file.exists():
+            self.logger.error(f"Prompt template not found: {prompt_file}")
+            raise FileNotFoundError(f"Prompt template not found: {prompt_name}.md")
+        
+        with open(prompt_file, 'r', encoding='utf-8') as f:
+            return f.read().strip()
+    
+    def _extract_enhanced_context_via_bedrock(self, context_files: Dict[str, Any], bedrock_model: str, aws_profile: Optional[str] = None) -> Dict[str, Any]:
         """Extract enhanced application context from images, PDFs, and markdown via Bedrock"""
         try:
-            import boto3
             import json
             import base64
-            from pathlib import Path
             
             # Collect files for Bedrock analysis
             files_to_analyze = []
@@ -453,31 +463,18 @@ class ContextAnalysisTool(Tool):
             self.logger.info(f"Analyzing {len(files_to_analyze)} files via Bedrock for enhanced context")
             
             # Prepare Bedrock request with multimodal content
-            bedrock = boto3.client('bedrock-runtime', region_name='us-east-1')
+            bedrock = BedrockClientManager().get_client(profile_name=aws_profile)
             
-            # Use model from context or default to Claude Sonnet 4
-            model_id = context_files.get('model_id', 'us.anthropic.claude-sonnet-4-20250514-v1:0')
+            # Use provided model
+            model_id = bedrock_model
             
             content_parts = []
             
             # Add text prompt
+            prompt_text = self._load_prompt_template("context-extraction")
             content_parts.append({
                 "type": "text",
-                "text": """Analyze the provided files to extract comprehensive application context information. 
-
-Extract and provide:
-1. **Application Name**: The name of the system/application
-2. **Industry**: Healthcare, Finance, E-commerce, etc.
-3. **Architecture Type**: Microservices, Monolithic, Serverless, etc.
-4. **Components**: List all system components, services, databases
-5. **Technologies**: Programming languages, frameworks, cloud services
-6. **Data Flows**: How data moves through the system
-7. **Security Controls**: Existing security measures
-8. **Deployment Environment**: Cloud provider, regions, etc.
-9. **Integration Points**: External systems, APIs, third-party services
-10. **Compliance Requirements**: Any regulatory requirements mentioned
-
-Provide a structured JSON response with these fields."""
+                "text": prompt_text
             })
             
             # Add file content

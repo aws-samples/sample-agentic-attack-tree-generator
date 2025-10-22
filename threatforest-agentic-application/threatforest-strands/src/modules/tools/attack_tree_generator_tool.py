@@ -8,9 +8,6 @@ from ..utils.logger import ThreatForestLogger
 from ..core import Tool, tool
 from ..core.bedrock_invoker import BedrockInvoker
 
-import boto3
-from botocore.exceptions import ClientError
-
 # Import progress types if available
 try:
     from ..core import ProgressEmitter, ProgressEvent, ProgressEventType

@@ -2,6 +2,7 @@
 import re
 from typing import Dict, List, Any
 from pathlib import Path
+from ..utils.logger import ThreatForestLogger
 
 class AttackTreeEnricher:
     """Enrich attack trees with TTC technique mappings"""
@@ -14,6 +15,7 @@ class AttackTreeEnricher:
             matcher: TTCMatcher instance
         """
         self.matcher = matcher
+        self.logger = ThreatForestLogger.get_logger(self.__class__.__name__)
     
     def extract_attack_steps(self, markdown_content: str) -> List[str]:
         """Extract attack steps from mermaid diagram"""

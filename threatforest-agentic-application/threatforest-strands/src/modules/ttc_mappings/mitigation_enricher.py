@@ -2,6 +2,7 @@
 import json
 from typing import Dict, List, Any, Optional
 from pathlib import Path
+from ..utils.logger import ThreatForestLogger
 
 
 class MitigationEnricher:
@@ -18,6 +19,7 @@ class MitigationEnricher:
         self.attack_patterns = {}
         self.mitigations = {}
         self.mitigation_map = {}
+        self.logger = ThreatForestLogger.get_logger(self.__class__.__name__)
         self._load_stix_data()
     
     def _load_stix_data(self):

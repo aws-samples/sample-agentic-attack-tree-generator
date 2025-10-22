@@ -6,8 +6,7 @@ from pathlib import Path
 from ..utils.logger import ThreatForestLogger
 from ..core import Tool, tool
 from ..core.bedrock_invoker import BedrockInvoker
-
-import boto3
+from ..core.bedrock_client import BedrockClientManager
 from botocore.exceptions import ClientError
 
 
@@ -26,8 +25,8 @@ class TTCMappingTool(Tool):
         self.base_backoff = 2
     
     async def execute(self, attack_trees: Dict[str, Any], 
+                     bedrock_model: str,
                      aaf_bundle_path: str = None,
-                     bedrock_model: str = "us.anthropic.claude-sonnet-4-20250514-v1:0",
                      aws_profile: Optional[str] = None) -> Dict[str, Any]:
         """Execute TTC mapping with Bedrock enhancement"""
         
@@ -225,10 +224,7 @@ class TTCMappingTool(Tool):
         prompt = self._build_ttc_mapping_prompt(attack_steps, candidate_techniques, tree)
         
         try:
-            import boto3
-            import json
-            
-            bedrock = BedrockClientManager().get_client(profile_name=aws_profile, region_name='us-east-1')
+            bedrock = BedrockClientManager().get_client(profile_name=aws_profile)
             
             body = {
                 "anthropic_version": "bedrock-2023-05-31",
@@ -381,7 +377,7 @@ class TTCMappingTool(Tool):
         )
 
         try:
-            bedrock = BedrockClientManager().get_client(profile_name=aws_profile, region_name='us-east-1')
+            bedrock = BedrockClientManager().get_client(profile_name=aws_profile)
             
             body = {
                 "anthropic_version": "bedrock-2023-05-31",

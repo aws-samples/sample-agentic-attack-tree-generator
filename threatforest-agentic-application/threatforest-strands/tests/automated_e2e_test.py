@@ -9,11 +9,25 @@ import time
 import json
 from pathlib import Path
 
-# Add threatforest-strands to path
-base_dir = Path(__file__).parent.parent / 'kiro-threatforest-agentic' / 'threatforest-strands'
-sys.path.insert(0, str(base_dir / 'src'))
+# Add src to path
+src_dir = Path(__file__).parent.parent / 'src'
+if str(src_dir) not in sys.path:
+    sys.path.insert(0, str(src_dir))
 
-from strands_agent import ThreatForestOrchestrator, ThreatForestConfig
+# Import with absolute imports by adding package to modules
+import modules
+from modules.core import ThreatForestState, StateManager, WorkflowStage
+from config import Config
+
+# Now we can import strands_agent components directly
+import importlib.util
+spec = importlib.util.spec_from_file_location("strands_agent", src_dir / "strands_agent.py")
+strands_agent = importlib.util.module_from_spec(spec)
+sys.modules["strands_agent"] = strands_agent
+spec.loader.exec_module(strands_agent)
+
+ThreatForestOrchestrator = strands_agent.ThreatForestOrchestrator
+ThreatForestConfig = strands_agent.ThreatForestConfig
 
 def validate_output(output_dir):
     """Validate generated output files"""
@@ -48,9 +62,9 @@ async def run_e2e_test():
     print("=" * 60)
     
     # Test configuration
-    base_dir = Path(__file__).parent.parent / 'kiro-threatforest-agentic'
-    project_path = base_dir / 'examples' / 'hcls-example'
-    output_dir = Path(__file__).parent.parent / 'test_output'
+    base_dir = Path(__file__).parent.parent.parent.parent
+    project_path = base_dir / 'threatforest-agentic-application' / 'examples' / 'hcls-example'
+    output_dir = Path(__file__).parent / 'test_output'
     profile = 'dicorteg+zetaworkload-test-Admin'
     model_id = 'us.anthropic.claude-sonnet-4-20250514-v1:0'
     

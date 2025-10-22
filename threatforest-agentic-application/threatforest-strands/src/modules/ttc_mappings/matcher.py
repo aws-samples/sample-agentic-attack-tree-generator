@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
+from ..utils.logger import ThreatForestLogger
 
 AWS_TERMS = ['aws', 's3', 'ec2', 'iam', 'lambda', 'dynamodb', 'rds', 'ecs', 
              'cloudformation', 'cloudwatch', 'sns', 'sqs', 'kinesis', 'athena',
@@ -27,12 +28,13 @@ class TTCMatcher:
             min_similarity: Minimum similarity threshold (default 0.35)
         """
         if model_name is None:
-            from ...config import config
+            from src.config import config
             model_name = config.embeddings_model
         self.model_name = model_name
         self.min_similarity = min_similarity
         self.model = None
         self.embeddings_data = None
+        self.logger = ThreatForestLogger.get_logger(self.__class__.__name__)
         
         if embeddings_path:
             self._load_embeddings(embeddings_path)

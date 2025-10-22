@@ -1,0 +1,1504 @@
+{
+  "metadata": {
+    "generated_at": "2025-10-17T13:04:39.403801",
+    "generator": "ThreatForest",
+    "version": "1.0"
+  },
+  "project_info": {
+    "application_name": "E-commerce Platform",
+    "sector": "E-commerce",
+    "architecture_type": "Microservices",
+    "deployment_environment": "Cloud",
+    "technologies": [
+      "React.js",
+      "Redux",
+      "Node.js",
+      "Express.js",
+      "PostgreSQL",
+      "Redis",
+      "Stripe API",
+      "AWS ECS",
+      "Application Load Balancer",
+      "JWT",
+      "OAuth 2.0",
+      "CloudWatch",
+      "ELK stack"
+    ],
+    "security_objectives": {
+      "confidentiality": true,
+      "integrity": true,
+      "availability": true
+    },
+    "data_types": [
+      "Customer personal information (PII)",
+      "Payment card information (PCI)",
+      "Order and transaction history",
+      "Product inventory and pricing",
+      "Business analytics and metrics"
+    ],
+    "external_dependencies": [
+      "Stripe API",
+      "AWS ECS",
+      "CloudWatch",
+      "OAuth 2.0 providers"
+    ],
+    "network_architecture": "Public-facing load balancer with private subnets for application services, isolated database subnet, VPN access for administrative functions, and WAF protection for web applications",
+    "key_components": [
+      "User Service",
+      "Product Service",
+      "Cart Service",
+      "Payment Service",
+      "Order Service",
+      "Notification Service",
+      "Load Balancer",
+      "Database Layer",
+      "Cache Layer"
+    ]
+  },
+  "extraction_summary": {
+    "total_threats": 15,
+    "high_severity_count": 10,
+    "technologies_identified": 13,
+    "has_security_objectives": true,
+    "user_validated": false
+  },
+  "threats": {
+    "all_threats": [
+      {
+        "id": "T001",
+        "statement": "T001 - Payment Data Breach",
+        "description": "**Threat Statement**: A external threat actor with SQL injection vulnerabilities in the payment service, can access stored payment card data, which leads to unauthorized extraction of PCI data, resulting in reduced confidentiality of customer payment information and regulatory compliance violations.\n\n- **Threat Source**: External threat actor\n- **Prerequisites**: SQL injection vulnerabilities in the payment service\n- **Threat Action**: Access stored payment card data\n- **Threat Impact**: Unauthorized extraction of PCI data\n- **Reduced Goal**: Confidentiality\n- **Impacted Assets**: Customer payment information and regulatory compliance\n- **Priority**: High\n- **Category**: Payment Data Breach\n\n---",
+        "threatSource": "External threat actor",
+        "prerequisites": "SQL injection vulnerabilities in the payment service",
+        "threatAction": "Access stored payment card data",
+        "threatImpact": "Unauthorized extraction of PCI data",
+        "impactedGoal": "Confidentiality",
+        "impactedAssets": "Customer payment information and regulatory compliance",
+        "severity": "High",
+        "priority": "High",
+        "category": "Payment Data Breach",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/ecommerce-platform/threats_reformatted_threat_statements.md"
+      },
+      {
+        "id": "T002",
+        "statement": "T002 - Account Takeover",
+        "description": "**Threat Statement**: A external threat actor with user credentials through credential stuffing attacks, can gain unauthorized access to customer accounts, which leads to fraudulent purchases and data theft, resulting in reduced confidentiality and integrity of customer accounts and financial loss.\n\n- **Threat Source**: External threat actor\n- **Prerequisites**: User credentials through credential stuffing attacks\n- **Threat Action**: Gain unauthorized access to customer accounts\n- **Threat Impact**: Fraudulent purchases and data theft\n- **Reduced Goal**: Confidentiality and integrity\n- **Impacted Assets**: Customer accounts and financial assets\n- **Priority**: High\n- **Category**: Account Takeover\n\n---",
+        "threatSource": "External threat actor",
+        "prerequisites": "User credentials through credential stuffing attacks",
+        "threatAction": "Gain unauthorized access to customer accounts",
+        "threatImpact": "Fraudulent purchases and data theft",
+        "impactedGoal": "Confidentiality and integrity",
+        "impactedAssets": "Customer accounts and financial assets",
+        "severity": "High",
+        "priority": "High",
+        "category": "Account Takeover",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/ecommerce-platform/threats_reformatted_threat_statements.md"
+      },
+      {
+        "id": "T003",
+        "statement": "T003 - Price Manipulation",
+        "description": "**Threat Statement**: A malicious internal actor with access to the product service, can modify product pricing in the database, which leads to unauthorized price changes and revenue loss, resulting in reduced integrity of product data and financial impact.\n\n- **Threat Source**: Malicious internal actor\n- **Prerequisites**: Access to the product service\n- **Threat Action**: Modify product pricing in the database\n- **Threat Impact**: Unauthorized price changes and revenue loss\n- **Reduced Goal**: Integrity\n- **Impacted Assets**: Product data and financial assets\n- **Priority**: High\n- **Category**: Price Manipulation\n\n---",
+        "threatSource": "Malicious internal actor",
+        "prerequisites": "Access to the product service",
+        "threatAction": "Modify product pricing in the database",
+        "threatImpact": "Unauthorized price changes and revenue loss",
+        "impactedGoal": "Integrity",
+        "impactedAssets": "Product data and financial assets",
+        "severity": "High",
+        "priority": "High",
+        "category": "Price Manipulation",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/ecommerce-platform/threats_reformatted_threat_statements.md"
+      },
+      {
+        "id": "T004",
+        "statement": "T004 - DDoS Attack",
+        "description": "**Threat Statement**: A external threat actor who launches distributed denial of service attacks against payment processing endpoints, can overwhelm the system during peak shopping periods, which leads to service unavailability during critical revenue periods, resulting in reduced availability of e-commerce services and significant revenue loss.\n\n- **Threat Source**: External threat actor\n- **Prerequisites**: Ability to launch distributed denial of service attacks against payment processing endpoints\n- **Threat Action**: Overwhelm the system during peak shopping periods\n- **Threat Impact**: Service unavailability during critical revenue periods\n- **Reduced Goal**: Availability\n- **Impacted Assets**: E-commerce services and revenue\n- **Priority**: High\n- **Category**: DDoS Attack\n\n---",
+        "threatSource": "External threat actor",
+        "prerequisites": "Ability to launch distributed denial of service attacks against payment processing endpoints",
+        "threatAction": "Overwhelm the system during peak shopping periods",
+        "threatImpact": "Service unavailability during critical revenue periods",
+        "impactedGoal": "Availability",
+        "impactedAssets": "E-commerce services and revenue",
+        "severity": "High",
+        "priority": "High",
+        "category": "DDoS Attack",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/ecommerce-platform/threats_reformatted_threat_statements.md"
+      },
+      {
+        "id": "T005",
+        "statement": "T005 - Inventory Fraud",
+        "description": "**Threat Statement**: A malicious internal actor with access to inventory management systems, can manipulate stock levels and create phantom inventory, which leads to overselling products and fulfillment failures, resulting in reduced integrity of inventory data and customer satisfaction issues.\n\n- **Threat Source**: Malicious internal actor\n- **Prerequisites**: Access to inventory management systems\n- **Threat Action**: Manipulate stock levels and create phantom inventory\n- **Threat Impact**: Overselling products and fulfillment failures\n- **Reduced Goal**: Integrity\n- **Impacted Assets**: Inventory data and customer satisfaction\n- **Priority**: High\n- **Category**: Inventory Fraud\n\n---",
+        "threatSource": "Malicious internal actor",
+        "prerequisites": "Access to inventory management systems",
+        "threatAction": "Manipulate stock levels and create phantom inventory",
+        "threatImpact": "Overselling products and fulfillment failures",
+        "impactedGoal": "Integrity",
+        "impactedAssets": "Inventory data and customer satisfaction",
+        "severity": "High",
+        "priority": "High",
+        "category": "Inventory Fraud",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/ecommerce-platform/threats_reformatted_threat_statements.md"
+      },
+      {
+        "id": "T006",
+        "statement": "T006 - Supply Chain Attack",
+        "description": "**Threat Statement**: A external threat actor who compromises third-party JavaScript libraries used in the frontend, can inject malicious code into the application, which leads to data exfiltration and user credential theft, resulting in reduced confidentiality and integrity of the entire platform.\n\n- **Threat Source**: External threat actor\n- **Prerequisites**: Ability to compromise third-party JavaScript libraries used in the frontend\n- **Threat Action**: Inject malicious code into the application\n- **Threat Impact**: Data exfiltration and user credential theft\n- **Reduced Goal**: Confidentiality and integrity\n- **Impacted Assets**: Entire platform\n- **Priority**: High\n- **Category**: Supply Chain Attack\n\n---",
+        "threatSource": "External threat actor",
+        "prerequisites": "Ability to compromise third-party JavaScript libraries used in the frontend",
+        "threatAction": "Inject malicious code into the application",
+        "threatImpact": "Data exfiltration and user credential theft",
+        "impactedGoal": "Confidentiality and integrity",
+        "impactedAssets": "Entire platform",
+        "severity": "High",
+        "priority": "High",
+        "category": "Supply Chain Attack",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/ecommerce-platform/threats_reformatted_threat_statements.md"
+      },
+      {
+        "id": "T007",
+        "statement": "T007 - Database Backup Exposure",
+        "description": "**Threat Statement**: A malicious internal actor with access to database backup systems, can exfiltrate backup files containing customer data, which leads to unauthorized access to historical customer information, resulting in reduced confidentiality of customer personal and payment data.\n\n- **Threat Source**: Malicious internal actor\n- **Prerequisites**: Access to database backup systems\n- **Threat Action**: Exfiltrate backup files containing customer data\n- **Threat Impact**: Unauthorized access to historical customer information\n- **Reduced Goal**: Confidentiality\n- **Impacted Assets**: Customer personal and payment data\n- **Priority**: High\n- **Category**: Database Backup Exposure\n\n---",
+        "threatSource": "Malicious internal actor",
+        "prerequisites": "Access to database backup systems",
+        "threatAction": "Exfiltrate backup files containing customer data",
+        "threatImpact": "Unauthorized access to historical customer information",
+        "impactedGoal": "Confidentiality",
+        "impactedAssets": "Customer personal and payment data",
+        "severity": "High",
+        "priority": "High",
+        "category": "Database Backup Exposure",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/ecommerce-platform/threats_reformatted_threat_statements.md"
+      },
+      {
+        "id": "T008",
+        "statement": "T008 - Admin Panel Compromise",
+        "description": "**Threat Statement**: A external threat actor who gains access to administrative interfaces through credential compromise, can modify system configurations and access all customer data, which leads to complete system compromise, resulting in reduced confidentiality, integrity, and availability of the entire platform.\n\n- **Threat Source**: External threat actor\n- **Prerequisites**: Access to administrative interfaces through credential compromise\n- **Threat Action**: Modify system configurations and access all customer data\n- **Threat Impact**: Complete system compromise\n- **Reduced Goal**: Confidentiality, integrity, and availability\n- **Impacted Assets**: Entire platform\n- **Priority**: High\n- **Category**: Admin Panel Compromise\n\n---",
+        "threatSource": "External threat actor",
+        "prerequisites": "Access to administrative interfaces through credential compromise",
+        "threatAction": "Modify system configurations and access all customer data",
+        "threatImpact": "Complete system compromise",
+        "impactedGoal": "Confidentiality, integrity, and availability",
+        "impactedAssets": "Entire platform",
+        "severity": "High",
+        "priority": "High",
+        "category": "Admin Panel Compromise",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/ecommerce-platform/threats_reformatted_threat_statements.md"
+      },
+      {
+        "id": "T009",
+        "statement": "T009 - Payment Gateway Fraud",
+        "description": "**Threat Statement**: A external threat actor who exploits vulnerabilities in payment gateway integration, can bypass payment verification, which leads to processing fraudulent transactions, resulting in reduced integrity of payment processing and financial losses.\n\n- **Threat Source**: External threat actor\n- **Prerequisites**: Vulnerabilities in payment gateway integration\n- **Threat Action**: Bypass payment verification\n- **Threat Impact**: Processing fraudulent transactions\n- **Reduced Goal**: Integrity\n- **Impacted Assets**: Payment processing and financial assets\n- **Priority**: High\n- **Category**: Payment Gateway Fraud\n\n---",
+        "threatSource": "External threat actor",
+        "prerequisites": "Vulnerabilities in payment gateway integration",
+        "threatAction": "Bypass payment verification",
+        "threatImpact": "Processing fraudulent transactions",
+        "impactedGoal": "Integrity",
+        "impactedAssets": "Payment processing and financial assets",
+        "severity": "High",
+        "priority": "High",
+        "category": "Payment Gateway Fraud",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/ecommerce-platform/threats_reformatted_threat_statements.md"
+      },
+      {
+        "id": "T010",
+        "statement": "T010 - Customer Data Exfiltration",
+        "description": "**Threat Statement**: A malicious internal actor with database access, can export customer personal information and purchase history, which leads to unauthorized data disclosure and potential identity theft, resulting in reduced confidentiality of customer personal data and GDPR violations.\n\n- **Threat Source**: Malicious internal actor\n- **Prerequisites**: Database access\n- **Threat Action**: Export customer personal information and purchase history\n- **Threat Impact**: Unauthorized data disclosure and potential identity theft\n- **Reduced Goal**: Confidentiality\n- **Impacted Assets**: Customer personal data and GDPR compliance\n- **Priority**: High\n- **Category**: Customer Data Exfiltration\n\n---\n\n### Medium Priority Threats",
+        "threatSource": "Malicious internal actor",
+        "prerequisites": "Database access",
+        "threatAction": "Export customer personal information and purchase history",
+        "threatImpact": "Unauthorized data disclosure and potential identity theft",
+        "impactedGoal": "Confidentiality",
+        "impactedAssets": "Customer personal data and GDPR compliance",
+        "severity": "High",
+        "priority": "High",
+        "category": "Customer Data Exfiltration",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/ecommerce-platform/threats_reformatted_threat_statements.md"
+      },
+      {
+        "id": "T011",
+        "statement": "T011 - Session Hijacking",
+        "description": "**Threat Statement**: A external threat actor who intercepts session tokens through man-in-the-middle attacks, can impersonate legitimate users, which leads to unauthorized access to user accounts and shopping carts, resulting in reduced confidentiality and integrity of user sessions.\n\n- **Threat Source**: External threat actor\n- **Prerequisites**: Ability to intercept session tokens through man-in-the-middle attacks\n- **Threat Action**: Impersonate legitimate users\n- **Threat Impact**: Unauthorized access to user accounts and shopping carts\n- **Reduced Goal**: Confidentiality and integrity\n- **Impacted Assets**: User sessions\n- **Priority**: Medium\n- **Category**: Session Hijacking\n\n---",
+        "threatSource": "External threat actor",
+        "prerequisites": "Ability to intercept session tokens through man-in-the-middle attacks",
+        "threatAction": "Impersonate legitimate users",
+        "threatImpact": "Unauthorized access to user accounts and shopping carts",
+        "impactedGoal": "Confidentiality and integrity",
+        "impactedAssets": "User sessions",
+        "severity": "Medium",
+        "priority": "Medium",
+        "category": "Session Hijacking",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/ecommerce-platform/threats_reformatted_threat_statements.md"
+      },
+      {
+        "id": "T012",
+        "statement": "T012 - API Rate Limit Bypass",
+        "description": "**Threat Statement**: A external threat actor who exploits weaknesses in API rate limiting, can overwhelm backend services with excessive requests, which leads to service degradation and potential system crashes, resulting in reduced availability of API services.\n\n- **Threat Source**: External threat actor\n- **Prerequisites**: Weaknesses in API rate limiting\n- **Threat Action**: Overwhelm backend services with excessive requests\n- **Threat Impact**: Service degradation and potential system crashes\n- **Reduced Goal**: Availability\n- **Impacted Assets**: API services\n- **Priority**: Medium\n- **Category**: API Rate Limit Bypass\n\n---",
+        "threatSource": "External threat actor",
+        "prerequisites": "Weaknesses in API rate limiting",
+        "threatAction": "Overwhelm backend services with excessive requests",
+        "threatImpact": "Service degradation and potential system crashes",
+        "impactedGoal": "Availability",
+        "impactedAssets": "API services",
+        "severity": "Medium",
+        "priority": "Medium",
+        "category": "API Rate Limit Bypass",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/ecommerce-platform/threats_reformatted_threat_statements.md"
+      },
+      {
+        "id": "T013",
+        "statement": "T013 - Cross-Site Scripting Attack",
+        "description": "**Threat Statement**: A external threat actor who injects malicious scripts into product reviews or comments, can execute code in other users' browsers, which leads to session theft and credential harvesting, resulting in reduced confidentiality of user data and session information.\n\n- **Threat Source**: External threat actor\n- **Prerequisites**: Ability to inject malicious scripts into product reviews or comments\n- **Threat Action**: Execute code in other users' browsers\n- **Threat Impact**: Session theft and credential harvesting\n- **Reduced Goal**: Confidentiality\n- **Impacted Assets**: User data and session information\n- **Priority**: Medium\n- **Category**: Cross-Site Scripting Attack\n\n---",
+        "threatSource": "External threat actor",
+        "prerequisites": "Ability to inject malicious scripts into product reviews or comments",
+        "threatAction": "Execute code in other users' browsers",
+        "threatImpact": "Session theft and credential harvesting",
+        "impactedGoal": "Confidentiality",
+        "impactedAssets": "User data and session information",
+        "severity": "Medium",
+        "priority": "Medium",
+        "category": "Cross-Site Scripting Attack",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/ecommerce-platform/threats_reformatted_threat_statements.md"
+      },
+      {
+        "id": "T014",
+        "statement": "T014 - Order Manipulation",
+        "description": "**Threat Statement**: A external threat actor who exploits race conditions in the order processing system, can modify order details after payment confirmation, which leads to receiving products without proper payment or at incorrect prices, resulting in reduced integrity of order processing and financial loss.\n\n- **Threat Source**: External threat actor\n- **Prerequisites**: Race conditions in the order processing system\n- **Threat Action**: Modify order details after payment confirmation\n- **Threat Impact**: Receiving products without proper payment or at incorrect prices\n- **Reduced Goal**: Integrity\n- **Impacted Assets**: Order processing and financial assets\n- **Priority**: Medium\n- **Category**: Order Manipulation\n\n---",
+        "threatSource": "External threat actor",
+        "prerequisites": "Race conditions in the order processing system",
+        "threatAction": "Modify order details after payment confirmation",
+        "threatImpact": "Receiving products without proper payment or at incorrect prices",
+        "impactedGoal": "Integrity",
+        "impactedAssets": "Order processing and financial assets",
+        "severity": "Medium",
+        "priority": "Medium",
+        "category": "Order Manipulation",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/ecommerce-platform/threats_reformatted_threat_statements.md"
+      },
+      {
+        "id": "T015",
+        "statement": "T015 - Recommendation Engine Poisoning",
+        "description": "**Threat Statement**: A external threat actor who manipulates product ratings and reviews, can bias the recommendation algorithm, which leads to promoting malicious or inappropriate products, resulting in reduced integrity of product recommendations and customer trust.\n\n- **Threat Source**: External threat actor\n- **Prerequisites**: Ability to manipulate product ratings and reviews\n- **Threat Action**: Bias the recommendation algorithm\n- **Threat Impact**: Promoting malicious or inappropriate products\n- **Reduced Goal**: Integrity\n- **Impacted Assets**: Product recommendations and customer trust\n- **Priority**: Medium\n- **Category**: Recommendation Engine Poisoning\n\n---",
+        "threatSource": "External threat actor",
+        "prerequisites": "Ability to manipulate product ratings and reviews",
+        "threatAction": "Bias the recommendation algorithm",
+        "threatImpact": "Promoting malicious or inappropriate products",
+        "impactedGoal": "Integrity",
+        "impactedAssets": "Product recommendations and customer trust",
+        "severity": "Medium",
+        "priority": "Medium",
+        "category": "Recommendation Engine Poisoning",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/ecommerce-platform/threats_reformatted_threat_statements.md"
+      }
+    ],
+    "high_severity": [
+      {
+        "id": "T001",
+        "statement": "T001 - Payment Data Breach",
+        "description": "**Threat Statement**: A external threat actor with SQL injection vulnerabilities in the payment service, can access stored payment card data, which leads to unauthorized extraction of PCI data, resulting in reduced confidentiality of customer payment information and regulatory compliance violations.\n\n- **Threat Source**: External threat actor\n- **Prerequisites**: SQL injection vulnerabilities in the payment service\n- **Threat Action**: Access stored payment card data\n- **Threat Impact**: Unauthorized extraction of PCI data\n- **Reduced Goal**: Confidentiality\n- **Impacted Assets**: Customer payment information and regulatory compliance\n- **Priority**: High\n- **Category**: Payment Data Breach\n\n---",
+        "threatSource": "External threat actor",
+        "prerequisites": "SQL injection vulnerabilities in the payment service",
+        "threatAction": "Access stored payment card data",
+        "threatImpact": "Unauthorized extraction of PCI data",
+        "impactedGoal": "Confidentiality",
+        "impactedAssets": "Customer payment information and regulatory compliance",
+        "severity": "High",
+        "priority": "High",
+        "category": "Payment Data Breach",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/ecommerce-platform/threats_reformatted_threat_statements.md"
+      },
+      {
+        "id": "T002",
+        "statement": "T002 - Account Takeover",
+        "description": "**Threat Statement**: A external threat actor with user credentials through credential stuffing attacks, can gain unauthorized access to customer accounts, which leads to fraudulent purchases and data theft, resulting in reduced confidentiality and integrity of customer accounts and financial loss.\n\n- **Threat Source**: External threat actor\n- **Prerequisites**: User credentials through credential stuffing attacks\n- **Threat Action**: Gain unauthorized access to customer accounts\n- **Threat Impact**: Fraudulent purchases and data theft\n- **Reduced Goal**: Confidentiality and integrity\n- **Impacted Assets**: Customer accounts and financial assets\n- **Priority**: High\n- **Category**: Account Takeover\n\n---",
+        "threatSource": "External threat actor",
+        "prerequisites": "User credentials through credential stuffing attacks",
+        "threatAction": "Gain unauthorized access to customer accounts",
+        "threatImpact": "Fraudulent purchases and data theft",
+        "impactedGoal": "Confidentiality and integrity",
+        "impactedAssets": "Customer accounts and financial assets",
+        "severity": "High",
+        "priority": "High",
+        "category": "Account Takeover",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/ecommerce-platform/threats_reformatted_threat_statements.md"
+      },
+      {
+        "id": "T003",
+        "statement": "T003 - Price Manipulation",
+        "description": "**Threat Statement**: A malicious internal actor with access to the product service, can modify product pricing in the database, which leads to unauthorized price changes and revenue loss, resulting in reduced integrity of product data and financial impact.\n\n- **Threat Source**: Malicious internal actor\n- **Prerequisites**: Access to the product service\n- **Threat Action**: Modify product pricing in the database\n- **Threat Impact**: Unauthorized price changes and revenue loss\n- **Reduced Goal**: Integrity\n- **Impacted Assets**: Product data and financial assets\n- **Priority**: High\n- **Category**: Price Manipulation\n\n---",
+        "threatSource": "Malicious internal actor",
+        "prerequisites": "Access to the product service",
+        "threatAction": "Modify product pricing in the database",
+        "threatImpact": "Unauthorized price changes and revenue loss",
+        "impactedGoal": "Integrity",
+        "impactedAssets": "Product data and financial assets",
+        "severity": "High",
+        "priority": "High",
+        "category": "Price Manipulation",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/ecommerce-platform/threats_reformatted_threat_statements.md"
+      },
+      {
+        "id": "T004",
+        "statement": "T004 - DDoS Attack",
+        "description": "**Threat Statement**: A external threat actor who launches distributed denial of service attacks against payment processing endpoints, can overwhelm the system during peak shopping periods, which leads to service unavailability during critical revenue periods, resulting in reduced availability of e-commerce services and significant revenue loss.\n\n- **Threat Source**: External threat actor\n- **Prerequisites**: Ability to launch distributed denial of service attacks against payment processing endpoints\n- **Threat Action**: Overwhelm the system during peak shopping periods\n- **Threat Impact**: Service unavailability during critical revenue periods\n- **Reduced Goal**: Availability\n- **Impacted Assets**: E-commerce services and revenue\n- **Priority**: High\n- **Category**: DDoS Attack\n\n---",
+        "threatSource": "External threat actor",
+        "prerequisites": "Ability to launch distributed denial of service attacks against payment processing endpoints",
+        "threatAction": "Overwhelm the system during peak shopping periods",
+        "threatImpact": "Service unavailability during critical revenue periods",
+        "impactedGoal": "Availability",
+        "impactedAssets": "E-commerce services and revenue",
+        "severity": "High",
+        "priority": "High",
+        "category": "DDoS Attack",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/ecommerce-platform/threats_reformatted_threat_statements.md"
+      },
+      {
+        "id": "T005",
+        "statement": "T005 - Inventory Fraud",
+        "description": "**Threat Statement**: A malicious internal actor with access to inventory management systems, can manipulate stock levels and create phantom inventory, which leads to overselling products and fulfillment failures, resulting in reduced integrity of inventory data and customer satisfaction issues.\n\n- **Threat Source**: Malicious internal actor\n- **Prerequisites**: Access to inventory management systems\n- **Threat Action**: Manipulate stock levels and create phantom inventory\n- **Threat Impact**: Overselling products and fulfillment failures\n- **Reduced Goal**: Integrity\n- **Impacted Assets**: Inventory data and customer satisfaction\n- **Priority**: High\n- **Category**: Inventory Fraud\n\n---",
+        "threatSource": "Malicious internal actor",
+        "prerequisites": "Access to inventory management systems",
+        "threatAction": "Manipulate stock levels and create phantom inventory",
+        "threatImpact": "Overselling products and fulfillment failures",
+        "impactedGoal": "Integrity",
+        "impactedAssets": "Inventory data and customer satisfaction",
+        "severity": "High",
+        "priority": "High",
+        "category": "Inventory Fraud",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/ecommerce-platform/threats_reformatted_threat_statements.md"
+      },
+      {
+        "id": "T006",
+        "statement": "T006 - Supply Chain Attack",
+        "description": "**Threat Statement**: A external threat actor who compromises third-party JavaScript libraries used in the frontend, can inject malicious code into the application, which leads to data exfiltration and user credential theft, resulting in reduced confidentiality and integrity of the entire platform.\n\n- **Threat Source**: External threat actor\n- **Prerequisites**: Ability to compromise third-party JavaScript libraries used in the frontend\n- **Threat Action**: Inject malicious code into the application\n- **Threat Impact**: Data exfiltration and user credential theft\n- **Reduced Goal**: Confidentiality and integrity\n- **Impacted Assets**: Entire platform\n- **Priority**: High\n- **Category**: Supply Chain Attack\n\n---",
+        "threatSource": "External threat actor",
+        "prerequisites": "Ability to compromise third-party JavaScript libraries used in the frontend",
+        "threatAction": "Inject malicious code into the application",
+        "threatImpact": "Data exfiltration and user credential theft",
+        "impactedGoal": "Confidentiality and integrity",
+        "impactedAssets": "Entire platform",
+        "severity": "High",
+        "priority": "High",
+        "category": "Supply Chain Attack",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/ecommerce-platform/threats_reformatted_threat_statements.md"
+      },
+      {
+        "id": "T007",
+        "statement": "T007 - Database Backup Exposure",
+        "description": "**Threat Statement**: A malicious internal actor with access to database backup systems, can exfiltrate backup files containing customer data, which leads to unauthorized access to historical customer information, resulting in reduced confidentiality of customer personal and payment data.\n\n- **Threat Source**: Malicious internal actor\n- **Prerequisites**: Access to database backup systems\n- **Threat Action**: Exfiltrate backup files containing customer data\n- **Threat Impact**: Unauthorized access to historical customer information\n- **Reduced Goal**: Confidentiality\n- **Impacted Assets**: Customer personal and payment data\n- **Priority**: High\n- **Category**: Database Backup Exposure\n\n---",
+        "threatSource": "Malicious internal actor",
+        "prerequisites": "Access to database backup systems",
+        "threatAction": "Exfiltrate backup files containing customer data",
+        "threatImpact": "Unauthorized access to historical customer information",
+        "impactedGoal": "Confidentiality",
+        "impactedAssets": "Customer personal and payment data",
+        "severity": "High",
+        "priority": "High",
+        "category": "Database Backup Exposure",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/ecommerce-platform/threats_reformatted_threat_statements.md"
+      },
+      {
+        "id": "T008",
+        "statement": "T008 - Admin Panel Compromise",
+        "description": "**Threat Statement**: A external threat actor who gains access to administrative interfaces through credential compromise, can modify system configurations and access all customer data, which leads to complete system compromise, resulting in reduced confidentiality, integrity, and availability of the entire platform.\n\n- **Threat Source**: External threat actor\n- **Prerequisites**: Access to administrative interfaces through credential compromise\n- **Threat Action**: Modify system configurations and access all customer data\n- **Threat Impact**: Complete system compromise\n- **Reduced Goal**: Confidentiality, integrity, and availability\n- **Impacted Assets**: Entire platform\n- **Priority**: High\n- **Category**: Admin Panel Compromise\n\n---",
+        "threatSource": "External threat actor",
+        "prerequisites": "Access to administrative interfaces through credential compromise",
+        "threatAction": "Modify system configurations and access all customer data",
+        "threatImpact": "Complete system compromise",
+        "impactedGoal": "Confidentiality, integrity, and availability",
+        "impactedAssets": "Entire platform",
+        "severity": "High",
+        "priority": "High",
+        "category": "Admin Panel Compromise",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/ecommerce-platform/threats_reformatted_threat_statements.md"
+      },
+      {
+        "id": "T009",
+        "statement": "T009 - Payment Gateway Fraud",
+        "description": "**Threat Statement**: A external threat actor who exploits vulnerabilities in payment gateway integration, can bypass payment verification, which leads to processing fraudulent transactions, resulting in reduced integrity of payment processing and financial losses.\n\n- **Threat Source**: External threat actor\n- **Prerequisites**: Vulnerabilities in payment gateway integration\n- **Threat Action**: Bypass payment verification\n- **Threat Impact**: Processing fraudulent transactions\n- **Reduced Goal**: Integrity\n- **Impacted Assets**: Payment processing and financial assets\n- **Priority**: High\n- **Category**: Payment Gateway Fraud\n\n---",
+        "threatSource": "External threat actor",
+        "prerequisites": "Vulnerabilities in payment gateway integration",
+        "threatAction": "Bypass payment verification",
+        "threatImpact": "Processing fraudulent transactions",
+        "impactedGoal": "Integrity",
+        "impactedAssets": "Payment processing and financial assets",
+        "severity": "High",
+        "priority": "High",
+        "category": "Payment Gateway Fraud",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/ecommerce-platform/threats_reformatted_threat_statements.md"
+      },
+      {
+        "id": "T010",
+        "statement": "T010 - Customer Data Exfiltration",
+        "description": "**Threat Statement**: A malicious internal actor with database access, can export customer personal information and purchase history, which leads to unauthorized data disclosure and potential identity theft, resulting in reduced confidentiality of customer personal data and GDPR violations.\n\n- **Threat Source**: Malicious internal actor\n- **Prerequisites**: Database access\n- **Threat Action**: Export customer personal information and purchase history\n- **Threat Impact**: Unauthorized data disclosure and potential identity theft\n- **Reduced Goal**: Confidentiality\n- **Impacted Assets**: Customer personal data and GDPR compliance\n- **Priority**: High\n- **Category**: Customer Data Exfiltration\n\n---\n\n### Medium Priority Threats",
+        "threatSource": "Malicious internal actor",
+        "prerequisites": "Database access",
+        "threatAction": "Export customer personal information and purchase history",
+        "threatImpact": "Unauthorized data disclosure and potential identity theft",
+        "impactedGoal": "Confidentiality",
+        "impactedAssets": "Customer personal data and GDPR compliance",
+        "severity": "High",
+        "priority": "High",
+        "category": "Customer Data Exfiltration",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/ecommerce-platform/threats_reformatted_threat_statements.md"
+      }
+    ]
+  },
+  "attack_trees": [
+    {
+      "threat_id": "T001",
+      "threat_category": "Payment Data Breach",
+      "threat_description": "**Threat Statement**: A external threat actor with SQL injection vulnerabilities in the payment service, can access stored payment card data, which leads to unauthorized extraction of PCI data, resulting in reduced confidentiality of customer payment information and regulatory compliance violations.\n\n- **Threat Source**: External threat actor\n- **Prerequisites**: SQL injection vulnerabilities in the payment service\n- **Threat Action**: Access stored payment card data\n- **Threat Impact**: Unauthorized extraction of PCI data\n- **Reduced Goal**: Confidentiality\n- **Impacted Assets**: Customer payment information and regulatory compliance\n- **Priority**: High\n- **Category**: Payment Data Breach\n\n---",
+      "threat_statement": "T001 - Payment Data Breach",
+      "threat_action": "Access stored payment card data",
+      "threatSource": "External threat actor",
+      "prerequisites": "SQL injection vulnerabilities in the payment service",
+      "threatAction": "Access stored payment card data",
+      "threatImpact": "Unauthorized extraction of PCI data",
+      "impactedGoal": "Confidentiality",
+      "impactedAssets": "Customer payment information and regulatory compliance",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"External threat actor with network access\"] --> B[\"Web application reconnaissance\"]\n    A --> C[\"SQL injection vulnerability discovery\"]\n    B --> D[\"Payment service endpoint identification\"]\n    C --> E[\"Input validation bypass testing\"]\n    D --> F[\"Database schema enumeration\"]\n    E --> F\n    F --> G[\"Payment table structure discovery\"]\n    G --> H[\"SQL injection payload crafting\"]\n    H --> I[\"Database query manipulation\"]\n    I --> J[\"Payment data extraction queries\"]\n    J --> K[\"PCI data harvesting\"]\n    K --> L[\"Unauthorized extraction of customer payment information\"]\n    L --> M[\"Payment data breach completed\"]\n    M --> N[\"Confidentiality compromise of payment assets\"]\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M attack\n    class N goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "External threat actor with network access"
+        },
+        {
+          "node_id": "B",
+          "description": "Web application reconnaissance"
+        },
+        {
+          "node_id": "C",
+          "description": "SQL injection vulnerability discovery"
+        },
+        {
+          "node_id": "D",
+          "description": "Payment service endpoint identification"
+        },
+        {
+          "node_id": "E",
+          "description": "Input validation bypass testing"
+        },
+        {
+          "node_id": "F",
+          "description": "Database schema enumeration"
+        },
+        {
+          "node_id": "G",
+          "description": "Payment table structure discovery"
+        },
+        {
+          "node_id": "H",
+          "description": "SQL injection payload crafting"
+        },
+        {
+          "node_id": "I",
+          "description": "Database query manipulation"
+        },
+        {
+          "node_id": "J",
+          "description": "Payment data extraction queries"
+        },
+        {
+          "node_id": "K",
+          "description": "PCI data harvesting"
+        },
+        {
+          "node_id": "L",
+          "description": "Unauthorized extraction of customer payment information"
+        },
+        {
+          "node_id": "M",
+          "description": "Payment data breach completed"
+        },
+        {
+          "node_id": "N",
+          "description": "Confidentiality compromise of payment assets"
+        }
+      ],
+      "generated_content": "# Attack Tree: T001 - Payment Data Breach\n\n```mermaid\ngraph TD\n    A[\"External threat actor with network access\"] --> B[\"Web application reconnaissance\"]\n    A --> C[\"SQL injection vulnerability discovery\"]\n    \n    B --> D[\"Payment service endpoint identification\"]\n    C --> E[\"Input validation bypass testing\"]\n    \n    D --> F[\"Database schema enumeration\"]\n    E --> F\n    \n    F --> G[\"Payment table structure discovery\"]\n    G --> H[\"SQL injection payload crafting\"]\n    \n    H --> I[\"Database query manipulation\"]\n    I --> J[\"Payment data extraction queries\"]\n    \n    J --> K[\"PCI data harvesting\"]\n    K --> L[\"Unauthorized extraction of customer payment information\"]\n    \n    L --> M[\"Payment data breach completed\"]\n    M --> N[\"Confidentiality compromise of payment assets\"]\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M attack\n    class N goal\n    class A fact\n```",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 14,
+        "tech_mentions": 0
+      }
+    },
+    {
+      "threat_id": "T002",
+      "threat_category": "Account Takeover",
+      "threat_description": "**Threat Statement**: A external threat actor with user credentials through credential stuffing attacks, can gain unauthorized access to customer accounts, which leads to fraudulent purchases and data theft, resulting in reduced confidentiality and integrity of customer accounts and financial loss.\n\n- **Threat Source**: External threat actor\n- **Prerequisites**: User credentials through credential stuffing attacks\n- **Threat Action**: Gain unauthorized access to customer accounts\n- **Threat Impact**: Fraudulent purchases and data theft\n- **Reduced Goal**: Confidentiality and integrity\n- **Impacted Assets**: Customer accounts and financial assets\n- **Priority**: High\n- **Category**: Account Takeover\n\n---",
+      "threat_statement": "T002 - Account Takeover",
+      "threat_action": "Gain unauthorized access to customer accounts",
+      "threatSource": "External threat actor",
+      "prerequisites": "User credentials through credential stuffing attacks",
+      "threatAction": "Gain unauthorized access to customer accounts",
+      "threatImpact": "Fraudulent purchases and data theft",
+      "impactedGoal": "Confidentiality and integrity",
+      "impactedAssets": "Customer accounts and financial assets",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"External threat actor\"] --> B[\"Obtain user credentials\"]\n    B --> C[\"Credential stuffing attack\"]\n    B --> D[\"Data breach harvesting\"]\n    B --> E[\"Phishing campaigns\"]\n    C --> F[\"Automated login attempts\"]\n    D --> F\n    E --> F\n    F --> G[\"Successful account access\"]\n    G --> H[\"Account reconnaissance\"]\n    H --> I[\"Fraudulent purchases\"]\n    H --> J[\"Data theft\"]\n    I --> K[\"Financial loss\"]\n    J --> L[\"Customer data compromise\"]\n    K --> M[\"Compromise confidentiality and integrity\"]\n    L --> M\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J attack\n    class K,L,M goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "External threat actor"
+        },
+        {
+          "node_id": "B",
+          "description": "Obtain user credentials"
+        },
+        {
+          "node_id": "C",
+          "description": "Credential stuffing attack"
+        },
+        {
+          "node_id": "D",
+          "description": "Data breach harvesting"
+        },
+        {
+          "node_id": "E",
+          "description": "Phishing campaigns"
+        },
+        {
+          "node_id": "F",
+          "description": "Automated login attempts"
+        },
+        {
+          "node_id": "G",
+          "description": "Successful account access"
+        },
+        {
+          "node_id": "H",
+          "description": "Account reconnaissance"
+        },
+        {
+          "node_id": "I",
+          "description": "Fraudulent purchases"
+        },
+        {
+          "node_id": "J",
+          "description": "Data theft"
+        },
+        {
+          "node_id": "K",
+          "description": "Financial loss"
+        },
+        {
+          "node_id": "L",
+          "description": "Customer data compromise"
+        },
+        {
+          "node_id": "M",
+          "description": "Compromise confidentiality and integrity"
+        }
+      ],
+      "generated_content": "# Attack Tree T002 - Account Takeover\n\n```mermaid\ngraph TD\n    A[\"External threat actor\"] --> B[\"Obtain user credentials\"]\n    B --> C[\"Credential stuffing attack\"]\n    B --> D[\"Data breach harvesting\"]\n    B --> E[\"Phishing campaigns\"]\n    \n    C --> F[\"Automated login attempts\"]\n    D --> F\n    E --> F\n    \n    F --> G[\"Successful account access\"]\n    G --> H[\"Account reconnaissance\"]\n    H --> I[\"Fraudulent purchases\"]\n    H --> J[\"Data theft\"]\n    \n    I --> K[\"Financial loss\"]\n    J --> L[\"Customer data compromise\"]\n    \n    K --> M[\"Compromise confidentiality and integrity\"]\n    L --> M\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J attack\n    class K,L,M goal\n    class A fact\n```",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 15,
+        "tech_mentions": 0
+      }
+    },
+    {
+      "threat_id": "T003",
+      "threat_category": "Price Manipulation",
+      "threat_description": "**Threat Statement**: A malicious internal actor with access to the product service, can modify product pricing in the database, which leads to unauthorized price changes and revenue loss, resulting in reduced integrity of product data and financial impact.\n\n- **Threat Source**: Malicious internal actor\n- **Prerequisites**: Access to the product service\n- **Threat Action**: Modify product pricing in the database\n- **Threat Impact**: Unauthorized price changes and revenue loss\n- **Reduced Goal**: Integrity\n- **Impacted Assets**: Product data and financial assets\n- **Priority**: High\n- **Category**: Price Manipulation\n\n---",
+      "threat_statement": "T003 - Price Manipulation",
+      "threat_action": "Modify product pricing in the database",
+      "threatSource": "Malicious internal actor",
+      "prerequisites": "Access to the product service",
+      "threatAction": "Modify product pricing in the database",
+      "threatImpact": "Unauthorized price changes and revenue loss",
+      "impactedGoal": "Integrity",
+      "impactedAssets": "Product data and financial assets",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"Malicious internal actor with product service access\"] --> B[\"Reconnaissance of product database\"]\n    A --> C[\"Direct database access attempt\"]\n    B --> D[\"Identify database schema\"]\n    B --> E[\"Locate pricing tables\"]\n    C --> F[\"Exploit service vulnerabilities\"]\n    C --> G[\"Use legitimate service credentials\"]\n    D --> H[\"Map product-price relationships\"]\n    E --> H\n    F --> I[\"Gain elevated database privileges\"]\n    G --> J[\"Access product management interface\"]\n    H --> K[\"Craft price modification queries\"]\n    I --> K\n    J --> L[\"Manipulate prices through UI\"]\n    K --> M[\"Execute unauthorized price changes\"]\n    L --> M\n    M --> N[\"Revenue loss and data integrity compromise\"]\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M attack\n    class N goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "Malicious internal actor with product service access"
+        },
+        {
+          "node_id": "B",
+          "description": "Reconnaissance of product database"
+        },
+        {
+          "node_id": "C",
+          "description": "Direct database access attempt"
+        },
+        {
+          "node_id": "D",
+          "description": "Identify database schema"
+        },
+        {
+          "node_id": "E",
+          "description": "Locate pricing tables"
+        },
+        {
+          "node_id": "F",
+          "description": "Exploit service vulnerabilities"
+        },
+        {
+          "node_id": "G",
+          "description": "Use legitimate service credentials"
+        },
+        {
+          "node_id": "H",
+          "description": "Map product-price relationships"
+        },
+        {
+          "node_id": "I",
+          "description": "Gain elevated database privileges"
+        },
+        {
+          "node_id": "J",
+          "description": "Access product management interface"
+        },
+        {
+          "node_id": "K",
+          "description": "Craft price modification queries"
+        },
+        {
+          "node_id": "L",
+          "description": "Manipulate prices through UI"
+        },
+        {
+          "node_id": "M",
+          "description": "Execute unauthorized price changes"
+        },
+        {
+          "node_id": "N",
+          "description": "Revenue loss and data integrity compromise"
+        }
+      ],
+      "generated_content": "# Attack Tree for T003 - Price Manipulation\n\n```mermaid\ngraph TD\n    A[\"Malicious internal actor with product service access\"] --> B[\"Reconnaissance of product database\"]\n    A --> C[\"Direct database access attempt\"]\n    \n    B --> D[\"Identify database schema\"]\n    B --> E[\"Locate pricing tables\"]\n    \n    C --> F[\"Exploit service vulnerabilities\"]\n    C --> G[\"Use legitimate service credentials\"]\n    \n    D --> H[\"Map product-price relationships\"]\n    E --> H\n    \n    F --> I[\"Gain elevated database privileges\"]\n    G --> J[\"Access product management interface\"]\n    \n    H --> K[\"Craft price modification queries\"]\n    I --> K\n    J --> L[\"Manipulate prices through UI\"]\n    \n    K --> M[\"Execute unauthorized price changes\"]\n    L --> M\n    \n    M --> N[\"Revenue loss and data integrity compromise\"]\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M attack\n    class N goal\n    class A fact\n```",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 16,
+        "tech_mentions": 0
+      }
+    },
+    {
+      "threat_id": "T004",
+      "threat_category": "DDoS Attack",
+      "threat_description": "**Threat Statement**: A external threat actor who launches distributed denial of service attacks against payment processing endpoints, can overwhelm the system during peak shopping periods, which leads to service unavailability during critical revenue periods, resulting in reduced availability of e-commerce services and significant revenue loss.\n\n- **Threat Source**: External threat actor\n- **Prerequisites**: Ability to launch distributed denial of service attacks against payment processing endpoints\n- **Threat Action**: Overwhelm the system during peak shopping periods\n- **Threat Impact**: Service unavailability during critical revenue periods\n- **Reduced Goal**: Availability\n- **Impacted Assets**: E-commerce services and revenue\n- **Priority**: High\n- **Category**: DDoS Attack\n\n---",
+      "threat_statement": "T004 - DDoS Attack",
+      "threat_action": "Overwhelm the system during peak shopping periods",
+      "threatSource": "External threat actor",
+      "prerequisites": "Ability to launch distributed denial of service attacks against payment processing endpoints",
+      "threatAction": "Overwhelm the system during peak shopping periods",
+      "threatImpact": "Service unavailability during critical revenue periods",
+      "impactedGoal": "Availability",
+      "impactedAssets": "E-commerce services and revenue",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"External threat actor with DDoS capabilities\"] --> B[\"Reconnaissance phase\"]\n    A --> C[\"Botnet acquisitionsetup\"]\n    B --> D[\"Target identification of payment endpoints\"]\n    B --> E[\"Peak traffic period analysis\"]\n    C --> F[\"Deploy distributed attack infrastructure\"]\n    C --> G[\"Coordinate attack timing\"]\n    D --> H[\"Volumetric flood attacks\"]\n    D --> I[\"Application layer attacks\"]\n    E --> J[\"Time attack for maximum impact\"]\n    F --> H\n    F --> I\n    F --> K[\"Protocol exploitation attacks\"]\n    G --> J\n    H --> L[\"Network bandwidth exhaustion\"]\n    I --> M[\"Application resource depletion\"]\n    K --> N[\"Infrastructure component overload\"]\n    J --> O[\"Attack during peak shopping periods\"]\n    L --> P[\"Payment processing unavailability\"]\n    M --> P\n    N --> P\n    O --> Q[\"Critical revenue period disruption\"]\n    P --> R[\"E-commerce service unavailability\"]\n    Q --> R\n    R --> S[\"Revenue loss and business impact\"]\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q attack\n    class R,S goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "External threat actor with DDoS capabilities"
+        },
+        {
+          "node_id": "B",
+          "description": "Reconnaissance phase"
+        },
+        {
+          "node_id": "C",
+          "description": "Botnet acquisitionsetup"
+        },
+        {
+          "node_id": "D",
+          "description": "Target identification of payment endpoints"
+        },
+        {
+          "node_id": "E",
+          "description": "Peak traffic period analysis"
+        },
+        {
+          "node_id": "F",
+          "description": "Deploy distributed attack infrastructure"
+        },
+        {
+          "node_id": "G",
+          "description": "Coordinate attack timing"
+        },
+        {
+          "node_id": "H",
+          "description": "Volumetric flood attacks"
+        },
+        {
+          "node_id": "I",
+          "description": "Application layer attacks"
+        },
+        {
+          "node_id": "J",
+          "description": "Time attack for maximum impact"
+        },
+        {
+          "node_id": "K",
+          "description": "Protocol exploitation attacks"
+        },
+        {
+          "node_id": "L",
+          "description": "Network bandwidth exhaustion"
+        },
+        {
+          "node_id": "M",
+          "description": "Application resource depletion"
+        },
+        {
+          "node_id": "N",
+          "description": "Infrastructure component overload"
+        },
+        {
+          "node_id": "O",
+          "description": "Attack during peak shopping periods"
+        },
+        {
+          "node_id": "P",
+          "description": "Payment processing unavailability"
+        },
+        {
+          "node_id": "Q",
+          "description": "Critical revenue period disruption"
+        },
+        {
+          "node_id": "R",
+          "description": "E-commerce service unavailability"
+        },
+        {
+          "node_id": "S",
+          "description": "Revenue loss and business impact"
+        }
+      ],
+      "generated_content": "# Attack Tree for T004 - DDoS Attack\n\n```mermaid\ngraph TD\n    A[\"External threat actor with DDoS capabilities\"] --> B[\"Reconnaissance phase\"]\n    A --> C[\"Botnet acquisition/setup\"]\n    \n    B --> D[\"Target identification of payment endpoints\"]\n    B --> E[\"Peak traffic period analysis\"]\n    \n    C --> F[\"Deploy distributed attack infrastructure\"]\n    C --> G[\"Coordinate attack timing\"]\n    \n    D --> H[\"Volumetric flood attacks\"]\n    D --> I[\"Application layer attacks\"]\n    \n    E --> J[\"Time attack for maximum impact\"]\n    \n    F --> H\n    F --> I\n    F --> K[\"Protocol exploitation attacks\"]\n    \n    G --> J\n    \n    H --> L[\"Network bandwidth exhaustion\"]\n    I --> M[\"Application resource depletion\"]\n    K --> N[\"Infrastructure component overload\"]\n    \n    J --> O[\"Attack during peak shopping periods\"]\n    \n    L --> P[\"Payment processing unavailability\"]\n    M --> P\n    N --> P\n    O --> Q[\"Critical revenue period disruption\"]\n    \n    P --> R[\"E-commerce service unavailability\"]\n    Q --> R\n    R --> S[\"Revenue loss and business impact\"]\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q attack\n    class R,S goal\n    class A fact\n```",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 24,
+        "tech_mentions": 0
+      }
+    },
+    {
+      "threat_id": "T005",
+      "threat_category": "Inventory Fraud",
+      "threat_description": "**Threat Statement**: A malicious internal actor with access to inventory management systems, can manipulate stock levels and create phantom inventory, which leads to overselling products and fulfillment failures, resulting in reduced integrity of inventory data and customer satisfaction issues.\n\n- **Threat Source**: Malicious internal actor\n- **Prerequisites**: Access to inventory management systems\n- **Threat Action**: Manipulate stock levels and create phantom inventory\n- **Threat Impact**: Overselling products and fulfillment failures\n- **Reduced Goal**: Integrity\n- **Impacted Assets**: Inventory data and customer satisfaction\n- **Priority**: High\n- **Category**: Inventory Fraud\n\n---",
+      "threat_statement": "T005 - Inventory Fraud",
+      "threat_action": "Manipulate stock levels and create phantom inventory",
+      "threatSource": "Malicious internal actor",
+      "prerequisites": "Access to inventory management systems",
+      "threatAction": "Manipulate stock levels and create phantom inventory",
+      "threatImpact": "Overselling products and fulfillment failures",
+      "impactedGoal": "Integrity",
+      "impactedAssets": "Inventory data and customer satisfaction",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"Malicious internal actor with inventory system access\"] --> B[\"System reconnaissance\"]\n    A --> C[\"Privilege escalation attempt\"]\n    B --> D[\"Identify inventory database structure\"]\n    B --> E[\"Map stock level update mechanisms\"]\n    C --> F[\"Exploit weak access controls\"]\n    C --> G[\"Social engineering for higher privileges\"]\n    D --> H[\"Locate stock quantity fields\"]\n    E --> I[\"Find automated reorder triggers\"]\n    F --> J[\"Gain administrative access\"]\n    G --> J\n    H --> K[\"Direct database manipulation\"]\n    I --> L[\"Bypass inventory validation checks\"]\n    J --> M[\"Create fraudulent inventory entries\"]\n    K --> N[\"Inflate stock levels artificially\"]\n    L --> O[\"Override low-stock alerts\"]\n    M --> P[\"Generate phantom inventory records\"]\n    N --> Q[\"Enable overselling of products\"]\n    O --> Q\n    P --> Q\n    Q --> R[\"Customer fulfillment failures\"]\n    Q --> S[\"Revenue loss from unfulfillable orders\"]\n    R --> T[\"Compromised inventory data integrity\"]\n    S --> T\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S attack\n    class T goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "Malicious internal actor with inventory system access"
+        },
+        {
+          "node_id": "B",
+          "description": "System reconnaissance"
+        },
+        {
+          "node_id": "C",
+          "description": "Privilege escalation attempt"
+        },
+        {
+          "node_id": "D",
+          "description": "Identify inventory database structure"
+        },
+        {
+          "node_id": "E",
+          "description": "Map stock level update mechanisms"
+        },
+        {
+          "node_id": "F",
+          "description": "Exploit weak access controls"
+        },
+        {
+          "node_id": "G",
+          "description": "Social engineering for higher privileges"
+        },
+        {
+          "node_id": "H",
+          "description": "Locate stock quantity fields"
+        },
+        {
+          "node_id": "I",
+          "description": "Find automated reorder triggers"
+        },
+        {
+          "node_id": "J",
+          "description": "Gain administrative access"
+        },
+        {
+          "node_id": "K",
+          "description": "Direct database manipulation"
+        },
+        {
+          "node_id": "L",
+          "description": "Bypass inventory validation checks"
+        },
+        {
+          "node_id": "M",
+          "description": "Create fraudulent inventory entries"
+        },
+        {
+          "node_id": "N",
+          "description": "Inflate stock levels artificially"
+        },
+        {
+          "node_id": "O",
+          "description": "Override low-stock alerts"
+        },
+        {
+          "node_id": "P",
+          "description": "Generate phantom inventory records"
+        },
+        {
+          "node_id": "Q",
+          "description": "Enable overselling of products"
+        },
+        {
+          "node_id": "R",
+          "description": "Customer fulfillment failures"
+        },
+        {
+          "node_id": "S",
+          "description": "Revenue loss from unfulfillable orders"
+        },
+        {
+          "node_id": "T",
+          "description": "Compromised inventory data integrity"
+        }
+      ],
+      "generated_content": "# T005 - Inventory Fraud Attack Tree\n\n```mermaid\ngraph TD\n    A[\"Malicious internal actor with inventory system access\"] --> B[\"System reconnaissance\"]\n    A --> C[\"Privilege escalation attempt\"]\n    \n    B --> D[\"Identify inventory database structure\"]\n    B --> E[\"Map stock level update mechanisms\"]\n    \n    C --> F[\"Exploit weak access controls\"]\n    C --> G[\"Social engineering for higher privileges\"]\n    \n    D --> H[\"Locate stock quantity fields\"]\n    E --> I[\"Find automated reorder triggers\"]\n    F --> J[\"Gain administrative access\"]\n    G --> J\n    \n    H --> K[\"Direct database manipulation\"]\n    I --> L[\"Bypass inventory validation checks\"]\n    J --> M[\"Create fraudulent inventory entries\"]\n    \n    K --> N[\"Inflate stock levels artificially\"]\n    L --> O[\"Override low-stock alerts\"]\n    M --> P[\"Generate phantom inventory records\"]\n    \n    N --> Q[\"Enable overselling of products\"]\n    O --> Q\n    P --> Q\n    \n    Q --> R[\"Customer fulfillment failures\"]\n    Q --> S[\"Revenue loss from unfulfillable orders\"]\n    R --> T[\"Compromised inventory data integrity\"]\n    S --> T\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S attack\n    class T goal\n    class A fact\n```",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 23,
+        "tech_mentions": 0
+      }
+    },
+    {
+      "threat_id": "T006",
+      "threat_category": "Supply Chain Attack",
+      "threat_description": "**Threat Statement**: A external threat actor who compromises third-party JavaScript libraries used in the frontend, can inject malicious code into the application, which leads to data exfiltration and user credential theft, resulting in reduced confidentiality and integrity of the entire platform.\n\n- **Threat Source**: External threat actor\n- **Prerequisites**: Ability to compromise third-party JavaScript libraries used in the frontend\n- **Threat Action**: Inject malicious code into the application\n- **Threat Impact**: Data exfiltration and user credential theft\n- **Reduced Goal**: Confidentiality and integrity\n- **Impacted Assets**: Entire platform\n- **Priority**: High\n- **Category**: Supply Chain Attack\n\n---",
+      "threat_statement": "T006 - Supply Chain Attack",
+      "threat_action": "Inject malicious code into the application",
+      "threatSource": "External threat actor",
+      "prerequisites": "Ability to compromise third-party JavaScript libraries used in the frontend",
+      "threatAction": "Inject malicious code into the application",
+      "threatImpact": "Data exfiltration and user credential theft",
+      "impactedGoal": "Confidentiality and integrity",
+      "impactedAssets": "Entire platform",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"External threat actor with capability to compromise third-party libraries\"] --> B[\"Target identification of JavaScript dependencies\"]\n    A --> C[\"Social engineering of library maintainers\"]\n    B --> D[\"Analyze package.json and dependency tree\"]\n    B --> E[\"Identify high-impact libraries with broad usage\"]\n    C --> F[\"Compromise maintainer accounts\"]\n    C --> G[\"Submit malicious pull requests\"]\n    D --> H[\"Select vulnerable or popular library\"]\n    E --> H\n    F --> I[\"Direct code injection into library\"]\n    G --> J[\"Inject code via approved PR\"]\n    H --> K[\"Craft malicious JavaScript payload\"]\n    I --> K\n    J --> K\n    K --> L[\"Deploy payload via library update\"]\n    L --> M[\"Automatic inclusion in application build\"]\n    M --> N[\"Execute malicious code in user browsers\"]\n    N --> O[\"Data exfiltration from application\"]\n    N --> P[\"User credential harvesting\"]\n    N --> Q[\"Session token theft\"]\n    O --> R[\"Compromise entire platform confidentiality\"]\n    P --> R\n    Q --> R\n    R --> S[\"Complete platform compromise\"]\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R attack\n    class S goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "External threat actor with capability to compromise third-party libraries"
+        },
+        {
+          "node_id": "B",
+          "description": "Target identification of JavaScript dependencies"
+        },
+        {
+          "node_id": "C",
+          "description": "Social engineering of library maintainers"
+        },
+        {
+          "node_id": "D",
+          "description": "Analyze package.json and dependency tree"
+        },
+        {
+          "node_id": "E",
+          "description": "Identify high-impact libraries with broad usage"
+        },
+        {
+          "node_id": "F",
+          "description": "Compromise maintainer accounts"
+        },
+        {
+          "node_id": "G",
+          "description": "Submit malicious pull requests"
+        },
+        {
+          "node_id": "H",
+          "description": "Select vulnerable or popular library"
+        },
+        {
+          "node_id": "I",
+          "description": "Direct code injection into library"
+        },
+        {
+          "node_id": "J",
+          "description": "Inject code via approved PR"
+        },
+        {
+          "node_id": "K",
+          "description": "Craft malicious JavaScript payload"
+        },
+        {
+          "node_id": "L",
+          "description": "Deploy payload via library update"
+        },
+        {
+          "node_id": "M",
+          "description": "Automatic inclusion in application build"
+        },
+        {
+          "node_id": "N",
+          "description": "Execute malicious code in user browsers"
+        },
+        {
+          "node_id": "O",
+          "description": "Data exfiltration from application"
+        },
+        {
+          "node_id": "P",
+          "description": "User credential harvesting"
+        },
+        {
+          "node_id": "Q",
+          "description": "Session token theft"
+        },
+        {
+          "node_id": "R",
+          "description": "Compromise entire platform confidentiality"
+        },
+        {
+          "node_id": "S",
+          "description": "Complete platform compromise"
+        }
+      ],
+      "generated_content": "# T006 - Supply Chain Attack\n\n```mermaid\ngraph TD\n    A[\"External threat actor with capability to compromise third-party libraries\"] --> B[\"Target identification of JavaScript dependencies\"]\n    A --> C[\"Social engineering of library maintainers\"]\n    \n    B --> D[\"Analyze package.json and dependency tree\"]\n    B --> E[\"Identify high-impact libraries with broad usage\"]\n    \n    C --> F[\"Compromise maintainer accounts\"]\n    C --> G[\"Submit malicious pull requests\"]\n    \n    D --> H[\"Select vulnerable or popular library\"]\n    E --> H\n    F --> I[\"Direct code injection into library\"]\n    G --> J[\"Inject code via approved PR\"]\n    \n    H --> K[\"Craft malicious JavaScript payload\"]\n    I --> K\n    J --> K\n    \n    K --> L[\"Deploy payload via library update\"]\n    L --> M[\"Automatic inclusion in application build\"]\n    M --> N[\"Execute malicious code in user browsers\"]\n    \n    N --> O[\"Data exfiltration from application\"]\n    N --> P[\"User credential harvesting\"]\n    N --> Q[\"Session token theft\"]\n    \n    O --> R[\"Compromise entire platform confidentiality\"]\n    P --> R\n    Q --> R\n    R --> S[\"Complete platform compromise\"]\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R attack\n    class S goal\n    class A fact\n```",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 23,
+        "tech_mentions": 0
+      }
+    },
+    {
+      "threat_id": "T007",
+      "threat_category": "Database Backup Exposure",
+      "threat_description": "**Threat Statement**: A malicious internal actor with access to database backup systems, can exfiltrate backup files containing customer data, which leads to unauthorized access to historical customer information, resulting in reduced confidentiality of customer personal and payment data.\n\n- **Threat Source**: Malicious internal actor\n- **Prerequisites**: Access to database backup systems\n- **Threat Action**: Exfiltrate backup files containing customer data\n- **Threat Impact**: Unauthorized access to historical customer information\n- **Reduced Goal**: Confidentiality\n- **Impacted Assets**: Customer personal and payment data\n- **Priority**: High\n- **Category**: Database Backup Exposure\n\n---",
+      "threat_statement": "T007 - Database Backup Exposure",
+      "threat_action": "Exfiltrate backup files containing customer data",
+      "threatSource": "Malicious internal actor",
+      "prerequisites": "Access to database backup systems",
+      "threatAction": "Exfiltrate backup files containing customer data",
+      "threatImpact": "Unauthorized access to historical customer information",
+      "impactedGoal": "Confidentiality",
+      "impactedAssets": "Customer personal and payment data",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"Malicious internal actor with backup system access\"] --> B[\"Reconnaissance of backup infrastructure\"]\n    A --> C[\"Direct backup file access attempt\"]\n    B --> D[\"Identify backup storage locations\"]\n    B --> E[\"Map backup schedules and processes\"]\n    D --> F[\"Locate unencrypted backup files\"]\n    D --> G[\"Find backup files with weak encryption\"]\n    C --> H[\"Access backup storage directly\"]\n    C --> I[\"Exploit backup system vulnerabilities\"]\n    F --> J[\"Copy backup files to external storage\"]\n    G --> K[\"Decrypt weakly protected backups\"]\n    H --> L[\"Download backup files via legitimate access\"]\n    I --> M[\"Gain elevated access to backup systems\"]\n    E --> N[\"Time exfiltration during backup windows\"]\n    K --> O[\"Extract customer data from decrypted backups\"]\n    M --> P[\"Access all historical backup files\"]\n    J --> Q[\"Exfiltrate customer personal and payment data\"]\n    L --> Q\n    O --> Q\n    P --> Q\n    N --> Q\n    Q --> R[\"Unauthorized access to historical customer information\"]\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q attack\n    class R goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "Malicious internal actor with backup system access"
+        },
+        {
+          "node_id": "B",
+          "description": "Reconnaissance of backup infrastructure"
+        },
+        {
+          "node_id": "C",
+          "description": "Direct backup file access attempt"
+        },
+        {
+          "node_id": "D",
+          "description": "Identify backup storage locations"
+        },
+        {
+          "node_id": "E",
+          "description": "Map backup schedules and processes"
+        },
+        {
+          "node_id": "F",
+          "description": "Locate unencrypted backup files"
+        },
+        {
+          "node_id": "G",
+          "description": "Find backup files with weak encryption"
+        },
+        {
+          "node_id": "H",
+          "description": "Access backup storage directly"
+        },
+        {
+          "node_id": "I",
+          "description": "Exploit backup system vulnerabilities"
+        },
+        {
+          "node_id": "J",
+          "description": "Copy backup files to external storage"
+        },
+        {
+          "node_id": "K",
+          "description": "Decrypt weakly protected backups"
+        },
+        {
+          "node_id": "L",
+          "description": "Download backup files via legitimate access"
+        },
+        {
+          "node_id": "M",
+          "description": "Gain elevated access to backup systems"
+        },
+        {
+          "node_id": "N",
+          "description": "Time exfiltration during backup windows"
+        },
+        {
+          "node_id": "O",
+          "description": "Extract customer data from decrypted backups"
+        },
+        {
+          "node_id": "P",
+          "description": "Access all historical backup files"
+        },
+        {
+          "node_id": "Q",
+          "description": "Exfiltrate customer personal and payment data"
+        },
+        {
+          "node_id": "R",
+          "description": "Unauthorized access to historical customer information"
+        }
+      ],
+      "generated_content": "# Attack Tree for T007 - Database Backup Exposure\n\n```mermaid\ngraph TD\n    A[\"Malicious internal actor with backup system access\"] --> B[\"Reconnaissance of backup infrastructure\"]\n    A --> C[\"Direct backup file access attempt\"]\n    \n    B --> D[\"Identify backup storage locations\"]\n    B --> E[\"Map backup schedules and processes\"]\n    \n    D --> F[\"Locate unencrypted backup files\"]\n    D --> G[\"Find backup files with weak encryption\"]\n    \n    C --> H[\"Access backup storage directly\"]\n    C --> I[\"Exploit backup system vulnerabilities\"]\n    \n    F --> J[\"Copy backup files to external storage\"]\n    G --> K[\"Decrypt weakly protected backups\"]\n    H --> L[\"Download backup files via legitimate access\"]\n    I --> M[\"Gain elevated access to backup systems\"]\n    \n    E --> N[\"Time exfiltration during backup windows\"]\n    K --> O[\"Extract customer data from decrypted backups\"]\n    M --> P[\"Access all historical backup files\"]\n    \n    J --> Q[\"Exfiltrate customer personal and payment data\"]\n    L --> Q\n    O --> Q\n    P --> Q\n    N --> Q\n    \n    Q --> R[\"Unauthorized access to historical customer information\"]\n\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q attack\n    class R goal\n    class A fact\n```",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 21,
+        "tech_mentions": 0
+      }
+    },
+    {
+      "threat_id": "T008",
+      "threat_category": "Admin Panel Compromise",
+      "threat_description": "**Threat Statement**: A external threat actor who gains access to administrative interfaces through credential compromise, can modify system configurations and access all customer data, which leads to complete system compromise, resulting in reduced confidentiality, integrity, and availability of the entire platform.\n\n- **Threat Source**: External threat actor\n- **Prerequisites**: Access to administrative interfaces through credential compromise\n- **Threat Action**: Modify system configurations and access all customer data\n- **Threat Impact**: Complete system compromise\n- **Reduced Goal**: Confidentiality, integrity, and availability\n- **Impacted Assets**: Entire platform\n- **Priority**: High\n- **Category**: Admin Panel Compromise\n\n---",
+      "threat_statement": "T008 - Admin Panel Compromise",
+      "threat_action": "Modify system configurations and access all customer data",
+      "threatSource": "External threat actor",
+      "prerequisites": "Access to administrative interfaces through credential compromise",
+      "threatAction": "Modify system configurations and access all customer data",
+      "threatImpact": "Complete system compromise",
+      "impactedGoal": "Confidentiality, integrity, and availability",
+      "impactedAssets": "Entire platform",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"External threat actor\"] --> B[\"Credential acquisition\"]\n    A --> C[\"Admin interface discovery\"]\n    B --> D[\"Password attacks\"]\n    B --> E[\"Credential theft\"]\n    B --> F[\"Social engineering\"]\n    D --> G[\"Brute force attack\"]\n    D --> H[\"Dictionary attack\"]\n    D --> I[\"Credential stuffing\"]\n    E --> J[\"Phishing campaigns\"]\n    E --> K[\"Malware deployment\"]\n    E --> L[\"Data breach exploitation\"]\n    F --> M[\"Spear phishing admins\"]\n    F --> N[\"Pretexting attacks\"]\n    C --> O[\"Network scanning\"]\n    C --> P[\"Web enumeration\"]\n    C --> Q[\"Public information gathering\"]\n    G --> R[\"Valid admin credentials obtained\"]\n    H --> R\n    I --> R\n    J --> R\n    K --> R\n    L --> R\n    M --> R\n    N --> R\n    O --> S[\"Admin panel location identified\"]\n    P --> S\n    Q --> S\n    R --> T[\"Admin panel authentication\"]\n    S --> T\n    T --> U[\"Administrative access gained\"]\n    U --> V[\"System configuration modification\"]\n    U --> W[\"Customer data access\"]\n    U --> X[\"User privilege escalation\"]\n    V --> Y[\"Complete system compromise\"]\n    W --> Y\n    X --> Y\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,T,V,W,X attack\n    class Y goal\n    class A,R,S,U fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "External threat actor"
+        },
+        {
+          "node_id": "B",
+          "description": "Credential acquisition"
+        },
+        {
+          "node_id": "C",
+          "description": "Admin interface discovery"
+        },
+        {
+          "node_id": "D",
+          "description": "Password attacks"
+        },
+        {
+          "node_id": "E",
+          "description": "Credential theft"
+        },
+        {
+          "node_id": "F",
+          "description": "Social engineering"
+        },
+        {
+          "node_id": "G",
+          "description": "Brute force attack"
+        },
+        {
+          "node_id": "H",
+          "description": "Dictionary attack"
+        },
+        {
+          "node_id": "I",
+          "description": "Credential stuffing"
+        },
+        {
+          "node_id": "J",
+          "description": "Phishing campaigns"
+        },
+        {
+          "node_id": "K",
+          "description": "Malware deployment"
+        },
+        {
+          "node_id": "L",
+          "description": "Data breach exploitation"
+        },
+        {
+          "node_id": "M",
+          "description": "Spear phishing admins"
+        },
+        {
+          "node_id": "N",
+          "description": "Pretexting attacks"
+        },
+        {
+          "node_id": "O",
+          "description": "Network scanning"
+        },
+        {
+          "node_id": "P",
+          "description": "Web enumeration"
+        },
+        {
+          "node_id": "Q",
+          "description": "Public information gathering"
+        },
+        {
+          "node_id": "R",
+          "description": "Valid admin credentials obtained"
+        },
+        {
+          "node_id": "S",
+          "description": "Admin panel location identified"
+        },
+        {
+          "node_id": "T",
+          "description": "Admin panel authentication"
+        },
+        {
+          "node_id": "U",
+          "description": "Administrative access gained"
+        },
+        {
+          "node_id": "V",
+          "description": "System configuration modification"
+        },
+        {
+          "node_id": "W",
+          "description": "Customer data access"
+        },
+        {
+          "node_id": "X",
+          "description": "User privilege escalation"
+        },
+        {
+          "node_id": "Y",
+          "description": "Complete system compromise"
+        }
+      ],
+      "generated_content": "# T008 - Admin Panel Compromise Attack Tree\n\n```mermaid\ngraph TD\n    A[\"External threat actor\"] --> B[\"Credential acquisition\"]\n    A --> C[\"Admin interface discovery\"]\n    \n    B --> D[\"Password attacks\"]\n    B --> E[\"Credential theft\"]\n    B --> F[\"Social engineering\"]\n    \n    D --> G[\"Brute force attack\"]\n    D --> H[\"Dictionary attack\"]\n    D --> I[\"Credential stuffing\"]\n    \n    E --> J[\"Phishing campaigns\"]\n    E --> K[\"Malware deployment\"]\n    E --> L[\"Data breach exploitation\"]\n    \n    F --> M[\"Spear phishing admins\"]\n    F --> N[\"Pretexting attacks\"]\n    \n    C --> O[\"Network scanning\"]\n    C --> P[\"Web enumeration\"]\n    C --> Q[\"Public information gathering\"]\n    \n    G --> R[\"Valid admin credentials obtained\"]\n    H --> R\n    I --> R\n    J --> R\n    K --> R\n    L --> R\n    M --> R\n    N --> R\n    \n    O --> S[\"Admin panel location identified\"]\n    P --> S\n    Q --> S\n    \n    R --> T[\"Admin panel authentication\"]\n    S --> T\n    \n    T --> U[\"Administrative access gained\"]\n    \n    U --> V[\"System configuration modification\"]\n    U --> W[\"Customer data access\"]\n    U --> X[\"User privilege escalation\"]\n    \n    V --> Y[\"Complete system compromise\"]\n    W --> Y\n    X --> Y\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,T,V,W,X attack\n    class Y goal\n    class A,R,S,U fact\n```",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 36,
+        "tech_mentions": 0
+      }
+    },
+    {
+      "threat_id": "T009",
+      "threat_category": "Payment Gateway Fraud",
+      "threat_description": "**Threat Statement**: A external threat actor who exploits vulnerabilities in payment gateway integration, can bypass payment verification, which leads to processing fraudulent transactions, resulting in reduced integrity of payment processing and financial losses.\n\n- **Threat Source**: External threat actor\n- **Prerequisites**: Vulnerabilities in payment gateway integration\n- **Threat Action**: Bypass payment verification\n- **Threat Impact**: Processing fraudulent transactions\n- **Reduced Goal**: Integrity\n- **Impacted Assets**: Payment processing and financial assets\n- **Priority**: High\n- **Category**: Payment Gateway Fraud\n\n---",
+      "threat_statement": "T009 - Payment Gateway Fraud",
+      "threat_action": "Bypass payment verification",
+      "threatSource": "External threat actor",
+      "prerequisites": "Vulnerabilities in payment gateway integration",
+      "threatAction": "Bypass payment verification",
+      "threatImpact": "Processing fraudulent transactions",
+      "impactedGoal": "Integrity",
+      "impactedAssets": "Payment processing and financial assets",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"External threat actor with knowledge of payment systems\"] --> B[\"Reconnaissance of payment gateway\"]\n    A --> C[\"Identify payment integration vulnerabilities\"]\n    B --> D[\"API endpoint discovery\"]\n    B --> E[\"Transaction flow analysis\"]\n    C --> F[\"Authentication bypass methods\"]\n    C --> G[\"Input validation weaknesses\"]\n    D --> H[\"Craft malicious payment requests\"]\n    E --> I[\"Intercept legitimate transactions\"]\n    F --> J[\"Bypass payment verification\"]\n    G --> K[\"Inject fraudulent transaction data\"]\n    H --> J\n    I --> L[\"Modify transaction parameters\"]\n    K --> J\n    L --> J\n    J --> M[\"Process fraudulent transactions\"]\n    M --> N[\"Compromise payment processing integrity\"]\n    M --> O[\"Financial asset theft\"]\n    N --> P[\"Payment system integrity compromised\"]\n    O --> P\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O attack\n    class P goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "External threat actor with knowledge of payment systems"
+        },
+        {
+          "node_id": "B",
+          "description": "Reconnaissance of payment gateway"
+        },
+        {
+          "node_id": "C",
+          "description": "Identify payment integration vulnerabilities"
+        },
+        {
+          "node_id": "D",
+          "description": "API endpoint discovery"
+        },
+        {
+          "node_id": "E",
+          "description": "Transaction flow analysis"
+        },
+        {
+          "node_id": "F",
+          "description": "Authentication bypass methods"
+        },
+        {
+          "node_id": "G",
+          "description": "Input validation weaknesses"
+        },
+        {
+          "node_id": "H",
+          "description": "Craft malicious payment requests"
+        },
+        {
+          "node_id": "I",
+          "description": "Intercept legitimate transactions"
+        },
+        {
+          "node_id": "J",
+          "description": "Bypass payment verification"
+        },
+        {
+          "node_id": "K",
+          "description": "Inject fraudulent transaction data"
+        },
+        {
+          "node_id": "L",
+          "description": "Modify transaction parameters"
+        },
+        {
+          "node_id": "M",
+          "description": "Process fraudulent transactions"
+        },
+        {
+          "node_id": "N",
+          "description": "Compromise payment processing integrity"
+        },
+        {
+          "node_id": "O",
+          "description": "Financial asset theft"
+        },
+        {
+          "node_id": "P",
+          "description": "Payment system integrity compromised"
+        }
+      ],
+      "generated_content": "# Attack Tree for T009 - Payment Gateway Fraud\n\n```mermaid\ngraph TD\n    A[\"External threat actor with knowledge of payment systems\"] --> B[\"Reconnaissance of payment gateway\"]\n    A --> C[\"Identify payment integration vulnerabilities\"]\n    \n    B --> D[\"API endpoint discovery\"]\n    B --> E[\"Transaction flow analysis\"]\n    \n    C --> F[\"Authentication bypass methods\"]\n    C --> G[\"Input validation weaknesses\"]\n    \n    D --> H[\"Craft malicious payment requests\"]\n    E --> I[\"Intercept legitimate transactions\"]\n    F --> J[\"Bypass payment verification\"]\n    G --> K[\"Inject fraudulent transaction data\"]\n    \n    H --> J\n    I --> L[\"Modify transaction parameters\"]\n    K --> J\n    L --> J\n    \n    J --> M[\"Process fraudulent transactions\"]\n    M --> N[\"Compromise payment processing integrity\"]\n    M --> O[\"Financial asset theft\"]\n    \n    N --> P[\"Payment system integrity compromised\"]\n    O --> P\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O attack\n    class P goal\n    class A fact\n```",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 19,
+        "tech_mentions": 0
+      }
+    },
+    {
+      "threat_id": "T010",
+      "threat_category": "Customer Data Exfiltration",
+      "threat_description": "**Threat Statement**: A malicious internal actor with database access, can export customer personal information and purchase history, which leads to unauthorized data disclosure and potential identity theft, resulting in reduced confidentiality of customer personal data and GDPR violations.\n\n- **Threat Source**: Malicious internal actor\n- **Prerequisites**: Database access\n- **Threat Action**: Export customer personal information and purchase history\n- **Threat Impact**: Unauthorized data disclosure and potential identity theft\n- **Reduced Goal**: Confidentiality\n- **Impacted Assets**: Customer personal data and GDPR compliance\n- **Priority**: High\n- **Category**: Customer Data Exfiltration\n\n---\n\n### Medium Priority Threats",
+      "threat_statement": "T010 - Customer Data Exfiltration",
+      "threat_action": "Export customer personal information and purchase history",
+      "threatSource": "Malicious internal actor",
+      "prerequisites": "Database access",
+      "threatAction": "Export customer personal information and purchase history",
+      "threatImpact": "Unauthorized data disclosure and potential identity theft",
+      "impactedGoal": "Confidentiality",
+      "impactedAssets": "Customer personal data and GDPR compliance",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"Malicious internal actor with database access\"] --> B[\"Database reconnaissance\"]\n    A --> C[\"Access privilege escalation\"]\n    B --> D[\"Identify customer data tables\"]\n    B --> E[\"Map data relationships\"]\n    C --> F[\"Exploit elevated permissions\"]\n    C --> G[\"Bypass access controls\"]\n    D --> H[\"Query customer personal information\"]\n    E --> I[\"Query purchase history data\"]\n    F --> H\n    G --> I\n    H --> J[\"Extract personal data records\"]\n    I --> K[\"Extract transaction records\"]\n    J --> L[\"Export customer data via SQL dump\"]\n    K --> L\n    J --> M[\"Copy data to external storage\"]\n    K --> M\n    L --> N[\"Unauthorized data disclosure\"]\n    M --> N\n    N --> O[\"Customer data exfiltration completed\"]\n    O --> P[\"Potential identity theft risk\"]\n    O --> Q[\"GDPR compliance violation\"]\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M attack\n    class O,P,Q goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "Malicious internal actor with database access"
+        },
+        {
+          "node_id": "B",
+          "description": "Database reconnaissance"
+        },
+        {
+          "node_id": "C",
+          "description": "Access privilege escalation"
+        },
+        {
+          "node_id": "D",
+          "description": "Identify customer data tables"
+        },
+        {
+          "node_id": "E",
+          "description": "Map data relationships"
+        },
+        {
+          "node_id": "F",
+          "description": "Exploit elevated permissions"
+        },
+        {
+          "node_id": "G",
+          "description": "Bypass access controls"
+        },
+        {
+          "node_id": "H",
+          "description": "Query customer personal information"
+        },
+        {
+          "node_id": "I",
+          "description": "Query purchase history data"
+        },
+        {
+          "node_id": "J",
+          "description": "Extract personal data records"
+        },
+        {
+          "node_id": "K",
+          "description": "Extract transaction records"
+        },
+        {
+          "node_id": "L",
+          "description": "Export customer data via SQL dump"
+        },
+        {
+          "node_id": "M",
+          "description": "Copy data to external storage"
+        },
+        {
+          "node_id": "N",
+          "description": "Unauthorized data disclosure"
+        },
+        {
+          "node_id": "O",
+          "description": "Customer data exfiltration completed"
+        },
+        {
+          "node_id": "P",
+          "description": "Potential identity theft risk"
+        },
+        {
+          "node_id": "Q",
+          "description": "GDPR compliance violation"
+        }
+      ],
+      "generated_content": "# Attack Tree for T010 - Customer Data Exfiltration\n\n```mermaid\ngraph TD\n    A[\"Malicious internal actor with database access\"] --> B[\"Database reconnaissance\"]\n    A --> C[\"Access privilege escalation\"]\n    \n    B --> D[\"Identify customer data tables\"]\n    B --> E[\"Map data relationships\"]\n    \n    C --> F[\"Exploit elevated permissions\"]\n    C --> G[\"Bypass access controls\"]\n    \n    D --> H[\"Query customer personal information\"]\n    E --> I[\"Query purchase history data\"]\n    F --> H\n    G --> I\n    \n    H --> J[\"Extract personal data records\"]\n    I --> K[\"Extract transaction records\"]\n    \n    J --> L[\"Export customer data via SQL dump\"]\n    K --> L\n    J --> M[\"Copy data to external storage\"]\n    K --> M\n    \n    L --> N[\"Unauthorized data disclosure\"]\n    M --> N\n    N --> O[\"Customer data exfiltration completed\"]\n    O --> P[\"Potential identity theft risk\"]\n    O --> Q[\"GDPR compliance violation\"]\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M attack\n    class O,P,Q goal\n    class A fact\n```",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 21,
+        "tech_mentions": 0
+      }
+    }
+  ],
+  "mapping_summary": {}
+}

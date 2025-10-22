@@ -23,9 +23,15 @@ class BedrockClientManager:
     def get_client(
         self,
         profile_name: Optional[str] = None,
-        region_name: str = "us-west-2"
+        region_name: Optional[str] = None
     ):
         """Get or create a Bedrock client with connection pooling"""
+        # Use default region from AWS config if not specified
+        if region_name is None:
+            import boto3
+            session = boto3.Session(profile_name=profile_name) if profile_name else boto3.Session()
+            region_name = session.region_name or "us-west-2"
+        
         # Create cache key
         cache_key = f"{profile_name or 'default'}:{region_name}"
         

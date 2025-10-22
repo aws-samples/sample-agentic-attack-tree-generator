@@ -11,7 +11,7 @@ class BedrockService:
     def __init__(
         self,
         profile_name: Optional[str] = None,
-        region_name: str = "us-west-2"
+        region_name: Optional[str] = None
     ):
         self.client_manager = BedrockClientManager()
         self.client = self.client_manager.get_client(profile_name, region_name)

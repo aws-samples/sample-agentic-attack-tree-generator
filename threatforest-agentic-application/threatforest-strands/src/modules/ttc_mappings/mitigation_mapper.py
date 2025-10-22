@@ -3,6 +3,7 @@ import json
 import re
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+from ..utils.logger import ThreatForestLogger
 
 
 class MitigationMapper:
@@ -10,6 +11,7 @@ class MitigationMapper:
     
     def __init__(self, bundle_path: str):
         self.technique_to_mitigations = {}
+        self.logger = ThreatForestLogger.get_logger(self.__class__.__name__)
         self._load_bundle(bundle_path)
     
     def _load_bundle(self, bundle_path: str):

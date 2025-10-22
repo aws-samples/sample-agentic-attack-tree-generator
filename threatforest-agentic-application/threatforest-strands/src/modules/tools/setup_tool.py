@@ -16,19 +16,6 @@ from botocore.exceptions import NoCredentialsError, ProfileNotFound
 class SetupTool(Tool):
     """Tool for setting up ThreatForest environment"""
     
-    AVAILABLE_MODELS = [
-        "us.anthropic.claude-sonnet-4-20250514-v1:0",
-        "us.anthropic.claude-opus-4-1-20250805-v1:0",
-        "anthropic.claude-3-5-sonnet-20241022-v2:0",
-        "anthropic.claude-3-5-haiku-20241022-v1:0", 
-        "anthropic.claude-3-opus-20240229-v1:0",
-        "anthropic.claude-3-haiku-20240307-v1:0",
-        "amazon.titan-text-premier-v1:0",
-        "amazon.titan-text-express-v1",
-        "meta.llama3-2-90b-instruct-v1:0",
-        "meta.llama3-2-11b-instruct-v1:0"
-    ]
-    
     def __init__(self):
         super().__init__(
             name="setup",
@@ -36,8 +23,8 @@ class SetupTool(Tool):
         )
         self.logger = ThreatForestLogger.get_logger(self.__class__.__name__)
     
-    async def execute(self, project_path: str, aws_profile: Optional[str] = None, 
-                     bedrock_model: Optional[str] = None, 
+    async def execute(self, project_path: str, bedrock_model: str, 
+                     aws_profile: Optional[str] = None,
                      inference_profile_arn: Optional[str] = None,
                      interactive: bool = True) -> Dict[str, Any]:
         """Execute setup process"""
@@ -104,7 +91,7 @@ class SetupTool(Tool):
         except Exception as e:
             return f"error: {str(e)}"
     
-    async def _configure_bedrock_model(self, model_id: Optional[str], 
+    async def _configure_bedrock_model(self, model_id: str, 
                                       inference_profile_arn: Optional[str],
                                       profile: Optional[str] = None,
                                       interactive: bool = True) -> Dict[str, Any]:
@@ -119,24 +106,19 @@ class SetupTool(Tool):
                 "status": status
             }
         
-        # Use provided model or default
-        if not model_id:
-            model_id = self.AVAILABLE_MODELS[0]  # Default to Claude 3.5 Sonnet
-        
         # Validate model access
         status = self._validate_bedrock_model(model_id, profile)
         
         return {
             "type": "model_id", 
             "model_id": model_id,
-            "status": status,
-            "available_models": self.AVAILABLE_MODELS
+            "status": status
         }
     
     def _validate_bedrock_model(self, model_id: str, profile: Optional[str] = None) -> str:
         """Validate Bedrock model access"""
         try:
-            bedrock = BedrockClientManager().get_client(profile_name=profile, region_name='us-east-1')
+            bedrock = BedrockClientManager().get_client(profile_name=profile)
             
             # Test with a minimal request
             if "anthropic" in model_id:
@@ -160,7 +142,7 @@ class SetupTool(Tool):
     def _validate_inference_profile(self, profile_arn: str, aws_profile: Optional[str] = None) -> str:
         """Validate inference profile ARN access"""
         try:
-            bedrock = BedrockClientManager().get_client(profile_name=aws_profile, region_name='us-east-1')
+            bedrock = BedrockClientManager().get_client(profile_name=aws_profile)
             
             # Test inference profile
             body = {
