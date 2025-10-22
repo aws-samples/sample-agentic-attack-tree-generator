@@ -1,0 +1,33 @@
+# ThreatForest Configuration
+
+
+# Data paths
+data:
+  # STIX bundle file containing MITRE ATT&CK data
+  stix_bundle: "data/threat-intelligence/aaf-bundle.json"
+  
+  # Embeddings file
+  embeddings_file: "data/embeddings/attack_pattern_embeddings_qwen.json"
+  
+  # Input directory for processing (empty means user must specify)
+  input_dir: ""
+  
+  # Output directory for generated files
+  output_dir: ""
+
+# Model settings
+models:
+  default_bedrock_model: ""
+  # Examples:
+  # - "us.anthropic.claude-sonnet-4-20250514-v1:0"      # Claude Sonnet 4
+  # - "us.anthropic.claude-sonnet-4-5-20250929-v1:0"    # Claude Sonnet 4.5
+  # - "us.anthropic.claude-opus-4-1-20250805-v1:0"      # Claude Opus 4.1
+
+# Embeddings settings
+embeddings:
+  model: "Qwen/Qwen3-Embedding-0.6B"
+  
+# AWS settings
+aws:
+  default_profile: "antondk+lab-Admin"
+  default_region: "us-east-1"
