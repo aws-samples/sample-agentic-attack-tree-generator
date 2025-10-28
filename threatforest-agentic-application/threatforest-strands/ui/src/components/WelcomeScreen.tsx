@@ -45,7 +45,7 @@ export const WelcomeScreen: React.FC<Props> = ({ onNext, onResume }) => {
 
   const handleRestart = () => {
     setShowPrompt(false);
-    setReadyToStart(true);
+    setShowModeSelector(true);
   };
 
   const handleStartSubmit = (value: string) => {

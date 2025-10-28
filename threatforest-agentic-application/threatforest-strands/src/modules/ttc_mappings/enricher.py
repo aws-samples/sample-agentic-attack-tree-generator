@@ -80,7 +80,11 @@ class AttackTreeEnricher:
         if not steps:
             return markdown_content
         
+        self.logger.info(f"🔗 Matching {len(steps)} attack steps to TTC techniques...")
         matches = self.matcher.match_steps(steps)
+        
+        matched_count = sum(1 for m in matches if m['matches'])
+        self.logger.info(f"✓ Matched {matched_count} of {len(steps)} steps to techniques")
         
         enriched = self.enrich_mermaid_diagram(markdown_content, matches)
         technique_table = self.create_technique_table(matches)
@@ -98,6 +102,7 @@ class AttackTreeEnricher:
             input_path: Path to input markdown file
             output_path: Path to save enriched file
         """
+        self.logger.info(f"📄 Enriching {Path(input_path).name}")
         with open(input_path, 'r') as f:
             content = f.read()
         
@@ -105,6 +110,7 @@ class AttackTreeEnricher:
         
         with open(output_path, 'w') as f:
             f.write(enriched)
+        self.logger.info(f"✓ Saved enriched file to {Path(output_path).name}")
     
     def enrich_directory(self, input_dir: str, output_dir: str, pattern: str = "attack_tree_*.md"):
         """
