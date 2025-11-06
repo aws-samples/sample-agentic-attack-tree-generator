@@ -1,0 +1,92 @@
+graph TD
+    %% Input Data Types
+    subgraph InputData["Input Data Types"]
+        TCJson["📄 .tc.json<br/>UUID-based threats<br/>ThreatComposer format"]
+        FormattedMD["📝 Formatted .md<br/>T001-T003 threats<br/>Standard structure"]
+        UnformattedMD["📝 Unformatted .md<br/>Basic threat lists<br/>Needs reformatting"]
+        Images["🖼️ Images/PDFs<br/>Architecture diagrams<br/>Visual content"]
+        Docs["📖 Documentation<br/>README, config files<br/>Context information"]
+    end
+    
+    %% Processing Stages
+    subgraph Stage1["Stage 1: File Detection & Routing"]
+        FileDetection["🔍 File Type Detection<br/>• .tc.json → JQ Parser<br/>• Formatted MD → Direct Extract<br/>• Unformatted → Bedrock Reform<br/>• Images → Bedrock Analysis"]
+    end
+    
+    subgraph Stage2["Stage 2: Content Processing"]
+        JQParser["⚙️ JQ Parser<br/>Extract from .tc.json<br/>→ Raw threat data"]
+        DirectExtract["📋 Direct Extraction<br/>Parse formatted MD<br/>→ Structured threats"]
+        BedrockReformat["🤖 Bedrock Reformatting<br/>AI standardization<br/>→ Formatted threats"]
+        BedrockVision["👁️ Bedrock Vision<br/>Image analysis<br/>→ Context data"]
+    end
+    
+    subgraph Stage3["Stage 3: Standardization"]
+        Standardizer["🔄 Format Standardizer<br/>• Convert UUIDs → T001, T002...<br/>• Apply consistent structure<br/>• Extract meaningful categories<br/>• Ensure proper syntax"]
+    end
+    
+    subgraph Stage4["Stage 4: Data Enrichment"]
+        ProjectAnalysis["📊 Project Analysis<br/>• Extract app context<br/>• Identify technologies<br/>• Determine architecture<br/>• Set security objectives"]
+        ThreatPrioritization["🎯 Threat Prioritization<br/>• Group by High/Med/Low<br/>• Validate threat statements<br/>• Add structured fields"]
+    end
+    
+    subgraph Stage5["Stage 5: Output Generation"]
+        StandardOutput["📄 Standardized Output<br/>*_reformatted_threat_statements.md<br/>• Sequential T001, T002... IDs<br/>• Consistent markdown structure<br/>• Priority-based grouping"]
+    end
+    
+    %% Data Flow Connections
+    TCJson --> FileDetection
+    FormattedMD --> FileDetection
+    UnformattedMD --> FileDetection
+    Images --> FileDetection
+    Docs --> FileDetection
+    
+    %% Routing based on file type
+    FileDetection --> JQParser
+    FileDetection --> DirectExtract
+    FileDetection --> BedrockReformat
+    FileDetection --> BedrockVision
+    
+    %% All processing paths converge to standardization
+    JQParser --> Standardizer
+    DirectExtract --> Standardizer
+    BedrockReformat --> Standardizer
+    
+    %% Context data flows to enrichment
+    BedrockVision --> ProjectAnalysis
+    Docs --> ProjectAnalysis
+    
+    %% Standardized threats flow to enrichment
+    Standardizer --> ThreatPrioritization
+    ProjectAnalysis --> ThreatPrioritization
+    
+    %% Final output
+    ThreatPrioritization --> StandardOutput
+    
+    %% Data Format Annotations
+    subgraph DataFormats["Data Formats at Each Stage"]
+        Raw["Raw Data<br/>• Mixed formats<br/>• Inconsistent IDs<br/>• Various structures"]
+        Parsed["Parsed Data<br/>• Extracted content<br/>• Basic structure<br/>• Original IDs preserved"]
+        Standard["Standardized Data<br/>• T001, T002... IDs<br/>• Consistent structure<br/>• Priority grouping"]
+        Enriched["Enriched Data<br/>• Full context<br/>• Validated threats<br/>• Ready for analysis"]
+    end
+    
+    %% Format flow indicators
+    FileDetection -.-> Raw
+    JQParser -.-> Parsed
+    DirectExtract -.-> Parsed
+    BedrockReformat -.-> Parsed
+    Standardizer -.-> Standard
+    ThreatPrioritization -.-> Enriched
+    
+    %% Styling
+    classDef inputClass fill:#f5f5f5,stroke:#666,stroke-width:2px,color:#333
+    classDef processClass fill:#e8e8e8,stroke:#444,stroke-width:2px,color:#333
+    classDef standardClass fill:#ffe6cc,stroke:#d79b00,stroke-width:3px,color:#333
+    classDef outputClass fill:#d5e8d4,stroke:#82b366,stroke-width:2px,color:#333
+    classDef formatClass fill:#f8cecc,stroke:#b85450,stroke-width:1px,stroke-dasharray: 5 5,color:#333
+    
+    class TCJson,FormattedMD,UnformattedMD,Images,Docs inputClass
+    class FileDetection,JQParser,DirectExtract,BedrockReformat,BedrockVision,ProjectAnalysis,ThreatPrioritization processClass
+    class Standardizer standardClass
+    class StandardOutput outputClass
+    class Raw,Parsed,Standard,Enriched formatClass

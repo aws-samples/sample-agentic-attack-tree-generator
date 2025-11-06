@@ -1,0 +1,230 @@
+{
+  "attack_trees": [
+    {
+      "threat_id": "T001",
+      "threat_category": "Data Interception in Transit",
+      "threat_description": "A network attacker with position on communication paths, can intercept healthcare data during transmission from SaaS applications to AWS AppFlow, which leads to PHI exposure, resulting in reduced confidentiality of PHI/PII Data.",
+      "threat_statement": "A network attacker with position on communication paths, can intercept healthcare data during transmission from SaaS applications to AWS AppFlow, which leads to PHI exposure, resulting in reduced confidentiality of PHI/PII Data.",
+      "threat_action": "Intercept healthcare data during transmission from SaaS applications to AWS AppFlow",
+      "threatSource": "Network attacker",
+      "prerequisites": "Position on communication paths",
+      "threatAction": "Intercept healthcare data during transmission from SaaS applications to AWS AppFlow",
+      "threatImpact": "PHI exposure",
+      "impactedGoal": "Confidentiality",
+      "impactedAssets": "PHI/PII Data",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"Network attacker with position on communication paths\"] --> B[\"Network reconnaissance\"]\n    A --> C[\"Traffic analysis\"]\n    B --> D[\"Identify SaaS to AppFlow data flows\"]\n    C --> E[\"Monitor transmission patterns\"]\n    D --> F[\"Position for man-in-the-middle attack\"]\n    E --> F\n    F --> G[\"Intercept unencrypted transmissions\"]\n    F --> H[\"Exploit weak TLS configurations\"]\n    F --> I[\"Certificate manipulation attacks\"]\n    G --> J[\"Capture healthcare data packets\"]\n    H --> K[\"Decrypt weakly protected traffic\"]\n    I --> L[\"Decrypt traffic using fraudulent certificates\"]\n    J --> M[\"Extract PHI from packet contents\"]\n    K --> M\n    L --> M\n    M --> N[\"PHI exposure and confidentiality breach\"]\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M attack\n    class N goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "Network attacker with position on communication paths"
+        },
+        {
+          "node_id": "B",
+          "description": "Network reconnaissance"
+        },
+        {
+          "node_id": "C",
+          "description": "Traffic analysis"
+        },
+        {
+          "node_id": "D",
+          "description": "Identify SaaS to AppFlow data flows"
+        },
+        {
+          "node_id": "E",
+          "description": "Monitor transmission patterns"
+        },
+        {
+          "node_id": "F",
+          "description": "Position for man-in-the-middle attack"
+        },
+        {
+          "node_id": "G",
+          "description": "Intercept unencrypted transmissions"
+        },
+        {
+          "node_id": "H",
+          "description": "Exploit weak TLS configurations"
+        },
+        {
+          "node_id": "I",
+          "description": "Certificate manipulation attacks"
+        },
+        {
+          "node_id": "J",
+          "description": "Capture healthcare data packets"
+        },
+        {
+          "node_id": "K",
+          "description": "Decrypt weakly protected traffic"
+        },
+        {
+          "node_id": "L",
+          "description": "Decrypt traffic using fraudulent certificates"
+        },
+        {
+          "node_id": "M",
+          "description": "Extract PHI from packet contents"
+        },
+        {
+          "node_id": "N",
+          "description": "PHI exposure and confidentiality breach"
+        }
+      ],
+      "generated_content": "# Attack Tree for T001: Healthcare Data Interception\n\n```mermaid\ngraph TD\n    A[\"Network attacker with position on communication paths\"] --> B[\"Network reconnaissance\"]\n    A --> C[\"Traffic analysis\"]\n    \n    B --> D[\"Identify SaaS to AppFlow data flows\"]\n    C --> E[\"Monitor transmission patterns\"]\n    \n    D --> F[\"Position for man-in-the-middle attack\"]\n    E --> F\n    \n    F --> G[\"Intercept unencrypted transmissions\"]\n    F --> H[\"Exploit weak TLS configurations\"]\n    F --> I[\"Certificate manipulation attacks\"]\n    \n    G --> J[\"Capture healthcare data packets\"]\n    H --> K[\"Decrypt weakly protected traffic\"]\n    I --> L[\"Decrypt traffic using fraudulent certificates\"]\n    \n    J --> M[\"Extract PHI from packet contents\"]\n    K --> M\n    L --> M\n    \n    M --> N[\"PHI exposure and confidentiality breach\"]\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M attack\n    class N goal\n    class A fact\n```",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)",
+          "No technology-specific attack steps identified"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 16,
+        "tech_mentions": 0
+      }
+    },
+    {
+      "threat_id": "T002",
+      "threat_category": "Storage Misconfiguration",
+      "threat_description": "An external attacker with basic reconnaissance capabilities, can exploit misconfigured S3 bucket permissions, which leads to raw healthcare data exposure to unauthorized users or public access, resulting in reduced confidentiality of PHI/PII Data and Research Data.",
+      "threat_statement": "An external attacker with basic reconnaissance capabilities, can exploit misconfigured S3 bucket permissions, which leads to raw healthcare data exposure to unauthorized users or public access, resulting in reduced confidentiality of PHI/PII Data and Research Data.",
+      "threat_action": "Exploit misconfigured S3 bucket permissions",
+      "threatSource": "External attacker",
+      "prerequisites": "Basic reconnaissance capabilities",
+      "threatAction": "Exploit misconfigured S3 bucket permissions",
+      "threatImpact": "Raw healthcare data exposure to unauthorized users or public access",
+      "impactedGoal": "Confidentiality",
+      "impactedAssets": "PHI/PII Data, Research Data",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"External attacker with basic reconnaissance capabilities\"] --> B[\"Enumerate S3 buckets\"]\n    A --> C[\"Scan for publicly accessible endpoints\"]\n    B --> D[\"Use automated tools like bucket_finder\"]\n    B --> E[\"Check common naming patterns\"]\n    B --> F[\"Analyze DNS records and subdomains\"]\n    C --> G[\"Search for exposed S3 URLs in web content\"]\n    C --> H[\"Monitor GitHubpublic repos for hardcoded buckets\"]\n    D --> I[\"Discover healthcare platform S3 buckets\"]\n    E --> I\n    F --> I\n    G --> I\n    H --> I\n    I --> J[\"Test bucket permissions\"]\n    J --> K[\"Attempt anonymous read access\"]\n    J --> L[\"Check for public list permissions\"]\n    J --> M[\"Test authenticated access with various AWS accounts\"]\n    K --> N[\"Access misconfigured S3 bucket\"]\n    L --> N\n    M --> N\n    N --> O[\"List bucket contents\"]\n    O --> P[\"Identify PHIPII data files\"]\n    O --> Q[\"Identify research data files\"]\n    P --> R[\"Download healthcare records\"]\n    P --> S[\"Access patient information\"]\n    Q --> T[\"Extract research datasets\"]\n    Q --> U[\"Access clinical trial data\"]\n    R --> V[\"Raw healthcare data exposure\"]\n    S --> V\n    T --> V\n    U --> V\n    V --> W[\"Confidentiality breach of PHIPII and Research Data\"]\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,T,U,V attack\n    class W goal\n    class A,I fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "External attacker with basic reconnaissance capabilities"
+        },
+        {
+          "node_id": "B",
+          "description": "Enumerate S3 buckets"
+        },
+        {
+          "node_id": "C",
+          "description": "Scan for publicly accessible endpoints"
+        },
+        {
+          "node_id": "D",
+          "description": "Use automated tools like bucket_finder"
+        },
+        {
+          "node_id": "E",
+          "description": "Check common naming patterns"
+        },
+        {
+          "node_id": "F",
+          "description": "Analyze DNS records and subdomains"
+        },
+        {
+          "node_id": "G",
+          "description": "Search for exposed S3 URLs in web content"
+        },
+        {
+          "node_id": "H",
+          "description": "Monitor GitHubpublic repos for hardcoded buckets"
+        },
+        {
+          "node_id": "I",
+          "description": "Discover healthcare platform S3 buckets"
+        },
+        {
+          "node_id": "J",
+          "description": "Test bucket permissions"
+        },
+        {
+          "node_id": "K",
+          "description": "Attempt anonymous read access"
+        },
+        {
+          "node_id": "L",
+          "description": "Check for public list permissions"
+        },
+        {
+          "node_id": "M",
+          "description": "Test authenticated access with various AWS accounts"
+        },
+        {
+          "node_id": "N",
+          "description": "Access misconfigured S3 bucket"
+        },
+        {
+          "node_id": "O",
+          "description": "List bucket contents"
+        },
+        {
+          "node_id": "P",
+          "description": "Identify PHIPII data files"
+        },
+        {
+          "node_id": "Q",
+          "description": "Identify research data files"
+        },
+        {
+          "node_id": "R",
+          "description": "Download healthcare records"
+        },
+        {
+          "node_id": "S",
+          "description": "Access patient information"
+        },
+        {
+          "node_id": "T",
+          "description": "Extract research datasets"
+        },
+        {
+          "node_id": "U",
+          "description": "Access clinical trial data"
+        },
+        {
+          "node_id": "V",
+          "description": "Raw healthcare data exposure"
+        },
+        {
+          "node_id": "W",
+          "description": "Confidentiality breach of PHIPII and Research Data"
+        }
+      ],
+      "generated_content": "# Attack Tree for Threat T002: S3 Bucket Misconfiguration Exploitation\n\n```mermaid\ngraph TD\n    A[\"External attacker with basic reconnaissance capabilities\"] --> B[\"Enumerate S3 buckets\"]\n    A --> C[\"Scan for publicly accessible endpoints\"]\n    \n    B --> D[\"Use automated tools like bucket_finder\"]\n    B --> E[\"Check common naming patterns\"]\n    B --> F[\"Analyze DNS records and subdomains\"]\n    \n    C --> G[\"Search for exposed S3 URLs in web content\"]\n    C --> H[\"Monitor GitHub/public repos for hardcoded buckets\"]\n    \n    D --> I[\"Discover healthcare platform S3 buckets\"]\n    E --> I\n    F --> I\n    G --> I\n    H --> I\n    \n    I --> J[\"Test bucket permissions\"]\n    J --> K[\"Attempt anonymous read access\"]\n    J --> L[\"Check for public list permissions\"]\n    J --> M[\"Test authenticated access with various AWS accounts\"]\n    \n    K --> N[\"Access misconfigured S3 bucket\"]\n    L --> N\n    M --> N\n    \n    N --> O[\"List bucket contents\"]\n    O --> P[\"Identify PHI/PII data files\"]\n    O --> Q[\"Identify research data files\"]\n    \n    P --> R[\"Download healthcare records\"]\n    P --> S[\"Access patient information\"]\n    Q --> T[\"Extract research datasets\"]\n    Q --> U[\"Access clinical trial data\"]\n    \n    R --> V[\"Raw healthcare data exposure\"]\n    S --> V\n    T --> V\n    U --> V\n    \n    V --> W[\"Confidentiality breach of PHI/PII and Research Data\"]\n\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,T,U,V attack\n    class W goal\n    class A,I fact\n```",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 31,
+        "tech_mentions": 1
+      }
+    }
+  ],
+  "threat_status": {
+    "T001": "success",
+    "T002": "success"
+  },
+  "generation_summary": {
+    "total_high_threats": 2,
+    "processed_this_run": 2,
+    "skipped_successful": 0,
+    "successful_generations": 2,
+    "failed_generations": 0
+  }
+}

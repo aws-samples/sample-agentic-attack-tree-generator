@@ -1,7 +1,0 @@
-Attack Step,Mitigation,Type,Description,TTC Reference
-api_access_establishment,API Authentication and Authorization,Preventative,Implement strong authentication and authorization for API access,AT1667.001
-api_access_establishment,API Gateway Security,Preventative,Configure API Gateway with proper security controls and rate limiting,AT1667.001
-prompt_crafting,Input Sanitization,Preventative,Implement robust input sanitization and prompt injection detection,T1059.009
-prompt_crafting,Query Pattern Analysis,Detective,Monitor and analyze query patterns for prompt extraction attempts,T1059.009
-system_prompt_extraction,Response Filtering,Preventative,Implement response filtering to prevent system prompt leakage,N/A
-system_prompt_extraction,Prompt Isolation,Preventative,Use prompt isolation techniques to separate system and user prompts,N/A

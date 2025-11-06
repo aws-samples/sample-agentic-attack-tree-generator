@@ -1,0 +1,102 @@
+graph TB
+    %% User Interface Layer
+    User["👤 User"] --> Wizard["🧙♂️ ThreatForest Wizard"]
+    
+    %% Input Sources
+    subgraph InputSources["Input Sources"]
+        TC["📄 ThreatComposer Files<br/>.tc.json"]
+        ThreatMD["📝 Threat Model Files<br/>.md (formatted/unformatted)"]
+        Docs["📖 Documentation<br/>.md, README, .txt"]
+        Diagrams["🏗️ Architecture Diagrams<br/>.jpg, .png, .pdf"]
+        Config["⚙️ Config Files<br/>.json, .yaml, .yml"]
+    end
+    
+    %% Core Processing Pipeline
+    subgraph Pipeline["ThreatForest Core Pipeline"]
+        %% Step 1: Context Analysis
+        ContextTool["🔍 Context Analysis Tool<br/>• File Discovery & Categorization<br/>• Content Parsing<br/>• Multi-format Support"]
+        
+        %% Step 2: Information Extraction
+        InfoTool["🤖 Information Extraction Tool<br/>• ThreatComposer JQ Processing<br/>• Format Detection & Standardization<br/>• Bedrock AI Reformatting<br/>• Project Info Extraction"]
+        
+        %% Step 3: Attack Tree Generation
+        TreeTool["🌳 Attack Tree Generator<br/>• High Priority Threat Analysis<br/>• Attack Path Generation<br/>• Bedrock LLM Processing"]
+        
+        %% Step 4: TTC Mapping
+        TTCTool["🎯 TTC Mapping Tool<br/>• MITRE ATT&CK Mapping<br/>• Technique Classification<br/>• Tactic Assignment"]
+        
+        %% Step 5: Report Generation
+        ReportTool["📊 Summary Generator<br/>• Comprehensive Reports<br/>• Attack Tree Summaries<br/>• Mitigation Recommendations"]
+        
+        ContextTool --> InfoTool
+        InfoTool --> TreeTool
+        TreeTool --> TTCTool
+        TTCTool --> ReportTool
+    end
+    
+    %% AWS Bedrock Integration
+    subgraph Bedrock["AWS Bedrock"]
+        BedrockModels["🧠 Claude Models<br/>• Threat Reformatting<br/>• Project Analysis<br/>• Attack Tree Generation"]
+    end
+    
+    %% External Resources
+    subgraph External["External Resources"]
+        MITRE["🛡️ MITRE ATT&CK<br/>Framework"]
+        JQ["⚙️ JQ Scripts<br/>ThreatComposer Parsing"]
+    end
+    
+    %% Standardized Intermediate Outputs
+    subgraph Standardized["Standardized Format"]
+        StandardThreats["📋 Standardized Threats<br/>• T001, T002, T003... IDs<br/>• Consistent Structure<br/>• Priority Grouping"]
+    end
+    
+    %% Final Outputs
+    subgraph Outputs["Generated Outputs"]
+        ThreatFile["📄 Threat Statements<br/>*_reformatted_threat_statements.md"]
+        AttackTrees["🌳 Attack Trees<br/>Individual threat analysis"]
+        TTCReport["🎯 TTC Mapping Report<br/>MITRE ATT&CK mappings"]
+        Summary["📊 Comprehensive Report<br/>Complete analysis summary"]
+    end
+    
+    %% Main Flow Connections
+    Wizard --> ContextTool
+    
+    %% Input connections
+    TC --> ContextTool
+    ThreatMD --> ContextTool
+    Docs --> ContextTool
+    Diagrams --> ContextTool
+    Config --> ContextTool
+    
+    %% Processing flow
+    InfoTool --> StandardThreats
+    StandardThreats --> TreeTool
+    
+    %% Bedrock connections
+    InfoTool -.-> BedrockModels
+    TreeTool -.-> BedrockModels
+    
+    %% External resource connections
+    TTCTool -.-> MITRE
+    InfoTool -.-> JQ
+    
+    %% Output connections
+    StandardThreats --> ThreatFile
+    TreeTool --> AttackTrees
+    TTCTool --> TTCReport
+    ReportTool --> Summary
+    
+    %% Styling
+    classDef inputClass fill:#f5f5f5,stroke:#666,stroke-width:2px,color:#333
+    classDef toolClass fill:#e8e8e8,stroke:#444,stroke-width:2px,color:#333
+    classDef bedrockClass fill:#fff2cc,stroke:#d6b656,stroke-width:2px,color:#333
+    classDef outputClass fill:#d5e8d4,stroke:#82b366,stroke-width:2px,color:#333
+    classDef externalClass fill:#f8cecc,stroke:#b85450,stroke-width:2px,color:#333
+    classDef standardClass fill:#ffe6cc,stroke:#d79b00,stroke-width:3px,color:#333
+    
+    class TC,ThreatMD,Docs,Diagrams,Config inputClass
+    class ContextTool,InfoTool,TreeTool,TTCTool,ReportTool toolClass
+    class BedrockModels bedrockClass
+    class ThreatFile,AttackTrees,TTCReport,Summary outputClass
+    class MITRE,JQ externalClass
+    class StandardThreats standardClass

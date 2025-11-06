@@ -1,7 +1,0 @@
-Attack Step,Mitigation,Type,Description,TTC Reference
-database_access_establishment,Database Access Controls,Preventative,Implement strict database access controls and authentication,AT1023.001
-database_access_establishment,Network Segmentation,Preventative,Use VPC security groups and NACLs to restrict database access,AT1023.001
-tenant_isolation_exploitation,Multi-Tenant Architecture Review,Preventative,Conduct thorough security review of multi-tenant isolation mechanisms,N/A
-tenant_isolation_exploitation,Tenant Boundary Monitoring,Detective,Monitor for unauthorized cross-tenant access attempts,N/A
-cross_tenant_data_access,Data Encryption,Preventative,Implement tenant-specific encryption keys for data at rest and in transit,N/A
-cross_tenant_data_access,Access Logging,Detective,Enable comprehensive logging of all data access operations,N/A

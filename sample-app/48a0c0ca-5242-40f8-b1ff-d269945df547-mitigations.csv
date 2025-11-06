@@ -1,7 +1,0 @@
-Attack Step,Mitigation,Type,Description,TTC Reference
-development_infiltration,Multi-Factor Authentication,Preventative,Enforce MFA for all development environment access,T1199.A002
-development_infiltration,Role-Based Access Control,Preventative,Implement least privilege access controls for development processes,T1199.A002
-malicious_code_injection,Code Review and Approval,Preventative,Require mandatory code review and approval for all model changes,N/A
-malicious_code_injection,Automated Security Scanning,Detective,Implement automated security scanning of model artifacts and code,N/A
-model_distribution,Model Signing and Verification,Preventative,Implement cryptographic signing and verification of model artifacts,T1078.A001
-model_distribution,Supply Chain Monitoring,Detective,Monitor model distribution channels for unauthorized or suspicious activity,T1078.A001
