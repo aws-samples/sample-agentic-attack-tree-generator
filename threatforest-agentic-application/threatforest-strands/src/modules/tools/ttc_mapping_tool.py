@@ -24,17 +24,60 @@ class TTCMappingTool(Tool):
         self.max_retries = 3
         self.base_backoff = 2
     
+    async def _bedrock_call_with_retry(self, bedrock_client, model_id: str, body: dict, operation_name: str = "TTC mapping") -> dict:
+        """Execute Bedrock API call with exponential backoff retry logic"""
+        last_error = None
+        
+        for attempt in range(self.max_retries):
+            try:
+                response = bedrock_client.invoke_model(modelId=model_id, body=json.dumps(body))
+                return json.loads(response['body'].read())
+            except ClientError as e:
+                error_code = e.response.get('Error', {}).get('Code', '')
+                error_msg = e.response.get('Error', {}).get('Message', str(e))
+                
+                if error_code == 'ThrottlingException':
+                    wait_time = self.base_backoff * (2 ** attempt)
+                    self.logger.warning(f"⚠️  {operation_name} throttled (attempt {attempt + 1}/{self.max_retries})")
+                    print(f"⚠️  Rate limited by AWS Bedrock - waiting {wait_time}s before retry...")
+                    
+                    if attempt < self.max_retries - 1:
+                        await asyncio.sleep(wait_time)
+                        continue
+                    else:
+                        self.logger.error(f"Max retries reached for {operation_name}")
+                        print(f"❌ Max retries exceeded - Bedrock API throttling persists")
+                        raise Exception(f"Throttling error after {self.max_retries} retries: {error_msg}")
+                else:
+                    self.logger.error(f"{operation_name} error: {error_code} - {error_msg}")
+                    raise Exception(f"Bedrock API error ({error_code}): {error_msg}")
+            except Exception as e:
+                last_error = e
+                if attempt < self.max_retries - 1:
+                    wait_time = self.base_backoff * (2 ** attempt)
+                    self.logger.warning(f"{operation_name} attempt {attempt + 1} failed, retrying in {wait_time}s: {str(e)}")
+                    await asyncio.sleep(wait_time)
+                else:
+                    self.logger.error(f"{operation_name} failed after all retries: {str(e)}")
+                    raise
+        
+        raise last_error if last_error else Exception(f"Unknown error in {operation_name} retry logic")
+    
     async def execute(self, attack_trees: Dict[str, Any], 
                      bedrock_model: str,
                      aaf_bundle_path: str = None,
                      aws_profile: Optional[str] = None) -> Dict[str, Any]:
         """Execute TTC mapping with Bedrock enhancement"""
         
+        trees = attack_trees.get("attack_trees", [])
+        self.logger.info(f"🎯 Starting TTC mapping for {len(trees)} attack trees")
+        
         # Load STIX data
         stix_data = self._load_stix_data(aaf_bundle_path)
         if not stix_data:
+            self.logger.error("❌ Failed to load STIX data")
             return {
-                "ttc_mapped_trees": attack_trees.get("attack_trees", []),
+                "ttc_mapped_trees": trees,
                 "mapping_summary": {
                     "total_mappings": 0,
                     "successful_mappings": 0,
@@ -43,45 +86,53 @@ class TTCMappingTool(Tool):
                 }
             }
         
+        self.logger.info(f"📚 Loaded STIX bundle with {len(stix_data.get('objects', []))} objects")
+        
         # Extract techniques from STIX data
         techniques = self._extract_techniques(stix_data)
+        self.logger.info(f"🔍 Extracted {len(techniques)} TTC techniques from STIX data")
+        
         use_bedrock_only = len(techniques) == 0
         
         if use_bedrock_only:
-            self.logger.info(f"Using Bedrock-only MITRE ATT&CK mapping (no local STIX data)")
-    
-    def _load_prompt_template(self, prompt_name: str) -> str:
-        """Load prompt template from src/prompts/ directory"""
-        from pathlib import Path
-        prompt_file = Path(__file__).parent.parent.parent / "prompts" / f"{prompt_name}.md"
+            self.logger.warning("⚠️  Using Bedrock-only MITRE ATT&CK mapping (no local STIX data)")
         
-        if not prompt_file.exists():
-            self.logger.error(f"Prompt template not found: {prompt_file}")
-            raise FileNotFoundError(f"Prompt template not found: {prompt_name}.md")
+        # Map attack trees with Bedrock enhancement
+        mapped_trees = []
+        total_mappings = 0
+        successful_mappings = 0
         
-        try:
-            with open(prompt_file, 'r', encoding='utf-8') as f:
-                return f.read()
-        except Exception as e:
-            self.logger.error(f"Failed to load prompt template {prompt_name}: {e}")
-            raise
-    
-    async def _bedrock_call_with_retry(self, bedrock_client, model_id: str, body: dict, operation_name: str = "TTC mapping") -> dict:
-        """Execute Bedrock API call using BedrockInvoker"""
-        invoker = BedrockInvoker(max_retries=self.max_retries, base_backoff=self.base_backoff)
+        for idx, tree in enumerate(trees, 1):
+            if "mermaid_code" in tree:
+                self.logger.info(f"📊 Processing attack tree {idx}/{len(trees)}: {tree.get('threat_id', 'unknown')}")
+                
+                if use_bedrock_only:
+                    mapped_tree = await self._map_with_bedrock_only(tree, bedrock_model, aws_profile)
+                else:
+                    mapped_tree = await self._map_attack_tree_with_bedrock(
+                        tree, techniques, bedrock_model, aws_profile
+                    )
+                mapped_trees.append(mapped_tree)
+                
+                mappings = mapped_tree.get("ttc_mappings", [])
+                total_mappings += len(mappings)
+                successful_mappings += len([m for m in mappings if m.get("confidence", 0) >= self.threshold])
+                self.logger.info(f"   └─ Mapped {len(mappings)} techniques")
         
-        try:
-            prompt = body["messages"][0]["content"]
-            content = await invoker.invoke_with_retry(
-                model_id=model_id,
-                prompt=prompt,
-                max_tokens=body.get("max_tokens", 65536)
-            )
-            return {"content": [{"text": content}]}
-        except Exception as e:
-            self.logger.error(f"{operation_name} failed: {str(e)}")
-            raise
+        self.logger.info(f"✅ TTC Mapping Complete: {total_mappings} total mappings, {successful_mappings} above threshold")
+        
+        return {
+            "ttc_mapped_trees": mapped_trees,
+            "mapping_summary": {
+                "total_mappings": total_mappings,
+                "successful_mappings": successful_mappings,
+                "threshold_used": self.threshold,
+                "techniques_loaded": len(techniques),
+                "bedrock_enhanced": True
+            }
+        }
     
+    def _load_stix_data(self, bundle_path: str) -> Optional[Dict[str, Any]]:
         """Load STIX bundle data from stix-data folder or specified path"""
         
         # First try the stix-data folder (relative to this file)
@@ -224,7 +275,11 @@ class TTCMappingTool(Tool):
         prompt = self._build_ttc_mapping_prompt(attack_steps, candidate_techniques, tree)
         
         try:
-            bedrock = BedrockClientManager().get_client(profile_name=aws_profile)
+            import boto3
+            import json
+            
+            session = boto3.Session(profile_name=aws_profile) if aws_profile else boto3.Session()
+            bedrock = session.client('bedrock-runtime', region_name='us-east-1')
             
             body = {
                 "anthropic_version": "bedrock-2023-05-31",
@@ -260,15 +315,38 @@ class TTCMappingTool(Tool):
             for tech in techniques[:15]  # Limit to top 15 to manage context
         ])
         
-        prompt_template = self._load_prompt_template("ttc-attack-step-mapping")
-        return f"""{prompt_template}
+        return f"""You are a cybersecurity expert. Map these attack steps to the most relevant MITRE ATT&CK techniques.
 
 **Attack Steps:**
 {steps_text}
 
 **Available MITRE ATT&CK Techniques:**
 {techniques_text}
-"""
+
+**Instructions:**
+For each attack step, identify the 1-2 most relevant techniques. Consider:
+- Attack method similarity
+- Tactic alignment
+- Technical implementation
+
+**Output Format (JSON):**
+```json
+[
+  {{
+    "attack_step": "step description",
+    "node_id": "step_id",
+    "techniques": [
+      {{
+        "technique_id": "T1234",
+        "confidence": 0.85,
+        "reasoning": "brief explanation"
+      }}
+    ]
+  }}
+]
+```
+
+Return only the JSON array."""
     
     def _parse_bedrock_mappings(self, content: str, attack_steps: List[Dict[str, Any]], 
                                techniques: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -370,14 +448,32 @@ class TTCMappingTool(Tool):
         threat_statement = tree.get("threat_statement", "")
         mermaid_code = tree.get("mermaid_code", "")
         
-        prompt_template = self._load_prompt_template("ttc-full-tree-mapping")
-        prompt = prompt_template.format(
-            threat_statement=threat_statement,
-            mermaid_code=mermaid_code
-        )
+        prompt = f"""You are a cybersecurity expert. Analyze this attack tree and map each attack step to MITRE ATT&CK techniques.
+
+Threat Statement: {threat_statement}
+
+Attack Tree (Mermaid format):
+{mermaid_code}
+
+For each attack step in the tree, identify the most relevant MITRE ATT&CK technique. Return a JSON response:
+
+{{
+  "mappings": [
+    {{
+      "attack_step": "description of the attack step",
+      "technique_id": "T1234",
+      "technique_name": "Technique Name", 
+      "tactic": "Tactic Name",
+      "confidence": 0.9
+    }}
+  ]
+}}
+
+Focus on specific techniques with high confidence scores (0.7+)."""
 
         try:
-            bedrock = BedrockClientManager().get_client(profile_name=aws_profile)
+            session = boto3.Session(profile_name=aws_profile) if aws_profile else boto3.Session()
+            bedrock = session.client('bedrock-runtime', region_name='us-east-1')
             
             body = {
                 "anthropic_version": "bedrock-2023-05-31",

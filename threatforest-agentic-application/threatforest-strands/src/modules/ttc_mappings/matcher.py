@@ -110,6 +110,7 @@ class TTCMatcher:
         if not self.embeddings_data:
             raise ValueError("No embeddings loaded. Call create_embeddings() or load from file.")
         
+        self.logger.info(f"🔍 Matching {len(attack_steps)} attack steps to techniques...")
         self._load_model()
         
         technique_embs = np.array(self.embeddings_data['embeddings'])
@@ -119,6 +120,7 @@ class TTCMatcher:
         base_similarities = cosine_similarity(step_embeddings, technique_embs)
         
         results = []
+        matched_count = 0
         for i, step in enumerate(attack_steps):
             step_lower = step.lower()
             weighted_scores = []
@@ -149,11 +151,13 @@ class TTCMatcher:
                     })
             
             if matches:
+                matched_count += 1
                 results.append({
                     'attack_step': step,
                     'matches': matches
                 })
         
+        self.logger.info(f"✓ Matched {matched_count} of {len(attack_steps)} steps to techniques")
         return results
     
     def _get_confidence_level(self, similarity: float) -> str:

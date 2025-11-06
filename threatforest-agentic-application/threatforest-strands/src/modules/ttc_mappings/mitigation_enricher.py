@@ -27,6 +27,8 @@ class MitigationEnricher:
         with open(self.stix_bundle_path, 'r') as f:
             bundle = json.load(f)
         
+        self.logger.info(f"📚 Loading STIX bundle from {self.stix_bundle_path}")
+        
         # Index attack patterns by ID
         for obj in bundle.get('objects', []):
             if obj.get('type') == 'attack-pattern':
@@ -45,6 +47,10 @@ class MitigationEnricher:
                 
                 if source_id in self.mitigations:
                     self.mitigation_map[target_id].append(self.mitigations[source_id])
+        
+        self.logger.info(f"   ├─ Attack patterns: {len(self.attack_patterns)}")
+        self.logger.info(f"   ├─ Mitigations: {len(self.mitigations)}")
+        self.logger.info(f"   └─ Mitigation relationships: {len(self.mitigation_map)}")
     
     def get_mitigations_for_technique(self, technique_id: str) -> List[Dict[str, Any]]:
         """
@@ -74,6 +80,8 @@ class MitigationEnricher:
         Returns:
             Enriched attack tree with mitigation nodes inserted
         """
+        self.logger.info(f"🛡️  Enriching attack tree with mitigations...")
+        
         enriched = attack_tree.copy()
         
         if 'nodes' not in enriched:
@@ -81,6 +89,7 @@ class MitigationEnricher:
         
         new_nodes = []
         node_id_counter = max([n.get('id', 0) for n in enriched['nodes']], default=0) + 1
+        mitigation_count = 0
         
         for node in enriched['nodes']:
             new_nodes.append(node)
@@ -95,6 +104,7 @@ class MitigationEnricher:
             if not mitigations:
                 continue
             
+            mitigation_count += len(mitigations)
             # Add mitigation nodes after this attack step
             for mitigation in mitigations:
                 mitigation_node = {
@@ -109,6 +119,7 @@ class MitigationEnricher:
                 node_id_counter += 1
         
         enriched['nodes'] = new_nodes
+        self.logger.info(f"✓ Added {mitigation_count} mitigations across {len(enriched['nodes'])} nodes")
         return enriched
     
     def enrich_mermaid(self, mermaid_content: str, attack_tree: Dict[str, Any]) -> str:

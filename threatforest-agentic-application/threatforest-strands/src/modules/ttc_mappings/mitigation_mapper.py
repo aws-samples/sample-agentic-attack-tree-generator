@@ -16,6 +16,7 @@ class MitigationMapper:
     
     def _load_bundle(self, bundle_path: str):
         """Load and index STIX bundle for technique->mitigation mapping"""
+        self.logger.info(f"📚 Loading STIX bundle from {Path(bundle_path).name}")
         with open(bundle_path) as f:
             bundle = json.load(f)
         
@@ -52,6 +53,8 @@ class MitigationMapper:
                     mitigation = mitigations[source_mitigation].copy()
                     mitigation['relationship_description'] = obj.get('description', '')
                     self.technique_to_mitigations[technique_id].append(mitigation)
+        
+        self.logger.info(f"   └─ Indexed {len(self.technique_to_mitigations)} techniques with mitigations")
     
     def get_mitigations(self, technique_id: str) -> List[Dict]:
         """Get mitigations for a technique ID (e.g., T1552, AT1019)"""
@@ -157,6 +160,7 @@ class MitigationMapper:
     
     def process_enriched_file(self, enriched_path: str, output_path: Optional[str] = None) -> Dict:
         """Process enriched attack tree file and add mitigations to diagram and table"""
+        self.logger.info(f"🛡️  Processing {Path(enriched_path).name} for mitigations")
         with open(enriched_path) as f:
             content = f.read()
         
@@ -178,6 +182,10 @@ class MitigationMapper:
         # Update technique table
         if technique_to_mitigations:
             content = self._update_technique_table(content, technique_to_mitigations)
+            total_mitigations = sum(len(self.get_mitigations(t)) for t in technique_to_mitigations.keys())
+            self.logger.info(f"✓ Added {total_mitigations} mitigations for {len(technique_to_mitigations)} techniques")
+        else:
+            self.logger.info("⚠️  No mitigations found for this attack tree")
         
         # Write output
         if output_path:
