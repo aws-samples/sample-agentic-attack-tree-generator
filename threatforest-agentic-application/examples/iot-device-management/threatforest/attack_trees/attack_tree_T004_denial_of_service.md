@@ -18,33 +18,39 @@
 
 ```mermaid
 graph TD
-    A["Cybercriminal with botnet resources"] --> B["Reconnaissance on communication gateway"]
-    A --> C["Direct attack preparation"]
-    B --> D["Identify gateway IP addresses"]
-    B --> E["Map gateway infrastructure"]
-    B --> F["Identify protocol vulnerabilities"]
-    D --> G["Volumetric DDoS attack"]
-    E --> H["Application layer DDoS attack"]
-    F --> I["Protocol exploitation attack"]
-    C --> G
-    C --> H
-    C --> I
-    G --> J["Bandwidth saturation"]
-    H --> K["Resource exhaustion"]
-    I --> L["Connection table overflow"]
-    J --> M["Gateway becomes unreachable"]
+    A["Cybercriminal with botnet resources"] --> B["Reconnaissance phase"]
+    A --> C["Botnet preparation"]
+    B --> D["Identify communication gateway endpoints"]
+    B --> E["Analyze gateway capacity and vulnerabilities"]
+    C --> F["Expand botnet network"]
+    C --> G["Configure attack parameters"]
+    D --> H["Map smart meter communication paths"]
+    D --> I["Map vehicle telematics communication paths"]
+    E --> J["Identify bandwidth limitations"]
+    E --> K["Discover protocol weaknesses"]
+    F --> L["Launch volumetric DDoS attack"]
+    G --> L
+    J --> L
+    F --> M["Launch application layer attack"]
+    G --> M
     K --> M
-    L --> M
-    M --> N["Disruption of critical device communications"]
-    N --> O["Smart meters lose connectivity"]
-    N --> P["Vehicle telematics systems offline"]
-    O --> Q["Loss of availability for smart meters and vehicle telematics"]
+    L --> N["Saturate gateway bandwidth"]
+    M --> O["Exhaust gateway resources"]
+    N --> P["Disruption of critical device communications"]
+    O --> P
+    H --> Q["Smart meters lose connectivity"]
+    I --> R["Vehicle telematics systems fail"]
     P --> Q
+    P --> R
+    Q --> S["Loss of availability for smart meters"]
+    R --> T["Loss of availability for vehicle telematics"]
+    S --> U["Complete service disruption goal achieved"]
+    T --> U
     classDef attack fill:#ffcccc
     classDef goal fill:#ffcc99
     classDef fact fill:#ccccff
-    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P attack
-    class Q goal
+    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T attack
+    class U goal
     class A fact
     classDef mitigation fill:#ccffcc
 ```

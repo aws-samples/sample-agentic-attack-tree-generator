@@ -18,25 +18,26 @@
 
 ```mermaid
 graph TD
-    A["Malicious attacker with compromised X.509 certificates"] --> B["Certificate validation"]
-    A --> C["Direct device impersonation"]
-    B["Verify certificate authenticity"] --> D["Exploit weak certificate validation"]
-    B --> E["Use stolen legitimate certificates"]
-    D --> F["Bypass certificate revocation checks"]
-    E --> F
-    C["Establish connection as legitimate device"] --> G["Authentication to IoT platform"]
-    F --> G
-    G --> H["Gain trusted device status"]
-    H --> I["Inject malicious sensor data"]
-    H --> J["Send unauthorized device commands"]
-    I --> K["Compromise data integrity"]
-    J --> K
-    K["Impact: Control system manipulation and data corruption"]
+    A["Malicious attacker with compromised X.509 certificates"] --> B["Certificate validation bypass"]
+    A --> C["Direct certificate exploitation"]
+    B --> D["Exploit weak certificate validation"]
+    B --> E["Man-in-the-middle certificate injection"]
+    C --> F["Use stolen valid certificates"]
+    C --> G["Use compromised CA-signed certificates"]
+    D --> H["Impersonate legitimate IoT device"]
+    E --> H
+    F --> H
+    G --> H
+    H --> I["Establish authenticated connection"]
+    I --> J["Inject malicious sensor data"]
+    I --> K["Send unauthorized device commands"]
+    J --> L["Compromise integrity of device data and control systems"]
+    K --> L
     classDef attack fill:#ffcccc
     classDef goal fill:#ffcc99
     classDef fact fill:#ccccff
-    class B,C,D,E,F,G,H,I,J attack
-    class K goal
+    class B,C,D,E,F,G,H,I,J,K attack
+    class L goal
     class A fact
     classDef mitigation fill:#ccffcc
 ```

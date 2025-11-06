@@ -19,40 +19,44 @@
 ```mermaid
 graph TD
     A["Nation-state actor with APT capabilities"] --> B["Reconnaissance Phase"]
-    A --> C["Infrastructure Positioning"]
-    B --> D["Network Traffic Analysis"]
-    B --> E["TLS Configuration Enumeration"]
-    D --> F["Identify MQTT over TLS Traffic"]
-    E --> G["Discover Weak Cipher Suites"]
-    E --> H["Identify Outdated TLS Versions"]
-    C --> I["Man-in-the-Middle Positioning"]
-    C --> J["Compromise Network Infrastructure"]
-    I --> K["Deploy Interception Infrastructure"]
-    J --> L["Gain Access to Network Segments"]
-    F --> M["Targeted Traffic Interception"]
-    G --> M
-    H --> M
-    K --> M
-    L --> M
-    M --> N["Cryptographic Attack Execution"]
-    N --> O["Exploit Weak Ciphers"]
-    N --> P["Downgrade Attack"]
-    N --> Q["Certificate Manipulation"]
-    N --> R["Key Exchange Compromise"]
-    O --> S["Decrypt MQTT Communications"]
-    P --> S
-    Q --> S
-    R --> S
-    S --> T["Extract Healthcare Data from Patient Monitors"]
-    S --> U["Extract Industrial Data from SCADA Systems"]
-    T --> V["Exposure of Sensitive Healthcare and Industrial Data"]
+    A --> C["Positioning Phase"]
+    B --> D["Network topology mapping"]
+    B --> E["MQTT broker identification"]
+    B --> F["TLS configuration analysis"]
+    D --> G["Identify patient monitors"]
+    D --> H["Identify SCADA systems"]
+    F --> I["Detect weak cipher suites"]
+    F --> J["Identify certificate vulnerabilities"]
+    F --> K["Detect outdated TLS versions"]
+    C --> L["Network interception setup"]
+    C --> M["Man-in-the-middle positioning"]
+    L --> N["Traffic capture at network gateway"]
+    M --> O["ARP spoofing attack"]
+    M --> P["DNS hijacking attack"]
+    I --> Q["Exploit weak cryptographic algorithms"]
+    J --> R["Certificate compromise attack"]
+    K --> S["Downgrade attack to weak TLS"]
+    N --> T["Capture encrypted MQTT traffic"]
+    O --> T
+    P --> T
+    Q --> U["Decrypt MQTT communications"]
+    R --> U
+    S --> U
+    G --> V["Patient monitor data extraction"]
+    H --> W["SCADA control data extraction"]
+    T --> U
     U --> V
+    U --> W
+    V --> X["Exposure of sensitive healthcare data"]
+    W --> Y["Exposure of industrial control data"]
+    X --> Z["Complete compromise of confidentiality"]
+    Y --> Z
     classDef attack fill:#ffcccc
     classDef goal fill:#ffcc99
     classDef fact fill:#ccccff
-    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U attack
-    class V goal
-    class A fact
+    class B,C,D,E,F,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y attack
+    class Z goal
+    class A,G,H fact
     classDef mitigation fill:#ccffcc
 ```
 

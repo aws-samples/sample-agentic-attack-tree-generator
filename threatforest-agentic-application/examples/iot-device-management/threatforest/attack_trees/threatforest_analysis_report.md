@@ -1,6 +1,6 @@
 # ThreatForest Analysis Report
 
-**Generated on:** 2025-10-23 14:39:03
+**Generated on:** 2025-10-28 11:28:27
 
 ## Executive Summary
 
@@ -9,9 +9,9 @@ This report presents a comprehensive threat analysis for **IoT Device Management
 ## Project Information
 
 - **Application Name**: IoT Device Management Platform
-- **Architecture Type**: Microservices
+- **Architecture Type**: Microservices with Event-Driven Architecture
 - **Deployment Environment**: Cloud (AWS)
-- **Industry Sector**: IoT/Multi-Industry (Smart Cities, Industrial Automation, Healthcare)
+- **Industry Sector**: IoT/Smart Systems (Multi-sector: Smart Cities, Industrial Automation, Healthcare)
 
 ### Technology Stack
 - MQTT over TLS
@@ -72,7 +72,7 @@ This report presents a comprehensive threat analysis for **IoT Device Management
 3. **Review Attack Paths**: Analyze generated attack trees for potential vulnerabilities
 
 ### Strategic Improvements
-1. **Architecture Review**: Consider security implications of Microservices architecture
+1. **Architecture Review**: Consider security implications of Microservices with Event-Driven Architecture architecture
 2. **Technology Assessment**: Evaluate security posture of identified technologies
 3. **Threat Modeling**: Regular updates to threat model as application evolves
 

@@ -18,25 +18,26 @@
 
 ```mermaid
 graph TD
-    A["Malicious attacker with compromised X.509 certificates<br/><small>T1496.001</small>"] --> B["Certificate validation<br/><small>T1190.A004</small>"]
-    A --> C["Direct device impersonation<br/><small>AT1013</small>"]
-    B["Verify certificate authenticity<br/><small>T1649</small>"] --> D["Exploit weak certificate validation<br/><small>AT1013</small>"]
-    B --> E["Use stolen legitimate certificates<br/><small>T1649</small>"]
-    D --> F["Bypass certificate revocation checks<br/><small>AT1011</small>"]
-    E --> F
-    C["Establish connection as legitimate device<br/><small>AT1013</small>"] --> G["Authentication to IoT platform<br/><small>T1078.A001</small>"]
-    F --> G
-    G --> H["Gain trusted device status<br/><small>T1496.001</small>"]
-    H --> I["Inject malicious sensor data<br/><small>T1190.A015</small>"]
-    H --> J["Send unauthorized device commands<br/><small>AT1011</small>"]
-    I --> K["Compromise data integrity<br/><small>T1530.A002</small>"]
-    J --> K
-    K["Impact: Control system manipulation and data corruption<br/><small>AT1011</small>"]
+    A["Malicious attacker with compromised X.509 certificates<br/><small>T1496.001</small>"] --> B["Certificate validation bypass<br/><small>AT1011</small>"]
+    A --> C["Direct certificate exploitation<br/><small>T1496.001</small>"]
+    B --> D["Exploit weak certificate validation<br/><small>AT1013</small>"]
+    B --> E["Man-in-the-middle certificate injection<br/><small>T1190.A018</small>"]
+    C --> F["Use stolen valid certificates<br/><small>T1649</small>"]
+    C --> G["Use compromised CA-signed certificates<br/><small>T1649</small>"]
+    D --> H["Impersonate legitimate IoT device<br/><small>AT1013</small>"]
+    E --> H
+    F --> H
+    G --> H
+    H --> I["Establish authenticated connection<br/><small>AT1006</small>"]
+    I --> J["Inject malicious sensor data<br/><small>T1190.A015</small>"]
+    I --> K["Send unauthorized device commands<br/><small>AT1011</small>"]
+    J --> L["Compromise integrity of device data and control systems<br/><small>AT1011</small>"]
+    K --> L
     classDef attack fill:#ffcccc
     classDef goal fill:#ffcc99
     classDef fact fill:#ccccff
-    class B,C,D,E,F,G,H,I,J attack
-    class K goal
+    class B,C,D,E,F,G,H,I,J,K attack
+    class L goal
     class A fact
     classDef mitigation fill:#ccffcc
     classDef mitigation fill:#ADD8E6,stroke:#4682B4,stroke-width:2px
@@ -63,17 +64,15 @@ Review this attack tree to:
 
 | Attack Step | Technique ID | Technique Name | Confidence | Similarity |
 |-------------|--------------|----------------|------------|------------|
+| Man-in-the-middle certificate injection... | T1190.A018 | API Gateway... | 🟡 medium | 0.617 |
 | Inject malicious sensor data... | T1190.A015 | SNS Topic... | 🟡 medium | 0.597 |
-| Use stolen legitimate certificates... | T1649 | Steal or Forge Authentication Certificat... | 🟡 medium | 0.570 |
-| Exploit weak certificate validation... | AT1013 | User Agent Spoofing and Randomization... | 🟡 medium | 0.518 |
-| Direct device impersonation... | AT1013 | User Agent Spoofing and Randomization... | 🟡 medium | 0.678 |
 | Malicious attacker with compromised X.509 certific... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.600 |
-| Impact: Control system manipulation and data corru... | AT1011 | Operation Rate Control... | 🟡 medium | 0.613 |
-| Verify certificate authenticity... | T1649 | Steal or Forge Authentication Certificat... | 🔴 low | 0.465 |
-| Certificate validation... | T1190.A004 | S3 Glacier Vault... | 🟡 medium | 0.506 |
-| Bypass certificate revocation checks... | AT1011 | Operation Rate Control... | 🟡 medium | 0.579 |
+| Compromise integrity of device data and control sy... | AT1011 | Operation Rate Control... | 🟡 medium | 0.641 |
+| Certificate validation bypass... | AT1011 | Operation Rate Control... | 🟡 medium | 0.586 |
+| Establish authenticated connection... | AT1006 | Pre-Signed URLs... | 🔴 low | 0.449 |
 | Send unauthorized device commands... | AT1011 | Operation Rate Control... | 🟡 medium | 0.540 |
-| Establish connection as legitimate device... | AT1013 | User Agent Spoofing and Randomization... | 🔴 low | 0.493 |
-| Gain trusted device status... | T1496.001 | Compute Hijacking... | 🔴 low | 0.488 |
-| Authentication to IoT platform... | T1078.A001 | IAM Entities... | 🟡 medium | 0.570 |
-| Compromise data integrity... | T1530.A002 | S3 Glacier... | 🟡 medium | 0.590 |
+| Use stolen valid certificates... | T1649 | Steal or Forge Authentication Certificat... | 🟡 medium | 0.587 |
+| Use compromised CA-signed certificates... | T1649 | Steal or Forge Authentication Certificat... | 🟡 medium | 0.568 |
+| Direct certificate exploitation... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.638 |
+| Impersonate legitimate IoT device... | AT1013 | User Agent Spoofing and Randomization... | 🟡 medium | 0.644 |
+| Exploit weak certificate validation... | AT1013 | User Agent Spoofing and Randomization... | 🟡 medium | 0.518 |

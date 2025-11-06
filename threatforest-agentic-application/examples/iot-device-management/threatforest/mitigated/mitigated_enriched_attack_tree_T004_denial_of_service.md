@@ -18,33 +18,39 @@
 
 ```mermaid
 graph TD
-    A["Cybercriminal with botnet resources<br/><small>AT1023</small>"] --> B["Reconnaissance on communication gateway<br/><small>AT1011</small>"]
-    A --> C["Direct attack preparation<br/><small>T1496.001</small>"]
-    B --> D["Identify gateway IP addresses<br/><small>T1190.A018</small>"]
-    B --> E["Map gateway infrastructure<br/><small>T1190.A018</small>"]
-    B --> F["Identify protocol vulnerabilities<br/><small>AT1011</small>"]
-    D --> G["Volumetric DDoS attack<br/><small>T1498.001</small>"]
-    E --> H["Application layer DDoS attack<br/><small>T1499.003</small>"]
-    F --> I["Protocol exploitation attack<br/><small>AT1023</small>"]
-    C --> G
-    C --> H
-    C --> I
-    G --> J["Bandwidth saturation<br/><small>AT1011</small>"]
-    H --> K["Resource exhaustion<br/><small>T1499.003</small>"]
-    I --> L["Connection table overflow<br/><small>AT1029.001</small>"]
-    J --> M["Gateway becomes unreachable<br/><small>T1190.A018</small>"]
+    A["Cybercriminal with botnet resources<br/><small>AT1023</small>"] --> B["Reconnaissance phase<br/><small>T1496.001</small>"]
+    A --> C["Botnet preparation<br/><small>T1496.001</small>"]
+    B --> D["Identify communication gateway endpoints<br/><small>T1190.A018</small>"]
+    B --> E["Analyze gateway capacity and vulnerabilities<br/><small>T1190.A018</small>"]
+    C --> F["Expand botnet network<br/><small>T1496.001</small>"]
+    C --> G["Configure attack parameters<br/><small>AT1011</small>"]
+    D --> H["Map smart meter communication paths<br/><small>AT1012</small>"]
+    D --> I["Map vehicle telematics communication paths<br/><small>AT1012</small>"]
+    E --> J["Identify bandwidth limitations<br/><small>AT1011</small>"]
+    E --> K["Discover protocol weaknesses<br/><small>T1496.001</small>"]
+    F --> L["Launch volumetric DDoS attack<br/><small>T1498.001</small>"]
+    G --> L
+    J --> L
+    F --> M["Launch application layer attack<br/><small>T1190.A018</small>"]
+    G --> M
     K --> M
-    L --> M
-    M --> N["Disruption of critical device communications<br/><small>AT1011</small>"]
-    N --> O["Smart meters lose connectivity<br/><small>AT1012</small>"]
-    N --> P["Vehicle telematics systems offline<br/><small>AT1011</small>"]
-    O --> Q["Loss of availability for smart meters and vehicle telematics<br/><small>AT1011</small>"]
+    L --> N["Saturate gateway bandwidth<br/><small>AT1011</small>"]
+    M --> O["Exhaust gateway resources<br/><small>T1190.A018</small>"]
+    N --> P["Disruption of critical device communications<br/><small>AT1011</small>"]
+    O --> P
+    H --> Q["Smart meters lose connectivity<br/><small>AT1012</small>"]
+    I --> R["Vehicle telematics systems fail<br/><small>AT1011</small>"]
     P --> Q
+    P --> R
+    Q --> S["Loss of availability for smart meters<br/><small>AT1012</small>"]
+    R --> T["Loss of availability for vehicle telematics<br/><small>AT1011</small>"]
+    S --> U["Complete service disruption goal achieved<br/><small>T1190.A008</small>"]
+    T --> U
     classDef attack fill:#ffcccc
     classDef goal fill:#ffcc99
     classDef fact fill:#ccccff
-    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P attack
-    class Q goal
+    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T attack
+    class U goal
     class A fact
     classDef mitigation fill:#ccffcc
     classDef mitigation fill:#ADD8E6,stroke:#4682B4,stroke-width:2px
@@ -71,20 +77,24 @@ Review this attack tree to:
 
 | Attack Step | Technique ID | Technique Name | Confidence | Similarity |
 |-------------|--------------|----------------|------------|------------|
-| Connection table overflow... | AT1029.001 | DynamoDB... | 🟡 medium | 0.581 |
-| Reconnaissance on communication gateway... | AT1011 | Operation Rate Control... | 🟡 medium | 0.629 |
+| Reconnaissance phase... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.628 |
+| Vehicle telematics systems fail... | AT1011 | Operation Rate Control... | 🟡 medium | 0.512 |
+| Map vehicle telematics communication paths... | AT1012 | Region Selection and Hopping... | 🟡 medium | 0.562 |
+| Discover protocol weaknesses... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.658 |
+| Configure attack parameters... | AT1011 | Operation Rate Control... | 🟡 medium | 0.515 |
+| Botnet preparation... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.664 |
 | Disruption of critical device communications... | AT1011 | Operation Rate Control... | 🟡 medium | 0.608 |
-| Identify protocol vulnerabilities... | AT1011 | Operation Rate Control... | 🟡 medium | 0.639 |
-| Resource exhaustion... | T1499.003 | Application Exhaustion Flood... | 🟡 medium | 0.600 |
+| Expand botnet network... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.605 |
+| Map smart meter communication paths... | AT1012 | Region Selection and Hopping... | 🟡 medium | 0.544 |
+| Launch volumetric DDoS attack... | T1498.001 | Direct Network Flood... | 🟡 medium | 0.629 |
+| Loss of availability for smart meters... | AT1012 | Region Selection and Hopping... | 🟡 medium | 0.506 |
+| Exhaust gateway resources... | T1190.A018 | API Gateway... | 🟡 medium | 0.596 |
+| Analyze gateway capacity and vulnerabilities... | T1190.A018 | API Gateway... | 🟢 high | 0.792 |
 | Cybercriminal with botnet resources... | AT1023 | Cloud Database Discovery... | 🟡 medium | 0.586 |
-| Identify gateway IP addresses... | T1190.A018 | API Gateway... | 🟡 medium | 0.564 |
-| Volumetric DDoS attack... | T1498.001 | Direct Network Flood... | 🟡 medium | 0.656 |
-| Vehicle telematics systems offline... | AT1011 | Operation Rate Control... | 🟡 medium | 0.547 |
-| Gateway becomes unreachable... | T1190.A018 | API Gateway... | 🟡 medium | 0.672 |
-| Application layer DDoS attack... | T1499.003 | Application Exhaustion Flood... | 🟡 medium | 0.671 |
-| Loss of availability for smart meters and vehicle ... | AT1011 | Operation Rate Control... | 🟡 medium | 0.551 |
-| Direct attack preparation... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.602 |
-| Map gateway infrastructure... | T1190.A018 | API Gateway... | 🟡 medium | 0.677 |
+| Loss of availability for vehicle telematics... | AT1011 | Operation Rate Control... | 🟡 medium | 0.561 |
 | Smart meters lose connectivity... | AT1012 | Region Selection and Hopping... | 🔴 low | 0.463 |
-| Bandwidth saturation... | AT1011 | Operation Rate Control... | 🟡 medium | 0.615 |
-| Protocol exploitation attack... | AT1023 | Cloud Database Discovery... | 🟡 medium | 0.667 |
+| Identify bandwidth limitations... | AT1011 | Operation Rate Control... | 🟡 medium | 0.616 |
+| Launch application layer attack... | T1190.A018 | API Gateway... | 🟡 medium | 0.599 |
+| Complete service disruption goal achieved... | T1190.A008 | CloudWatch Event Bus... | 🟡 medium | 0.543 |
+| Saturate gateway bandwidth... | AT1011 | Operation Rate Control... | 🟡 medium | 0.617 |
+| Identify communication gateway endpoints... | T1190.A018 | API Gateway... | 🟡 medium | 0.617 |
