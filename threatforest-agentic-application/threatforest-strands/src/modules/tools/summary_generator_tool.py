@@ -236,9 +236,14 @@ This report presents a comprehensive threat analysis for **{project_info.get('ap
             if ' - ' in threat_statement:
                 category_name = threat_statement.split(' - ', 1)[1].strip()
                 name_part = category_name
-            else:
+            elif category and category != 'Unknown':
                 category_name = category
                 name_part = category
+            else:
+                # Extract first meaningful words from threat statement as fallback
+                words = threat_statement.split()[:5]  # Take first 5 words
+                category_name = ' '.join(words)
+                name_part = category_name
             
             # Clean and format the name for filename
             name_clean = name_part.lower().replace(' ', '_')
