@@ -1,13 +1,13 @@
 {
   "metadata": {
-    "generated_at": "2025-10-23T14:39:03.823825",
+    "generated_at": "2025-10-28T11:28:27.374981",
     "generator": "ThreatForest",
     "version": "1.0"
   },
   "project_info": {
     "application_name": "IoT Device Management Platform",
-    "sector": "IoT/Multi-Industry (Smart Cities, Industrial Automation, Healthcare)",
-    "architecture_type": "Microservices",
+    "sector": "IoT/Smart Systems (Multi-sector: Smart Cities, Industrial Automation, Healthcare)",
+    "architecture_type": "Microservices with Event-Driven Architecture",
     "deployment_environment": "Cloud (AWS)",
     "technologies": [
       "MQTT over TLS",
@@ -33,23 +33,23 @@
       "Sensor data (temperature, humidity, pressure, motion)",
       "Device configurations",
       "User information",
-      "Time-series data",
       "Firmware versions",
-      "Patient monitor data",
-      "Diagnostic equipment data",
-      "GPS tracking data",
-      "Utility consumption data (electricity, water, gas)",
-      "Industrial control data (PLC, SCADA)",
-      "Device identity and credentials"
+      "Time-series telemetry data",
+      "Patient monitoring data (healthcare)",
+      "Electricity/water/gas consumption data",
+      "GPS and fleet management data",
+      "Industrial control data (SCADA, PLC)"
     ],
     "external_dependencies": [
       "AWS IoT Core",
       "AWS Lambda",
-      "X.509 certificate authorities",
       "MQTT brokers",
-      "Apache Kafka message broker"
+      "X.509 Certificate Authorities",
+      "Industrial PLCs and SCADA systems",
+      "Healthcare diagnostic equipment",
+      "Vehicle telematics systems"
     ],
-    "network_architecture": "Cloud-based IoT architecture utilizing MQTT over TLS and CoAP protocols for device communication, with message routing through Apache Kafka for real-time data streaming. Devices connect through a communication gateway that performs protocol translation and message routing to backend services hosted on AWS.",
+    "network_architecture": "Cloud-based IoT architecture with device communication layer using MQTT/CoAP protocols over TLS, message streaming through Apache Kafka, and serverless processing via AWS Lambda. Secure device-to-cloud connectivity managed through AWS IoT Core with certificate-based authentication.",
     "key_components": [
       "Device Registry (identity management, provisioning, lifecycle)",
       "Communication Gateway (protocol translation, message routing)",
@@ -59,16 +59,15 @@
       "Dashboard (device monitoring, configuration management)",
       "Message Broker (Apache Kafka)",
       "Time-series Database (InfluxDB)",
-      "Document Database (MongoDB)",
-      "Monitoring System (Grafana, Prometheus)"
+      "Device Database (MongoDB)",
+      "Monitoring Stack (Grafana, Prometheus)"
     ],
     "\"application_name\"": "\"IoT Device Management Platform\",",
     "\"industry\"": "[",
-    "\"architecture_type\"": "\"Microservices with Edge Computing\",",
-    "\"components\"": "{",
-    "\"technologies\"": "{",
-    "\"security_technologies\"": "[",
-    "\"connectivity_technologies\"": "["
+    "\"architecture_type\"": "\"Microservices\",",
+    "\"architecture_details\"": "{",
+    "\"components\"": "[",
+    "\"technologies\"": "{"
   },
   "extraction_summary": {
     "total_threats": 12,
@@ -353,7 +352,7 @@
       "impactedGoal": "integrity",
       "impactedAssets": "device data and control systems",
       "priority": "High",
-      "mermaid_code": "graph TD\n    A[\"Malicious attacker with compromised X.509 certificates\"] --> B[\"Certificate validation\"]\n    A --> C[\"Direct device impersonation\"]\n    B[\"Verify certificate authenticity\"] --> D[\"Exploit weak certificate validation\"]\n    B --> E[\"Use stolen legitimate certificates\"]\n    D --> F[\"Bypass certificate revocation checks\"]\n    E --> F\n    C[\"Establish connection as legitimate device\"] --> G[\"Authentication to IoT platform\"]\n    F --> G\n    G --> H[\"Gain trusted device status\"]\n    H --> I[\"Inject malicious sensor data\"]\n    H --> J[\"Send unauthorized device commands\"]\n    I --> K[\"Compromise data integrity\"]\n    J --> K\n    K[\"Impact: Control system manipulation and data corruption\"]\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J attack\n    class K goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "mermaid_code": "graph TD\n    A[\"Malicious attacker with compromised X.509 certificates\"] --> B[\"Certificate validation bypass\"]\n    A --> C[\"Direct certificate exploitation\"]\n    B --> D[\"Exploit weak certificate validation\"]\n    B --> E[\"Man-in-the-middle certificate injection\"]\n    C --> F[\"Use stolen valid certificates\"]\n    C --> G[\"Use compromised CA-signed certificates\"]\n    D --> H[\"Impersonate legitimate IoT device\"]\n    E --> H\n    F --> H\n    G --> H\n    H --> I[\"Establish authenticated connection\"]\n    I --> J[\"Inject malicious sensor data\"]\n    I --> K[\"Send unauthorized device commands\"]\n    J --> L[\"Compromise integrity of device data and control systems\"]\n    K --> L\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K attack\n    class L goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
       "attack_steps": [
         {
           "node_id": "A",
@@ -361,15 +360,11 @@
         },
         {
           "node_id": "B",
-          "description": "Certificate validation"
+          "description": "Certificate validation bypass"
         },
         {
           "node_id": "C",
-          "description": "Direct device impersonation"
-        },
-        {
-          "node_id": "B",
-          "description": "Verify certificate authenticity"
+          "description": "Direct certificate exploitation"
         },
         {
           "node_id": "D",
@@ -377,42 +372,38 @@
         },
         {
           "node_id": "E",
-          "description": "Use stolen legitimate certificates"
+          "description": "Man-in-the-middle certificate injection"
         },
         {
           "node_id": "F",
-          "description": "Bypass certificate revocation checks"
-        },
-        {
-          "node_id": "C",
-          "description": "Establish connection as legitimate device"
+          "description": "Use stolen valid certificates"
         },
         {
           "node_id": "G",
-          "description": "Authentication to IoT platform"
+          "description": "Use compromised CA-signed certificates"
         },
         {
           "node_id": "H",
-          "description": "Gain trusted device status"
+          "description": "Impersonate legitimate IoT device"
         },
         {
           "node_id": "I",
-          "description": "Inject malicious sensor data"
+          "description": "Establish authenticated connection"
         },
         {
           "node_id": "J",
+          "description": "Inject malicious sensor data"
+        },
+        {
+          "node_id": "K",
           "description": "Send unauthorized device commands"
         },
         {
-          "node_id": "K",
-          "description": "Compromise data integrity"
-        },
-        {
-          "node_id": "K",
-          "description": "Impact: Control system manipulation and data corruption"
+          "node_id": "L",
+          "description": "Compromise integrity of device data and control systems"
         }
       ],
-      "generated_content": "# Attack Tree for T001 - Authentication Compromise via X.509 Certificate Attack\n\n```mermaid\ngraph TD\n    A[\"Malicious attacker with compromised X.509 certificates\"] --> B[\"Certificate validation\"]\n    A --> C[\"Direct device impersonation\"]\n    \n    B[\"Verify certificate authenticity\"] --> D[\"Exploit weak certificate validation\"]\n    B --> E[\"Use stolen legitimate certificates\"]\n    \n    D --> F[\"Bypass certificate revocation checks\"]\n    E --> F\n    \n    C[\"Establish connection as legitimate device\"] --> G[\"Authentication to IoT platform\"]\n    F --> G\n    \n    G --> H[\"Gain trusted device status\"]\n    \n    H --> I[\"Inject malicious sensor data\"]\n    H --> J[\"Send unauthorized device commands\"]\n    \n    I --> K[\"Compromise data integrity\"]\n    J --> K\n    \n    K[\"Impact: Control system manipulation and data corruption\"]\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J attack\n    class K goal\n    class A fact\n```",
+      "generated_content": "# Attack Tree for T001 - Authentication\n\n```mermaid\ngraph TD\n    A[\"Malicious attacker with compromised X.509 certificates\"] --> B[\"Certificate validation bypass\"]\n    A --> C[\"Direct certificate exploitation\"]\n    \n    B --> D[\"Exploit weak certificate validation\"]\n    B --> E[\"Man-in-the-middle certificate injection\"]\n    \n    C --> F[\"Use stolen valid certificates\"]\n    C --> G[\"Use compromised CA-signed certificates\"]\n    \n    D --> H[\"Impersonate legitimate IoT device\"]\n    E --> H\n    F --> H\n    G --> H\n    \n    H --> I[\"Establish authenticated connection\"]\n    \n    I --> J[\"Inject malicious sensor data\"]\n    I --> K[\"Send unauthorized device commands\"]\n    \n    J --> L[\"Compromise integrity of device data and control systems\"]\n    K --> L\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K attack\n    class L goal\n    class A fact\n```",
       "validation": {
         "is_valid": true,
         "errors": [],
@@ -425,7 +416,7 @@
           "goal": 1,
           "fact": 1
         },
-        "connection_count": 13,
+        "connection_count": 15,
         "tech_mentions": 0
       }
     },
@@ -442,7 +433,7 @@
       "impactedGoal": "confidentiality",
       "impactedAssets": "patient monitors and SCADA systems",
       "priority": "High",
-      "mermaid_code": "graph TD\n    A[\"Nation-state actor with APT capabilities\"] --> B[\"Reconnaissance Phase\"]\n    A --> C[\"Infrastructure Positioning\"]\n    B --> D[\"Network Traffic Analysis\"]\n    B --> E[\"TLS Configuration Enumeration\"]\n    D --> F[\"Identify MQTT over TLS Traffic\"]\n    E --> G[\"Discover Weak Cipher Suites\"]\n    E --> H[\"Identify Outdated TLS Versions\"]\n    C --> I[\"Man-in-the-Middle Positioning\"]\n    C --> J[\"Compromise Network Infrastructure\"]\n    I --> K[\"Deploy Interception Infrastructure\"]\n    J --> L[\"Gain Access to Network Segments\"]\n    F --> M[\"Targeted Traffic Interception\"]\n    G --> M\n    H --> M\n    K --> M\n    L --> M\n    M --> N[\"Cryptographic Attack Execution\"]\n    N --> O[\"Exploit Weak Ciphers\"]\n    N --> P[\"Downgrade Attack\"]\n    N --> Q[\"Certificate Manipulation\"]\n    N --> R[\"Key Exchange Compromise\"]\n    O --> S[\"Decrypt MQTT Communications\"]\n    P --> S\n    Q --> S\n    R --> S\n    S --> T[\"Extract Healthcare Data from Patient Monitors\"]\n    S --> U[\"Extract Industrial Data from SCADA Systems\"]\n    T --> V[\"Exposure of Sensitive Healthcare and Industrial Data\"]\n    U --> V\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U attack\n    class V goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "mermaid_code": "graph TD\n    A[\"Nation-state actor with APT capabilities\"] --> B[\"Reconnaissance Phase\"]\n    A --> C[\"Positioning Phase\"]\n    B --> D[\"Network topology mapping\"]\n    B --> E[\"MQTT broker identification\"]\n    B --> F[\"TLS configuration analysis\"]\n    D --> G[\"Identify patient monitors\"]\n    D --> H[\"Identify SCADA systems\"]\n    F --> I[\"Detect weak cipher suites\"]\n    F --> J[\"Identify certificate vulnerabilities\"]\n    F --> K[\"Detect outdated TLS versions\"]\n    C --> L[\"Network interception setup\"]\n    C --> M[\"Man-in-the-middle positioning\"]\n    L --> N[\"Traffic capture at network gateway\"]\n    M --> O[\"ARP spoofing attack\"]\n    M --> P[\"DNS hijacking attack\"]\n    I --> Q[\"Exploit weak cryptographic algorithms\"]\n    J --> R[\"Certificate compromise attack\"]\n    K --> S[\"Downgrade attack to weak TLS\"]\n    N --> T[\"Capture encrypted MQTT traffic\"]\n    O --> T\n    P --> T\n    Q --> U[\"Decrypt MQTT communications\"]\n    R --> U\n    S --> U\n    G --> V[\"Patient monitor data extraction\"]\n    H --> W[\"SCADA control data extraction\"]\n    T --> U\n    U --> V\n    U --> W\n    V --> X[\"Exposure of sensitive healthcare data\"]\n    W --> Y[\"Exposure of industrial control data\"]\n    X --> Z[\"Complete compromise of confidentiality\"]\n    Y --> Z\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y attack\n    class Z goal\n    class A,G,H fact\n    classDef mitigation fill:#ccffcc",
       "attack_steps": [
         {
           "node_id": "A",
@@ -454,86 +445,102 @@
         },
         {
           "node_id": "C",
-          "description": "Infrastructure Positioning"
+          "description": "Positioning Phase"
         },
         {
           "node_id": "D",
-          "description": "Network Traffic Analysis"
+          "description": "Network topology mapping"
         },
         {
           "node_id": "E",
-          "description": "TLS Configuration Enumeration"
+          "description": "MQTT broker identification"
         },
         {
           "node_id": "F",
-          "description": "Identify MQTT over TLS Traffic"
+          "description": "TLS configuration analysis"
         },
         {
           "node_id": "G",
-          "description": "Discover Weak Cipher Suites"
+          "description": "Identify patient monitors"
         },
         {
           "node_id": "H",
-          "description": "Identify Outdated TLS Versions"
+          "description": "Identify SCADA systems"
         },
         {
           "node_id": "I",
-          "description": "Man-in-the-Middle Positioning"
+          "description": "Detect weak cipher suites"
         },
         {
           "node_id": "J",
-          "description": "Compromise Network Infrastructure"
+          "description": "Identify certificate vulnerabilities"
         },
         {
           "node_id": "K",
-          "description": "Deploy Interception Infrastructure"
+          "description": "Detect outdated TLS versions"
         },
         {
           "node_id": "L",
-          "description": "Gain Access to Network Segments"
+          "description": "Network interception setup"
         },
         {
           "node_id": "M",
-          "description": "Targeted Traffic Interception"
+          "description": "Man-in-the-middle positioning"
         },
         {
           "node_id": "N",
-          "description": "Cryptographic Attack Execution"
+          "description": "Traffic capture at network gateway"
         },
         {
           "node_id": "O",
-          "description": "Exploit Weak Ciphers"
+          "description": "ARP spoofing attack"
         },
         {
           "node_id": "P",
-          "description": "Downgrade Attack"
+          "description": "DNS hijacking attack"
         },
         {
           "node_id": "Q",
-          "description": "Certificate Manipulation"
+          "description": "Exploit weak cryptographic algorithms"
         },
         {
           "node_id": "R",
-          "description": "Key Exchange Compromise"
+          "description": "Certificate compromise attack"
         },
         {
           "node_id": "S",
-          "description": "Decrypt MQTT Communications"
+          "description": "Downgrade attack to weak TLS"
         },
         {
           "node_id": "T",
-          "description": "Extract Healthcare Data from Patient Monitors"
+          "description": "Capture encrypted MQTT traffic"
         },
         {
           "node_id": "U",
-          "description": "Extract Industrial Data from SCADA Systems"
+          "description": "Decrypt MQTT communications"
         },
         {
           "node_id": "V",
-          "description": "Exposure of Sensitive Healthcare and Industrial Data"
+          "description": "Patient monitor data extraction"
+        },
+        {
+          "node_id": "W",
+          "description": "SCADA control data extraction"
+        },
+        {
+          "node_id": "X",
+          "description": "Exposure of sensitive healthcare data"
+        },
+        {
+          "node_id": "Y",
+          "description": "Exposure of industrial control data"
+        },
+        {
+          "node_id": "Z",
+          "description": "Complete compromise of confidentiality"
         }
       ],
-      "generated_content": "# Attack Tree for T002 - Cryptographic Failures\n\n```mermaid\ngraph TD\n    A[\"Nation-state actor with APT capabilities\"] --> B[\"Reconnaissance Phase\"]\n    A --> C[\"Infrastructure Positioning\"]\n    \n    B --> D[\"Network Traffic Analysis\"]\n    B --> E[\"TLS Configuration Enumeration\"]\n    \n    D --> F[\"Identify MQTT over TLS Traffic\"]\n    E --> G[\"Discover Weak Cipher Suites\"]\n    E --> H[\"Identify Outdated TLS Versions\"]\n    \n    C --> I[\"Man-in-the-Middle Positioning\"]\n    C --> J[\"Compromise Network Infrastructure\"]\n    \n    I --> K[\"Deploy Interception Infrastructure\"]\n    J --> L[\"Gain Access to Network Segments\"]\n    \n    F --> M[\"Targeted Traffic Interception\"]\n    G --> M\n    H --> M\n    K --> M\n    L --> M\n    \n    M --> N[\"Cryptographic Attack Execution\"]\n    \n    N --> O[\"Exploit Weak Ciphers\"]\n    N --> P[\"Downgrade Attack\"]\n    N --> Q[\"Certificate Manipulation\"]\n    N --> R[\"Key Exchange Compromise\"]\n    \n    O --> S[\"Decrypt MQTT Communications\"]\n    P --> S\n    Q --> S\n    R --> S\n    \n    S --> T[\"Extract Healthcare Data from Patient Monitors\"]\n    S --> U[\"Extract Industrial Data from SCADA Systems\"]\n    \n    T --> V[\"Exposure of Sensitive Healthcare and Industrial Data\"]\n    U --> V\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U attack\n    class V goal\n    class A fact\n```",
+      "generated_content": "# Attack Tree for T002 - Cryptographic Failures\n\n```mermaid\ngraph TD\n    A[\"Nation-state actor with APT capabilities\"] --> B[\"Reconnaissance Phase\"]\n    A --> C[\"Positioning Phase\"]\n    \n    B --> D[\"Network topology mapping\"]\n    B --> E[\"MQTT broker identification\"]\n    B --> F[\"TLS configuration analysis\"]\n    \n    D --> G[\"Identify patient monitors\"]\n    D --> H[\"Identify SCADA systems\"]\n    \n    F --> I[\"Detect weak cipher suites\"]\n    F --> J[\"Identify certificate vulnerabilities\"]\n    F --> K[\"Detect outdated TLS versions\"]\n    \n    C --> L[\"Network interception setup\"]\n    C --> M[\"Man-in-the-middle positioning\"]\n    \n    L --> N[\"Traffic capture at network gateway\"]\n    M --> O[\"ARP spoofing attack\"]\n    M --> P[\"DNS hijacking attack\"]\n    \n    I --> Q[\"Exploit weak cryptographic algorithms\"]\n    J --> R[\"Certificate compromise attack\"]\n    K --> S[\"Downgrade attack to weak TLS\"]\n    \n    N --> T[\"Capture encrypted MQTT traffic\"]\n    O --> T\n    P --> T\n    \n    Q --> U[\"Decrypt MQTT communications\"]\n    R --> U\n    S --> U\n    \n    G --> V[\"Patient monitor data extraction\"]\n    H --> W[\"SCADA control data extraction\"]\n    \n    T --> U\n    U --> V\n    U --> W\n    \n    V --> X[\"Exposure of sensitive healthcare data\"]\n    W --> Y[\"Exposure of industrial control data\"]\n    \n    X --> Z[\"Complete compromise of confidentiality\"]\n    Y --> Z\n\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y attack\n    class Z goal\n    class A,G,H fact\n```",
       "validation": {
         "is_valid": true,
         "errors": [],
@@ -546,7 +553,7 @@
           "goal": 1,
           "fact": 1
         },
-        "connection_count": 29,
+        "connection_count": 33,
         "tech_mentions": 0
       }
     },
@@ -563,7 +570,7 @@
       "impactedGoal": "integrity",
       "impactedAssets": "industrial controllers and healthcare devices",
       "priority": "High",
-      "mermaid_code": "graph TD\n    A[\"Malicious insider with administrative access to AWS IoT Core\"] --> B[\"Reconnaissance of OTA infrastructure\"]\n    A --> C[\"Access IoT Core management console\"]\n    B --> D[\"Identify target device fleets\"]\n    B --> E[\"Map OTA update mechanisms\"]\n    C --> F[\"Enumerate admin privileges\"]\n    F --> G[\"Verify OTA deployment permissions\"]\n    D --> H[\"Select high-value targets\"]\n    E --> H\n    G --> H\n    H --> I[\"Craft malicious firmware payload\"]\n    H --> J[\"Clone legitimate firmware signature\"]\n    I --> K[\"Embed backdoors in firmware\"]\n    I --> L[\"Insert malicious control logic\"]\n    J --> M[\"Bypass code signing verification\"]\n    K --> M\n    L --> M\n    M --> N[\"Create fraudulent OTA job\"]\n    N --> O[\"Configure deployment to industrial controllers\"]\n    N --> P[\"Configure deployment to healthcare devices\"]\n    O --> Q[\"Push malicious firmware update\"]\n    P --> Q\n    Q --> R[\"Devices automatically download and install\"]\n    R --> S[\"Complete device compromise achieved\"]\n    S --> T[\"Remote control of industrial systems\"]\n    S --> U[\"Manipulation of healthcare device functionality\"]\n    T --> V[\"Safety hazards and operational disruption\"]\n    U --> V\n    V --> W[\"Integrity loss of critical IoT devices\"]\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V attack\n    class W goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "mermaid_code": "graph TD\n    A[\"Malicious insider with administrative access to AWS IoT Core\"] --> B[\"Reconnaissance of OTA update system\"]\n    A --> C[\"Map connected device inventory\"]\n    B --> D[\"Identify OTA update mechanisms\"]\n    B --> E[\"Analyze firmware signing process\"]\n    C --> F[\"Target high-value devices\"]\n    F --> G[\"Prioritize industrial controllers\"]\n    F --> H[\"Prioritize healthcare devices\"]\n    D --> I[\"Craft malicious firmware payload\"]\n    E --> I\n    I --> J[\"Embed backdoor in firmware\"]\n    I --> K[\"Inject command  control logic\"]\n    I --> L[\"Insert safety override code\"]\n    J --> M[\"Bypass or abuse signing authority\"]\n    K --> M\n    L --> M\n    M --> N[\"Upload malicious firmware to AWS IoT Core\"]\n    N --> O[\"Create OTA update job\"]\n    O --> P[\"Target specific device groups\"]\n    O --> Q[\"Target all connected devices\"]\n    P --> R[\"Push malicious update to industrial controllers\"]\n    P --> S[\"Push malicious update to healthcare devices\"]\n    Q --> R\n    Q --> S\n    R --> T[\"Complete device compromise\"]\n    S --> T\n    T --> U[\"Establish persistent control\"]\n    T --> V[\"Manipulate device operations\"]\n    V --> W[\"Create safety hazards in industrial systems\"]\n    V --> X[\"Create safety hazards in healthcare devices\"]\n    U --> Y[\"Goal: Complete device compromise and potential safety hazards\"]\n    W --> Y\n    X --> Y\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X attack\n    class Y goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
       "attack_steps": [
         {
           "node_id": "A",
@@ -571,31 +578,31 @@
         },
         {
           "node_id": "B",
-          "description": "Reconnaissance of OTA infrastructure"
+          "description": "Reconnaissance of OTA update system"
         },
         {
           "node_id": "C",
-          "description": "Access IoT Core management console"
+          "description": "Map connected device inventory"
         },
         {
           "node_id": "D",
-          "description": "Identify target device fleets"
+          "description": "Identify OTA update mechanisms"
         },
         {
           "node_id": "E",
-          "description": "Map OTA update mechanisms"
+          "description": "Analyze firmware signing process"
         },
         {
           "node_id": "F",
-          "description": "Enumerate admin privileges"
+          "description": "Target high-value devices"
         },
         {
           "node_id": "G",
-          "description": "Verify OTA deployment permissions"
+          "description": "Prioritize industrial controllers"
         },
         {
           "node_id": "H",
-          "description": "Select high-value targets"
+          "description": "Prioritize healthcare devices"
         },
         {
           "node_id": "I",
@@ -603,62 +610,70 @@
         },
         {
           "node_id": "J",
-          "description": "Clone legitimate firmware signature"
+          "description": "Embed backdoor in firmware"
         },
         {
           "node_id": "K",
-          "description": "Embed backdoors in firmware"
+          "description": "Inject command  control logic"
         },
         {
           "node_id": "L",
-          "description": "Insert malicious control logic"
+          "description": "Insert safety override code"
         },
         {
           "node_id": "M",
-          "description": "Bypass code signing verification"
+          "description": "Bypass or abuse signing authority"
         },
         {
           "node_id": "N",
-          "description": "Create fraudulent OTA job"
+          "description": "Upload malicious firmware to AWS IoT Core"
         },
         {
           "node_id": "O",
-          "description": "Configure deployment to industrial controllers"
+          "description": "Create OTA update job"
         },
         {
           "node_id": "P",
-          "description": "Configure deployment to healthcare devices"
+          "description": "Target specific device groups"
         },
         {
           "node_id": "Q",
-          "description": "Push malicious firmware update"
+          "description": "Target all connected devices"
         },
         {
           "node_id": "R",
-          "description": "Devices automatically download and install"
+          "description": "Push malicious update to industrial controllers"
         },
         {
           "node_id": "S",
-          "description": "Complete device compromise achieved"
+          "description": "Push malicious update to healthcare devices"
         },
         {
           "node_id": "T",
-          "description": "Remote control of industrial systems"
+          "description": "Complete device compromise"
         },
         {
           "node_id": "U",
-          "description": "Manipulation of healthcare device functionality"
+          "description": "Establish persistent control"
         },
         {
           "node_id": "V",
-          "description": "Safety hazards and operational disruption"
+          "description": "Manipulate device operations"
         },
         {
           "node_id": "W",
-          "description": "Integrity loss of critical IoT devices"
+          "description": "Create safety hazards in industrial systems"
+        },
+        {
+          "node_id": "X",
+          "description": "Create safety hazards in healthcare devices"
+        },
+        {
+          "node_id": "Y",
+          "description": "Goal: Complete device compromise and potential safety hazards"
         }
       ],
-      "generated_content": "# Attack Tree for T003 - Supply Chain Threat\n\n```mermaid\ngraph TD\n    A[\"Malicious insider with administrative access to AWS IoT Core\"] --> B[\"Reconnaissance of OTA infrastructure\"]\n    A --> C[\"Access IoT Core management console\"]\n    \n    B --> D[\"Identify target device fleets\"]\n    B --> E[\"Map OTA update mechanisms\"]\n    \n    C --> F[\"Enumerate admin privileges\"]\n    F --> G[\"Verify OTA deployment permissions\"]\n    \n    D --> H[\"Select high-value targets\"]\n    E --> H\n    G --> H\n    \n    H --> I[\"Craft malicious firmware payload\"]\n    H --> J[\"Clone legitimate firmware signature\"]\n    \n    I --> K[\"Embed backdoors in firmware\"]\n    I --> L[\"Insert malicious control logic\"]\n    \n    J --> M[\"Bypass code signing verification\"]\n    K --> M\n    L --> M\n    \n    M --> N[\"Create fraudulent OTA job\"]\n    \n    N --> O[\"Configure deployment to industrial controllers\"]\n    N --> P[\"Configure deployment to healthcare devices\"]\n    \n    O --> Q[\"Push malicious firmware update\"]\n    P --> Q\n    \n    Q --> R[\"Devices automatically download and install\"]\n    \n    R --> S[\"Complete device compromise achieved\"]\n    \n    S --> T[\"Remote control of industrial systems\"]\n    S --> U[\"Manipulation of healthcare device functionality\"]\n    \n    T --> V[\"Safety hazards and operational disruption\"]\n    U --> V\n    \n    V --> W[\"Integrity loss of critical IoT devices\"]\n\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V attack\n    class W goal\n    class A fact\n```",
+      "generated_content": "# Attack Tree for T003 - Supply Chain Attack via Malicious Insider\n\n```mermaid\ngraph TD\n    A[\"Malicious insider with administrative access to AWS IoT Core\"] --> B[\"Reconnaissance of OTA update system\"]\n    A --> C[\"Map connected device inventory\"]\n    \n    B --> D[\"Identify OTA update mechanisms\"]\n    B --> E[\"Analyze firmware signing process\"]\n    \n    C --> F[\"Target high-value devices\"]\n    F --> G[\"Prioritize industrial controllers\"]\n    F --> H[\"Prioritize healthcare devices\"]\n    \n    D --> I[\"Craft malicious firmware payload\"]\n    E --> I\n    \n    I --> J[\"Embed backdoor in firmware\"]\n    I --> K[\"Inject command & control logic\"]\n    I --> L[\"Insert safety override code\"]\n    \n    J --> M[\"Bypass or abuse signing authority\"]\n    K --> M\n    L --> M\n    \n    M --> N[\"Upload malicious firmware to AWS IoT Core\"]\n    \n    N --> O[\"Create OTA update job\"]\n    \n    O --> P[\"Target specific device groups\"]\n    O --> Q[\"Target all connected devices\"]\n    \n    P --> R[\"Push malicious update to industrial controllers\"]\n    P --> S[\"Push malicious update to healthcare devices\"]\n    Q --> R\n    Q --> S\n    \n    R --> T[\"Complete device compromise\"]\n    S --> T\n    \n    T --> U[\"Establish persistent control\"]\n    T --> V[\"Manipulate device operations\"]\n    \n    V --> W[\"Create safety hazards in industrial systems\"]\n    V --> X[\"Create safety hazards in healthcare devices\"]\n    \n    U --> Y[\"Goal: Complete device compromise and potential safety hazards\"]\n    W --> Y\n    X --> Y\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X attack\n    class Y goal\n    class A fact\n```",
       "validation": {
         "is_valid": true,
         "errors": [],
@@ -671,7 +686,7 @@
           "goal": 1,
           "fact": 1
         },
-        "connection_count": 28,
+        "connection_count": 32,
         "tech_mentions": 0
       }
     },
@@ -688,7 +703,7 @@
       "impactedGoal": "availability",
       "impactedAssets": "smart meters and vehicle telematics systems",
       "priority": "High",
-      "mermaid_code": "graph TD\n    A[\"Cybercriminal with botnet resources\"] --> B[\"Reconnaissance on communication gateway\"]\n    A --> C[\"Direct attack preparation\"]\n    B --> D[\"Identify gateway IP addresses\"]\n    B --> E[\"Map gateway infrastructure\"]\n    B --> F[\"Identify protocol vulnerabilities\"]\n    D --> G[\"Volumetric DDoS attack\"]\n    E --> H[\"Application layer DDoS attack\"]\n    F --> I[\"Protocol exploitation attack\"]\n    C --> G\n    C --> H\n    C --> I\n    G --> J[\"Bandwidth saturation\"]\n    H --> K[\"Resource exhaustion\"]\n    I --> L[\"Connection table overflow\"]\n    J --> M[\"Gateway becomes unreachable\"]\n    K --> M\n    L --> M\n    M --> N[\"Disruption of critical device communications\"]\n    N --> O[\"Smart meters lose connectivity\"]\n    N --> P[\"Vehicle telematics systems offline\"]\n    O --> Q[\"Loss of availability for smart meters and vehicle telematics\"]\n    P --> Q\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P attack\n    class Q goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "mermaid_code": "graph TD\n    A[\"Cybercriminal with botnet resources\"] --> B[\"Reconnaissance phase\"]\n    A --> C[\"Botnet preparation\"]\n    B --> D[\"Identify communication gateway endpoints\"]\n    B --> E[\"Analyze gateway capacity and vulnerabilities\"]\n    C --> F[\"Expand botnet network\"]\n    C --> G[\"Configure attack parameters\"]\n    D --> H[\"Map smart meter communication paths\"]\n    D --> I[\"Map vehicle telematics communication paths\"]\n    E --> J[\"Identify bandwidth limitations\"]\n    E --> K[\"Discover protocol weaknesses\"]\n    F --> L[\"Launch volumetric DDoS attack\"]\n    G --> L\n    J --> L\n    F --> M[\"Launch application layer attack\"]\n    G --> M\n    K --> M\n    L --> N[\"Saturate gateway bandwidth\"]\n    M --> O[\"Exhaust gateway resources\"]\n    N --> P[\"Disruption of critical device communications\"]\n    O --> P\n    H --> Q[\"Smart meters lose connectivity\"]\n    I --> R[\"Vehicle telematics systems fail\"]\n    P --> Q\n    P --> R\n    Q --> S[\"Loss of availability for smart meters\"]\n    R --> T[\"Loss of availability for vehicle telematics\"]\n    S --> U[\"Complete service disruption goal achieved\"]\n    T --> U\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T attack\n    class U goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
       "attack_steps": [
         {
           "node_id": "A",
@@ -696,70 +711,86 @@
         },
         {
           "node_id": "B",
-          "description": "Reconnaissance on communication gateway"
+          "description": "Reconnaissance phase"
         },
         {
           "node_id": "C",
-          "description": "Direct attack preparation"
+          "description": "Botnet preparation"
         },
         {
           "node_id": "D",
-          "description": "Identify gateway IP addresses"
+          "description": "Identify communication gateway endpoints"
         },
         {
           "node_id": "E",
-          "description": "Map gateway infrastructure"
+          "description": "Analyze gateway capacity and vulnerabilities"
         },
         {
           "node_id": "F",
-          "description": "Identify protocol vulnerabilities"
+          "description": "Expand botnet network"
         },
         {
           "node_id": "G",
-          "description": "Volumetric DDoS attack"
+          "description": "Configure attack parameters"
         },
         {
           "node_id": "H",
-          "description": "Application layer DDoS attack"
+          "description": "Map smart meter communication paths"
         },
         {
           "node_id": "I",
-          "description": "Protocol exploitation attack"
+          "description": "Map vehicle telematics communication paths"
         },
         {
           "node_id": "J",
-          "description": "Bandwidth saturation"
+          "description": "Identify bandwidth limitations"
         },
         {
           "node_id": "K",
-          "description": "Resource exhaustion"
+          "description": "Discover protocol weaknesses"
         },
         {
           "node_id": "L",
-          "description": "Connection table overflow"
+          "description": "Launch volumetric DDoS attack"
         },
         {
           "node_id": "M",
-          "description": "Gateway becomes unreachable"
+          "description": "Launch application layer attack"
         },
         {
           "node_id": "N",
-          "description": "Disruption of critical device communications"
+          "description": "Saturate gateway bandwidth"
         },
         {
           "node_id": "O",
-          "description": "Smart meters lose connectivity"
+          "description": "Exhaust gateway resources"
         },
         {
           "node_id": "P",
-          "description": "Vehicle telematics systems offline"
+          "description": "Disruption of critical device communications"
         },
         {
           "node_id": "Q",
-          "description": "Loss of availability for smart meters and vehicle telematics"
+          "description": "Smart meters lose connectivity"
+        },
+        {
+          "node_id": "R",
+          "description": "Vehicle telematics systems fail"
+        },
+        {
+          "node_id": "S",
+          "description": "Loss of availability for smart meters"
+        },
+        {
+          "node_id": "T",
+          "description": "Loss of availability for vehicle telematics"
+        },
+        {
+          "node_id": "U",
+          "description": "Complete service disruption goal achieved"
         }
       ],
-      "generated_content": "# Attack Tree for T004 - Denial of Service\n\n```mermaid\ngraph TD\n    A[\"Cybercriminal with botnet resources\"] --> B[\"Reconnaissance on communication gateway\"]\n    A --> C[\"Direct attack preparation\"]\n    \n    B --> D[\"Identify gateway IP addresses\"]\n    B --> E[\"Map gateway infrastructure\"]\n    B --> F[\"Identify protocol vulnerabilities\"]\n    \n    D --> G[\"Volumetric DDoS attack\"]\n    E --> H[\"Application layer DDoS attack\"]\n    F --> I[\"Protocol exploitation attack\"]\n    \n    C --> G\n    C --> H\n    C --> I\n    \n    G --> J[\"Bandwidth saturation\"]\n    H --> K[\"Resource exhaustion\"]\n    I --> L[\"Connection table overflow\"]\n    \n    J --> M[\"Gateway becomes unreachable\"]\n    K --> M\n    L --> M\n    \n    M --> N[\"Disruption of critical device communications\"]\n    \n    N --> O[\"Smart meters lose connectivity\"]\n    N --> P[\"Vehicle telematics systems offline\"]\n    \n    O --> Q[\"Loss of availability for smart meters and vehicle telematics\"]\n    P --> Q\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P attack\n    class Q goal\n    class A fact\n```",
+      "generated_content": "# Attack Tree for T004 - Denial of Service\n\n```mermaid\ngraph TD\n    A[\"Cybercriminal with botnet resources\"] --> B[\"Reconnaissance phase\"]\n    A --> C[\"Botnet preparation\"]\n    \n    B --> D[\"Identify communication gateway endpoints\"]\n    B --> E[\"Analyze gateway capacity and vulnerabilities\"]\n    \n    C --> F[\"Expand botnet network\"]\n    C --> G[\"Configure attack parameters\"]\n    \n    D --> H[\"Map smart meter communication paths\"]\n    D --> I[\"Map vehicle telematics communication paths\"]\n    \n    E --> J[\"Identify bandwidth limitations\"]\n    E --> K[\"Discover protocol weaknesses\"]\n    \n    F --> L[\"Launch volumetric DDoS attack\"]\n    G --> L\n    J --> L\n    \n    F --> M[\"Launch application layer attack\"]\n    G --> M\n    K --> M\n    \n    L --> N[\"Saturate gateway bandwidth\"]\n    M --> O[\"Exhaust gateway resources\"]\n    \n    N --> P[\"Disruption of critical device communications\"]\n    O --> P\n    \n    H --> Q[\"Smart meters lose connectivity\"]\n    I --> R[\"Vehicle telematics systems fail\"]\n    \n    P --> Q\n    P --> R\n    \n    Q --> S[\"Loss of availability for smart meters\"]\n    R --> T[\"Loss of availability for vehicle telematics\"]\n    \n    S --> U[\"Complete service disruption goal achieved\"]\n    T --> U\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T attack\n    class U goal\n    class A fact\n```",
       "validation": {
         "is_valid": true,
         "errors": [],
@@ -772,7 +803,7 @@
           "goal": 1,
           "fact": 1
         },
-        "connection_count": 22,
+        "connection_count": 28,
         "tech_mentions": 0
       }
     }

@@ -18,39 +18,43 @@
 
 ```mermaid
 graph TD
-    A["Malicious insider with administrative access to AWS IoT Core<br/><small>AT1024.003</small>"] --> B["Reconnaissance of OTA infrastructure<br/><small>AT1011</small>"]
-    A --> C["Access IoT Core management console<br/><small>T1190.A008</small>"]
-    B --> D["Identify target device fleets<br/><small>AT1012</small>"]
-    B --> E["Map OTA update mechanisms<br/><small>AT1012</small>"]
-    C --> F["Enumerate admin privileges<br/><small>T1069</small>"]
-    F --> G["Verify OTA deployment permissions<br/><small>T1190.A004</small>"]
-    D --> H["Select high-value targets<br/><small>AT1011</small>"]
-    E --> H
-    G --> H
-    H --> I["Craft malicious firmware payload<br/><small>AT1013</small>"]
-    H --> J["Clone legitimate firmware signature<br/><small>AT1013</small>"]
-    I --> K["Embed backdoors in firmware<br/><small>T1496.001</small>"]
-    I --> L["Insert malicious control logic<br/><small>AT1011</small>"]
-    J --> M["Bypass code signing verification<br/><small>AT1012</small>"]
+    A["Malicious insider with administrative access to AWS IoT Core<br/><small>AT1024.003</small>"] --> B["Reconnaissance of OTA update system<br/><small>T1496.001</small>"]
+    A --> C["Map connected device inventory<br/><small>AT1012</small>"]
+    B --> D["Identify OTA update mechanisms<br/><small>AT1011</small>"]
+    B --> E["Analyze firmware signing process<br/><small>AT1006</small>"]
+    C --> F["Target high-value devices<br/><small>AT1011</small>"]
+    F --> G["Prioritize industrial controllers<br/><small>AT1011</small>"]
+    F --> H["Prioritize healthcare devices<br/><small>AT1012</small>"]
+    D --> I["Craft malicious firmware payload<br/><small>AT1013</small>"]
+    E --> I
+    I --> J["Embed backdoor in firmware<br/><small>T1496.001</small>"]
+    I --> K["Inject command  control logic<br/><small>AT1011</small>"]
+    I --> L["Insert safety override code<br/><small>AT1011</small>"]
+    J --> M["Bypass or abuse signing authority<br/><small>AT1006</small>"]
     K --> M
     L --> M
-    M --> N["Create fraudulent OTA job<br/><small>AT1013</small>"]
-    N --> O["Configure deployment to industrial controllers<br/><small>AT1012</small>"]
-    N --> P["Configure deployment to healthcare devices<br/><small>AT1012</small>"]
-    O --> Q["Push malicious firmware update<br/><small>T1496.001</small>"]
-    P --> Q
-    Q --> R["Devices automatically download and install<br/><small>T1496.001</small>"]
-    R --> S["Complete device compromise achieved<br/><small>T1496.001</small>"]
-    S --> T["Remote control of industrial systems<br/><small>AT1011</small>"]
-    S --> U["Manipulation of healthcare device functionality<br/><small>T1190.A014</small>"]
-    T --> V["Safety hazards and operational disruption<br/><small>AT1011</small>"]
-    U --> V
-    V --> W["Integrity loss of critical IoT devices<br/><small>T1530.A002</small>"]
+    M --> N["Upload malicious firmware to AWS IoT Core<br/><small>AT1007</small>"]
+    N --> O["Create OTA update job<br/><small>AT1001.002</small>"]
+    O --> P["Target specific device groups<br/><small>AT1077</small>"]
+    O --> Q["Target all connected devices<br/><small>T1190.A008</small>"]
+    P --> R["Push malicious update to industrial controllers<br/><small>AT1011</small>"]
+    P --> S["Push malicious update to healthcare devices<br/><small>T1496.001</small>"]
+    Q --> R
+    Q --> S
+    R --> T["Complete device compromise<br/><small>T1496.001</small>"]
+    S --> T
+    T --> U["Establish persistent control<br/><small>AT1011</small>"]
+    T --> V["Manipulate device operations<br/><small>AT1011</small>"]
+    V --> W["Create safety hazards in industrial systems<br/><small>T1496.001</small>"]
+    V --> X["Create safety hazards in healthcare devices<br/><small>T1496.001</small>"]
+    U --> Y["Goal: Complete device compromise and potential safety hazards<br/><small>T1496.001</small>"]
+    W --> Y
+    X --> Y
     classDef attack fill:#ffcccc
     classDef goal fill:#ffcc99
     classDef fact fill:#ccccff
-    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V attack
-    class W goal
+    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X attack
+    class Y goal
     class A fact
     classDef mitigation fill:#ccffcc
 ```
@@ -76,26 +80,28 @@ Review this attack tree to:
 
 | Attack Step | Technique ID | Technique Name | Confidence | Similarity |
 |-------------|--------------|----------------|------------|------------|
-| Configure deployment to industrial controllers... | AT1012 | Region Selection and Hopping... | 🔴 low | 0.484 |
-| Configure deployment to healthcare devices... | AT1012 | Region Selection and Hopping... | 🟡 medium | 0.505 |
-| Access IoT Core management console... | T1190.A008 | CloudWatch Event Bus... | 🟡 medium | 0.605 |
-| Push malicious firmware update... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.550 |
-| Malicious insider with administrative access to AW... | AT1024.003 | IAM Role Hopping... | 🟢 high | 0.793 |
-| Devices automatically download and install... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.594 |
-| Safety hazards and operational disruption... | AT1011 | Operation Rate Control... | 🟡 medium | 0.582 |
-| Select high-value targets... | AT1011 | Operation Rate Control... | 🟡 medium | 0.569 |
-| Embed backdoors in firmware... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.594 |
-| Verify OTA deployment permissions... | T1190.A004 | S3 Glacier Vault... | 🟡 medium | 0.547 |
-| Manipulation of healthcare device functionality... | T1190.A014 | EMR Cluster... | 🟡 medium | 0.518 |
-| Enumerate admin privileges... | T1069 | Permission Groups Discovery... | 🔴 low | 0.486 |
-| Map OTA update mechanisms... | AT1012 | Region Selection and Hopping... | 🟡 medium | 0.540 |
-| Complete device compromise achieved... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.691 |
-| Create fraudulent OTA job... | AT1013 | User Agent Spoofing and Randomization... | 🟡 medium | 0.567 |
-| Reconnaissance of OTA infrastructure... | AT1011 | Operation Rate Control... | 🟡 medium | 0.601 |
-| Remote control of industrial systems... | AT1011 | Operation Rate Control... | 🟡 medium | 0.540 |
+| Insert safety override code... | AT1011 | Operation Rate Control... | 🔴 low | 0.473 |
+| Inject command  control logic... | AT1011 | Operation Rate Control... | 🔴 low | 0.438 |
+| Prioritize industrial controllers... | AT1011 | Operation Rate Control... | 🟡 medium | 0.580 |
+| Reconnaissance of OTA update system... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.609 |
+| Target high-value devices... | AT1011 | Operation Rate Control... | 🟡 medium | 0.560 |
+| Create OTA update job... | AT1001.002 | Modify Existing Lambda Function... | 🔴 low | 0.447 |
+| Map connected device inventory... | AT1012 | Region Selection and Hopping... | 🟡 medium | 0.535 |
 | Craft malicious firmware payload... | AT1013 | User Agent Spoofing and Randomization... | 🟡 medium | 0.580 |
-| Insert malicious control logic... | AT1011 | Operation Rate Control... | 🟡 medium | 0.609 |
-| Bypass code signing verification... | AT1012 | Region Selection and Hopping... | 🟡 medium | 0.515 |
-| Clone legitimate firmware signature... | AT1013 | User Agent Spoofing and Randomization... | 🟡 medium | 0.548 |
-| Identify target device fleets... | AT1012 | Region Selection and Hopping... | 🟡 medium | 0.608 |
-| Integrity loss of critical IoT devices... | T1530.A002 | S3 Glacier... | 🟡 medium | 0.577 |
+| Target all connected devices... | T1190.A008 | CloudWatch Event Bus... | 🔴 low | 0.412 |
+| Goal: Complete device compromise and potential saf... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.628 |
+| Analyze firmware signing process... | AT1006 | Pre-Signed URLs... | 🟡 medium | 0.529 |
+| Embed backdoor in firmware... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.569 |
+| Upload malicious firmware to AWS IoT Core... | AT1007 | Create or Modify AWS Service... | 🟡 medium | 0.680 |
+| Push malicious update to healthcare devices... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.550 |
+| Prioritize healthcare devices... | AT1012 | Region Selection and Hopping... | 🟡 medium | 0.526 |
+| Push malicious update to industrial controllers... | AT1011 | Operation Rate Control... | 🟡 medium | 0.583 |
+| Bypass or abuse signing authority... | AT1006 | Pre-Signed URLs... | 🟡 medium | 0.612 |
+| Manipulate device operations... | AT1011 | Operation Rate Control... | 🟡 medium | 0.527 |
+| Malicious insider with administrative access to AW... | AT1024.003 | IAM Role Hopping... | 🟢 high | 0.793 |
+| Establish persistent control... | AT1011 | Operation Rate Control... | 🟡 medium | 0.502 |
+| Create safety hazards in healthcare devices... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.551 |
+| Create safety hazards in industrial systems... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.562 |
+| Target specific device groups... | AT1077 | Authorize VPC Security Groups... | 🟡 medium | 0.566 |
+| Complete device compromise... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.679 |
+| Identify OTA update mechanisms... | AT1011 | Operation Rate Control... | 🟡 medium | 0.558 |

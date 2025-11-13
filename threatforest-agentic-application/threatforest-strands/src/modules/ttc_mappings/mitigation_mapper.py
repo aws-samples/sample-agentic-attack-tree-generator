@@ -103,7 +103,7 @@ class MitigationMapper:
                         
                         for mitigation in mitigations:
                             mit_id = f"M{mitigation_counter}"
-                            mit_name = mitigation['name'][:50]  # Truncate for diagram
+                            mit_name = mitigation['name']
                             
                             # Add mitigation node
                             new_lines.append(f'    {mit_id}["🛡️ {mit_name}"]')
@@ -150,9 +150,9 @@ class MitigationMapper:
                         # Add mitigation rows after this technique
                         mitigations = self.get_mitigations(technique_id)
                         for mitigation in mitigations:
-                            mit_name = mitigation['name'][:40]
-                            mit_desc = mitigation.get('relationship_description', mitigation.get('description', ''))[:50]
-                            new_lines.append(f"| 🛡️ {mit_name} | {technique_id} | {mit_desc}... | mitigation | - |")
+                            mit_name = mitigation['name']
+                            mit_desc = mitigation.get('relationship_description', mitigation.get('description', ''))
+                            new_lines.append(f"| 🛡️ {mit_name} | {technique_id} | {mit_desc} | mitigation | - |")
                         break
         
         new_table = table_header + '\n'.join(new_lines) + table_footer

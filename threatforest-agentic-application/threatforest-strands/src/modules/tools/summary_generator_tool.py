@@ -229,16 +229,28 @@ This report presents a comprehensive threat analysis for **{project_info.get('ap
             threat_id = tree.get('threat_id', tree.get('id', 'unknown'))
             # Use threat_statement (not threat_description which is None for ThreatComposer)
             threat_statement = tree.get('threat_statement', tree.get('statement', 'No description available'))
-            category = tree.get('threat_category', tree.get('category', 'Unknown'))
             
-            # Extract category name from statement (e.g., "T001 - Authentication" -> "Authentication")
-            import re
-            if ' - ' in threat_statement:
-                category_name = threat_statement.split(' - ', 1)[1].strip()
-                name_part = category_name
+            # Use AI-generated attack tree title if available, otherwise fallback to category
+            attack_tree_title = tree.get('attack_tree_title')
+            if attack_tree_title:
+                category_name = attack_tree_title
+                name_part = attack_tree_title
             else:
-                category_name = category
-                name_part = category
+                # Fallback to category-based naming
+                category = tree.get('threat_category', tree.get('category', 'Unknown'))
+                import re
+                if ' - ' in threat_statement:
+                    category_name = threat_statement.split(' - ', 1)[1].strip()
+                    name_part = category_name
+                elif category and category != 'Unknown':
+                    category_name = category
+                    name_part = category
+                else:
+                    # Extract first meaningful words from threat statement as fallback
+                    words = threat_statement.split()[:5]  # Take first 5 words
+                    category_name = ' '.join(words)
+                    name_part = category_name
+                name_part = category_name
             
             # Clean and format the name for filename
             name_clean = name_part.lower().replace(' ', '_')

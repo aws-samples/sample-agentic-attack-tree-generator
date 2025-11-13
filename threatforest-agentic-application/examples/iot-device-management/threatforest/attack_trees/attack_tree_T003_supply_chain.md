@@ -18,39 +18,43 @@
 
 ```mermaid
 graph TD
-    A["Malicious insider with administrative access to AWS IoT Core"] --> B["Reconnaissance of OTA infrastructure"]
-    A --> C["Access IoT Core management console"]
-    B --> D["Identify target device fleets"]
-    B --> E["Map OTA update mechanisms"]
-    C --> F["Enumerate admin privileges"]
-    F --> G["Verify OTA deployment permissions"]
-    D --> H["Select high-value targets"]
-    E --> H
-    G --> H
-    H --> I["Craft malicious firmware payload"]
-    H --> J["Clone legitimate firmware signature"]
-    I --> K["Embed backdoors in firmware"]
-    I --> L["Insert malicious control logic"]
-    J --> M["Bypass code signing verification"]
+    A["Malicious insider with administrative access to AWS IoT Core"] --> B["Reconnaissance of OTA update system"]
+    A --> C["Map connected device inventory"]
+    B --> D["Identify OTA update mechanisms"]
+    B --> E["Analyze firmware signing process"]
+    C --> F["Target high-value devices"]
+    F --> G["Prioritize industrial controllers"]
+    F --> H["Prioritize healthcare devices"]
+    D --> I["Craft malicious firmware payload"]
+    E --> I
+    I --> J["Embed backdoor in firmware"]
+    I --> K["Inject command  control logic"]
+    I --> L["Insert safety override code"]
+    J --> M["Bypass or abuse signing authority"]
     K --> M
     L --> M
-    M --> N["Create fraudulent OTA job"]
-    N --> O["Configure deployment to industrial controllers"]
-    N --> P["Configure deployment to healthcare devices"]
-    O --> Q["Push malicious firmware update"]
-    P --> Q
-    Q --> R["Devices automatically download and install"]
-    R --> S["Complete device compromise achieved"]
-    S --> T["Remote control of industrial systems"]
-    S --> U["Manipulation of healthcare device functionality"]
-    T --> V["Safety hazards and operational disruption"]
-    U --> V
-    V --> W["Integrity loss of critical IoT devices"]
+    M --> N["Upload malicious firmware to AWS IoT Core"]
+    N --> O["Create OTA update job"]
+    O --> P["Target specific device groups"]
+    O --> Q["Target all connected devices"]
+    P --> R["Push malicious update to industrial controllers"]
+    P --> S["Push malicious update to healthcare devices"]
+    Q --> R
+    Q --> S
+    R --> T["Complete device compromise"]
+    S --> T
+    T --> U["Establish persistent control"]
+    T --> V["Manipulate device operations"]
+    V --> W["Create safety hazards in industrial systems"]
+    V --> X["Create safety hazards in healthcare devices"]
+    U --> Y["Goal: Complete device compromise and potential safety hazards"]
+    W --> Y
+    X --> Y
     classDef attack fill:#ffcccc
     classDef goal fill:#ffcc99
     classDef fact fill:#ccccff
-    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V attack
-    class W goal
+    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X attack
+    class Y goal
     class A fact
     classDef mitigation fill:#ccffcc
 ```

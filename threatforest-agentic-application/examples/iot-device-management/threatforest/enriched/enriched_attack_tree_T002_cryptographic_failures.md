@@ -19,40 +19,44 @@
 ```mermaid
 graph TD
     A["Nation-state actor with APT capabilities<br/><small>T1496.001</small>"] --> B["Reconnaissance Phase<br/><small>T1496.001</small>"]
-    A --> C["Infrastructure Positioning<br/><small>AT1012</small>"]
-    B --> D["Network Traffic Analysis<br/><small>AT1011</small>"]
-    B --> E["TLS Configuration Enumeration<br/><small>AT1023</small>"]
-    D --> F["Identify MQTT over TLS Traffic<br/><small>AT1011</small>"]
-    E --> G["Discover Weak Cipher Suites<br/><small>AT1012</small>"]
-    E --> H["Identify Outdated TLS Versions<br/><small>AT1012</small>"]
-    C --> I["Man-in-the-Middle Positioning<br/><small>T1496.001</small>"]
-    C --> J["Compromise Network Infrastructure<br/><small>AT1012</small>"]
-    I --> K["Deploy Interception Infrastructure<br/><small>AT1011</small>"]
-    J --> L["Gain Access to Network Segments<br/><small>AT1012</small>"]
-    F --> M["Targeted Traffic Interception<br/><small>AT1011</small>"]
-    G --> M
-    H --> M
-    K --> M
-    L --> M
-    M --> N["Cryptographic Attack Execution<br/><small>AT1011</small>"]
-    N --> O["Exploit Weak Ciphers<br/><small>T1496.001</small>"]
-    N --> P["Downgrade Attack<br/><small>T1496.001</small>"]
-    N --> Q["Certificate Manipulation<br/><small>T1496.001</small>"]
-    N --> R["Key Exchange Compromise<br/><small>T1496.001</small>"]
-    O --> S["Decrypt MQTT Communications<br/><small>T1496.001</small>"]
-    P --> S
-    Q --> S
-    R --> S
-    S --> T["Extract Healthcare Data from Patient Monitors<br/><small>T1190.A014</small>"]
-    S --> U["Extract Industrial Data from SCADA Systems<br/><small>AT1029.003</small>"]
-    T --> V["Exposure of Sensitive Healthcare and Industrial Data<br/><small>T1190.A014</small>"]
+    A --> C["Positioning Phase<br/><small>AT1012</small>"]
+    B --> D["Network topology mapping<br/><small>AT1012</small>"]
+    B --> E["MQTT broker identification<br/><small>T1190.A008</small>"]
+    B --> F["TLS configuration analysis<br/><small>AT1012</small>"]
+    D --> G["Identify patient monitors<br/><small>T1190.A014</small>"]
+    D --> H["Identify SCADA systems<br/><small>AT1011</small>"]
+    F --> I["Detect weak cipher suites<br/><small>AT1012</small>"]
+    F --> J["Identify certificate vulnerabilities<br/><small>AT1023</small>"]
+    F --> K["Detect outdated TLS versions<br/><small>AT1012</small>"]
+    C --> L["Network interception setup<br/><small>T1496.001</small>"]
+    C --> M["Man-in-the-middle positioning<br/><small>AT1013</small>"]
+    L --> N["Traffic capture at network gateway<br/><small>AT1011</small>"]
+    M --> O["ARP spoofing attack<br/><small>AT1013</small>"]
+    M --> P["DNS hijacking attack<br/><small>AT1013</small>"]
+    I --> Q["Exploit weak cryptographic algorithms<br/><small>AT1011</small>"]
+    J --> R["Certificate compromise attack<br/><small>AT1023</small>"]
+    K --> S["Downgrade attack to weak TLS<br/><small>AT1011</small>"]
+    N --> T["Capture encrypted MQTT traffic<br/><small>AT1011</small>"]
+    O --> T
+    P --> T
+    Q --> U["Decrypt MQTT communications<br/><small>T1496.001</small>"]
+    R --> U
+    S --> U
+    G --> V["Patient monitor data extraction<br/><small>T1190.A014</small>"]
+    H --> W["SCADA control data extraction<br/><small>T1190.A014</small>"]
+    T --> U
     U --> V
+    U --> W
+    V --> X["Exposure of sensitive healthcare data<br/><small>T1190.A014</small>"]
+    W --> Y["Exposure of industrial control data<br/><small>T1190.A014</small>"]
+    X --> Z["Complete compromise of confidentiality<br/><small>T1496.001</small>"]
+    Y --> Z
     classDef attack fill:#ffcccc
     classDef goal fill:#ffcc99
     classDef fact fill:#ccccff
-    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U attack
-    class V goal
-    class A fact
+    class B,C,D,E,F,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y attack
+    class Z goal
+    class A,G,H fact
     classDef mitigation fill:#ccffcc
 ```
 
@@ -77,25 +81,29 @@ Review this attack tree to:
 
 | Attack Step | Technique ID | Technique Name | Confidence | Similarity |
 |-------------|--------------|----------------|------------|------------|
-| Exposure of Sensitive Healthcare and Industrial Da... | T1190.A014 | EMR Cluster... | 🟡 medium | 0.683 |
-| Extract Industrial Data from SCADA Systems... | AT1029.003 | Redshift... | 🟡 medium | 0.537 |
-| Key Exchange Compromise... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.599 |
-| Cryptographic Attack Execution... | AT1011 | Operation Rate Control... | 🟡 medium | 0.651 |
-| Exploit Weak Ciphers... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.583 |
-| Downgrade Attack... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.689 |
-| Gain Access to Network Segments... | AT1012 | Region Selection and Hopping... | 🟡 medium | 0.664 |
-| Identify Outdated TLS Versions... | AT1012 | Region Selection and Hopping... | 🟡 medium | 0.555 |
-| Compromise Network Infrastructure... | AT1012 | Region Selection and Hopping... | 🟡 medium | 0.608 |
-| Identify MQTT over TLS Traffic... | AT1011 | Operation Rate Control... | 🟡 medium | 0.530 |
-| Extract Healthcare Data from Patient Monitors... | T1190.A014 | EMR Cluster... | 🟡 medium | 0.628 |
-| Infrastructure Positioning... | AT1012 | Region Selection and Hopping... | 🟡 medium | 0.611 |
-| Man-in-the-Middle Positioning... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.666 |
-| Network Traffic Analysis... | AT1011 | Operation Rate Control... | 🟡 medium | 0.635 |
-| Deploy Interception Infrastructure... | AT1011 | Operation Rate Control... | 🟡 medium | 0.599 |
-| Targeted Traffic Interception... | AT1011 | Operation Rate Control... | 🟢 high | 0.707 |
-| Certificate Manipulation... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.615 |
-| Decrypt MQTT Communications... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.569 |
-| TLS Configuration Enumeration... | AT1023 | Cloud Database Discovery... | 🟡 medium | 0.607 |
-| Nation-state actor with APT capabilities... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.611 |
-| Discover Weak Cipher Suites... | AT1012 | Region Selection and Hopping... | 🟡 medium | 0.598 |
+| TLS configuration analysis... | AT1012 | Region Selection and Hopping... | 🟡 medium | 0.586 |
+| MQTT broker identification... | T1190.A008 | CloudWatch Event Bus... | 🟡 medium | 0.537 |
+| Patient monitor data extraction... | T1190.A014 | EMR Cluster... | 🟡 medium | 0.571 |
+| Exposure of sensitive healthcare data... | T1190.A014 | EMR Cluster... | 🟡 medium | 0.673 |
+| Identify SCADA systems... | AT1011 | Operation Rate Control... | 🟡 medium | 0.539 |
+| Detect weak cipher suites... | AT1012 | Region Selection and Hopping... | 🟡 medium | 0.580 |
+| Identify certificate vulnerabilities... | AT1023 | Cloud Database Discovery... | 🟡 medium | 0.570 |
+| Capture encrypted MQTT traffic... | AT1011 | Operation Rate Control... | 🟡 medium | 0.554 |
+| Downgrade attack to weak TLS... | AT1011 | Operation Rate Control... | 🟡 medium | 0.579 |
+| Decrypt MQTT communications... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.534 |
+| Detect outdated TLS versions... | AT1012 | Region Selection and Hopping... | 🟡 medium | 0.530 |
+| ARP spoofing attack... | AT1013 | User Agent Spoofing and Randomization... | 🟢 high | 0.705 |
+| Exposure of industrial control data... | T1190.A014 | EMR Cluster... | 🟡 medium | 0.642 |
+| Certificate compromise attack... | AT1023 | Cloud Database Discovery... | 🟡 medium | 0.642 |
+| Positioning Phase... | AT1012 | Region Selection and Hopping... | 🟡 medium | 0.571 |
+| Complete compromise of confidentiality... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.575 |
+| Network interception setup... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.609 |
+| Identify patient monitors... | T1190.A014 | EMR Cluster... | 🟡 medium | 0.552 |
+| Network topology mapping... | AT1012 | Region Selection and Hopping... | 🟡 medium | 0.565 |
+| Man-in-the-middle positioning... | AT1013 | User Agent Spoofing and Randomization... | 🟡 medium | 0.635 |
+| Exploit weak cryptographic algorithms... | AT1011 | Operation Rate Control... | 🟡 medium | 0.586 |
+| SCADA control data extraction... | T1190.A014 | EMR Cluster... | 🟡 medium | 0.559 |
 | Reconnaissance Phase... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.629 |
+| Nation-state actor with APT capabilities... | T1496.001 | Compute Hijacking... | 🟡 medium | 0.611 |
+| DNS hijacking attack... | AT1013 | User Agent Spoofing and Randomization... | 🟡 medium | 0.678 |
+| Traffic capture at network gateway... | AT1011 | Operation Rate Control... | 🟡 medium | 0.677 |
