@@ -169,9 +169,6 @@ cython_debug/
 # ThreatForest specific
 tf-output/
 .tf/
-*.aaf
-aaf-bundle.json
-config.yaml
 .threatforest/
 
 # AWS credentials (never commit these)
