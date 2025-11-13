@@ -254,6 +254,10 @@ class AttackTreeGeneratorTool(Tool):
             # Extract Mermaid code from response
             self.logger.debug(f"Bedrock response length: {len(generated_content)} characters")
             self.logger.debug(f"First 200 chars of response: {generated_content[:200]}...")
+            
+            # Extract AI-generated title from response
+            attack_tree_title = self._extract_attack_tree_title(generated_content)
+            
             mermaid_code = self._extract_mermaid_code(generated_content)
             self.logger.debug(f"Extracted Mermaid code length: {len(mermaid_code)} characters")
             self.logger.debug(f"Mermaid code preview: {mermaid_code[:100]}...")
@@ -282,6 +286,7 @@ class AttackTreeGeneratorTool(Tool):
             return {
                 "threat_id": threat.get("id"),
                 "threat_category": threat.get("category"),
+                "attack_tree_title": attack_tree_title,
                 "threat_description": threat.get("description"),
                 "threat_statement": threat.get("statement", threat.get("description", "")),
                 "threat_action": threat.get("threat_action", threat.get("threatAction", "")),
@@ -459,6 +464,17 @@ Generate Mermaid attack trees from threat statements using proper structure and 
         
         return "\n".join(context_parts) if context_parts else "No additional context available"
     
+    
+    def _extract_attack_tree_title(self, content: str) -> str:
+        """Extract the AI-generated attack tree title (## heading) from response"""
+        import re
+        
+        # Look for ## heading (the descriptive title after # Attack Tree for...)
+        match = re.search(r'^##\s+(.+)$', content, re.MULTILINE)
+        if match:
+            return match.group(1).strip()
+        
+        return "Attack Tree"
     
     def _extract_mermaid_code(self, content: str) -> str:
         """Extract Mermaid code block from generated content"""
