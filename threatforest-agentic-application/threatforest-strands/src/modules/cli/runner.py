@@ -61,7 +61,7 @@ class WorkflowRunner:
             import boto3
             from neptune_graph_manager import NeptuneGraphManager
             
-            session = boto3.Session(profile_name=config.default_aws_profile)
+            session = boto3.Session(profile_name=config.default_aws_profile, region_name=config.neptune_region)
             
             # Validate Neptune account ID
             if config.neptune_account_id:

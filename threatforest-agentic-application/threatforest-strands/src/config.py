@@ -81,7 +81,7 @@ class Config:
     @property
     def neptune_region(self) -> str:
         """Get Neptune region"""
-        return self.get('neptune.region', 'us-west-2')
+        return self.get('neptune.region', 'us-east-1')
     
     @property
     def neptune_s3_bucket(self) -> str:
