@@ -1,12 +1,13 @@
 """
 ThreatForest Strands-based Orchestrator Agent
 """
-import asyncio
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
+import traceback
+import logging
 
-from .modules.core import Agent, agent_step, Context, ThreatForestState, WorkflowStage, StateManager
+from .modules.core import Context, ThreatForestState, WorkflowStage, StateManager
 from .modules.core import ProgressEmitter, ProgressEvent, ProgressEventType
 from .modules.tools.setup_tool import SetupTool
 from .modules.tools.context_analysis_tool import ContextAnalysisTool
@@ -28,30 +29,23 @@ class ThreatForestConfig:
     resume: bool = False  # Enable resume from checkpoint
 
 
-class ThreatForestOrchestrator(Agent):
-    """Main orchestrating agent for ThreatForest attack tree generation"""
+class ThreatForestOrchestrator:
+    """Main orchestrating workflow for ThreatForest attack tree generation"""
     
-    def __init__(self, config: ThreatForestConfig):
+    def __init__(self, config: ThreatForestConfig, console=None):
         self.config = config
         self.state_manager = StateManager()
         self.state: Optional[ThreatForestState] = None
-        self.progress_emitter = ProgressEmitter(enabled=True)
+        self.progress_emitter = ProgressEmitter(enabled=False)
+        self.console = console
         
-        # Initialize tools
-        tools = [
-            SetupTool(),
-            ContextAnalysisTool(),
-            InformationExtractionTool(),
-            AttackTreeGeneratorTool(),
-            TTCMappingTool(threshold=config.ttc_threshold),
-            SummaryGeneratorTool()
-        ]
-        
-        super().__init__(
-            name="ThreatForestOrchestrator",
-            description="Orchestrates the generation of attack trees from application context",
-            tools=tools
-        )
+        # Initialize tools as instance attributes for direct access
+        self.setup_tool = SetupTool()
+        self.context_tool = ContextAnalysisTool()
+        self.extraction_tool = InformationExtractionTool()
+        self.tree_generator_tool = AttackTreeGeneratorTool(console=console)
+        self.ttc_tool = TTCMappingTool(threshold=config.ttc_threshold, console=console)
+        self.summary_tool = SummaryGeneratorTool()
     
     def _initialize_state(self) -> ThreatForestState:
         """Initialize or resume workflow state"""
@@ -94,9 +88,8 @@ class ThreatForestOrchestrator(Agent):
             bedrock_model=self.config.bedrock_model
         )
     
-    @agent_step
-    async def execute_workflow(self) -> Dict[str, Any]:
-        """Execute the complete ThreatForest workflow with state management"""
+    def execute_workflow(self) -> Dict[str, Any]:
+        """Execute the complete ThreatForest workflow with state management (SYNCHRONOUS)"""
         # Emit immediate start event
         self.progress_emitter.emit(ProgressEvent(
             type=ProgressEventType.STAGE_START,
@@ -134,11 +127,11 @@ class ThreatForestOrchestrator(Agent):
             # Step 2: Context analysis
             if not self.state.context_complete:
                 self.state.advance_to(WorkflowStage.CONTEXT_ANALYSIS)
-                context_result = await self.use_tool("context_analysis", {
-                    "project_path": str(self.config.project_path),
-                    "bedrock_model": self.config.bedrock_model,
-                    "aws_profile": self.config.aws_profile
-                })
+                context_result = self.context_tool.run(
+                    project_path=str(self.config.project_path),
+                    bedrock_model=self.config.bedrock_model,
+                    aws_profile=self.config.aws_profile
+                )
                 self.state.context_files = context_result
                 self.state.context_complete = True
                 self.state_manager.save_checkpoint(self.state)
@@ -172,11 +165,11 @@ class ThreatForestOrchestrator(Agent):
                 if self.config.threat_model_path:
                     context_files['threat_model_path'] = self.config.threat_model_path
                 
-                extraction_result = await self.use_tool("information_extraction", {
-                    "context_files": context_files,
-                    "bedrock_model": self.config.bedrock_model,
-                    "aws_profile": self.config.aws_profile
-                })
+                extraction_result = self.extraction_tool.run(
+                    context_files=context_files,
+                    bedrock_model=self.config.bedrock_model,
+                    aws_profile=self.config.aws_profile
+                )
                 self.state.extracted_info = extraction_result
                 self.state.extraction_complete = True
                 self.state_manager.save_checkpoint(self.state)
@@ -252,14 +245,14 @@ class ThreatForestOrchestrator(Agent):
             # Step 4: Generate attack trees (High severity only)
             if not self.state.tree_generation_complete:
                 self.state.advance_to(WorkflowStage.TREE_GENERATION)
-                attack_trees = await self.use_tool("attack_tree_generator", {
-                    "threat_statements": extraction_result.get("threat_statements", []),
-                    "extracted_info": extraction_result,
-                    "bedrock_model": self.config.bedrock_model,
-                    "aws_profile": self.config.aws_profile,
-                    "output_dir": str(output_dir),
-                    "progress_emitter": self.progress_emitter
-                })
+                attack_trees = self.tree_generator_tool.run(
+                    threat_statements=extraction_result.get("threat_statements", []),
+                    extracted_info=extraction_result,
+                    bedrock_model=self.config.bedrock_model,
+                    aws_profile=self.config.aws_profile,
+                    output_dir=str(output_dir),
+                    progress_emitter=self.progress_emitter
+                )
                 self.state.attack_trees = attack_trees.get("attack_trees", [])
                 self.state.tree_generation_complete = True
                 self.state_manager.save_checkpoint(self.state)
@@ -277,40 +270,85 @@ class ThreatForestOrchestrator(Agent):
                 attack_trees = {"attack_trees": self.state.attack_trees}
                 context.add("attack_trees", attack_trees)
             
+            # Emit TTC mapping start
+            self.progress_emitter.emit(ProgressEvent(
+                type=ProgressEventType.STAGE_START,
+                stage="ttc_enrichment",
+                percentage=70.0,
+                message="Mapping attack trees to MITRE ATT&CK techniques"
+            ))
+            
+            # Step 4.5: TTC Mapping (NEW - was missing!)
+            if not self.state.mapping_complete:
+                try:
+                    self.state.advance_to(WorkflowStage.MAPPING)
+                    ttc_mapped = self.ttc_tool.run(
+                        attack_trees=attack_trees,
+                        bedrock_model=self.config.bedrock_model,
+                        aws_profile=self.config.aws_profile
+                    )
+                    # Update attack_trees with mapped versions
+                    attack_trees = ttc_mapped
+                    self.state.mapped_trees = ttc_mapped.get("ttc_mapped_trees", [])
+                    self.state.attack_trees = ttc_mapped.get("ttc_mapped_trees", [])
+                    self.state.mapping_complete = True
+                    self.state_manager.save_checkpoint(self.state)
+                    context.add("attack_trees", attack_trees)
+                    context.add("workflow_state", self.state.model_dump())
+                    
+                    # Emit TTC mapping complete
+                    self.progress_emitter.emit(ProgressEvent(
+                        type=ProgressEventType.STAGE_COMPLETE,
+                        stage="ttc_enrichment",
+                        percentage=85.0,
+                        message="TTC mapping complete"
+                    ))
+                except Exception as ttc_error:
+                    error_msg = f"TTC mapping failed: {str(ttc_error)}"
+                    logging.error(error_msg)
+                    logging.error(f"Traceback: {traceback.format_exc()}")
+                    raise Exception(error_msg) from ttc_error
+            
             # Emit summary start
             self.progress_emitter.emit(ProgressEvent(
                 type=ProgressEventType.STAGE_START,
                 stage="summary",
-                percentage=80.0,
+                percentage=85.0,
                 message="Generating analysis report"
             ))
             
             # Step 5: Generate summary
             if not self.state.summary_complete:
-                self.state.advance_to(WorkflowStage.SUMMARY)
-                summary = await self.use_tool("summary_generator", {
-                    "attack_trees": attack_trees,
-                    "extracted_info": extraction_result,
-                    "output_dir": str(output_dir)
-                })
-                self.state.output_files = summary.get("output_files", [])
-                self.state.summary_complete = True
-                self.state.advance_to(WorkflowStage.COMPLETE)
-                self.state_manager.save_checkpoint(self.state)
-                context.add("summary", summary)
-                context.add("workflow_state", self.state.model_dump())
-                
-                # Emit workflow complete
-                self.progress_emitter.emit(ProgressEvent(
-                    type=ProgressEventType.STAGE_COMPLETE,
-                    stage="complete",
-                    percentage=100.0,
-                    message="Workflow complete"
-                ))
-                
-                # Archive and cleanup completed state
-                self.state_manager.archive_checkpoint("latest")
-                self.state_manager.cleanup_completed_states()
+                try:
+                    self.state.advance_to(WorkflowStage.SUMMARY)
+                    summary = self.summary_tool.run(
+                        attack_trees=attack_trees,
+                        extracted_info=extraction_result,
+                        output_dir=str(output_dir)
+                    )
+                    self.state.output_files = summary.get("output_files", [])
+                    self.state.summary_complete = True
+                    self.state.advance_to(WorkflowStage.COMPLETE)
+                    self.state_manager.save_checkpoint(self.state)
+                    context.add("summary", summary)
+                    context.add("workflow_state", self.state.model_dump())
+                    
+                    # Emit workflow complete
+                    self.progress_emitter.emit(ProgressEvent(
+                        type=ProgressEventType.STAGE_COMPLETE,
+                        stage="complete",
+                        percentage=100.0,
+                        message="Workflow complete"
+                    ))
+                    
+                    # Archive and cleanup completed state
+                    self.state_manager.archive_checkpoint("latest")
+                    self.state_manager.cleanup_completed_states()
+                except Exception as summary_error:
+                    error_msg = f"Summary generation failed: {str(summary_error)}"
+                    logging.error(error_msg)
+                    logging.error(f"Traceback: {traceback.format_exc()}")
+                    raise Exception(error_msg) from summary_error
             else:
                 summary = {"output_files": self.state.output_files}
                 context.add("summary", summary)
@@ -324,9 +362,21 @@ class ThreatForestOrchestrator(Agent):
             }
             
         except Exception as e:
+            # Log the full error with traceback
+            error_details = f"Workflow failed at stage {self.state.current_stage if self.state else 'unknown'}: {str(e)}"
+            logging.error(error_details)
+            logging.error(f"Full traceback:\n{traceback.format_exc()}")
+            
+            # Also print to console for visibility
+            print(f"\n❌ Error: {error_details}")
+            print(f"See log file for full traceback")
+            
             return {
                 "status": "error",
-                "error": str(e),
+                "error": error_details,
+                "error_type": type(e).__name__,
+                "traceback": traceback.format_exc(),
+                "stage": self.state.current_stage if self.state else "unknown",
                 "context": context.to_dict()
             }
     
@@ -346,12 +396,12 @@ class ThreatForestOrchestrator(Agent):
         return None
 
 
-async def run_threatforest(project_path: str, **kwargs) -> Dict[str, Any]:
-    """Main entry point for running ThreatForest"""
+def run_threatforest(project_path: str, **kwargs) -> Dict[str, Any]:
+    """Main entry point for running ThreatForest (SYNCHRONOUS)"""
     config = ThreatForestConfig(
         project_path=Path(project_path),
         **kwargs
     )
     
     orchestrator = ThreatForestOrchestrator(config)
-    return await orchestrator.execute_workflow()
+    return orchestrator.execute_workflow()

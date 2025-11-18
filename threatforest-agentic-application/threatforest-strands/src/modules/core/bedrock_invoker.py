@@ -92,6 +92,11 @@ class BedrockInvoker:
         """Internal method to invoke Bedrock"""
         bedrock = BedrockClientManager().get_client(profile_name=aws_profile)
         
+        # Log model invocation details
+        self.logger.info(f"🔧 Bedrock Invocation Details:")
+        self.logger.info(f"   Model ID: {model_id}")
+        self.logger.info(f"   Bedrock Region: {bedrock.meta.region_name}")
+        
         body = {
             "anthropic_version": "bedrock-2023-05-31",
             "max_tokens": max_tokens,
@@ -103,12 +108,6 @@ class BedrockInvoker:
         
         if temperature != 0.7:
             body["temperature"] = temperature
-        
-        # Convert cross-region inference profile IDs to ARNs (use default region from client)
-        if model_id.startswith('us.') or model_id.startswith('eu.'):
-            # Get region from bedrock client
-            region = bedrock.meta.region_name
-            model_id = f"arn:aws:bedrock:{region}::foundation-model/{model_id}"
         
         response = bedrock.invoke_model(
             modelId=model_id,

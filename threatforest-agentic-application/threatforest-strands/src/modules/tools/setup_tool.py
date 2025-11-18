@@ -5,7 +5,6 @@ import json
 import subprocess
 from pathlib import Path
 from ..utils.logger import ThreatForestLogger
-from ..core import Tool, tool
 from ..core.bedrock_client import BedrockClientManager
 from typing import Dict, Any, Optional, List
 
@@ -13,21 +12,19 @@ import boto3
 from botocore.exceptions import NoCredentialsError, ProfileNotFound
 
 
-class SetupTool(Tool):
+class SetupTool:
     """Tool for setting up ThreatForest environment"""
     
     def __init__(self):
-        super().__init__(
-            name="setup",
-            description="Setup ThreatForest environment including venv, AWS credentials, and Bedrock model validation"
-        )
+        self.name = "setup"
+        self.description = "Setup ThreatForest environment including venv, AWS credentials, and Bedrock model validation"
         self.logger = ThreatForestLogger.get_logger(self.__class__.__name__)
     
-    async def execute(self, project_path: str, bedrock_model: str, 
+    def run(self, project_path: str, bedrock_model: str,
                      aws_profile: Optional[str] = None,
                      inference_profile_arn: Optional[str] = None,
                      interactive: bool = True) -> Dict[str, Any]:
-        """Execute setup process"""
+        """Execute setup process (synchronous)"""
         results = {
             "project_path": project_path,
             "venv_status": "not_checked",
@@ -46,7 +43,7 @@ class SetupTool(Tool):
             
             # Configure Bedrock model
             if results["aws_status"] == "valid":
-                model_config = await self._configure_bedrock_model(
+                model_config = self._configure_bedrock_model(
                     bedrock_model, inference_profile_arn, aws_profile, interactive
                 )
                 results["model_config"] = model_config
@@ -91,7 +88,7 @@ class SetupTool(Tool):
         except Exception as e:
             return f"error: {str(e)}"
     
-    async def _configure_bedrock_model(self, model_id: str, 
+    def _configure_bedrock_model(self, model_id: str,
                                       inference_profile_arn: Optional[str],
                                       profile: Optional[str] = None,
                                       interactive: bool = True) -> Dict[str, Any]:

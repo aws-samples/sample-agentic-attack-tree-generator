@@ -4,22 +4,22 @@
   "numNodeLabels": 10,
   "numEdgeLabels": 5,
   "nodeLabels": [
-    "Mitigation",
     "DataComponent",
+    "Mitigation",
     "Matrix",
     "Tactic",
     "Infrastructure",
     "ThreatActor",
     "Technique",
     "Identity",
-    "DataSource",
-    "Marking-Definition"
+    "Marking-Definition",
+    "DataSource"
   ],
   "edgeLabels": [
     "DETECTS",
     "MITIGATES",
-    "SUBTECHNIQUE_OF",
     "TARGETS",
+    "SUBTECHNIQUE_OF",
     "USES"
   ],
   "numNodeProperties": 12,
@@ -102,6 +102,23 @@
       "count": 42,
       "nodeProperties": [
         "aliases",
+        "aws_services",
+        "created",
+        "description",
+        "external_ids",
+        "modified",
+        "name",
+        "stix_id",
+        "stix_type",
+        "tactics",
+        "urls"
+      ],
+      "distinctOutgoingEdgeLabels": []
+    },
+    {
+      "count": 42,
+      "nodeProperties": [
+        "aliases",
         "created",
         "description",
         "external_ids",
@@ -115,23 +132,6 @@
       "distinctOutgoingEdgeLabels": [
         "SUBTECHNIQUE_OF"
       ]
-    },
-    {
-      "count": 42,
-      "nodeProperties": [
-        "aliases",
-        "aws_services",
-        "created",
-        "description",
-        "external_ids",
-        "modified",
-        "name",
-        "stix_id",
-        "stix_type",
-        "tactics",
-        "urls"
-      ],
-      "distinctOutgoingEdgeLabels": []
     },
     {
       "count": 41,
@@ -320,11 +320,11 @@
       "nodeProperties": [
         "created",
         "description",
-        "external_ids",
         "modified",
         "name",
         "stix_id",
-        "stix_type"
+        "stix_type",
+        "urls"
       ],
       "distinctOutgoingEdgeLabels": []
     },
@@ -333,11 +333,11 @@
       "nodeProperties": [
         "created",
         "description",
+        "external_ids",
         "modified",
         "name",
         "stix_id",
-        "stix_type",
-        "urls"
+        "stix_type"
       ],
       "distinctOutgoingEdgeLabels": []
     },

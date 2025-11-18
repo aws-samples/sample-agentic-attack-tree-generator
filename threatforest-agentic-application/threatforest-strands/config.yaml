@@ -17,7 +17,7 @@ data:
 
 # Model settings
 models:
-  default_bedrock_model: ""
+  default_bedrock_model: "us.anthropic.claude-haiku-4-5-20251001-v1:0"
   # Examples:
   # - "us.anthropic.claude-sonnet-4-20250514-v1:0"      # Claude Sonnet 4
   # - "us.anthropic.claude-sonnet-4-5-20250929-v1:0"    # Claude Sonnet 4.5
@@ -25,9 +25,17 @@ models:
 
 # Embeddings settings
 embeddings:
-  model: "Qwen/Qwen3-Embedding-0.6B"
+  mode: "neptune"  # Options: "local" or "neptune"
+  model: "cisco-ai/SecureBERT2.0-biencoder"
+  
+# Neptune settings (required when embeddings.mode=neptune)
+neptune:
+  graph_id: "g-csewvv20d7"
+  region: "us-east-1"
+  s3_bucket: "threatforest-neptune"
+  account_id: "092797877696"
   
 # AWS settings
 aws:
-  default_profile: "antondk+lab-Admin"
+  default_profile: "threatforest"
   default_region: "us-east-1"

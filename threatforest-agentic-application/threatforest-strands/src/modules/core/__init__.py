@@ -1,7 +1,8 @@
 """ThreatForest Core Framework - Strands Implementation"""
 
 from .base_tool import Tool, tool
-from .base_agent import Agent, agent_step
+from .base_agent import Agent
+from .base_agent import BaseAgent
 from .context import Context
 from .state import ThreatForestState, WorkflowStage
 from .state_manager import StateManager

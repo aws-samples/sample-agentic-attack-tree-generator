@@ -66,7 +66,32 @@ class Config:
     @property
     def embeddings_model(self) -> str:
         """Get embeddings model name"""
-        return self.get('embeddings.model', 'Qwen/Qwen3-Embedding-0.6B')
+        return self.get('embeddings.model', 'cisco-ai/SecureBERT2.0-base')
+    
+    @property
+    def embeddings_mode(self) -> str:
+        """Get embeddings mode (local or neptune)"""
+        return self.get('embeddings.mode', 'local')
+    
+    @property
+    def neptune_graph_id(self) -> str:
+        """Get Neptune graph ID"""
+        return self.get('neptune.graph_id', '')
+    
+    @property
+    def neptune_region(self) -> str:
+        """Get Neptune region"""
+        return self.get('neptune.region', 'us-west-2')
+    
+    @property
+    def neptune_s3_bucket(self) -> str:
+        """Get Neptune S3 bucket"""
+        return self.get('neptune.s3_bucket', '')
+    
+    @property
+    def neptune_account_id(self) -> str:
+        """Get Neptune account ID"""
+        return self.get('neptune.account_id', '')
     
     @property
     def default_bedrock_model(self) -> str:

@@ -2,5 +2,6 @@
 from .matcher import TTCMatcher
 from .enricher import AttackTreeEnricher
 from .mitigation_enricher import MitigationEnricher
+from .mitigation_mapper import MitigationMapper
 
-__all__ = ['TTCMatcher', 'AttackTreeEnricher', 'MitigationEnricher']
+__all__ = ['TTCMatcher', 'AttackTreeEnricher', 'MitigationEnricher', 'MitigationMapper']

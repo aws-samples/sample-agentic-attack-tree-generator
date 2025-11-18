@@ -1,59 +1,78 @@
-"""Base Agent class for Strands framework implementation"""
-from typing import Dict, List, Any, Callable
-from functools import wraps
-from .base_tool import Tool
+"""Base utility class for ThreatForest components using Strands framework"""
+from pathlib import Path
+from typing import Optional, List
+from boto3 import Session
+from strands import Agent
+from strands.models import BedrockModel
+from strands.handlers import null_callback_handler
+from src.config import config
 
 
-class Agent:
-    """Base class for Strands agents that orchestrate tools"""
+class BaseAgent:
+    """Base utility class providing Strands helper methods"""
     
-    def __init__(self, name: str, description: str, tools: List[Tool] = None):
-        self.name = name
-        self.description = description
-        self.tools = {tool.name: tool for tool in (tools or [])}
-    
-    async def use_tool(self, tool_name: str, params: Dict[str, Any]) -> Dict[str, Any]:
-        """Execute a tool by name with given parameters"""
-        if tool_name not in self.tools:
-            raise ValueError(f"Tool '{tool_name}' not found in agent '{self.name}'")
+    def get_prompt_from_file(self, prompt_file: str) -> str:
+        """
+        Load prompt from markdown file
         
-        tool = self.tools[tool_name]
-        return await tool.execute(**params)
-    
-    def register_tool(self, tool: Tool):
-        """Register a new tool with the agent"""
-        self.tools[tool.name] = tool
-    
-    def __repr__(self) -> str:
-        return f"Agent(name='{self.name}', tools={list(self.tools.keys())})"
-
-
-def agent_step(func_or_deps=None):
-    """Decorator to mark a method as an agent workflow step
-    
-    Can be used as:
-        @agent_step
-        async def method(self): ...
-    
-    Or with dependencies:
-        @agent_step(dependencies=['step1'])
-        async def method(self): ...
-    """
-    def decorator(func: Callable):
-        @wraps(func)
-        async def wrapper(self, *args, **kwargs):
-            return await func(self, *args, **kwargs)
+        Args:
+            prompt_file: Filename in prompts/ directory (e.g., 'generate-attack-trees.md')
+            
+        Returns:
+            Prompt text content
+        """
+        prompts_dir = Path(__file__).parent.parent.parent / "prompts"
+        prompt_path = prompts_dir / prompt_file
         
-        wrapper._is_agent_step = True
-        wrapper._dependencies = dependencies if isinstance(func_or_deps, list) else []
-        return wrapper
+        if not prompt_path.exists():
+            raise FileNotFoundError(
+                f"Prompt file not found: {prompt_path}"
+            )
+        
+        with open(prompt_path, 'r', encoding='utf-8') as f:
+            return f.read()
     
-    # Handle both @agent_step and @agent_step(dependencies=[...])
-    if callable(func_or_deps):
-        # Used as @agent_step without parentheses
-        dependencies = []
-        return decorator(func_or_deps)
-    else:
-        # Used as @agent_step(dependencies=[...])
-        dependencies = func_or_deps or []
-        return decorator
+    def get_strands_agent(
+        self, 
+        prompt_file: str, 
+        tools: Optional[List] = None,
+        temperature: float = 0,
+        model_name: Optional[str] = None
+    ) -> Agent:
+        """
+        Create a Strands Agent with BedrockModel
+        
+        Args:
+            prompt_file: Markdown file in prompts/ (e.g., 'generate-attack-trees.md')
+            tools: Optional list of Strands tools for the agent
+            temperature: Model temperature (default 0 for deterministic)
+            model_name: Optional model ID override (defaults to config.yaml)
+            
+        Returns:
+            Configured Strands Agent
+        """
+        model_id = model_name or config.default_bedrock_model
+        profile = config.default_aws_profile
+        
+        # Create boto3 session with configured profile
+        session = Session(profile_name=profile) if profile else Session()
+        
+        # Create Strands BedrockModel
+        model = BedrockModel(
+            model_id=model_id,
+            boto_session=session,
+            temperature=temperature
+        )
+        
+        # Load system prompt from markdown file
+        system_prompt = self.get_prompt_from_file(prompt_file)
+        
+        # Create Strands Agent
+        agent = Agent(
+            model=model,
+            system_prompt=system_prompt,
+            tools=tools or [],
+            callback_handler=null_callback_handler()
+        )
+        
+        return agent

@@ -21,17 +21,17 @@ from neptune_graph_manager.types import Edge, Node, NodeArray
 load_dotenv()
 
 # Configuration
-STIX_FILE = Path(__file__).parents[1] / "data/threat-intelligence/ttc-aaf.json"
+STIX_FILE = Path(__file__).parents[2] / "data/threat-intelligence/aaf-bundle.json"
 S3_BUCKET = "threatforest-neptune"
 S3_PREFIX = "stix-aaf-data"
-GRAPH_ID = "g-f7i4wf2pc5"  # Your Neptune graph ID
+GRAPH_ID = "g-csewvv20d7"  # Your Neptune graph ID
 
 # Initialize AWS session
 session = Session(**literal_eval(os.getenv("SESSION_PARAMS", "{}")))
 
 # Initialize Neptune manager
 print(f"🔗 Connecting to Neptune graph: {GRAPH_ID}")
-neptune_manager = NeptuneGraphManager(session=session, graph_id=GRAPH_ID)
+neptune_manager = NeptuneGraphManager(session=session, graph_id=GRAPH_ID, embedding_model="cisco-ai/SecureBERT2.0-biencoder")
 
 
 class STIXParser:
@@ -235,11 +235,11 @@ def main():
     builder = GraphBuilder(
         s3_bucket=S3_BUCKET,
         s3_prefix=S3_PREFIX,
-        create_new_graph=True,
-        graph_memory=64,
+        create_new_graph=False,
+        graph_memory=32,
         verbose=True,
-        # neptune_manager=neptune_manager,
-        graph_name="threatforest-graph"
+        neptune_manager=neptune_manager,
+        # graph_name="threatforest-graph"
     )
     builder._set_session(session)
 

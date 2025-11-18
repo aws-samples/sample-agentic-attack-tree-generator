@@ -17,17 +17,25 @@ class AttackTreeEnricher:
         self.matcher = matcher
         self.logger = ThreatForestLogger.get_logger(self.__class__.__name__)
     
-    def extract_attack_steps(self, markdown_content: str) -> List[str]:
-        """Extract attack steps from mermaid diagram"""
-        mermaid_match = re.search(r'```mermaid\n(.*?)\n```', markdown_content, re.DOTALL)
-        if not mermaid_match:
-            return []
+    def extract_attack_steps(self, markdown_or_mermaid: str) -> List[str]:
+        """Extract attack steps from mermaid diagram (wrapped or unwrapped)"""
+        # Try to extract from markdown code block first
+        mermaid_match = re.search(r'```mermaid\n(.*?)\n```', markdown_or_mermaid, re.DOTALL)
+        if mermaid_match:
+            mermaid_content = mermaid_match.group(1)
+        else:
+            # Assume it's already raw mermaid code
+            mermaid_content = markdown_or_mermaid
         
-        mermaid_content = mermaid_match.group(1)
         steps = []
         for line in mermaid_content.split('\n'):
+            # Extract text from nodes: ["text"] or ["text<br/>more"]
             matches = re.findall(r'\["([^"]+)"\]', line)
-            steps.extend(matches)
+            for match in matches:
+                # Clean up HTML tags like <br/>
+                clean_text = re.sub(r'<br\/?>.*', '', match).strip()
+                if clean_text:
+                    steps.append(clean_text)
         
         return list(set(steps))
     
