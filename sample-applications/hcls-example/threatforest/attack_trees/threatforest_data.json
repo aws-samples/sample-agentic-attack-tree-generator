@@ -1,0 +1,764 @@
+{
+  "metadata": {
+    "generated_at": "2025-11-04T11:52:43.926156",
+    "generator": "ThreatForest",
+    "version": "1.0"
+  },
+  "project_info": {
+    "application_name": "Healthcare Analytics Environment",
+    "sector": "Healthcare",
+    "architecture_type": "Data Lake Architecture with ETL Pipeline",
+    "deployment_environment": "Cloud (AWS)",
+    "technologies": [
+      "Amazon AppFlow",
+      "AWS Transfer for SFTP",
+      "AWS Snow Family",
+      "Amazon HealthLake (FHIR)",
+      "AWS Database Migration Service",
+      "AWS Data Exchange",
+      "Amazon S3",
+      "AWS Glue",
+      "AWS Glue Crawlers",
+      "AWS Glue Data Catalog",
+      "AWS Lake Formation",
+      "Amazon Redshift",
+      "Amazon Athena",
+      "Amazon QuickSight",
+      "AWS Lambda",
+      "Amazon ECS",
+      "Amazon EKS",
+      "AWS AppSync",
+      "Amazon EC2",
+      "Amazon SageMaker",
+      "Amazon EFS",
+      "Amazon FSx",
+      "Amazon RDS",
+      "AWS Identity and Access Management",
+      "AWS Key Management Service",
+      "Amazon GuardDuty",
+      "Amazon Macie",
+      "AWS Config",
+      "AWS CloudTrail",
+      "Amazon CloudWatch"
+    ],
+    "security_objectives": {
+      "confidentiality": true,
+      "integrity": true,
+      "availability": true
+    },
+    "data_types": [
+      "Healthcare data (HIPAA eligible)",
+      "FHIR formatted data",
+      "EHR data",
+      "PACS data",
+      "ERP data",
+      "CRM data",
+      "IoT application data",
+      "Public datasets",
+      "Research partner data",
+      "Normalized healthcare data",
+      "Patient information",
+      "Provider information"
+    ],
+    "external_dependencies": [
+      "SaaS Applications (ERP, CRM, IoT Apps)",
+      "Customer Hosted systems (EHR, PACS)",
+      "External Sources (Public Data Sets, Research Partners)",
+      "AWS Data Exchange"
+    ],
+    "network_architecture": "Multi-tier cloud architecture with segregated zones: (1) External data sources connected via VPN/Direct Connect and SFTP, (2) Ingestion layer for data intake, (3) Data Lake layer with raw, curated, and analytics storage tiers in S3, (4) Analytics and query layer with data warehousing and ad-hoc query capabilities, (5) Presentation layer with BI tools, custom apps, and ML services, (6) Management & Security layer providing centralized governance across all layers",
+    "key_components": [
+      "Ingest Layer (Amazon AppFlow, AWS Transfer for SFTP, AWS Snow Family, Amazon HealthLake, AWS DMS, AWS Data Exchange)",
+      "Data Lake Storage (Amazon S3 with Raw, Curated, and Analytics tiers)",
+      "Data Cataloging (AWS Glue Crawlers, AWS Glue Data Catalog, AWS Lake Formation)",
+      "Data Warehousing (Amazon Redshift Data Warehouses and Data Marts)",
+      "Ad-hoc Query Engine (Amazon Athena)",
+      "Business Intelligence Layer (Amazon QuickSight)",
+      "Custom Applications Integration Layer",
+      "Machine Learning Platform (Amazon EC2, Amazon SageMaker, Amazon EFS/FSx, Amazon RDS)",
+      "Management & Security Layer (IAM, KMS, GuardDuty, Macie, Config, CloudTrail, CloudWatch)"
+    ],
+    "\"application_name\"": "\"Healthcare Analytics Platform\",",
+    "\"industry\"": "\"Healthcare\",",
+    "\"architecture_type\"": "\"Cloud-based Data Lake Architecture with Microservices\",",
+    "\"components\"": "{",
+    "\"saas_applications\"": "[",
+    "\"technologies\"": "{"
+  },
+  "extraction_summary": {
+    "total_threats": 12,
+    "high_severity_count": 4,
+    "technologies_identified": 30,
+    "has_security_objectives": true,
+    "user_validated": false
+  },
+  "threats": {
+    "all_threats": [
+      {
+        "id": "T001",
+        "statement": "T001 - Data Breach",
+        "description": "**Threat Statement**: A malicious insider with legitimate access credentials, can exfiltrate sensitive patient data through AWS Transfer for SFTP endpoints, which leads to unauthorized disclosure of PHI, resulting in reduced confidentiality of patient health records.\n\n- **Threat Source**: malicious insider\n- **Prerequisites**: legitimate access credentials\n- **Threat Action**: exfiltrate sensitive patient data through AWS Transfer for SFTP endpoints\n- **Threat Impact**: unauthorized disclosure of PHI\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: patient health records\n- **Priority**: High\n- **Category**: Data Breach\n\n---",
+        "threatSource": "malicious insider",
+        "prerequisites": "legitimate access credentials",
+        "threatAction": "exfiltrate sensitive patient data through AWS Transfer for SFTP endpoints",
+        "threatImpact": "unauthorized disclosure of PHI",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "patient health records",
+        "severity": "High",
+        "priority": "High",
+        "category": "Data Breach",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/hcls-example/Healthcare_Analytics_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T002",
+        "statement": "T002 - Data Integrity",
+        "description": "**Threat Statement**: A cybercriminal with compromised IAM credentials, can manipulate data processing workflows in AWS Glue, which leads to corruption of healthcare analytics datasets, resulting in reduced integrity of data warehouse information.\n\n- **Threat Source**: cybercriminal\n- **Prerequisites**: compromised IAM credentials\n- **Threat Action**: manipulate data processing workflows in AWS Glue\n- **Threat Impact**: corruption of healthcare analytics datasets\n- **Reduced Goal**: integrity\n- **Impacted Assets**: data warehouse information\n- **Priority**: High\n- **Category**: Data Integrity\n\n---",
+        "threatSource": "cybercriminal",
+        "prerequisites": "compromised IAM credentials",
+        "threatAction": "manipulate data processing workflows in AWS Glue",
+        "threatImpact": "corruption of healthcare analytics datasets",
+        "impactedGoal": "integrity",
+        "impactedAssets": "data warehouse information",
+        "severity": "High",
+        "priority": "High",
+        "category": "Data Integrity",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/hcls-example/Healthcare_Analytics_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T003",
+        "statement": "T003 - Lateral Movement",
+        "description": "**Threat Statement**: An advanced persistent threat actor with network access, can exploit vulnerabilities in custom applications running on Amazon ECS, which leads to lateral movement within the analytics platform, resulting in reduced confidentiality of FHIR data in Amazon HealthLake.\n\n- **Threat Source**: advanced persistent threat actor\n- **Prerequisites**: network access\n- **Threat Action**: exploit vulnerabilities in custom applications running on Amazon ECS\n- **Threat Impact**: lateral movement within the analytics platform\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: FHIR data in Amazon HealthLake\n- **Priority**: High\n- **Category**: Lateral Movement\n\n---",
+        "threatSource": "advanced persistent threat actor",
+        "prerequisites": "network access",
+        "threatAction": "exploit vulnerabilities in custom applications running on Amazon ECS",
+        "threatImpact": "lateral movement within the analytics platform",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "FHIR data in Amazon HealthLake",
+        "severity": "High",
+        "priority": "High",
+        "category": "Lateral Movement",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/hcls-example/Healthcare_Analytics_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T004",
+        "statement": "T004 - Privilege Escalation",
+        "description": "**Threat Statement**: A malicious attacker with compromised service account, can perform privilege escalation attacks against AWS Lake Formation permissions, which leads to unauthorized access to regulated healthcare datasets, resulting in reduced confidentiality of patient analytics data.\n\n- **Threat Source**: malicious attacker\n- **Prerequisites**: compromised service account\n- **Threat Action**: perform privilege escalation attacks against AWS Lake Formation permissions\n- **Threat Impact**: unauthorized access to regulated healthcare datasets\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: patient analytics data\n- **Priority**: High\n- **Category**: Privilege Escalation\n\n---\n\n### Medium Priority Threats",
+        "threatSource": "malicious attacker",
+        "prerequisites": "compromised service account",
+        "threatAction": "perform privilege escalation attacks against AWS Lake Formation permissions",
+        "threatImpact": "unauthorized access to regulated healthcare datasets",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "patient analytics data",
+        "severity": "High",
+        "priority": "High",
+        "category": "Privilege Escalation",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/hcls-example/Healthcare_Analytics_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T005",
+        "statement": "T005 - Injection",
+        "description": "**Threat Statement**: A threat actor with access to QuickSight dashboards, can perform injection attacks through dashboard parameters, which leads to unauthorized query execution against Redshift data warehouses, resulting in reduced confidentiality of aggregated patient data.\n\n- **Threat Source**: threat actor\n- **Prerequisites**: access to QuickSight dashboards\n- **Threat Action**: perform injection attacks through dashboard parameters\n- **Threat Impact**: unauthorized query execution against Redshift data warehouses\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: aggregated patient data\n- **Priority**: Medium\n- **Category**: Injection\n\n---",
+        "threatSource": "threat actor",
+        "prerequisites": "access to QuickSight dashboards",
+        "threatAction": "perform injection attacks through dashboard parameters",
+        "threatImpact": "unauthorized query execution against Redshift data warehouses",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "aggregated patient data",
+        "severity": "Medium",
+        "priority": "Medium",
+        "category": "Injection",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/hcls-example/Healthcare_Analytics_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T006",
+        "statement": "T006 - Denial of Service",
+        "description": "**Threat Statement**: A malicious actor with API access, can perform denial of service attacks against AWS AppSync endpoints, which leads to disruption of real-time healthcare data access, resulting in reduced availability of clinical decision support systems.\n\n- **Threat Source**: malicious actor\n- **Prerequisites**: API access\n- **Threat Action**: perform denial of service attacks against AWS AppSync endpoints\n- **Threat Impact**: disruption of real-time healthcare data access\n- **Reduced Goal**: availability\n- **Impacted Assets**: clinical decision support systems\n- **Priority**: Medium\n- **Category**: Denial of Service\n\n---",
+        "threatSource": "malicious actor",
+        "prerequisites": "API access",
+        "threatAction": "perform denial of service attacks against AWS AppSync endpoints",
+        "threatImpact": "disruption of real-time healthcare data access",
+        "impactedGoal": "availability",
+        "impactedAssets": "clinical decision support systems",
+        "severity": "Medium",
+        "priority": "Medium",
+        "category": "Denial of Service",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/hcls-example/Healthcare_Analytics_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T007",
+        "statement": "T007 - Code Injection",
+        "description": "**Threat Statement**: A malicious user with Lambda execution permissions, can deploy malicious code in serverless functions, which leads to unauthorized data processing and exfiltration, resulting in reduced integrity of machine learning training datasets in SageMaker.\n\n- **Threat Source**: malicious user\n- **Prerequisites**: Lambda execution permissions\n- **Threat Action**: deploy malicious code in serverless functions\n- **Threat Impact**: unauthorized data processing and exfiltration\n- **Reduced Goal**: integrity\n- **Impacted Assets**: machine learning training datasets in SageMaker\n- **Priority**: Medium\n- **Category**: Code Injection\n\n---",
+        "threatSource": "malicious user",
+        "prerequisites": "Lambda execution permissions",
+        "threatAction": "deploy malicious code in serverless functions",
+        "threatImpact": "unauthorized data processing and exfiltration",
+        "impactedGoal": "integrity",
+        "impactedAssets": "machine learning training datasets in SageMaker",
+        "severity": "Medium",
+        "priority": "Medium",
+        "category": "Code Injection",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/hcls-example/Healthcare_Analytics_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T008",
+        "statement": "T008 - Data Exposure",
+        "description": "**Threat Statement**: A threat actor with misconfigured S3 bucket access, can perform unauthorized data enumeration on raw healthcare data, which leads to exposure of unencrypted patient information, resulting in reduced confidentiality of ingested healthcare records.\n\n- **Threat Source**: threat actor\n- **Prerequisites**: misconfigured S3 bucket access\n- **Threat Action**: perform unauthorized data enumeration on raw healthcare data\n- **Threat Impact**: exposure of unencrypted patient information\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: ingested healthcare records\n- **Priority**: Medium\n- **Category**: Data Exposure\n\n---",
+        "threatSource": "threat actor",
+        "prerequisites": "misconfigured S3 bucket access",
+        "threatAction": "perform unauthorized data enumeration on raw healthcare data",
+        "threatImpact": "exposure of unencrypted patient information",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "ingested healthcare records",
+        "severity": "Medium",
+        "priority": "Medium",
+        "category": "Data Exposure",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/hcls-example/Healthcare_Analytics_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T009",
+        "statement": "T009 - Man-in-the-Middle",
+        "description": "**Threat Statement**: An attacker with VPN or Direct Connect access, can intercept data in transit between customer-hosted EHR systems and AWS services, which leads to unauthorized access to patient data during migration, resulting in reduced confidentiality of electronic health records.\n\n- **Threat Source**: attacker\n- **Prerequisites**: VPN or Direct Connect access\n- **Threat Action**: intercept data in transit between customer-hosted EHR systems and AWS services\n- **Threat Impact**: unauthorized access to patient data during migration\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: electronic health records\n- **Priority**: Medium\n- **Category**: Man-in-the-Middle\n\n---",
+        "threatSource": "attacker",
+        "prerequisites": "VPN or Direct Connect access",
+        "threatAction": "intercept data in transit between customer-hosted EHR systems and AWS services",
+        "threatImpact": "unauthorized access to patient data during migration",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "electronic health records",
+        "severity": "Medium",
+        "priority": "Medium",
+        "category": "Man-in-the-Middle",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/hcls-example/Healthcare_Analytics_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T010",
+        "statement": "T010 - Model Inversion",
+        "description": "**Threat Statement**: A malicious data scientist with SageMaker notebook access, can extract sensitive features from ML models, which leads to inference of patient identities from anonymized datasets, resulting in reduced confidentiality of de-identified health information.\n\n- **Threat Source**: malicious data scientist\n- **Prerequisites**: SageMaker notebook access\n- **Threat Action**: extract sensitive features from ML models\n- **Threat Impact**: inference of patient identities from anonymized datasets\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: de-identified health information\n- **Priority**: Medium\n- **Category**: Model Inversion\n\n---\n\n### Low Priority Threats",
+        "threatSource": "malicious data scientist",
+        "prerequisites": "SageMaker notebook access",
+        "threatAction": "extract sensitive features from ML models",
+        "threatImpact": "inference of patient identities from anonymized datasets",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "de-identified health information",
+        "severity": "Medium",
+        "priority": "Medium",
+        "category": "Model Inversion",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/hcls-example/Healthcare_Analytics_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T011",
+        "statement": "T011 - Resource Exhaustion",
+        "description": "**Threat Statement**: An unauthorized user with weak authentication credentials, can gain access to Athena query interfaces, which leads to execution of resource-intensive queries, resulting in reduced availability of analytical services for legitimate users.\n\n- **Threat Source**: unauthorized user\n- **Prerequisites**: weak authentication credentials\n- **Threat Action**: gain access to Athena query interfaces\n- **Threat Impact**: execution of resource-intensive queries\n- **Reduced Goal**: availability\n- **Impacted Assets**: analytical services for legitimate users\n- **Priority**: Low\n- **Category**: Resource Exhaustion\n\n---",
+        "threatSource": "unauthorized user",
+        "prerequisites": "weak authentication credentials",
+        "threatAction": "gain access to Athena query interfaces",
+        "threatImpact": "execution of resource-intensive queries",
+        "impactedGoal": "availability",
+        "impactedAssets": "analytical services for legitimate users",
+        "severity": "Low",
+        "priority": "Low",
+        "category": "Resource Exhaustion",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/hcls-example/Healthcare_Analytics_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T012",
+        "statement": "T012 - Information Disclosure",
+        "description": "**Threat Statement**: A malicious actor with access to CloudWatch logs, can perform log analysis to extract sensitive information patterns, which leads to reconnaissance of system architecture and data flows, resulting in reduced confidentiality of operational metadata.\n\n- **Threat Source**: malicious actor\n- **Prerequisites**: access to CloudWatch logs\n- **Threat Action**: perform log analysis to extract sensitive information patterns\n- **Threat Impact**: reconnaissance of system architecture and data flows\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: operational metadata\n- **Priority**: Low\n- **Category**: Information Disclosure\n\n---\n\n\n## Usage Notes\n\nThese threat statements were generated using AI analysis of your application context. They follow the standard threat modeling syntax:\n\n**\"A [threat source] with [pre-requisites], can [threat action], which leads to [threat impact], resulting in [reduced goal] of [impacted assets].\"**\n\n### Next Steps\n1. Review and validate these threat statements\n2. Modify or add threats as needed for your specific context\n3. Use these threats as input for attack tree generation\n4. Consider implementing mitigations for high-priority threats\n\n### Customization\nYou can edit this file to:\n- Add more specific threat statements\n- Adjust priority levels\n- Include additional context or mitigations\n- Remove threats that don't apply to your application",
+        "threatSource": "malicious actor",
+        "prerequisites": "access to CloudWatch logs",
+        "threatAction": "perform log analysis to extract sensitive information patterns",
+        "threatImpact": "reconnaissance of system architecture and data flows",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "operational metadata",
+        "severity": "Low",
+        "priority": "Low",
+        "category": "Information Disclosure",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/hcls-example/Healthcare_Analytics_Platform_generated_threat_statements.md"
+      }
+    ],
+    "high_severity": [
+      {
+        "id": "T001",
+        "statement": "T001 - Data Breach",
+        "description": "**Threat Statement**: A malicious insider with legitimate access credentials, can exfiltrate sensitive patient data through AWS Transfer for SFTP endpoints, which leads to unauthorized disclosure of PHI, resulting in reduced confidentiality of patient health records.\n\n- **Threat Source**: malicious insider\n- **Prerequisites**: legitimate access credentials\n- **Threat Action**: exfiltrate sensitive patient data through AWS Transfer for SFTP endpoints\n- **Threat Impact**: unauthorized disclosure of PHI\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: patient health records\n- **Priority**: High\n- **Category**: Data Breach\n\n---",
+        "threatSource": "malicious insider",
+        "prerequisites": "legitimate access credentials",
+        "threatAction": "exfiltrate sensitive patient data through AWS Transfer for SFTP endpoints",
+        "threatImpact": "unauthorized disclosure of PHI",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "patient health records",
+        "severity": "High",
+        "priority": "High",
+        "category": "Data Breach",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/hcls-example/Healthcare_Analytics_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T002",
+        "statement": "T002 - Data Integrity",
+        "description": "**Threat Statement**: A cybercriminal with compromised IAM credentials, can manipulate data processing workflows in AWS Glue, which leads to corruption of healthcare analytics datasets, resulting in reduced integrity of data warehouse information.\n\n- **Threat Source**: cybercriminal\n- **Prerequisites**: compromised IAM credentials\n- **Threat Action**: manipulate data processing workflows in AWS Glue\n- **Threat Impact**: corruption of healthcare analytics datasets\n- **Reduced Goal**: integrity\n- **Impacted Assets**: data warehouse information\n- **Priority**: High\n- **Category**: Data Integrity\n\n---",
+        "threatSource": "cybercriminal",
+        "prerequisites": "compromised IAM credentials",
+        "threatAction": "manipulate data processing workflows in AWS Glue",
+        "threatImpact": "corruption of healthcare analytics datasets",
+        "impactedGoal": "integrity",
+        "impactedAssets": "data warehouse information",
+        "severity": "High",
+        "priority": "High",
+        "category": "Data Integrity",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/hcls-example/Healthcare_Analytics_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T003",
+        "statement": "T003 - Lateral Movement",
+        "description": "**Threat Statement**: An advanced persistent threat actor with network access, can exploit vulnerabilities in custom applications running on Amazon ECS, which leads to lateral movement within the analytics platform, resulting in reduced confidentiality of FHIR data in Amazon HealthLake.\n\n- **Threat Source**: advanced persistent threat actor\n- **Prerequisites**: network access\n- **Threat Action**: exploit vulnerabilities in custom applications running on Amazon ECS\n- **Threat Impact**: lateral movement within the analytics platform\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: FHIR data in Amazon HealthLake\n- **Priority**: High\n- **Category**: Lateral Movement\n\n---",
+        "threatSource": "advanced persistent threat actor",
+        "prerequisites": "network access",
+        "threatAction": "exploit vulnerabilities in custom applications running on Amazon ECS",
+        "threatImpact": "lateral movement within the analytics platform",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "FHIR data in Amazon HealthLake",
+        "severity": "High",
+        "priority": "High",
+        "category": "Lateral Movement",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/hcls-example/Healthcare_Analytics_Platform_generated_threat_statements.md"
+      },
+      {
+        "id": "T004",
+        "statement": "T004 - Privilege Escalation",
+        "description": "**Threat Statement**: A malicious attacker with compromised service account, can perform privilege escalation attacks against AWS Lake Formation permissions, which leads to unauthorized access to regulated healthcare datasets, resulting in reduced confidentiality of patient analytics data.\n\n- **Threat Source**: malicious attacker\n- **Prerequisites**: compromised service account\n- **Threat Action**: perform privilege escalation attacks against AWS Lake Formation permissions\n- **Threat Impact**: unauthorized access to regulated healthcare datasets\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: patient analytics data\n- **Priority**: High\n- **Category**: Privilege Escalation\n\n---\n\n### Medium Priority Threats",
+        "threatSource": "malicious attacker",
+        "prerequisites": "compromised service account",
+        "threatAction": "perform privilege escalation attacks against AWS Lake Formation permissions",
+        "threatImpact": "unauthorized access to regulated healthcare datasets",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "patient analytics data",
+        "severity": "High",
+        "priority": "High",
+        "category": "Privilege Escalation",
+        "source": "markdown",
+        "source_file": "/Users/dicorteg/Documents/ThreatForest/ThreatForest-internal/threatforest-agentic-application/examples/hcls-example/Healthcare_Analytics_Platform_generated_threat_statements.md"
+      }
+    ]
+  },
+  "attack_trees": [
+    {
+      "threat_id": "T001",
+      "threat_category": "Data Breach",
+      "threat_description": "**Threat Statement**: A malicious insider with legitimate access credentials, can exfiltrate sensitive patient data through AWS Transfer for SFTP endpoints, which leads to unauthorized disclosure of PHI, resulting in reduced confidentiality of patient health records.\n\n- **Threat Source**: malicious insider\n- **Prerequisites**: legitimate access credentials\n- **Threat Action**: exfiltrate sensitive patient data through AWS Transfer for SFTP endpoints\n- **Threat Impact**: unauthorized disclosure of PHI\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: patient health records\n- **Priority**: High\n- **Category**: Data Breach\n\n---",
+      "threat_statement": "T001 - Data Breach",
+      "threat_action": "exfiltrate sensitive patient data through AWS Transfer for SFTP endpoints",
+      "threatSource": "malicious insider",
+      "prerequisites": "legitimate access credentials",
+      "threatAction": "exfiltrate sensitive patient data through AWS Transfer for SFTP endpoints",
+      "threatImpact": "unauthorized disclosure of PHI",
+      "impactedGoal": "confidentiality",
+      "impactedAssets": "patient health records",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"Malicious insider with legitimate access credentials\"] --> B[\"Reconnaissance of AWS Transfer for SFTP infrastructure\"]\n    A --> C[\"Access AWS Transfer for SFTP endpoints directly\"]\n    B --> D[\"Identify SFTP endpoint configurations\"]\n    B --> E[\"Map accessible patient data locations\"]\n    D --> F[\"Discover authentication methods\"]\n    E --> G[\"Locate PHI storage bucketsdirectories\"]\n    F --> H[\"Use legitimate credentials for SFTP access\"]\n    C --> H\n    G --> I[\"Query and identify high-value patient records\"]\n    H --> J[\"Establish SFTP connection to Transfer endpoint\"]\n    J --> K[\"Navigate to PHI data directories\"]\n    I --> K\n    K --> L[\"Bulk download patient health records\"]\n    K --> M[\"Selective exfiltration of targeted PHI\"]\n    L --> N[\"Transfer data to external location\"]\n    M --> N\n    N --> O[\"Cover tracks - clear logs or blend with normal activity\"]\n    O --> P[\"Unauthorized disclosure of PHI - Confidentiality breach\"]\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O attack\n    class P goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "Malicious insider with legitimate access credentials"
+        },
+        {
+          "node_id": "B",
+          "description": "Reconnaissance of AWS Transfer for SFTP infrastructure"
+        },
+        {
+          "node_id": "C",
+          "description": "Access AWS Transfer for SFTP endpoints directly"
+        },
+        {
+          "node_id": "D",
+          "description": "Identify SFTP endpoint configurations"
+        },
+        {
+          "node_id": "E",
+          "description": "Map accessible patient data locations"
+        },
+        {
+          "node_id": "F",
+          "description": "Discover authentication methods"
+        },
+        {
+          "node_id": "G",
+          "description": "Locate PHI storage bucketsdirectories"
+        },
+        {
+          "node_id": "H",
+          "description": "Use legitimate credentials for SFTP access"
+        },
+        {
+          "node_id": "I",
+          "description": "Query and identify high-value patient records"
+        },
+        {
+          "node_id": "J",
+          "description": "Establish SFTP connection to Transfer endpoint"
+        },
+        {
+          "node_id": "K",
+          "description": "Navigate to PHI data directories"
+        },
+        {
+          "node_id": "L",
+          "description": "Bulk download patient health records"
+        },
+        {
+          "node_id": "M",
+          "description": "Selective exfiltration of targeted PHI"
+        },
+        {
+          "node_id": "N",
+          "description": "Transfer data to external location"
+        },
+        {
+          "node_id": "O",
+          "description": "Cover tracks - clear logs or blend with normal activity"
+        },
+        {
+          "node_id": "P",
+          "description": "Unauthorized disclosure of PHI - Confidentiality breach"
+        }
+      ],
+      "generated_content": "# Attack Tree for T001 - Data Breach\n\n```mermaid\ngraph TD\n    A[\"Malicious insider with legitimate access credentials\"] --> B[\"Reconnaissance of AWS Transfer for SFTP infrastructure\"]\n    A --> C[\"Access AWS Transfer for SFTP endpoints directly\"]\n    \n    B --> D[\"Identify SFTP endpoint configurations\"]\n    B --> E[\"Map accessible patient data locations\"]\n    \n    D --> F[\"Discover authentication methods\"]\n    E --> G[\"Locate PHI storage buckets/directories\"]\n    \n    F --> H[\"Use legitimate credentials for SFTP access\"]\n    C --> H\n    \n    G --> I[\"Query and identify high-value patient records\"]\n    \n    H --> J[\"Establish SFTP connection to Transfer endpoint\"]\n    \n    J --> K[\"Navigate to PHI data directories\"]\n    I --> K\n    \n    K --> L[\"Bulk download patient health records\"]\n    K --> M[\"Selective exfiltration of targeted PHI\"]\n    \n    L --> N[\"Transfer data to external location\"]\n    M --> N\n    \n    N --> O[\"Cover tracks - clear logs or blend with normal activity\"]\n    \n    O --> P[\"Unauthorized disclosure of PHI - Confidentiality breach\"]\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O attack\n    class P goal\n    class A fact\n```",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 18,
+        "tech_mentions": 0
+      }
+    },
+    {
+      "threat_id": "T002",
+      "threat_category": "Data Integrity",
+      "threat_description": "**Threat Statement**: A cybercriminal with compromised IAM credentials, can manipulate data processing workflows in AWS Glue, which leads to corruption of healthcare analytics datasets, resulting in reduced integrity of data warehouse information.\n\n- **Threat Source**: cybercriminal\n- **Prerequisites**: compromised IAM credentials\n- **Threat Action**: manipulate data processing workflows in AWS Glue\n- **Threat Impact**: corruption of healthcare analytics datasets\n- **Reduced Goal**: integrity\n- **Impacted Assets**: data warehouse information\n- **Priority**: High\n- **Category**: Data Integrity\n\n---",
+      "threat_statement": "T002 - Data Integrity",
+      "threat_action": "manipulate data processing workflows in AWS Glue",
+      "threatSource": "cybercriminal",
+      "prerequisites": "compromised IAM credentials",
+      "threatAction": "manipulate data processing workflows in AWS Glue",
+      "threatImpact": "corruption of healthcare analytics datasets",
+      "impactedGoal": "integrity",
+      "impactedAssets": "data warehouse information",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    Start[\"Cybercriminal with compromised IAM credentials\"]\n    Start --> Recon[\"Reconnaissance of AWS Glue environment\"]\n    Recon --> Path1A[\"Identify ETL jobs and workflows\"]\n    Recon --> Path2A[\"Enumerate data catalog and schemas\"]\n    Path1A --> Attack1[\"Modify existing Glue ETL scripts\"]\n    Path1A --> Attack2[\"Create malicious Glue jobs\"]\n    Path1A --> Attack3[\"Alter job parameters and configurations\"]\n    Path2A --> Attack4[\"Modify Glue Data Catalog metadata\"]\n    Path2A --> Attack5[\"Change table schemas and mappings\"]\n    Attack1 --> Exec1[\"Inject data transformation logic\"]\n    Attack2 --> Exec2[\"Schedule unauthorized data processing\"]\n    Attack3 --> Exec3[\"Point jobs to malicious data sources\"]\n    Attack4 --> Exec4[\"Corrupt schema definitions\"]\n    Attack5 --> Exec5[\"Alter column mappings\"]\n    Exec1 --> Impact[\"Corrupt healthcare analytics datasets\"]\n    Exec2 --> Impact\n    Exec3 --> Impact\n    Exec4 --> Impact\n    Exec5 --> Impact\n    Impact --> Goal[\"Compromise integrity of data warehouse information\"]\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class Recon,Path1A,Path2A,Attack1,Attack2,Attack3,Attack4,Attack5,Exec1,Exec2,Exec3,Exec4,Exec5,Impact attack\n    class Goal goal\n    class Start fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "Start",
+          "description": "Cybercriminal with compromised IAM credentials"
+        },
+        {
+          "node_id": "Recon",
+          "description": "Reconnaissance of AWS Glue environment"
+        },
+        {
+          "node_id": "Path1A",
+          "description": "Identify ETL jobs and workflows"
+        },
+        {
+          "node_id": "Path2A",
+          "description": "Enumerate data catalog and schemas"
+        },
+        {
+          "node_id": "Attack1",
+          "description": "Modify existing Glue ETL scripts"
+        },
+        {
+          "node_id": "Attack2",
+          "description": "Create malicious Glue jobs"
+        },
+        {
+          "node_id": "Attack3",
+          "description": "Alter job parameters and configurations"
+        },
+        {
+          "node_id": "Attack4",
+          "description": "Modify Glue Data Catalog metadata"
+        },
+        {
+          "node_id": "Attack5",
+          "description": "Change table schemas and mappings"
+        },
+        {
+          "node_id": "Exec1",
+          "description": "Inject data transformation logic"
+        },
+        {
+          "node_id": "Exec2",
+          "description": "Schedule unauthorized data processing"
+        },
+        {
+          "node_id": "Exec3",
+          "description": "Point jobs to malicious data sources"
+        },
+        {
+          "node_id": "Exec4",
+          "description": "Corrupt schema definitions"
+        },
+        {
+          "node_id": "Exec5",
+          "description": "Alter column mappings"
+        },
+        {
+          "node_id": "Impact",
+          "description": "Corrupt healthcare analytics datasets"
+        },
+        {
+          "node_id": "Goal",
+          "description": "Compromise integrity of data warehouse information"
+        }
+      ],
+      "generated_content": "# Attack Tree for T002 - Data Integrity Threat\n\n```mermaid\ngraph TD\n    Start[\"Cybercriminal with compromised IAM credentials\"]\n    \n    Start --> Recon[\"Reconnaissance of AWS Glue environment\"]\n    \n    Recon --> Path1A[\"Identify ETL jobs and workflows\"]\n    Recon --> Path2A[\"Enumerate data catalog and schemas\"]\n    \n    Path1A --> Attack1[\"Modify existing Glue ETL scripts\"]\n    Path1A --> Attack2[\"Create malicious Glue jobs\"]\n    Path1A --> Attack3[\"Alter job parameters and configurations\"]\n    \n    Path2A --> Attack4[\"Modify Glue Data Catalog metadata\"]\n    Path2A --> Attack5[\"Change table schemas and mappings\"]\n    \n    Attack1 --> Exec1[\"Inject data transformation logic\"]\n    Attack2 --> Exec2[\"Schedule unauthorized data processing\"]\n    Attack3 --> Exec3[\"Point jobs to malicious data sources\"]\n    Attack4 --> Exec4[\"Corrupt schema definitions\"]\n    Attack5 --> Exec5[\"Alter column mappings\"]\n    \n    Exec1 --> Impact[\"Corrupt healthcare analytics datasets\"]\n    Exec2 --> Impact\n    Exec3 --> Impact\n    Exec4 --> Impact\n    Exec5 --> Impact\n    \n    Impact --> Goal[\"Compromise integrity of data warehouse information\"]\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class Recon,Path1A,Path2A,Attack1,Attack2,Attack3,Attack4,Attack5,Exec1,Exec2,Exec3,Exec4,Exec5,Impact attack\n    class Goal goal\n    class Start fact\n```",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 19,
+        "tech_mentions": 0
+      }
+    },
+    {
+      "threat_id": "T003",
+      "threat_category": "Lateral Movement",
+      "threat_description": "**Threat Statement**: An advanced persistent threat actor with network access, can exploit vulnerabilities in custom applications running on Amazon ECS, which leads to lateral movement within the analytics platform, resulting in reduced confidentiality of FHIR data in Amazon HealthLake.\n\n- **Threat Source**: advanced persistent threat actor\n- **Prerequisites**: network access\n- **Threat Action**: exploit vulnerabilities in custom applications running on Amazon ECS\n- **Threat Impact**: lateral movement within the analytics platform\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: FHIR data in Amazon HealthLake\n- **Priority**: High\n- **Category**: Lateral Movement\n\n---",
+      "threat_statement": "T003 - Lateral Movement",
+      "threat_action": "exploit vulnerabilities in custom applications running on Amazon ECS",
+      "threatSource": "advanced persistent threat actor",
+      "prerequisites": "network access",
+      "threatAction": "exploit vulnerabilities in custom applications running on Amazon ECS",
+      "threatImpact": "lateral movement within the analytics platform",
+      "impactedGoal": "confidentiality",
+      "impactedAssets": "FHIR data in Amazon HealthLake",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"APT actor with network access\"] --> B[\"Network reconnaissance\"]\n    A --> C[\"Identify ECS containers\"]\n    B --> D[\"Map internal network topology\"]\n    C --> D\n    D --> E[\"Discover custom applications on ECS\"]\n    E --> F[\"Vulnerability scanning\"]\n    E --> G[\"Application fingerprinting\"]\n    F --> H[\"Identify exploitable vulnerabilities\"]\n    G --> H\n    H --> I[\"Exploit container vulnerabilities\"]\n    H --> J[\"Exploit application logic flaws\"]\n    I --> K[\"Gain container access\"]\n    J --> K\n    K --> L[\"Privilege escalation within container\"]\n    K --> M[\"Extract IAM credentials from metadata\"]\n    L --> N[\"Container escape\"]\n    M --> N\n    N --> O[\"Access ECS task role permissions\"]\n    O --> P[\"Enumerate HealthLake endpoints\"]\n    P --> Q[\"Leverage compromised credentials\"]\n    Q --> R[\"Lateral movement to HealthLake\"]\n    R --> S[\"Unauthorized access to FHIR data\"]\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R attack\n    class S goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "APT actor with network access"
+        },
+        {
+          "node_id": "B",
+          "description": "Network reconnaissance"
+        },
+        {
+          "node_id": "C",
+          "description": "Identify ECS containers"
+        },
+        {
+          "node_id": "D",
+          "description": "Map internal network topology"
+        },
+        {
+          "node_id": "E",
+          "description": "Discover custom applications on ECS"
+        },
+        {
+          "node_id": "F",
+          "description": "Vulnerability scanning"
+        },
+        {
+          "node_id": "G",
+          "description": "Application fingerprinting"
+        },
+        {
+          "node_id": "H",
+          "description": "Identify exploitable vulnerabilities"
+        },
+        {
+          "node_id": "I",
+          "description": "Exploit container vulnerabilities"
+        },
+        {
+          "node_id": "J",
+          "description": "Exploit application logic flaws"
+        },
+        {
+          "node_id": "K",
+          "description": "Gain container access"
+        },
+        {
+          "node_id": "L",
+          "description": "Privilege escalation within container"
+        },
+        {
+          "node_id": "M",
+          "description": "Extract IAM credentials from metadata"
+        },
+        {
+          "node_id": "N",
+          "description": "Container escape"
+        },
+        {
+          "node_id": "O",
+          "description": "Access ECS task role permissions"
+        },
+        {
+          "node_id": "P",
+          "description": "Enumerate HealthLake endpoints"
+        },
+        {
+          "node_id": "Q",
+          "description": "Leverage compromised credentials"
+        },
+        {
+          "node_id": "R",
+          "description": "Lateral movement to HealthLake"
+        },
+        {
+          "node_id": "S",
+          "description": "Unauthorized access to FHIR data"
+        }
+      ],
+      "generated_content": "# Attack Tree for T003 - Lateral Movement\n\n```mermaid\ngraph TD\n    A[\"APT actor with network access\"] --> B[\"Network reconnaissance\"]\n    A --> C[\"Identify ECS containers\"]\n    \n    B --> D[\"Map internal network topology\"]\n    C --> D\n    \n    D --> E[\"Discover custom applications on ECS\"]\n    \n    E --> F[\"Vulnerability scanning\"]\n    E --> G[\"Application fingerprinting\"]\n    \n    F --> H[\"Identify exploitable vulnerabilities\"]\n    G --> H\n    \n    H --> I[\"Exploit container vulnerabilities\"]\n    H --> J[\"Exploit application logic flaws\"]\n    \n    I --> K[\"Gain container access\"]\n    J --> K\n    \n    K --> L[\"Privilege escalation within container\"]\n    K --> M[\"Extract IAM credentials from metadata\"]\n    \n    L --> N[\"Container escape\"]\n    M --> N\n    \n    N --> O[\"Access ECS task role permissions\"]\n    \n    O --> P[\"Enumerate HealthLake endpoints\"]\n    \n    P --> Q[\"Leverage compromised credentials\"]\n    \n    Q --> R[\"Lateral movement to HealthLake\"]\n    \n    R --> S[\"Unauthorized access to FHIR data\"]\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R attack\n    class S goal\n    class A fact\n```",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 22,
+        "tech_mentions": 0
+      }
+    },
+    {
+      "threat_id": "T004",
+      "threat_category": "Privilege Escalation",
+      "threat_description": "**Threat Statement**: A malicious attacker with compromised service account, can perform privilege escalation attacks against AWS Lake Formation permissions, which leads to unauthorized access to regulated healthcare datasets, resulting in reduced confidentiality of patient analytics data.\n\n- **Threat Source**: malicious attacker\n- **Prerequisites**: compromised service account\n- **Threat Action**: perform privilege escalation attacks against AWS Lake Formation permissions\n- **Threat Impact**: unauthorized access to regulated healthcare datasets\n- **Reduced Goal**: confidentiality\n- **Impacted Assets**: patient analytics data\n- **Priority**: High\n- **Category**: Privilege Escalation\n\n---\n\n### Medium Priority Threats",
+      "threat_statement": "T004 - Privilege Escalation",
+      "threat_action": "perform privilege escalation attacks against AWS Lake Formation permissions",
+      "threatSource": "malicious attacker",
+      "prerequisites": "compromised service account",
+      "threatAction": "perform privilege escalation attacks against AWS Lake Formation permissions",
+      "threatImpact": "unauthorized access to regulated healthcare datasets",
+      "impactedGoal": "confidentiality",
+      "impactedAssets": "patient analytics data",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"Malicious attacker with compromised service account\"] --> B[\"Reconnaissance of AWS Lake Formation environment\"]\n    A --> C[\"Enumerate current IAM permissions\"]\n    B --> D[\"Identify Lake Formation data lake locations\"]\n    B --> E[\"Map data catalog tables and databases\"]\n    C --> F[\"Test access to Lake Formation resources\"]\n    C --> G[\"Identify misconfigured IAM roles\"]\n    D --> H[\"Exploit Lake Formation permission model weaknesses\"]\n    E --> H\n    F --> H\n    G --> I[\"Assume higher-privileged IAM role\"]\n    H --> J[\"Exploit overly permissive data location permissions\"]\n    H --> K[\"Abuse Lake Formation tag-based access control\"]\n    H --> L[\"Leverage inherited database permissions\"]\n    I --> M[\"Grant self additional Lake Formation privileges\"]\n    J --> N[\"Escalate to SELECT permissions on patient data tables\"]\n    K --> N\n    L --> N\n    M --> N\n    I --> O[\"Modify Lake Formation data filters\"]\n    O --> N\n    N --> P[\"Query regulated healthcare datasets\"]\n    P --> Q[\"Unauthorized access to patient analytics data\"]\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P attack\n    class Q goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "Malicious attacker with compromised service account"
+        },
+        {
+          "node_id": "B",
+          "description": "Reconnaissance of AWS Lake Formation environment"
+        },
+        {
+          "node_id": "C",
+          "description": "Enumerate current IAM permissions"
+        },
+        {
+          "node_id": "D",
+          "description": "Identify Lake Formation data lake locations"
+        },
+        {
+          "node_id": "E",
+          "description": "Map data catalog tables and databases"
+        },
+        {
+          "node_id": "F",
+          "description": "Test access to Lake Formation resources"
+        },
+        {
+          "node_id": "G",
+          "description": "Identify misconfigured IAM roles"
+        },
+        {
+          "node_id": "H",
+          "description": "Exploit Lake Formation permission model weaknesses"
+        },
+        {
+          "node_id": "I",
+          "description": "Assume higher-privileged IAM role"
+        },
+        {
+          "node_id": "J",
+          "description": "Exploit overly permissive data location permissions"
+        },
+        {
+          "node_id": "K",
+          "description": "Abuse Lake Formation tag-based access control"
+        },
+        {
+          "node_id": "L",
+          "description": "Leverage inherited database permissions"
+        },
+        {
+          "node_id": "M",
+          "description": "Grant self additional Lake Formation privileges"
+        },
+        {
+          "node_id": "N",
+          "description": "Escalate to SELECT permissions on patient data tables"
+        },
+        {
+          "node_id": "O",
+          "description": "Modify Lake Formation data filters"
+        },
+        {
+          "node_id": "P",
+          "description": "Query regulated healthcare datasets"
+        },
+        {
+          "node_id": "Q",
+          "description": "Unauthorized access to patient analytics data"
+        }
+      ],
+      "generated_content": "# Attack Tree for T004 - Privilege Escalation\n\n```mermaid\ngraph TD\n    A[\"Malicious attacker with compromised service account\"] --> B[\"Reconnaissance of AWS Lake Formation environment\"]\n    A --> C[\"Enumerate current IAM permissions\"]\n    \n    B --> D[\"Identify Lake Formation data lake locations\"]\n    B --> E[\"Map data catalog tables and databases\"]\n    \n    C --> F[\"Test access to Lake Formation resources\"]\n    C --> G[\"Identify misconfigured IAM roles\"]\n    \n    D --> H[\"Exploit Lake Formation permission model weaknesses\"]\n    E --> H\n    F --> H\n    \n    G --> I[\"Assume higher-privileged IAM role\"]\n    \n    H --> J[\"Exploit overly permissive data location permissions\"]\n    H --> K[\"Abuse Lake Formation tag-based access control\"]\n    H --> L[\"Leverage inherited database permissions\"]\n    \n    I --> M[\"Grant self additional Lake Formation privileges\"]\n    \n    J --> N[\"Escalate to SELECT permissions on patient data tables\"]\n    K --> N\n    L --> N\n    M --> N\n    \n    I --> O[\"Modify Lake Formation data filters\"]\n    O --> N\n    \n    N --> P[\"Query regulated healthcare datasets\"]\n    P --> Q[\"Unauthorized access to patient analytics data\"]\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P attack\n    class Q goal\n    class A fact\n```",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1
+        },
+        "connection_count": 22,
+        "tech_mentions": 0
+      }
+    }
+  ],
+  "mapping_summary": {}
+}
