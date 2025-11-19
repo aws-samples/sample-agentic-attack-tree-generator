@@ -4,7 +4,7 @@
 # Data paths
 data:
   # STIX bundle file containing MITRE ATT&CK data
-  stix_bundle: "data/threat-intelligence/aaf-bundle.json"
+  stix_bundle: "data/threat-intelligence/enterprise-attack-18.0.json"
   
   # Embeddings file
   embeddings_file: "data/embeddings/attack_pattern_embeddings_qwen.json"

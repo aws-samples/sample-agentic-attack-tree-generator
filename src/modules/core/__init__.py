@@ -1,47 +1,37 @@
-"""ThreatForest Core Framework - Strands Implementation"""
+"""ThreatForest Core Framework - Active Modules Only
 
-from .base_tool import Tool, tool
-from .base_agent import Agent
+Legacy modules archived to archive_docs/legacy-core/ (see README.md there for details)
+"""
+
+# Active core modules (actually used in codebase)
 from .base_agent import BaseAgent
 from .context import Context
 from .state import ThreatForestState, WorkflowStage
 from .state_manager import StateManager
-from .parallel import ParallelExecutor, ParallelTask
-from .pipeline import Pipeline, Stage
-from .errors import (
-    ErrorSeverity, ThreatForestError, BedrockError, ValidationError,
-    FileOperationError, StateError, ConfigurationError
-)
-from .error_handler import ErrorHandler
-from .rate_limiter import BedrockRateLimiter, CircuitBreaker
-from .retry import RetryStrategy, retry_with_backoff, sync_retry_with_backoff
 from .bedrock_client import BedrockClientManager
-from .bedrock_service import BedrockService
-from .validation import (
-    SetupToolInput, ContextAnalysisInput, ExtractionToolInput,
-    AttackTreeGeneratorInput, TTCMappingInput, SummaryGeneratorInput
-)
 from .file_discovery import FileDiscovery, DiscoveredFiles
 from .progress_events import ProgressEvent, ProgressEventType
 from .progress_emitter import ProgressEmitter
 
 __all__ = [
-    'Tool', 'tool', 
-    'Agent', 'agent_step', 
+    # Base classes
+    'BaseAgent',
+    
+    # Workflow state
     'Context',
-    'ThreatForestState', 'WorkflowStage',
+    'ThreatForestState',
+    'WorkflowStage',
     'StateManager',
-    'ParallelExecutor', 'ParallelTask',
-    'Pipeline', 'Stage',
-    'ErrorSeverity', 'ThreatForestError', 'BedrockError', 'ValidationError',
-    'FileOperationError', 'StateError', 'ConfigurationError',
-    'ErrorHandler',
-    'BedrockRateLimiter', 'CircuitBreaker',
-    'RetryStrategy', 'retry_with_backoff', 'sync_retry_with_backoff',
+    
+    # AWS integration
     'BedrockClientManager',
-    'BedrockService',
-    'SetupToolInput', 'ContextAnalysisInput', 'ExtractionToolInput',
-    'AttackTreeGeneratorInput', 'TTCMappingInput', 'SummaryGeneratorInput',
-    'FileDiscovery', 'DiscoveredFiles',
-    'ProgressEvent', 'ProgressEventType', 'ProgressEmitter'
+    
+    # File operations
+    'FileDiscovery',
+    'DiscoveredFiles',
+    
+    # Progress tracking
+    'ProgressEvent',
+    'ProgressEventType',
+    'ProgressEmitter'
 ]

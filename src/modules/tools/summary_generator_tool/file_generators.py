@@ -1,6 +1,6 @@
 """File generation for summary reports"""
 import json
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from pathlib import Path
 from datetime import datetime
 from .report_formatters import ReportFormatters
@@ -20,6 +20,23 @@ class FileGenerators:
     def __init__(self, logger, formatters: ReportFormatters):
         self.logger = logger
         self.fmt = formatters
+        self.mitigation_mapper = None
+        self._init_mitigation_mapper()
+    
+    def _init_mitigation_mapper(self):
+        """Initialize mitigation mapper if STIX bundle is available"""
+        try:
+            from src.config import config
+            from src.modules.ttc_mappings import MitigationMapper
+            
+            if config.stix_bundle_path and Path(config.stix_bundle_path).exists():
+                self.mitigation_mapper = MitigationMapper(str(config.stix_bundle_path))
+                self.logger.info(f"Mitigation mapper initialized with STIX bundle")
+            else:
+                self.logger.warning(f"STIX bundle not found, mitigations will not be included")
+        except Exception as e:
+            self.logger.warning(f"Could not initialize mitigation mapper: {e}")
+            self.mitigation_mapper = None
     
     def generate_main_summary(self, output_path: Path, attack_trees: Dict, extracted_info: Dict) -> str:
         """Generate main summary report"""
@@ -82,7 +99,7 @@ This report presents a comprehensive threat analysis for **{project_info.get('ap
         return str(summary_file)
     
     def generate_attack_tree_files(self, output_path: Path, trees: List[Dict]) -> List[str]:
-        """Generate individual attack tree markdown files"""
+        """Generate individual attack tree markdown files with TTC mappings"""
         tree_files = []
         
         for tree in trees:
@@ -96,6 +113,9 @@ This report presents a comprehensive threat analysis for **{project_info.get('ap
             filename = f"attack_tree_{threat_id}_{category.lower().replace(' ', '_')}.md"
             file_path = output_path / filename
             
+            # Build TTC mapping section if available
+            ttc_section = self._build_ttc_section(tree)
+            
             content = f"""# Attack Tree: {category}
 
 **Threat ID**: {threat_id}
@@ -106,6 +126,8 @@ This report presents a comprehensive threat analysis for **{project_info.get('ap
 ```mermaid
 {tree.get('mermaid_code', '')}
 ```
+
+{ttc_section}
 
 ## Attack Path Analysis
 
@@ -122,11 +144,95 @@ Review this attack tree to:
             try:
                 file_path.write_text(content, encoding='utf-8')
                 tree_files.append(str(file_path))
-                print(f"💾 Generated: {filename}")
+                self.logger.info(f"Generated: {filename}")
             except Exception as e:
                 self.logger.warning(f"Failed to write {filename}: {e}")
         
         return tree_files
+    
+    def _build_ttc_section(self, tree: Dict) -> str:
+        """Build MITRE ATT&CK mapping section for attack tree with mitigations"""
+        # TTC mappings are stored in a separate array at the tree level
+        ttc_mappings = tree.get('ttc_mappings', [])
+        
+        if not ttc_mappings:
+            return ""
+        
+        ttc_content = "\n## MITRE ATT&CK Mapping\n\n"
+        ttc_content += "This attack tree has been mapped to MITRE ATT&CK techniques:\n\n"
+        
+        total_mitigations = 0
+        
+        for idx, mapping in enumerate(ttc_mappings, 1):
+            attack_step = mapping.get('attack_step', 'Unknown')
+            technique_id = mapping.get('technique_id', '')
+            technique_name = mapping.get('technique_name', '')
+            confidence = mapping.get('confidence', 0.0)
+            tactics = mapping.get('tactics', [])
+            
+            # Clean up technique ID (remove duplicates like "T1190,T1190")
+            if ',' in technique_id:
+                technique_id = technique_id.split(',')[0]
+            
+            ttc_content += f"### {attack_step}\n\n"
+            
+            # Format technique with link
+            technique_link = technique_id.replace('.', '/')
+            ttc_content += f"- **Technique**: [{technique_id}](https://attack.mitre.org/techniques/{technique_link}/)"
+            
+            if technique_name:
+                ttc_content += f" - {technique_name}"
+            ttc_content += "\n"
+            
+            # Add tactics
+            if tactics:
+                tactics_str = ", ".join([t.replace('-', ' ').title() for t in tactics])
+                ttc_content += f"- **Tactic**: {tactics_str}\n"
+            
+            # Add confidence score
+            if confidence > 0:
+                if confidence > 1:
+                    ttc_content += f"- **Confidence Score**: {confidence:.2f}\n"
+                else:
+                    ttc_content += f"- **Similarity Score**: {confidence:.2%}\n"
+            
+            # Add mitigations if available
+            if self.mitigation_mapper:
+                mitigations = self.mitigation_mapper.get_mitigations(technique_id)
+                if mitigations:
+                    ttc_content += f"- **Mitigations ({len(mitigations)}):**\n"
+                    # Show top 3 mitigations to keep output concise
+                    for mit in mitigations[:3]:
+                        mit_name = mit.get('name', 'Unknown')
+                        mit_desc = mit.get('description', '')
+                        
+                        ttc_content += f"  - 🛡️ **{mit_name}**"
+                        
+                        # Add truncated description
+                        if mit_desc:
+                            # Clean and truncate description
+                            desc_clean = mit_desc.replace('\n', ' ').strip()
+                            if len(desc_clean) > 120:
+                                desc_clean = desc_clean[:120] + "..."
+                            ttc_content += f"\n    {desc_clean}"
+                        ttc_content += "\n"
+                    
+                    total_mitigations += len(mitigations)
+                    
+                    # Add link to see all mitigations if more than 3
+                    if len(mitigations) > 3:
+                        ttc_content += f"  - *{len(mitigations) - 3} more mitigation(s) available*\n"
+            
+            ttc_content += "\n"
+        
+        # Add mapping summary
+        summary_text = f"\n*Total technique mappings: {len(ttc_mappings)}"
+        if total_mitigations > 0:
+            summary_text += f" | Mitigations found: {total_mitigations}"
+        summary_text += "*\n"
+        ttc_content += summary_text
+        
+        return ttc_content
     
     def generate_json_export(self, output_path: Path, attack_trees: Dict, extracted_info: Dict) -> str:
         """Generate JSON data export"""

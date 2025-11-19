@@ -3,6 +3,9 @@ import yaml
 from pathlib import Path
 from typing import Dict, Any
 
+# Root directory of the ThreatForest project
+ROOT_DIR = Path(__file__).parent.parent
+
 class Config:
     """Configuration manager for ThreatForest"""
     
@@ -44,14 +47,12 @@ class Config:
     @property
     def stix_bundle_path(self) -> Path:
         """Get absolute path to STIX bundle file"""
-        base_path = Path(__file__).parent.parent
-        return base_path / self.get('data.stix_bundle', 'data/aaf-bundle.json')
+        return ROOT_DIR / self.get('data.stix_bundle', 'data/aaf-bundle.json')
     
     @property
     def embeddings_file_path(self) -> Path:
         """Get absolute path to embeddings file"""
-        base_path = Path(__file__).parent.parent
-        return base_path / self.get('data.embeddings_file', 'data/embeddings/attack_pattern_embeddings_qwen.json')
+        return ROOT_DIR / self.get('data.embeddings_file', 'data/embeddings/attack_pattern_embeddings_qwen.json')
     
     @property
     def output_dir(self) -> str:

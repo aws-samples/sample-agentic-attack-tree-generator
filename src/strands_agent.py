@@ -39,6 +39,10 @@ class ThreatForestOrchestrator:
         self.progress_emitter = ProgressEmitter(enabled=False)
         self.console = console
         
+        # Initialize logger
+        from .modules.utils.logger import ThreatForestLogger
+        self.logger = ThreatForestLogger.get_logger(self.__class__.__name__)
+        
         # Initialize tools as instance attributes for direct access
         self.setup_tool = SetupTool()
         self.context_tool = ContextAnalysisTool()
@@ -57,6 +61,8 @@ class ThreatForestOrchestrator:
             is_valid, message = existing_state.is_valid_for_resume()
             
             if not is_valid:
+                self.logger.warning(f"Found existing state but it's invalid: {message}")
+                self.logger.info("Starting fresh workflow...")
                 print(f"⚠️  Found existing state but it's invalid: {message}")
                 print("Starting fresh workflow...")
                 return ThreatForestState(
@@ -68,10 +74,12 @@ class ThreatForestOrchestrator:
             
             # If resume flag is explicitly set, use it
             if self.config.resume:
+                self.logger.info(f"Resuming from {existing_state.current_stage} stage")
                 print(f"✓ Resuming from {existing_state.current_stage} stage\n")
                 return existing_state
             else:
                 # Non-interactive mode or user doesn't want to resume - start fresh
+                self.logger.info("Starting fresh workflow")
                 print("Starting fresh workflow...\n")
                 self.state_manager.archive_checkpoint("latest")
                 return ThreatForestState(
@@ -219,6 +227,7 @@ class ThreatForestOrchestrator:
                         
                         if successful and not failed:
                             # All threats successful - delete files and regenerate
+                            self.logger.info(f"Found {len(successful)} existing attack trees - regenerating all")
                             print(f"\n✓ Found {len(successful)} existing attack trees")
                             print(f"  Deleting and regenerating all trees...\n")
                             
@@ -278,15 +287,27 @@ class ThreatForestOrchestrator:
                 message="Mapping attack trees to MITRE ATT&CK techniques"
             ))
             
-            # Step 4.5: TTC Mapping (NEW - was missing!)
+            # Step 4.5: TTC Mapping
             if not self.state.mapping_complete:
                 try:
                     self.state.advance_to(WorkflowStage.MAPPING)
+                    num_trees = len(attack_trees.get('attack_trees', []))
+                    self.logger.info(f"Starting TTC mapping for {num_trees} attack trees")
+                    print(f"\n🔍 Starting TTC mapping for {num_trees} attack trees...")
+                    
                     ttc_mapped = self.ttc_tool.run(
                         attack_trees=attack_trees,
                         bedrock_model=self.config.bedrock_model,
                         aws_profile=self.config.aws_profile
                     )
+                    
+                    # Log mapping summary
+                    mapping_summary = ttc_mapped.get('mapping_summary', {})
+                    total_mappings = mapping_summary.get('total_mappings', 0)
+                    successful_mappings = mapping_summary.get('successful_mappings', 0)
+                    self.logger.info(f"TTC mapping complete: {successful_mappings}/{total_mappings} mappings above threshold")
+                    print(f"✅ TTC mapping complete: {successful_mappings}/{total_mappings} mappings above threshold")
+                    
                     # Update attack_trees with mapped versions
                     attack_trees = ttc_mapped
                     self.state.mapped_trees = ttc_mapped.get("ttc_mapped_trees", [])
@@ -305,9 +326,12 @@ class ThreatForestOrchestrator:
                     ))
                 except Exception as ttc_error:
                     error_msg = f"TTC mapping failed: {str(ttc_error)}"
-                    logging.error(error_msg)
-                    logging.error(f"Traceback: {traceback.format_exc()}")
-                    raise Exception(error_msg) from ttc_error
+                    self.logger.error(error_msg)
+                    self.logger.error(f"Traceback: {traceback.format_exc()}")
+                    print(f"\n❌ TTC mapping error: {error_msg}")
+                    print("Continuing workflow without TTC mappings...")
+                    # Don't raise - continue workflow without mappings
+                    self.state.mapping_complete = True
             
             # Emit summary start
             self.progress_emitter.emit(ProgressEvent(
@@ -346,8 +370,8 @@ class ThreatForestOrchestrator:
                     self.state_manager.cleanup_completed_states()
                 except Exception as summary_error:
                     error_msg = f"Summary generation failed: {str(summary_error)}"
-                    logging.error(error_msg)
-                    logging.error(f"Traceback: {traceback.format_exc()}")
+                    self.logger.error(error_msg)
+                    self.logger.error(f"Traceback: {traceback.format_exc()}")
                     raise Exception(error_msg) from summary_error
             else:
                 summary = {"output_files": self.state.output_files}
@@ -364,8 +388,8 @@ class ThreatForestOrchestrator:
         except Exception as e:
             # Log the full error with traceback
             error_details = f"Workflow failed at stage {self.state.current_stage if self.state else 'unknown'}: {str(e)}"
-            logging.error(error_details)
-            logging.error(f"Full traceback:\n{traceback.format_exc()}")
+            self.logger.error(error_details)
+            self.logger.error(f"Full traceback:\n{traceback.format_exc()}")
             
             # Also print to console for visibility
             print(f"\n❌ Error: {error_details}")

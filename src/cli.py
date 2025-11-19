@@ -9,7 +9,7 @@ import click
 from pathlib import Path
 from rich.console import Console
 from src.modules.cli import CLIWizard, CLIDisplay, WorkflowRunner
-from src.config import config
+from src.config import config, ROOT_DIR
 from src.modules.utils.logger import ThreatForestLogger
 
 
@@ -38,8 +38,8 @@ def run(project_path, threat_model, mode, input_dir, output_dir):
     wizard = CLIWizard()
     runner = WorkflowRunner()
     
-    # Initialize logger
-    output_path = Path(__file__).parent.parent.parent / 'output'
+    # Initialize logger using ROOT_DIR from config
+    output_path = ROOT_DIR / 'output'
     ThreatForestLogger.initialize(output_path)
     
     try:
@@ -66,37 +66,93 @@ def run(project_path, threat_model, mode, input_dir, output_dir):
                 project_path = wizard.get_project_path()
                 # Get optional threat model
                 threat_model = wizard.get_threat_model_path()
-                # Run full workflow
-                display.print("\n[bold cyan]Starting Full Workflow...[/bold cyan]\n")
+                
+                # Show review configuration
+                display.show_review_config(
+                    mode='full',
+                    project_path=project_path,
+                    threat_model=threat_model
+                )
+                
+                # Confirm before starting
+                if not wizard.confirm_continue("Ready to start workflow?"):
+                    display.show_info("Workflow cancelled by user")
+                    sys.exit(0)
+                
+                # Run full workflow with step indicator
+                display.show_step_header(4, 4, "Executing Workflow", "This may take several minutes...")
                 result = runner.run_full_workflow(project_path, threat_model)
                 
             elif selected_mode == 'enrich':
                 # Get input/output directories
                 input_dir, output_dir = wizard.get_input_output_dirs('enrich')
-                # Run enrichment
-                display.print("\n[bold cyan]Starting TTC Enrichment...[/bold cyan]\n")
+                
+                # Show review configuration
+                display.show_review_config(
+                    mode='enrich',
+                    input_dir=input_dir,
+                    output_dir=output_dir
+                )
+                
+                # Confirm before starting
+                if not wizard.confirm_continue("Ready to start enrichment?"):
+                    display.show_info("Enrichment cancelled by user")
+                    sys.exit(0)
+                
+                # Run enrichment with step indicator
+                display.show_step_header(3, 3, "Executing TTC Enrichment", "Mapping to MITRE ATT&CK...")
                 result = asyncio.run(runner.run_enrichment(input_dir, output_dir))
                 
             elif selected_mode == 'mitigate':
                 # Get input/output directories
                 input_dir, output_dir = wizard.get_input_output_dirs('mitigate')
-                # Run mitigation
-                display.print("\n[bold cyan]Starting Mitigation Mapping...[/bold cyan]\n")
+                
+                # Show review configuration
+                display.show_review_config(
+                    mode='mitigate',
+                    input_dir=input_dir,
+                    output_dir=output_dir
+                )
+                
+                # Confirm before starting
+                if not wizard.confirm_continue("Ready to start mitigation mapping?"):
+                    display.show_info("Mitigation mapping cancelled by user")
+                    sys.exit(0)
+                
+                # Run mitigation with step indicator
+                display.show_step_header(3, 3, "Executing Mitigation Mapping", "Finding security controls...")
                 result = asyncio.run(runner.run_mitigation(input_dir, output_dir))
         
         else:
             # Non-interactive mode - project path provided
             if mode == 'full':
+                display.show_info(f"Running full workflow for: {project_path}")
                 result = runner.run_full_workflow(project_path, threat_model)
             elif mode == 'enrich':
                 if input_dir is None or output_dir is None:
-                    display.show_error("Enrich mode requires --input-dir and --output-dir")
+                    display.show_error(
+                        "Enrich mode requires --input-dir and --output-dir",
+                        suggestions=[
+                            "Use --input-dir to specify input directory",
+                            "Use --output-dir to specify output directory",
+                            "Example: --input-dir ./output/attack_trees --output-dir ./output/enriched"
+                        ]
+                    )
                     sys.exit(1)
+                display.show_info(f"Running enrichment: {input_dir} → {output_dir}")
                 result = asyncio.run(runner.run_enrichment(input_dir, output_dir))
             elif mode == 'mitigate':
                 if input_dir is None or output_dir is None:
-                    display.show_error("Mitigate mode requires --input-dir and --output-dir")
+                    display.show_error(
+                        "Mitigate mode requires --input-dir and --output-dir",
+                        suggestions=[
+                            "Use --input-dir to specify input directory",
+                            "Use --output-dir to specify output directory",
+                            "Example: --input-dir ./output/enriched --output-dir ./output/mitigated"
+                        ]
+                    )
                     sys.exit(1)
+                display.show_info(f"Running mitigation mapping: {input_dir} → {output_dir}")
                 result = asyncio.run(runner.run_mitigation(input_dir, output_dir))
         
         # Display results - check for both 'success' (enrich/mitigate) and 'status' (orchestrator)
@@ -135,15 +191,26 @@ def run(project_path, threat_model, mode, input_dir, output_dir):
             display.show_summary(summary)
         else:
             error_msg = result.get('error', 'Unknown error')
-            display.show_error(error_msg, "Workflow Failed")
+            suggestions = [
+                "Check the logs for detailed error information",
+                "Verify all configuration settings in config.yaml",
+                "Ensure AWS credentials are properly configured"
+            ]
+            display.show_error(error_msg, "Workflow Failed", suggestions)
             sys.exit(1)
     
     except KeyboardInterrupt:
         console.print("\n\n[yellow]👋 ThreatForest interrupted by user[/yellow]")
         sys.exit(0)
     except Exception as e:
-        display.show_error(str(e), "Unexpected Error")
+        suggestions = [
+            "Check logs in ./output directory",
+            "Verify project structure and permissions",
+            "Run with --help for usage information"
+        ]
+        display.show_error(str(e), "Unexpected Error", suggestions)
         import traceback
+        console.print("\n[dim]Stack trace:[/dim]")
         console.print("[dim]" + traceback.format_exc() + "[/dim]")
         sys.exit(1)
 

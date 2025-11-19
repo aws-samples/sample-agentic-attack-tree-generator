@@ -2,11 +2,15 @@
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn, TimeElapsedColumn
 from rich.text import Text
 from rich.layout import Layout
 from rich.align import Align
+from rich.live import Live
+from rich.tree import Tree
+from rich import box
 from typing import Dict, Any, Optional
+import time
 
 
 class CLIDisplay:
@@ -16,7 +20,7 @@ class CLIDisplay:
         self.console = Console()
     
     def show_welcome(self):
-        """Display welcome banner with ASCII art logo"""
+        """Display welcome banner with modern gradient logo"""
         logo = """[bold cyan]
 ████████╗██╗  ██╗██████╗ ███████╗ █████╗ ████████╗███████╗ ██████╗ ██████╗ ███████╗███████╗████████╗
 ╚══██╔══╝██║  ██║██╔══██╗██╔════╝██╔══██╗╚══██╔══╝██╔════╝██╔═══██╗██╔══██╗██╔════╝██╔════╝╚══██╔══╝
@@ -26,11 +30,12 @@ class CLIDisplay:
    ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝   ╚═╝   ╚═╝      ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝   ╚═╝   
 [/bold cyan]
 
-[dim cyan]AI-Driven Threat Modeling & Attack Tree Generation[/dim cyan]"""
+[bold blue]🛡️  AI-Driven Threat Modeling & Attack Tree Generation[/bold blue]"""
         
         panel = Panel(
             Align.center(logo),
-            border_style="cyan",
+            border_style="blue",
+            box=box.DOUBLE,
             padding=(1, 2),
             expand=True
         )
@@ -38,83 +43,197 @@ class CLIDisplay:
         self.console.print()
     
     def show_config(self, config: Dict[str, Any]):
-        """Display current configuration"""
+        """Display current configuration with icons and better formatting"""
         config_lines = []
         
         if config.get('aws_profile'):
-            config_lines.append(f"[cyan]AWS Profile:[/cyan] {config['aws_profile']}")
+            config_lines.append(f"[bold blue]🔧 AWS Profile[/bold blue]        {config['aws_profile']}")
         if config.get('bedrock_model'):
-            config_lines.append(f"[cyan]Bedrock Model:[/cyan] {config['bedrock_model']}")
+            config_lines.append(f"[bold blue]🤖 Bedrock Model[/bold blue]      {config['bedrock_model']}")
         if config.get('neptune_graph_id'):
-            config_lines.append(f"[cyan]Neptune Graph:[/cyan] {config['neptune_graph_id']}")
+            config_lines.append(f"[bold blue]🗄️  Neptune Graph[/bold blue]      {config['neptune_graph_id']}")
         if config.get('neptune_region'):
-            config_lines.append(f"[cyan]Region:[/cyan] {config['neptune_region']}")
+            config_lines.append(f"[bold blue]📍 Region[/bold blue]             {config['neptune_region']}")
         if config.get('embeddings_mode'):
-            config_lines.append(f"[cyan]Embeddings Mode:[/cyan] {config['embeddings_mode']}")
+            config_lines.append(f"[bold blue]🧠 Embeddings[/bold blue]         {config['embeddings_mode']}")
         
         if config_lines:
             panel = Panel(
                 "\n".join(config_lines),
-                title="[bold]Configuration from config.yaml[/bold]",
-                border_style="blue",
+                title="[bold bright_blue]⚙️  Configuration[/bold bright_blue]",
+                border_style="bright_blue",
+                box=box.ROUNDED,
                 padding=(1, 2)
             )
             self.console.print(panel)
             self.console.print()
     
-    def show_error(self, error: str, title: str = "Error"):
-        """Display error message"""
+    def show_error(self, error: str, title: str = "Error", suggestions: Optional[list] = None):
+        """Display error message with optional suggestions"""
+        content = f"[bold red]❌ {error}[/bold red]\n"
+        
+        if suggestions:
+            content += "\n[bold yellow]💡 Suggestions:[/bold yellow]\n"
+            for suggestion in suggestions:
+                content += f"  • {suggestion}\n"
+        
         panel = Panel(
-            f"[red]{error}[/red]",
-            title=f"[bold red]❌ {title}[/bold red]",
+            content.rstrip(),
+            title=f"[bold red]{title}[/bold red]",
             border_style="red",
+            box=box.ROUNDED,
             padding=(1, 2)
         )
         self.console.print(panel)
+        self.console.print()
     
     def show_success(self, message: str, title: str = "Success"):
-        """Display success message"""
+        """Display success message with icon"""
         panel = Panel(
-            f"[green]{message}[/green]",
-            title=f"[bold green]✅ {title}[/bold green]",
-            border_style="green",
+            f"[bold green]✅ {message}[/bold green]",
+            title=f"[bold bright_green]{title}[/bold bright_green]",
+            border_style="bright_green",
+            box=box.ROUNDED,
             padding=(1, 2)
         )
         self.console.print(panel)
+        self.console.print()
     
     def show_summary(self, summary: Dict[str, Any]):
-        """Display workflow summary as table"""
-        table = Table(title="[bold]Workflow Summary[/bold]", show_header=True, header_style="bold cyan")
-        table.add_column("Metric", style="cyan", no_wrap=True)
-        table.add_column("Count", justify="right", style="green")
+        """Display workflow summary with modern dashboard layout"""
+        # Create summary content with icons
+        content = "[bold bright_blue]📊 Summary[/bold bright_blue]\n\n"
         
         if 'threats_processed' in summary:
-            table.add_row("Threats Processed", str(summary['threats_processed']))
+            content += f"[cyan]├─[/cyan] Threats Processed    [bold bright_green]{summary['threats_processed']}[/bold bright_green]\n"
         if 'attack_trees' in summary:
-            table.add_row("Attack Trees Generated", str(summary['attack_trees']))
+            content += f"[cyan]├─[/cyan] Attack Trees         [bold bright_green]{summary['attack_trees']}[/bold bright_green]\n"
         if 'ttc_mappings' in summary:
-            table.add_row("TTC Mappings", str(summary['ttc_mappings']))
+            content += f"[cyan]├─[/cyan] TTC Mappings         [bold bright_green]{summary['ttc_mappings']}[/bold bright_green]\n"
         if 'total_mitigations' in summary:
-            table.add_row("Mitigations Added", str(summary['total_mitigations']))
+            content += f"[cyan]└─[/cyan] Mitigations Added    [bold bright_green]{summary['total_mitigations']}[/bold bright_green]\n"
+        
         if 'duration' in summary:
             duration_sec = summary['duration'] / 1000 if summary['duration'] > 1000 else summary['duration']
-            table.add_row("Duration", f"{duration_sec:.1f}s")
+            content += f"\n[bold bright_blue]⏱️  Duration[/bold bright_blue] {duration_sec:.1f}s\n"
+        
         if 'output_dir' in summary:
-            table.add_row("Output Directory", str(summary['output_dir']))
+            content += f"[bold bright_blue]📂 Output[/bold bright_blue]   {summary['output_dir']}\n"
+        
+        panel = Panel(
+            content.rstrip(),
+            title="[bold bright_green]✅ Workflow Complete[/bold bright_green]",
+            border_style="bright_green",
+            box=box.DOUBLE,
+            padding=(1, 2)
+        )
         
         self.console.print()
-        self.console.print(table)
+        self.console.print(panel)
         self.console.print()
     
     def create_progress(self, description: str = "Processing") -> Progress:
-        """Create a rich progress bar"""
+        """Create a modern rich progress bar with time elapsed"""
         return Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            BarColumn(),
+            SpinnerColumn(style="cyan"),
+            TextColumn("[bold blue]{task.description}"),
+            BarColumn(
+                complete_style="bright_green",
+                finished_style="bright_green",
+                pulse_style="cyan"
+            ),
             TaskProgressColumn(),
+            TimeElapsedColumn(),
             console=self.console
         )
+    
+    def show_step_header(self, step_num: int, total_steps: int, title: str, description: str = ""):
+        """Show a step header with progress indicator"""
+        header = f"[bold bright_blue]Step {step_num}/{total_steps}:[/bold bright_blue] [bold]{title}[/bold]"
+        if description:
+            header += f"\n[dim]{description}[/dim]"
+        
+        panel = Panel(
+            header,
+            border_style="bright_blue",
+            box=box.ROUNDED,
+            padding=(0, 2)
+        )
+        self.console.print()
+        self.console.print(panel)
+    
+    def show_info(self, message: str, title: str = "Info"):
+        """Display informational message"""
+        panel = Panel(
+            f"[bold blue]ℹ️  {message}[/bold blue]",
+            title=f"[bold bright_blue]{title}[/bold bright_blue]",
+            border_style="bright_blue",
+            box=box.ROUNDED,
+            padding=(1, 2)
+        )
+        self.console.print(panel)
+        self.console.print()
+    
+    def show_warning(self, message: str, title: str = "Warning"):
+        """Display warning message"""
+        panel = Panel(
+            f"[bold yellow]⚠️  {message}[/bold yellow]",
+            title=f"[bold yellow]{title}[/bold yellow]",
+            border_style="yellow",
+            box=box.ROUNDED,
+            padding=(1, 2)
+        )
+        self.console.print(panel)
+        self.console.print()
+    
+    def show_review_config(self, mode: str, project_path: str = None, threat_model: str = None,
+                          input_dir: str = None, output_dir: str = None):
+        """Show configuration review before execution"""
+        content = f"[bold bright_blue]Mode[/bold bright_blue]          {mode.replace('_', ' ').title()}\n"
+        
+        if project_path:
+            content += f"[bold bright_blue]Project[/bold bright_blue]       {project_path}\n"
+        if threat_model:
+            content += f"[bold bright_blue]Threat Model[/bold bright_blue]  {threat_model}\n"
+        if input_dir:
+            content += f"[bold bright_blue]Input Dir[/bold bright_blue]     {input_dir}\n"
+        if output_dir:
+            content += f"[bold bright_blue]Output Dir[/bold bright_blue]    {output_dir}\n"
+        
+        # Add what will be executed
+        if mode == "full":
+            actions = [
+                "• Generate attack trees from project",
+                "• Enrich with MITRE ATT&CK mappings",
+                "• Add mitigation recommendations"
+            ]
+        elif mode == "enrich":
+            actions = [
+                "• Read existing attack trees",
+                "• Map to MITRE ATT&CK techniques",
+                "• Add tactic information"
+            ]
+        else:  # mitigate
+            actions = [
+                "• Read TTC-enriched trees",
+                "• Find relevant mitigations",
+                "• Add security recommendations"
+            ]
+        
+        content += f"\n[bold bright_blue]This will:[/bold bright_blue]\n"
+        for action in actions:
+            content += f"{action}\n"
+        
+        panel = Panel(
+            content.rstrip(),
+            title="[bold bright_blue]🔍 Review Configuration[/bold bright_blue]",
+            border_style="bright_blue",
+            box=box.DOUBLE,
+            padding=(1, 2)
+        )
+        self.console.print()
+        self.console.print(panel)
+        self.console.print()
     
     def print(self, message: str, style: Optional[str] = None):
         """Print message with optional style"""
