@@ -234,6 +234,7 @@ class TTCMatcher:
                 aws_term_count = sum(1 for term in AWS_TERMS if term in step_lower)
                 
                 # Query Neptune for similar techniques
+                # Note: topKByEmbedding may return distance or similarity depending on Neptune config
                 neptune_query = f"""
                 CALL neptune.algo.vectors.topKByEmbedding({step_embedding})
                 YIELD node, score
@@ -253,7 +254,21 @@ class TTCMatcher:
                 matches = []
                 for result in query_results[:top_k]:
                     # Extract data from Neptune result
-                    similarity = float(result.get('score', 0))
+                    raw_score = float(result.get('score', 0))
+                    
+                    # Normalize score to 0-1 range if it appears to be a distance metric
+                    # Cosine similarity should be in [-1, 1], typically [0, 1] for similar vectors
+                    # If score > 1.5, it's likely a distance metric that needs normalization
+                    if raw_score > 1.5:
+                        # Treat as Euclidean distance and convert to similarity
+                        # Using inverse normalization: similarity = 1 / (1 + distance/100)
+                        similarity = 1.0 / (1.0 + raw_score / 100.0)
+                        self.logger.warning(
+                            f"Normalized Neptune score from {raw_score:.2f} to {similarity:.4f} "
+                            f"for step: {step[:50]}..."
+                        )
+                    else:
+                        similarity = raw_score
                     
                     # Apply AWS term boosting if technique has AWS services
                     aws_services = result.get('aws_services', '')

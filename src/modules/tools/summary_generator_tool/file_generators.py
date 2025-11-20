@@ -190,10 +190,19 @@ Review this attack tree to:
                 ttc_content += f"- **Tactic**: {tactics_str}\n"
             
             # Add confidence score
+            # Cosine similarity should be 0-1 (or up to 1.5 with AWS boost)
+            # Values > 1.5 indicate a data issue that needs normalization
             if confidence > 0:
-                if confidence > 1:
-                    ttc_content += f"- **Confidence Score**: {confidence:.2f}\n"
+                if confidence > 1.5:
+                    # Abnormal score - likely distance metric or unnormalized
+                    # Normalize to 0-1 range by treating as inverted distance
+                    normalized = 1.0 / (1.0 + confidence / 100.0)
+                    ttc_content += f"- **Similarity Score**: {normalized:.2%} (normalized from {confidence:.2f})\n"
+                elif confidence > 1.0:
+                    # Valid range with AWS boost (1.0-1.5)
+                    ttc_content += f"- **Similarity Score**: {confidence:.2%}\n"
                 else:
+                    # Standard cosine similarity (0-1)
                     ttc_content += f"- **Similarity Score**: {confidence:.2%}\n"
             
             # Add mitigations if available
