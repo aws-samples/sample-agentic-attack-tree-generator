@@ -180,3 +180,6 @@ aws-credentials.json
 *.temp
 .DS_Store
 Thumbs.db
+
+# ThreatForest custom
+archive_docs/

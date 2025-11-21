@@ -3,8 +3,8 @@
 # Model Provider Configuration
 
 # AWS Bedrock (ACTIVE)
-# bedrock:
-#   model_id: "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+bedrock:
+  model_id: "us.anthropic.claude-haiku-4-5-20251001-v1:0"
   # Other options:
   # - "us.anthropic.claude-sonnet-4-20250514-v1:0"      # Claude Sonnet 4
   # - "us.anthropic.claude-sonnet-4-5-20250929-v1:0"    # Claude Sonnet 4.5
