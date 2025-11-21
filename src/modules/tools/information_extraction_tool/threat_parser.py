@@ -9,6 +9,8 @@ from ...parsers import ParserChain
 from .file_utils import is_text_file, is_binary_file, is_correct_format, analyze_threat_file
 from .text_utils import extract_field
 from .threat_formatter import ThreatFormatter
+from ...core.models.model_factory import create_model
+from src.config import config
 
 
 class ThreatParser:
@@ -25,12 +27,90 @@ class ThreatParser:
         self.logger = logger
         self.parser_chain = parser_chain
         self.formatter = formatter
+        self._title_cache = {}  # Cache for generated titles
     
-    def parse_threat_statements(self, context_files: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _generate_threat_title(self, threat_statement: str, use_llm: bool = True) -> str:
+        """Generate a concise 1-2 word title from a threat statement using LLM
+        
+        Args:
+            threat_statement: The full threat statement
+            use_llm: Whether to use LLM for title generation (default True)
+            
+        Returns:
+            A concise 1-2 word title, or 'Threat' if generation fails
+        """
+        # Check cache first
+        if threat_statement in self._title_cache:
+            return self._title_cache[threat_statement]
+        
+        # If LLM disabled, return generic title
+        if not use_llm:
+            return 'Threat'
+        
+        try:
+            from strands import Agent
+            from strands.handlers import null_callback_handler
+            
+            # Use model factory to auto-detect provider from config.yaml
+            # This supports Bedrock, Anthropic, OpenAI, Gemini, Ollama, LiteLLM, etc.
+            model = create_model(config, temperature=0)
+            
+            # Create a Strands Agent with the model (required for invocation)
+            system_prompt = "You are a security expert that generates concise threat category titles."
+            agent = Agent(
+                model=model,
+                system_prompt=system_prompt,
+                tools=[],
+                callback_handler=null_callback_handler()
+            )
+            
+            # Create a focused prompt for title generation
+            user_prompt = f"""Generate a concise 1-2 word category title for this threat statement. The title should capture the core security concern.
+
+Threat Statement: {threat_statement}
+
+Examples of good titles:
+- "Data Exfiltration"
+- "Credential Theft"
+- "DoS Attack"
+- "Privilege Escalation"
+- "Code Injection"
+- "Session Hijacking"
+
+Provide ONLY the 1-2 word title, nothing else."""
+
+            # Call agent with user prompt (Strands calling convention)
+            response = agent(user_prompt)
+            
+            # Convert AgentResult to string and clean the title
+            title = str(response).strip().strip('"').strip("'")
+            
+            # Ensure it's reasonably short (max 3 words as fallback)
+            words = title.split()
+            if len(words) > 3:
+                title = ' '.join(words[:3])
+            
+            # Cache the result
+            self._title_cache[threat_statement] = title
+            
+            self.logger.info(f"✅ Generated LLM title for threat: '{title}' (from statement: {threat_statement[:50]}...)")
+            return title
+            
+        except Exception as e:
+            self.logger.error(f"❌ Failed to generate threat title: {e}")
+            import traceback
+            self.logger.error(f"Traceback: {traceback.format_exc()}")
+            return 'Threat'
+    
+    def parse_threat_statements(self, context_files: Dict[str, Any], 
+                                bedrock_model: str = None,
+                                aws_profile: Optional[str] = None) -> List[Dict[str, Any]]:
         """Parse threat statements from manually specified or discovered files
         
         Args:
             context_files: Dict containing threat model paths and discovered files
+            bedrock_model: Bedrock model ID (kept for backwards compatibility, not used)
+            aws_profile: AWS profile name (kept for backwards compatibility, not used)
             
         Returns:
             List of parsed threat dicts
@@ -74,6 +154,9 @@ class ThreatParser:
         
         self.logger.debug(f"Found {len(threat_models)} potential threat files")
         
+        # Track seen threat IDs to prevent duplicates across files
+        seen_ids = set()
+        
         # Process discovered threat files
         for threat_file_path in threat_models:
             try:
@@ -88,7 +171,17 @@ class ThreatParser:
                 
                 if 'threat' in Path(threat_file_path).name.lower():
                     file_threats = self.process_threat_file(threat_file_path, context_files)
-                    threats.extend(file_threats)
+                    # Deduplicate threats from this file against already processed threats
+                    for threat in file_threats:
+                        threat_id = threat.get('id')
+                        if threat_id and threat_id not in seen_ids:
+                            threats.append(threat)
+                            seen_ids.add(threat_id)
+                        elif threat_id:
+                            self.logger.debug(f"Skipping duplicate threat {threat_id} from {Path(threat_file_path).name}")
+                        else:
+                            # If no ID, add it anyway (shouldn't happen but be safe)
+                            threats.append(threat)
                 else:
                     if 'context_files' not in context_files:
                         context_files['context_files'] = []
@@ -218,6 +311,10 @@ class ThreatParser:
             # Extract category from tags
             category = ', '.join(threat.get('tags', [])) if threat.get('tags') else 'Unknown'
             
+            # If category is Unknown, generate a title from the threat statement
+            if category == 'Unknown' and statement:
+                category = self._generate_threat_title(statement, use_llm=True)
+            
             threats.append({
                 'id': threat.get('id', f"T{len(threats)+1:03d}"),
                 'numericId': threat.get('numericId'),
@@ -247,11 +344,23 @@ class ThreatParser:
         # Handle nested structure (e.g., {all_threats: [...], high_severity: [...]})
         if isinstance(threat_data, dict):
             self.logger.debug(f"Processing nested threat structure with keys: {list(threat_data.keys())}")
-            # Flatten all nested threat arrays
+            seen_ids = set()
+            # Flatten all nested threat arrays with deduplication
             for key, value in threat_data.items():
                 if isinstance(value, list):
                     self.logger.debug(f"Processing {len(value)} threats from '{key}' section")
-                    threats.extend(self._process_threat_list(value, file_path, parsed_data['format']))
+                    section_threats = self._process_threat_list(value, file_path, parsed_data['format'])
+                    # Only add threats we haven't seen before
+                    for threat in section_threats:
+                        threat_id = threat.get('id')
+                        if threat_id and threat_id not in seen_ids:
+                            threats.append(threat)
+                            seen_ids.add(threat_id)
+                        elif threat_id:
+                            self.logger.debug(f"Skipping duplicate threat {threat_id} from '{key}' section")
+                        else:
+                            # If no ID, add it anyway (shouldn't happen but be safe)
+                            threats.append(threat)
         # Handle flat array structure
         elif isinstance(threat_data, list):
             self.logger.debug(f"Processing flat threat array with {len(threat_data)} threats")
@@ -281,10 +390,17 @@ class ThreatParser:
                 continue
             
             severity = threat.get('severity', threat.get('priority', 'Medium'))
+            statement = threat.get('statement', threat.get('description', ''))
+            category = threat.get('category', 'Unknown')
+            
+            # If category is Unknown, generate a title from the threat statement
+            if category == 'Unknown' and statement:
+                category = self._generate_threat_title(statement, use_llm=True)
+            
             threats.append({
                 'id': threat.get('id', f"T{len(threats)+1:03d}"),
-                'statement': threat.get('statement', threat.get('description', '')),
-                'description': threat.get('description', threat.get('statement', '')),
+                'statement': statement,
+                'description': threat.get('description', statement),
                 'threatSource': threat.get('threatSource', ''),
                 'prerequisites': threat.get('prerequisites', ''),
                 'threatAction': threat.get('threatAction', ''),
@@ -293,7 +409,7 @@ class ThreatParser:
                 'impactedAssets': threat.get('impactedAssets', ''),
                 'severity': severity,
                 'priority': threat.get('priority', severity),
-                'category': threat.get('category', 'Unknown'),
+                'category': category,
                 'source': source_format,
                 'source_file': file_path
             })
