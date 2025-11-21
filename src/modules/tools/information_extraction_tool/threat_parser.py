@@ -307,6 +307,13 @@ class ThreatParser:
         for threat in parsed_data.get('threats', []):
             description = threat.get('description', '')
             
+            # Extract threat statement from description
+            threat_statement = self._extract_threat_statement_from_text(description)
+            
+            # If no statement found, fall back to title (but this shouldn't happen with proper format)
+            if not threat_statement:
+                threat_statement = threat.get('title', '')
+            
             # Extract structured fields from description if present
             threat_source = extract_field(description, 'Threat Source')
             prerequisites = extract_field(description, 'Prerequisites')
@@ -321,7 +328,7 @@ class ThreatParser:
             
             threats.append({
                 'id': threat.get('id', f"T{len(threats)+1:03d}"),
-                'statement': threat.get('title', ''),
+                'statement': threat_statement,
                 'description': description,
                 'threatSource': threat_source,
                 'prerequisites': prerequisites,
@@ -337,6 +344,37 @@ class ThreatParser:
             })
         
         return threats
+    
+    def _extract_threat_statement_from_text(self, text: str) -> str:
+        """Extract threat statement from text content
+        
+        Args:
+            text: Text content containing threat statement
+            
+        Returns:
+            Extracted threat statement or empty string
+        """
+        lines = text.split('\n')
+        threat_statement = ""
+        capturing = False
+        
+        for line in lines:
+            if '**Threat Statement**' in line and ':' in line:
+                # Extract statement from this line
+                if '**Threat Statement:**' in line:
+                    threat_statement = line.split('**Threat Statement:**', 1)[1].strip()
+                elif '**Threat Statement**:' in line:
+                    threat_statement = line.split('**Threat Statement**:', 1)[1].strip()
+                capturing = True
+                continue
+            elif capturing and line.strip().startswith('- **'):
+                # Hit the first bullet point, stop capturing
+                break
+            elif capturing and line.strip():
+                # Continue capturing multi-line statement
+                threat_statement += " " + line.strip()
+        
+        return threat_statement
     
     def _process_threatcomposer_file(self, threat_file_path: str) -> List[Dict[str, Any]]:
         """Process ThreatComposer file using JQ parser
