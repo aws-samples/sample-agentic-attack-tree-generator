@@ -20,13 +20,14 @@ class HTMLGenerator:
     def __init__(self):
         self.logger = ThreatForestLogger.get_logger(self.__class__.__name__)
     
-    def generate_dashboard_from_data(self, trees_data: List[Dict], output_path: str):
+    def generate_dashboard_from_data(self, trees_data: List[Dict], output_path: str, summary_data: Dict = None):
         """
         Generate unified dashboard directly from structured tree data (no parsing)
         
         Args:
             trees_data: List of tree dictionaries with TTC mappings from TTC mapper
             output_path: Path to save dashboard HTML file
+            summary_data: Optional dictionary with executive summary data
         """
         self.logger.info(f"Generating unified dashboard for {len(trees_data)} attack trees...")
         
@@ -102,8 +103,8 @@ class HTMLGenerator:
         # Sort trees by threat ID
         all_trees.sort(key=lambda t: t['metadata']['threat_id'])
         
-        # Generate dashboard HTML
-        html = self._generate_dashboard_html(all_trees)
+        # Generate dashboard HTML with optional summary
+        html = self._generate_dashboard_html(all_trees, summary_data)
         
         # Write to file
         output_file = Path(output_path)
@@ -297,6 +298,131 @@ class HTMLGenerator:
     <div style='color: #7f8c8d; font-size: 10px;'>{desc}</div>
 </div>
 """
+    
+    def _build_executive_summary_html(self, summary_data: Dict, all_trees: List[Dict]) -> str:
+        """Build HTML content for executive summary tab"""
+        project_info = summary_data.get('project_info', {})
+        extraction_summary = summary_data.get('extraction_summary', {})
+        high_severity = summary_data.get('high_severity_threats', [])
+        
+        # Key statistics
+        total_threats = extraction_summary.get('total_threats', 0)
+        high_severity_count = extraction_summary.get('high_severity_count', 0)
+        total_techniques = sum(len(t.get('nodes', [])) for t in all_trees)
+        
+        html = '<div style="padding: 24px; max-width: 1400px; margin: 0 auto;">'
+        
+        # Hero section with statistics
+        html += '''
+        <div style="margin-bottom: 32px;">
+            <h2 style="font-size: 28px; font-weight: 700; color: #111827; margin-bottom: 24px; letter-spacing: -0.5px;">📊 Executive Summary</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 32px;">
+        '''
+        
+        # Statistics cards
+        stats = [
+            ('Total Threats', total_threats, '#6366f1'),
+            ('High Severity', high_severity_count, '#dc2626'),
+            ('Attack Trees', len(all_trees), '#15803d'),
+            ('Total Nodes', total_techniques, '#ea580c')
+        ]
+        
+        for label, value, color in stats:
+            html += f'''
+                <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.07); border-left: 4px solid {color};">
+                    <div style="font-size: 36px; font-weight: 700; color: {color}; margin-bottom: 8px;">{value}</div>
+                    <div style="font-size: 13px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">{label}</div>
+                </div>
+            '''
+        
+        html += '</div></div>'
+        
+        # Project Information
+        html += '''
+        <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.07); margin-bottom: 24px;">
+            <h3 style="font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 20px;">🏢 Project Information</h3>
+        '''
+        
+        project_fields = [
+            ('Application Name', project_info.get('application_name', 'Unknown')),
+            ('Architecture Type', project_info.get('architecture_type', 'Unknown')),
+            ('Deployment Environment', project_info.get('deployment_environment', 'Unknown')),
+            ('Industry Sector', project_info.get('sector', 'Unknown'))
+        ]
+        
+        for label, value in project_fields:
+            html += f'''
+                <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #e5e7eb;">
+                    <div style="font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">{label}</div>
+                    <div style="font-size: 14px; color: #111827; font-weight: 500;">{value}</div>
+                </div>
+            '''
+        
+        # Technologies
+        technologies = project_info.get('technologies', [])
+        if technologies:
+            html += '''
+                <div style="margin-top: 20px;">
+                    <div style="font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">Technology Stack</div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            '''
+            for tech in technologies:
+                html += f'<span style="background: #f3f4f6; color: #374151; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500;">{tech}</span>'
+            html += '</div></div>'
+        
+        html += '</div>'
+        
+        # High Severity Threats
+        if high_severity:
+            html += '''
+            <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.07); margin-bottom: 24px;">
+                <h3 style="font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 20px;">⚠️ High Severity Threats</h3>
+            '''
+            
+            for threat in high_severity:  # Show ALL high severity threats
+                threat_id = threat.get('id', 'Unknown')
+                statement = threat.get('statement', '')
+                html += f'''
+                    <div style="background: linear-gradient(135deg, rgba(220, 38, 38, 0.05) 0%, rgba(220, 38, 38, 0.02) 100%); border: 1px solid rgba(220, 38, 38, 0.2); border-left: 4px solid #dc2626; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                        <div style="font-weight: 700; color: #dc2626; font-size: 13px; margin-bottom: 8px;">Threat {threat_id}</div>
+                        <div style="color: #374151; font-size: 13px; line-height: 1.6;">{statement}</div>
+                    </div>
+                '''
+            
+            html += '</div>'
+        
+        # Attack Trees Overview
+        html += '''
+        <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.07);">
+            <h3 style="font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 20px;">🌲 Attack Trees Overview</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
+        '''
+        
+        for tree in all_trees:
+            metadata = tree['metadata']
+            threat_id = metadata['threat_id']
+            category = metadata['category']
+            statement = metadata['threat_statement']
+            node_count = len(tree.get('nodes', []))
+            
+            html += f'''
+                <div onclick="switchTab('{threat_id}')" style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border: 1px solid #e5e7eb; padding: 20px; border-radius: 10px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05);" onmouseover="this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)'; this.style.transform='translateY(0)';">
+                    <div style="font-weight: 700; color: #6366f1; font-size: 14px; margin-bottom: 8px;">{threat_id}</div>
+                    <div style="font-weight: 600; color: #111827; font-size: 15px; margin-bottom: 12px;">{category}</div>
+                    <div style="color: #6b7280; font-size: 12px; line-height: 1.5; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{statement}</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+                        <span style="font-size: 11px; color: #6b7280;">{node_count} nodes</span>
+                        <span style="color: #6366f1; font-size: 12px; font-weight: 600;">View Tree →</span>
+                    </div>
+                </div>
+            '''
+        
+        html += '''
+            </div>
+        </div>
+        </div>'''
+        
+        return html
     
     def _generate_html(self, nodes: List[Dict], edges: List[Dict], metadata: Dict[str, Any]) -> str:
         """Generate complete HTML with embedded vis-network"""
@@ -592,8 +718,14 @@ class HTMLGenerator:
 </body>
 </html>"""
     
-    def _generate_dashboard_html(self, all_trees: List[Dict[str, Any]]) -> str:
-        """Generate unified dashboard HTML with tabs for multiple trees"""
+    def _generate_dashboard_html(self, all_trees: List[Dict[str, Any]], summary_data: Dict = None) -> str:
+        """Generate unified dashboard HTML with tabs for multiple trees and optional executive summary"""
+        
+        # Build executive summary HTML if data provided
+        exec_summary_html = ''
+        has_summary = summary_data is not None
+        if has_summary:
+            exec_summary_html = self._build_executive_summary_html(summary_data, all_trees)
         
         # Build tree data JSON
         trees_data = []
@@ -774,17 +906,14 @@ class HTMLGenerator:
 </head>
 <body>
     <div class="header">
-        <h1>🌲 ThreatForest Attack Trees Dashboard</h1>
-        <div class="subtitle">{len(all_trees)} Threat Trees Analyzed</div>
-    </div>
-    
-    <div class="tabs-container">
-        {"".join([f'<div class="tab {"active" if i == 0 else ""}" onclick="switchTab(\'{tree["metadata"]["threat_id"]}\')">{tree["metadata"]["threat_id"]}: {tree["metadata"]["category"]}</div>' for i, tree in enumerate(all_trees)])}
+        <h1>🌳 ThreatForest: Attack Trees Dashboard</h1>
     </div>
     
     <div class="content">
+        {f'<div id="tree-exec-summary" class="tree-container {"active" if has_summary else ""}">{exec_summary_html}</div>' if has_summary else ''}
         {"".join([f'''
-        <div id="tree-{tree["metadata"]["threat_id"]}" class="tree-container {"active" if i == 0 else ""}">
+        <div id="tree-{tree["metadata"]["threat_id"]}" class="tree-container {"active" if i == 0 and not has_summary else ""}">
+            {'<button onclick="switchTab(\'exec-summary\')" style="background: #6366f1; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3); transition: all 0.3s ease;" onmouseover="this.style.background=\'#4f46e5\'; this.style.transform=\'translateY(-1px)\'; this.style.boxShadow=\'0 4px 8px rgba(99, 102, 241, 0.4)\';" onmouseout="this.style.background=\'#6366f1\'; this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 2px 4px rgba(99, 102, 241, 0.3)\';">← Executive Summary</button>' if has_summary else ''}
             <div class="tree-header">
                 <div class="tree-title">{tree["metadata"]["threat_id"]}: {tree["metadata"]["category"]}</div>
                 <div class="tree-statement">{tree["metadata"]["threat_statement"]}</div>
@@ -832,7 +961,8 @@ class HTMLGenerator:
     <script>
         var treesData = JSON.parse(document.getElementById('trees-data').textContent);
         var networks = {{}};
-        var currentTab = treesData[0].id;
+        var hasSummary = {'true' if has_summary else 'false'};
+        var currentTab = hasSummary ? 'exec-summary' : treesData[0].id;
         
         var networkOptions = {{
             physics: {{
@@ -991,8 +1121,10 @@ class HTMLGenerator:
             // Show selected tree
             document.getElementById('tree-' + treeId).classList.add('active');
             
-            // Initialize network if first time
-            initializeNetwork(treeId);
+            // Initialize network if first time (only for attack trees, not exec summary)
+            if (treeId !== 'exec-summary') {{
+                initializeNetwork(treeId);
+            }}
             
             currentTab = treeId;
         }}
@@ -1149,10 +1281,12 @@ class HTMLGenerator:
             return html;
         }}
         
-        // Initialize first tree
-        initializeNetwork(treesData[0].id);
+        // Initialize first tree (only if not showing exec summary first)
+        if (!hasSummary) {{
+            initializeNetwork(treesData[0].id);
+        }}
         
-        console.log('Dashboard loaded with ' + treesData.length + ' attack trees');
+        console.log('Dashboard loaded with ' + treesData.length + ' attack trees' + (hasSummary ? ' and executive summary' : ''));
     </script>
 </body>
 </html>"""
