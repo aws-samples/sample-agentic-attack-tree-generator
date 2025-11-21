@@ -708,7 +708,7 @@ class HTMLGenerator:
             margin-bottom: 24px;
         }}
         .graph-container {{
-            flex: 1;
+            width: 60%;
             height: 800px;
             border: 1px solid #e5e7eb;
             border-radius: 12px;
@@ -717,8 +717,7 @@ class HTMLGenerator:
             overflow: hidden;
         }}
         .side-panel {{
-            width: 360px;
-            min-width: 360px;
+            width: 40%;
             background: white;
             border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -841,21 +840,20 @@ class HTMLGenerator:
                 solver: 'hierarchicalRepulsion',
                 hierarchicalRepulsion: {{
                     centralGravity: 0.1,
-                    springLength: 150,
-                    springConstant: 0.01,
-                    nodeDistance: 120,
-                    damping: 0.09
+                    springLength: 200,
+                    springConstant: 0.005,
+                    nodeDistance: 200,
+                    damping: 0.09,
+                    avoidOverlap: 1
                 }},
-                stabilization: {{ iterations: 500 }}
+                stabilization: {{ iterations: 600 }}
             }},
             layout: {{
                 hierarchical: {{
                     enabled: true,
-                    direction: 'LR',
+                    direction: 'UD',
                     sortMethod: 'directed',
-                    levelSeparation: 350,
-                    nodeSpacing: 80,
-                    treeSpacing: 100
+                    levelSeparation: 200
                 }}
             }},
             interaction: {{
@@ -1007,6 +1005,46 @@ class HTMLGenerator:
             return div.innerHTML;
         }}
         
+        // Smart formatting for mitigation text
+        function formatMitigationText(text) {{
+            if (!text) return '';
+            
+            var html = '';
+            var lines = text.split('\\n');
+            
+            for (var i = 0; i < lines.length; i++) {{
+                var line = lines[i].trim();
+                if (!line) continue;
+                
+                // Section headers (end with colon)
+                if (line.endsWith(':') && !line.startsWith('-')) {{
+                    html += '<div style="font-weight: 700; color: #111827; font-size: 12px; margin-top: 12px; margin-bottom: 6px;">' + escapeHtml(line) + '</div>';
+                }}
+                // Bullet points
+                else if (line.startsWith('- ')) {{
+                    var content = line.substring(2);
+                    // Check if it's a label (Use Case:, Implementation:)
+                    if (content.indexOf(':') > 0 && content.indexOf(':') < 30) {{
+                        var parts = content.split(':', 2);
+                        html += '<div style="margin-left: 12px; margin-bottom: 6px; font-size: 11px;"><span style="font-weight: 600; color: #374151;">' + escapeHtml(parts[0]) + ':</span> <span style="color: #6b7280;">' + escapeHtml(parts[1]) + '</span></div>';
+                    }} else {{
+                        html += '<div style="margin-left: 12px; margin-bottom: 6px; font-size: 11px; color: #6b7280;">• ' + escapeHtml(content) + '</div>';
+                    }}
+                }}
+                // Code blocks (backticks)
+                else if (line.includes('`')) {{
+                    line = line.replace(/`([^`]+)`/g, '<code style="background: #f3f4f6; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-family: monospace;">$1</code>');
+                    html += '<div style="margin-bottom: 6px; font-size: 11px; color: #6b7280;">' + line + '</div>';
+                }}
+                // Regular paragraphs
+                else {{
+                    html += '<div style="margin-bottom: 8px; font-size: 11px; color: #6b7280; line-height: 1.6;">' + escapeHtml(line) + '</div>';
+                }}
+            }}
+            
+            return html;
+        }}
+        
         // Accordion toggle function
         function toggleAccordion(id) {{
             var content = document.getElementById(id);
@@ -1082,10 +1120,10 @@ class HTMLGenerator:
                         
                         html += '<div id="' + accordionId + '" style="display: block;">';
                         tech.mitigations.forEach(function(mit, mitIdx) {{
-                            html += '<div style="background: rgba(21, 128, 61, 0.08); padding: 10px; border-radius: 6px; margin-bottom: 8px;">';
-                            html += '<div style="font-weight: 600; color: #111827; font-size: 11px; margin-bottom: 6px;">• ' + escapeHtml(mit.name) + '</div>';
+                            html += '<div style="background: rgba(21, 128, 61, 0.08); padding: 14px; border-radius: 6px; margin-bottom: 12px;">';
+                            html += '<div style="font-weight: 700; color: #111827; font-size: 13px; margin-bottom: 10px;">🛡️ ' + escapeHtml(mit.name) + '</div>';
                             if (mit.description) {{
-                                html += '<div style="color: #6b7280; font-size: 10px; line-height: 1.5;">' + escapeHtml(mit.description) + '</div>';
+                                html += formatMitigationText(mit.description);
                             }}
                             html += '</div>';
                         }});

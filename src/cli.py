@@ -5,6 +5,7 @@ Main command-line interface using Rich for display
 """
 import sys
 import asyncio
+import subprocess
 import click
 from pathlib import Path
 from rich.console import Console
@@ -188,6 +189,18 @@ def run(project_path, threat_model, mode, input_dir, output_dir):
                         summary['threats_processed'] = extract_data['extraction_summary'].get('high_severity_count', 0)
             
             display.show_summary(summary)
+            
+            # Auto-open dashboard if it exists
+            output_directory = summary.get('output_dir') or result.get('output_dir') or result.get('output_directory')
+            if output_directory:
+                dashboard_path = Path(output_directory) / 'attack_trees' / 'attack_trees_dashboard.html'
+                if dashboard_path.exists():
+                    display.show_info("🌐 Opening dashboard in browser...")
+                    try:
+                        subprocess.run(['open', str(dashboard_path)], check=False)
+                    except Exception as e:
+                        display.show_info(f"Could not auto-open dashboard: {e}")
+                        display.show_info(f"📊 Dashboard: {dashboard_path}")
         else:
             error_msg = result.get('error', 'Unknown error')
             suggestions = [

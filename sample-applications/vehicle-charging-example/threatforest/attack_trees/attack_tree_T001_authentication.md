@@ -49,12 +49,6 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
 - **Tactic**: Execution, Lateral Movement
 - **Similarity Score**: 38.18%
 
-### Identify OCPP Protocol Endpoint
-
-- **Technique**: [T1065](https://attack.mitre.org/techniques/T1065/) - Uncommonly Used Port
-- **Tactic**: Command And Control
-- **Similarity Score**: 41.20%
-
 ### Credential Exposure in Configuration Files
 
 - **Technique**: [T1552.001](https://attack.mitre.org/techniques/T1552/001/) - Credentials In Files
@@ -69,11 +63,11 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
     Restricting file and directory permissions involves setting access controls at the file system level to limit which user...
   - *1 more mitigation(s) available*
 
-### Integrity Compromise of Charging Station Infrastructure
+### Network Reconnaissance of Charging Station
 
 - **Technique**: [T1669](https://attack.mitre.org/techniques/T1669/) - Wi-Fi Networks
 - **Tactic**: Initial Access
-- **Similarity Score**: 34.23%
+- **Similarity Score**: 42.54%
 - **Mitigations (3):**
   - 🛡️ **Multi-factor Authentication**
     Multi-Factor Authentication (MFA) enhances security by requiring users to provide at least two forms of verification to ...
@@ -81,20 +75,6 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
     Network segmentation involves dividing a network into smaller, isolated segments to control and limit the flow of traffi...
   - 🛡️ **Encrypt Sensitive Information**
     Protect sensitive information at rest, in transit, and during processing by using strong encryption algorithms. Encrypti...
-
-### Authenticate with Stolen Credentials
-
-- **Technique**: [T1556](https://attack.mitre.org/techniques/T1556/) - Modify Authentication Process
-- **Tactic**: Credential Access, Defense Evasion, Persistence
-- **Similarity Score**: 50.17%
-- **Mitigations (9):**
-  - 🛡️ **Restrict Registry Permissions**
-    Restricting registry permissions involves configuring access control settings for sensitive registry keys and hives to e...
-  - 🛡️ **Multi-factor Authentication**
-    Multi-Factor Authentication (MFA) enhances security by requiring users to provide at least two forms of verification to ...
-  - 🛡️ **Password Policies**
-    Set and enforce secure password policies for accounts to reduce the likelihood of unauthorized access. Strong password p...
-  - *6 more mitigation(s) available*
 
 ### Credential Theft via Phishing
 
@@ -110,19 +90,37 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
     Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...
   - *5 more mitigation(s) available*
 
-### Obtain EVSE Credentials
+### Credential Interception from Previous Breach
 
-- **Technique**: [T1212](https://attack.mitre.org/techniques/T1212/) - Exploitation for Credential Access
+- **Technique**: [T1555](https://attack.mitre.org/techniques/T1555/) - Credentials from Password Stores
 - **Tactic**: Credential Access
-- **Similarity Score**: 41.91%
-- **Mitigations (5):**
-  - 🛡️ **Exploit Protection**
-    Deploy capabilities that detect, block, and mitigate conditions indicative of software exploits. These capabilities aim ...
+- **Similarity Score**: 44.03%
+- **Mitigations (3):**
+  - 🛡️ **Privileged Account Management**
+    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...
   - 🛡️ **Update Software**
     Software updates ensure systems are protected against known vulnerabilities by applying patches and upgrades provided by...
-  - 🛡️ **Application Developer Guidance**
-    Application Developer Guidance focuses on providing developers with the knowledge, tools, and best practices needed to w...
-  - *2 more mitigation(s) available*
+  - 🛡️ **Password Policies**
+    Set and enforce secure password policies for accounts to reduce the likelihood of unauthorized access. Strong password p...
+
+### Send Malicious OCPP Messages
+
+- **Technique**: [T1065](https://attack.mitre.org/techniques/T1065/) - Uncommonly Used Port
+- **Tactic**: Command And Control
+- **Similarity Score**: 43.44%
+
+### Integrity Compromise of Charging Station Infrastructure
+
+- **Technique**: [T1669](https://attack.mitre.org/techniques/T1669/) - Wi-Fi Networks
+- **Tactic**: Initial Access
+- **Similarity Score**: 34.23%
+- **Mitigations (3):**
+  - 🛡️ **Multi-factor Authentication**
+    Multi-Factor Authentication (MFA) enhances security by requiring users to provide at least two forms of verification to ...
+  - 🛡️ **Network Segmentation**
+    Network segmentation involves dividing a network into smaller, isolated segments to control and limit the flow of traffi...
+  - 🛡️ **Encrypt Sensitive Information**
+    Protect sensitive information at rest, in transit, and during processing by using strong encryption algorithms. Encrypti...
 
 ### Craft Unauthorized StopTransaction Message
 
@@ -153,37 +151,39 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
     Network segmentation involves dividing a network into smaller, isolated segments to control and limit the flow of traffi...
   - *5 more mitigation(s) available*
 
-### Send Malicious OCPP Messages
+### Obtain EVSE Credentials
+
+- **Technique**: [T1212](https://attack.mitre.org/techniques/T1212/) - Exploitation for Credential Access
+- **Tactic**: Credential Access
+- **Similarity Score**: 41.91%
+- **Mitigations (5):**
+  - 🛡️ **Exploit Protection**
+    Deploy capabilities that detect, block, and mitigate conditions indicative of software exploits. These capabilities aim ...
+  - 🛡️ **Update Software**
+    Software updates ensure systems are protected against known vulnerabilities by applying patches and upgrades provided by...
+  - 🛡️ **Application Developer Guidance**
+    Application Developer Guidance focuses on providing developers with the knowledge, tools, and best practices needed to w...
+  - *2 more mitigation(s) available*
+
+### Identify OCPP Protocol Endpoint
 
 - **Technique**: [T1065](https://attack.mitre.org/techniques/T1065/) - Uncommonly Used Port
 - **Tactic**: Command And Control
-- **Similarity Score**: 43.44%
+- **Similarity Score**: 41.20%
 
-### Credential Interception from Previous Breach
+### Authenticate with Stolen Credentials
 
-- **Technique**: [T1555](https://attack.mitre.org/techniques/T1555/) - Credentials from Password Stores
-- **Tactic**: Credential Access
-- **Similarity Score**: 44.03%
-- **Mitigations (3):**
-  - 🛡️ **Privileged Account Management**
-    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...
-  - 🛡️ **Update Software**
-    Software updates ensure systems are protected against known vulnerabilities by applying patches and upgrades provided by...
-  - 🛡️ **Password Policies**
-    Set and enforce secure password policies for accounts to reduce the likelihood of unauthorized access. Strong password p...
-
-### Network Reconnaissance of Charging Station
-
-- **Technique**: [T1669](https://attack.mitre.org/techniques/T1669/) - Wi-Fi Networks
-- **Tactic**: Initial Access
-- **Similarity Score**: 42.54%
-- **Mitigations (3):**
+- **Technique**: [T1556](https://attack.mitre.org/techniques/T1556/) - Modify Authentication Process
+- **Tactic**: Credential Access, Defense Evasion, Persistence
+- **Similarity Score**: 50.17%
+- **Mitigations (9):**
+  - 🛡️ **Restrict Registry Permissions**
+    Restricting registry permissions involves configuring access control settings for sensitive registry keys and hives to e...
   - 🛡️ **Multi-factor Authentication**
     Multi-Factor Authentication (MFA) enhances security by requiring users to provide at least two forms of verification to ...
-  - 🛡️ **Network Segmentation**
-    Network segmentation involves dividing a network into smaller, isolated segments to control and limit the flow of traffi...
-  - 🛡️ **Encrypt Sensitive Information**
-    Protect sensitive information at rest, in transit, and during processing by using strong encryption algorithms. Encrypti...
+  - 🛡️ **Password Policies**
+    Set and enforce secure password policies for accounts to reduce the likelihood of unauthorized access. Strong password p...
+  - *6 more mitigation(s) available*
 
 
 *Total technique mappings: 13 | Mitigations found: 44*

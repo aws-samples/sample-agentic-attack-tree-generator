@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated_at": "2025-11-20T21:40:06.689179",
+    "generated_at": "2025-11-20T22:10:09.133945",
     "generator": "ThreatForest",
     "version": "1.0"
   },
@@ -433,16 +433,6 @@
           "reasoning": "Embedding similarity: 0.382"
         },
         {
-          "attack_step": "Identify OCPP Protocol Endpoint",
-          "technique_id": "T1065",
-          "technique_name": "Uncommonly Used Port",
-          "confidence": 0.41198544674204396,
-          "tactics": [
-            "command-and-control"
-          ],
-          "reasoning": "Embedding similarity: 0.412"
-        },
-        {
           "attack_step": "Credential Exposure in Configuration Files",
           "technique_id": "T1552.001",
           "technique_name": "Credentials In Files",
@@ -453,26 +443,14 @@
           "reasoning": "Embedding similarity: 0.414"
         },
         {
-          "attack_step": "Integrity Compromise of Charging Station Infrastructure",
+          "attack_step": "Network Reconnaissance of Charging Station",
           "technique_id": "T1669",
           "technique_name": "Wi-Fi Networks",
-          "confidence": 0.3422619254683808,
+          "confidence": 0.4254006189242282,
           "tactics": [
             "initial-access"
           ],
-          "reasoning": "Embedding similarity: 0.342"
-        },
-        {
-          "attack_step": "Authenticate with Stolen Credentials",
-          "technique_id": "T1556",
-          "technique_name": "Modify Authentication Process",
-          "confidence": 0.5016604056485143,
-          "tactics": [
-            "credential-access",
-            "defense-evasion",
-            "persistence"
-          ],
-          "reasoning": "Embedding similarity: 0.502"
+          "reasoning": "Embedding similarity: 0.425"
         },
         {
           "attack_step": "Credential Theft via Phishing",
@@ -488,14 +466,34 @@
           "reasoning": "Embedding similarity: 0.498"
         },
         {
-          "attack_step": "Obtain EVSE Credentials",
-          "technique_id": "T1212",
-          "technique_name": "Exploitation for Credential Access",
-          "confidence": 0.41906801336382593,
+          "attack_step": "Credential Interception from Previous Breach",
+          "technique_id": "T1555",
+          "technique_name": "Credentials from Password Stores",
+          "confidence": 0.440292524968882,
           "tactics": [
             "credential-access"
           ],
-          "reasoning": "Embedding similarity: 0.419"
+          "reasoning": "Embedding similarity: 0.440"
+        },
+        {
+          "attack_step": "Send Malicious OCPP Messages",
+          "technique_id": "T1065",
+          "technique_name": "Uncommonly Used Port",
+          "confidence": 0.43438253231703067,
+          "tactics": [
+            "command-and-control"
+          ],
+          "reasoning": "Embedding similarity: 0.434"
+        },
+        {
+          "attack_step": "Integrity Compromise of Charging Station Infrastructure",
+          "technique_id": "T1669",
+          "technique_name": "Wi-Fi Networks",
+          "confidence": 0.3422619254683808,
+          "tactics": [
+            "initial-access"
+          ],
+          "reasoning": "Embedding similarity: 0.342"
         },
         {
           "attack_step": "Craft Unauthorized StopTransaction Message",
@@ -529,34 +527,36 @@
           "reasoning": "Embedding similarity: 0.439"
         },
         {
-          "attack_step": "Send Malicious OCPP Messages",
-          "technique_id": "T1065",
-          "technique_name": "Uncommonly Used Port",
-          "confidence": 0.43438253231703067,
-          "tactics": [
-            "command-and-control"
-          ],
-          "reasoning": "Embedding similarity: 0.434"
-        },
-        {
-          "attack_step": "Credential Interception from Previous Breach",
-          "technique_id": "T1555",
-          "technique_name": "Credentials from Password Stores",
-          "confidence": 0.440292524968882,
+          "attack_step": "Obtain EVSE Credentials",
+          "technique_id": "T1212",
+          "technique_name": "Exploitation for Credential Access",
+          "confidence": 0.41906801336382593,
           "tactics": [
             "credential-access"
           ],
-          "reasoning": "Embedding similarity: 0.440"
+          "reasoning": "Embedding similarity: 0.419"
         },
         {
-          "attack_step": "Network Reconnaissance of Charging Station",
-          "technique_id": "T1669",
-          "technique_name": "Wi-Fi Networks",
-          "confidence": 0.4254006189242282,
+          "attack_step": "Identify OCPP Protocol Endpoint",
+          "technique_id": "T1065",
+          "technique_name": "Uncommonly Used Port",
+          "confidence": 0.41198544674204396,
           "tactics": [
-            "initial-access"
+            "command-and-control"
           ],
-          "reasoning": "Embedding similarity: 0.425"
+          "reasoning": "Embedding similarity: 0.412"
+        },
+        {
+          "attack_step": "Authenticate with Stolen Credentials",
+          "technique_id": "T1556",
+          "technique_name": "Modify Authentication Process",
+          "confidence": 0.5016604056485143,
+          "tactics": [
+            "credential-access",
+            "defense-evasion",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.502"
         }
       ],
       "mapping_count": 13
@@ -644,26 +644,17 @@
       },
       "ttc_mappings": [
         {
-          "attack_step": "Bypass key access controls",
-          "technique_id": "T1556",
-          "technique_name": "Modify Authentication Process",
-          "confidence": 0.4013106929392058,
+          "attack_step": "Rogue insider with system access",
+          "technique_id": "T1078.003",
+          "technique_name": "Local Accounts",
+          "confidence": 0.3597283265077171,
           "tactics": [
-            "credential-access",
             "defense-evasion",
-            "persistence"
+            "persistence",
+            "privilege-escalation",
+            "initial-access"
           ],
-          "reasoning": "Embedding similarity: 0.401"
-        },
-        {
-          "attack_step": "Impersonate legitimate charging stations",
-          "technique_id": "T1496.003",
-          "technique_name": "SMS Pumping",
-          "confidence": 0.370533024499829,
-          "tactics": [
-            "impact"
-          ],
-          "reasoning": "Embedding similarity: 0.371"
+          "reasoning": "Embedding similarity: 0.360"
         },
         {
           "attack_step": "Query encrypted credential records",
@@ -676,6 +667,16 @@
           "reasoning": "Embedding similarity: 0.387"
         },
         {
+          "attack_step": "Impersonate legitimate charging stations",
+          "technique_id": "T1496.003",
+          "technique_name": "SMS Pumping",
+          "confidence": 0.370533024499829,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.371"
+        },
+        {
           "attack_step": "Access DynamoDB tables containing EVSE credentials",
           "technique_id": "T1213.006",
           "technique_name": "Databases",
@@ -684,6 +685,59 @@
             "collection"
           ],
           "reasoning": "Embedding similarity: 0.404"
+        },
+        {
+          "attack_step": "Decrypt stored EVSE credentials",
+          "technique_id": "T1556.005",
+          "technique_name": "Reversible Encryption",
+          "confidence": 0.39087607115388123,
+          "tactics": [
+            "credential-access",
+            "defense-evasion",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.391"
+        },
+        {
+          "attack_step": "Compromise EVSE registry confidentiality",
+          "technique_id": "T1495",
+          "technique_name": "Firmware Corruption",
+          "confidence": 0.3766098134884136,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.377"
+        },
+        {
+          "attack_step": "Locate DynamoDB encryption keys",
+          "technique_id": "T1213.006",
+          "technique_name": "Databases",
+          "confidence": 0.39624047643861837,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.396"
+        },
+        {
+          "attack_step": "Extract encryption keys from key management system",
+          "technique_id": "T1145",
+          "technique_name": "Private Keys",
+          "confidence": 0.46840407217224467,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.468"
+        },
+        {
+          "attack_step": "Obtain charging station authentication credentials",
+          "technique_id": "T1098.005",
+          "technique_name": "Device Registration",
+          "confidence": 0.45416712949083393,
+          "tactics": [
+            "persistence",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.454"
         },
         {
           "attack_step": "Exploit privileged access permissions",
@@ -698,6 +752,18 @@
           "reasoning": "Embedding similarity: 0.407"
         },
         {
+          "attack_step": "Bypass key access controls",
+          "technique_id": "T1556",
+          "technique_name": "Modify Authentication Process",
+          "confidence": 0.4013106929392058,
+          "tactics": [
+            "credential-access",
+            "defense-evasion",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.401"
+        },
+        {
           "attack_step": "Use decrypted credentials for unauthorized access",
           "technique_id": "T1552",
           "technique_name": "Unsecured Credentials",
@@ -706,72 +772,6 @@
             "credential-access"
           ],
           "reasoning": "Embedding similarity: 0.509"
-        },
-        {
-          "attack_step": "Locate DynamoDB encryption keys",
-          "technique_id": "T1213.006",
-          "technique_name": "Databases",
-          "confidence": 0.39624047643861837,
-          "tactics": [
-            "collection"
-          ],
-          "reasoning": "Embedding similarity: 0.396"
-        },
-        {
-          "attack_step": "Compromise EVSE registry confidentiality",
-          "technique_id": "T1495",
-          "technique_name": "Firmware Corruption",
-          "confidence": 0.3766098134884136,
-          "tactics": [
-            "impact"
-          ],
-          "reasoning": "Embedding similarity: 0.377"
-        },
-        {
-          "attack_step": "Obtain charging station authentication credentials",
-          "technique_id": "T1098.005",
-          "technique_name": "Device Registration",
-          "confidence": 0.45416712949083393,
-          "tactics": [
-            "persistence",
-            "privilege-escalation"
-          ],
-          "reasoning": "Embedding similarity: 0.454"
-        },
-        {
-          "attack_step": "Extract encryption keys from key management system",
-          "technique_id": "T1145",
-          "technique_name": "Private Keys",
-          "confidence": 0.46840407217224467,
-          "tactics": [
-            "credential-access"
-          ],
-          "reasoning": "Embedding similarity: 0.468"
-        },
-        {
-          "attack_step": "Rogue insider with system access",
-          "technique_id": "T1078.003",
-          "technique_name": "Local Accounts",
-          "confidence": 0.3597283265077171,
-          "tactics": [
-            "defense-evasion",
-            "persistence",
-            "privilege-escalation",
-            "initial-access"
-          ],
-          "reasoning": "Embedding similarity: 0.360"
-        },
-        {
-          "attack_step": "Decrypt stored EVSE credentials",
-          "technique_id": "T1556.005",
-          "technique_name": "Reversible Encryption",
-          "confidence": 0.39087607115388123,
-          "tactics": [
-            "credential-access",
-            "defense-evasion",
-            "persistence"
-          ],
-          "reasoning": "Embedding similarity: 0.391"
         }
       ],
       "mapping_count": 12
@@ -895,14 +895,77 @@
       },
       "ttc_mappings": [
         {
-          "attack_step": "Rogue WiFi access point",
-          "technique_id": "T1584.008",
-          "technique_name": "Network Devices",
-          "confidence": 0.4534491738620517,
+          "attack_step": "Sophisticated attacker with network interception capabilities",
+          "technique_id": "T1040",
+          "technique_name": "Network Sniffing",
+          "confidence": 0.39478052967148924,
+          "tactics": [
+            "credential-access",
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.395"
+        },
+        {
+          "attack_step": "Gain network access to OCPP communication path",
+          "technique_id": "T1040",
+          "technique_name": "Network Sniffing",
+          "confidence": 0.4862314098563184,
+          "tactics": [
+            "credential-access",
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.486"
+        },
+        {
+          "attack_step": "Intercept unencrypted OCPP traffic",
+          "technique_id": "T1040",
+          "technique_name": "Network Sniffing",
+          "confidence": 0.4189692222100325,
+          "tactics": [
+            "credential-access",
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.419"
+        },
+        {
+          "attack_step": "Certificate spoofingMITM proxy",
+          "technique_id": "T1608.003",
+          "technique_name": "Install Digital Certificate",
+          "confidence": 0.4187958228536385,
           "tactics": [
             "resource-development"
           ],
-          "reasoning": "Embedding similarity: 0.453"
+          "reasoning": "Embedding similarity: 0.419"
+        },
+        {
+          "attack_step": "DNS hijacking",
+          "technique_id": "T1071.004",
+          "technique_name": "DNS",
+          "confidence": 0.49623706422201047,
+          "tactics": [
+            "command-and-control"
+          ],
+          "reasoning": "Embedding similarity: 0.496"
+        },
+        {
+          "attack_step": "Analyze OCPP protocol messages",
+          "technique_id": "T1188",
+          "technique_name": "Multi-hop Proxy",
+          "confidence": 0.31004207755803753,
+          "tactics": [
+            "command-and-control"
+          ],
+          "reasoning": "Embedding similarity: 0.310"
+        },
+        {
+          "attack_step": "Loss of integrity in transaction management and audit data",
+          "technique_id": "T1495",
+          "technique_name": "Firmware Corruption",
+          "confidence": 0.35768452642529336,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.358"
         },
         {
           "attack_step": "Manipulate charging transactions",
@@ -918,48 +981,6 @@
           "reasoning": "Embedding similarity: 0.348"
         },
         {
-          "attack_step": "Gain network access to OCPP communication path",
-          "technique_id": "T1040",
-          "technique_name": "Network Sniffing",
-          "confidence": 0.4862314098563184,
-          "tactics": [
-            "credential-access",
-            "discovery"
-          ],
-          "reasoning": "Embedding similarity: 0.486"
-        },
-        {
-          "attack_step": "Sophisticated attacker with network interception capabilities",
-          "technique_id": "T1040",
-          "technique_name": "Network Sniffing",
-          "confidence": 0.39478052967148924,
-          "tactics": [
-            "credential-access",
-            "discovery"
-          ],
-          "reasoning": "Embedding similarity: 0.395"
-        },
-        {
-          "attack_step": "DNS hijacking",
-          "technique_id": "T1071.004",
-          "technique_name": "DNS",
-          "confidence": 0.49623706422201047,
-          "tactics": [
-            "command-and-control"
-          ],
-          "reasoning": "Embedding similarity: 0.496"
-        },
-        {
-          "attack_step": "Decrypt TLSSSL if weak ciphers used",
-          "technique_id": "T1600.002",
-          "technique_name": "Disable Crypto Hardware",
-          "confidence": 0.3134735282329143,
-          "tactics": [
-            "defense-evasion"
-          ],
-          "reasoning": "Embedding similarity: 0.313"
-        },
-        {
           "attack_step": "BGP hijacking",
           "technique_id": "T1557.002",
           "technique_name": "ARP Cache Poisoning",
@@ -971,34 +992,24 @@
           "reasoning": "Embedding similarity: 0.442"
         },
         {
-          "attack_step": "Loss of integrity in transaction management and audit data",
-          "technique_id": "T1495",
-          "technique_name": "Firmware Corruption",
-          "confidence": 0.35768452642529336,
+          "attack_step": "Position attacker on network",
+          "technique_id": "T1005",
+          "technique_name": "Data from Local System",
+          "confidence": 0.3133056670564144,
           "tactics": [
-            "impact"
+            "collection"
           ],
-          "reasoning": "Embedding similarity: 0.358"
+          "reasoning": "Embedding similarity: 0.313"
         },
         {
-          "attack_step": "Alter session duration",
-          "technique_id": "T1499.001",
-          "technique_name": "OS Exhaustion Flood",
-          "confidence": 0.4125224909646945,
-          "tactics": [
-            "impact"
-          ],
-          "reasoning": "Embedding similarity: 0.413"
-        },
-        {
-          "attack_step": "Certificate spoofingMITM proxy",
-          "technique_id": "T1608.003",
-          "technique_name": "Install Digital Certificate",
-          "confidence": 0.4187958228536385,
+          "attack_step": "Rogue WiFi access point",
+          "technique_id": "T1584.008",
+          "technique_name": "Network Devices",
+          "confidence": 0.4534491738620517,
           "tactics": [
             "resource-development"
           ],
-          "reasoning": "Embedding similarity: 0.419"
+          "reasoning": "Embedding similarity: 0.453"
         },
         {
           "attack_step": "ARP spoofingpoisoning",
@@ -1012,35 +1023,24 @@
           "reasoning": "Embedding similarity: 0.543"
         },
         {
-          "attack_step": "Position attacker on network",
-          "technique_id": "T1005",
-          "technique_name": "Data from Local System",
-          "confidence": 0.3133056670564144,
+          "attack_step": "Decrypt TLSSSL if weak ciphers used",
+          "technique_id": "T1600.002",
+          "technique_name": "Disable Crypto Hardware",
+          "confidence": 0.3134735282329143,
           "tactics": [
-            "collection"
+            "defense-evasion"
           ],
           "reasoning": "Embedding similarity: 0.313"
         },
         {
-          "attack_step": "Intercept unencrypted OCPP traffic",
-          "technique_id": "T1040",
-          "technique_name": "Network Sniffing",
-          "confidence": 0.4189692222100325,
+          "attack_step": "Alter session duration",
+          "technique_id": "T1499.001",
+          "technique_name": "OS Exhaustion Flood",
+          "confidence": 0.4125224909646945,
           "tactics": [
-            "credential-access",
-            "discovery"
+            "impact"
           ],
-          "reasoning": "Embedding similarity: 0.419"
-        },
-        {
-          "attack_step": "Analyze OCPP protocol messages",
-          "technique_id": "T1188",
-          "technique_name": "Multi-hop Proxy",
-          "confidence": 0.31004207755803753,
-          "tactics": [
-            "command-and-control"
-          ],
-          "reasoning": "Embedding similarity: 0.310"
+          "reasoning": "Embedding similarity: 0.413"
         }
       ],
       "mapping_count": 14
@@ -1128,6 +1128,57 @@
       },
       "ttc_mappings": [
         {
+          "attack_step": "Analyze certificate issuance policies",
+          "technique_id": "T1587.003",
+          "technique_name": "Digital Certificates",
+          "confidence": 0.4684198814940931,
+          "tactics": [
+            "resource-development"
+          ],
+          "reasoning": "Embedding similarity: 0.468"
+        },
+        {
+          "attack_step": "Rogue stations join network",
+          "technique_id": "T1557.002",
+          "technique_name": "ARP Cache Poisoning",
+          "confidence": 0.4247133809070852,
+          "tactics": [
+            "credential-access",
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.425"
+        },
+        {
+          "attack_step": "Enumerate existing certificates",
+          "technique_id": "T1553.004",
+          "technique_name": "Install Root Certificate",
+          "confidence": 0.4078155871639846,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.408"
+        },
+        {
+          "attack_step": "Malicious actor with compromised AWS Certificate Manager access",
+          "technique_id": "T1587.003",
+          "technique_name": "Digital Certificates",
+          "confidence": 0.38658368798293874,
+          "tactics": [
+            "resource-development"
+          ],
+          "reasoning": "Embedding similarity: 0.387"
+        },
+        {
+          "attack_step": "Identify EVSE certificate templates",
+          "technique_id": "T1587.003",
+          "technique_name": "Digital Certificates",
+          "confidence": 0.40509424682961875,
+          "tactics": [
+            "resource-development"
+          ],
+          "reasoning": "Embedding similarity: 0.405"
+        },
+        {
           "attack_step": "Craft fraudulent certificate requests",
           "technique_id": "T1587.003",
           "technique_name": "Digital Certificates",
@@ -1148,26 +1199,6 @@
           "reasoning": "Embedding similarity: 0.356"
         },
         {
-          "attack_step": "Enumerate existing certificates",
-          "technique_id": "T1553.004",
-          "technique_name": "Install Root Certificate",
-          "confidence": 0.4078155871639846,
-          "tactics": [
-            "defense-evasion"
-          ],
-          "reasoning": "Embedding similarity: 0.408"
-        },
-        {
-          "attack_step": "Identify EVSE certificate templates",
-          "technique_id": "T1587.003",
-          "technique_name": "Digital Certificates",
-          "confidence": 0.40509424682961875,
-          "tactics": [
-            "resource-development"
-          ],
-          "reasoning": "Embedding similarity: 0.405"
-        },
-        {
           "attack_step": "Issue unauthorized certificates via ACM",
           "technique_id": "T1553.004",
           "technique_name": "Install Root Certificate",
@@ -1176,27 +1207,6 @@
             "defense-evasion"
           ],
           "reasoning": "Embedding similarity: 0.503"
-        },
-        {
-          "attack_step": "Rogue stations join network",
-          "technique_id": "T1557.002",
-          "technique_name": "ARP Cache Poisoning",
-          "confidence": 0.4247133809070852,
-          "tactics": [
-            "credential-access",
-            "collection"
-          ],
-          "reasoning": "Embedding similarity: 0.425"
-        },
-        {
-          "attack_step": "Analyze certificate issuance policies",
-          "technique_id": "T1587.003",
-          "technique_name": "Digital Certificates",
-          "confidence": 0.4684198814940931,
-          "tactics": [
-            "resource-development"
-          ],
-          "reasoning": "Embedding similarity: 0.468"
         },
         {
           "attack_step": "Deploy counterfeit charging stations",
@@ -1208,16 +1218,6 @@
             "privilege-escalation"
           ],
           "reasoning": "Embedding similarity: 0.337"
-        },
-        {
-          "attack_step": "Malicious actor with compromised AWS Certificate Manager access",
-          "technique_id": "T1587.003",
-          "technique_name": "Digital Certificates",
-          "confidence": 0.38658368798293874,
-          "tactics": [
-            "resource-development"
-          ],
-          "reasoning": "Embedding similarity: 0.387"
         }
       ],
       "mapping_count": 9

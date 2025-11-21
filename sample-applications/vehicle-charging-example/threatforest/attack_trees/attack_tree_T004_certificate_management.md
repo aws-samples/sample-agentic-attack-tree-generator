@@ -33,6 +33,58 @@ graph TD
 
 This attack tree has been mapped to MITRE ATT&CK techniques:
 
+### Analyze certificate issuance policies
+
+- **Technique**: [T1587.003](https://attack.mitre.org/techniques/T1587/003/) - Digital Certificates
+- **Tactic**: Resource Development
+- **Similarity Score**: 46.84%
+- **Mitigations (1):**
+  - 🛡️ **Pre-compromise**
+    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
+
+### Rogue stations join network
+
+- **Technique**: [T1557.002](https://attack.mitre.org/techniques/T1557/002/) - ARP Cache Poisoning
+- **Tactic**: Credential Access, Collection
+- **Similarity Score**: 42.47%
+- **Mitigations (6):**
+  - 🛡️ **Encrypt Sensitive Information**
+    Protect sensitive information at rest, in transit, and during processing by using strong encryption algorithms. Encrypti...
+  - 🛡️ **Network Intrusion Prevention**
+    Use intrusion detection signatures to block traffic at network boundaries.
+  - 🛡️ **User Training**
+    User Training involves educating employees and contractors on recognizing, reporting, and preventing cyber threats that ...
+  - *3 more mitigation(s) available*
+
+### Enumerate existing certificates
+
+- **Technique**: [T1553.004](https://attack.mitre.org/techniques/T1553/004/) - Install Root Certificate
+- **Tactic**: Defense Evasion
+- **Similarity Score**: 40.78%
+- **Mitigations (2):**
+  - 🛡️ **Software Configuration**
+    Software configuration refers to making security-focused adjustments to the settings of applications, middleware, databa...
+  - 🛡️ **Operating System Configuration**
+    Operating System Configuration involves adjusting system settings and hardening the default configurations of an operati...
+
+### Malicious actor with compromised AWS Certificate Manager access
+
+- **Technique**: [T1587.003](https://attack.mitre.org/techniques/T1587/003/) - Digital Certificates
+- **Tactic**: Resource Development
+- **Similarity Score**: 38.66%
+- **Mitigations (1):**
+  - 🛡️ **Pre-compromise**
+    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
+
+### Identify EVSE certificate templates
+
+- **Technique**: [T1587.003](https://attack.mitre.org/techniques/T1587/003/) - Digital Certificates
+- **Tactic**: Resource Development
+- **Similarity Score**: 40.51%
+- **Mitigations (1):**
+  - 🛡️ **Pre-compromise**
+    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
+
 ### Craft fraudulent certificate requests
 
 - **Technique**: [T1587.003](https://attack.mitre.org/techniques/T1587/003/) - Digital Certificates
@@ -56,26 +108,6 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
     Application Developer Guidance focuses on providing developers with the knowledge, tools, and best practices needed to w...
   - *2 more mitigation(s) available*
 
-### Enumerate existing certificates
-
-- **Technique**: [T1553.004](https://attack.mitre.org/techniques/T1553/004/) - Install Root Certificate
-- **Tactic**: Defense Evasion
-- **Similarity Score**: 40.78%
-- **Mitigations (2):**
-  - 🛡️ **Software Configuration**
-    Software configuration refers to making security-focused adjustments to the settings of applications, middleware, databa...
-  - 🛡️ **Operating System Configuration**
-    Operating System Configuration involves adjusting system settings and hardening the default configurations of an operati...
-
-### Identify EVSE certificate templates
-
-- **Technique**: [T1587.003](https://attack.mitre.org/techniques/T1587/003/) - Digital Certificates
-- **Tactic**: Resource Development
-- **Similarity Score**: 40.51%
-- **Mitigations (1):**
-  - 🛡️ **Pre-compromise**
-    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
-
 ### Issue unauthorized certificates via ACM
 
 - **Technique**: [T1553.004](https://attack.mitre.org/techniques/T1553/004/) - Install Root Certificate
@@ -87,29 +119,6 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
   - 🛡️ **Operating System Configuration**
     Operating System Configuration involves adjusting system settings and hardening the default configurations of an operati...
 
-### Rogue stations join network
-
-- **Technique**: [T1557.002](https://attack.mitre.org/techniques/T1557/002/) - ARP Cache Poisoning
-- **Tactic**: Credential Access, Collection
-- **Similarity Score**: 42.47%
-- **Mitigations (6):**
-  - 🛡️ **Encrypt Sensitive Information**
-    Protect sensitive information at rest, in transit, and during processing by using strong encryption algorithms. Encrypti...
-  - 🛡️ **Network Intrusion Prevention**
-    Use intrusion detection signatures to block traffic at network boundaries.
-  - 🛡️ **User Training**
-    User Training involves educating employees and contractors on recognizing, reporting, and preventing cyber threats that ...
-  - *3 more mitigation(s) available*
-
-### Analyze certificate issuance policies
-
-- **Technique**: [T1587.003](https://attack.mitre.org/techniques/T1587/003/) - Digital Certificates
-- **Tactic**: Resource Development
-- **Similarity Score**: 46.84%
-- **Mitigations (1):**
-  - 🛡️ **Pre-compromise**
-    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
-
 ### Deploy counterfeit charging stations
 
 - **Technique**: [T1098.005](https://attack.mitre.org/techniques/T1098/005/) - Device Registration
@@ -118,15 +127,6 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
 - **Mitigations (1):**
   - 🛡️ **Multi-factor Authentication**
     Multi-Factor Authentication (MFA) enhances security by requiring users to provide at least two forms of verification to ...
-
-### Malicious actor with compromised AWS Certificate Manager access
-
-- **Technique**: [T1587.003](https://attack.mitre.org/techniques/T1587/003/) - Digital Certificates
-- **Tactic**: Resource Development
-- **Similarity Score**: 38.66%
-- **Mitigations (1):**
-  - 🛡️ **Pre-compromise**
-    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
 
 
 *Total technique mappings: 9 | Mitigations found: 20*

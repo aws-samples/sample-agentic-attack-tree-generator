@@ -46,28 +46,19 @@ graph TD
 
 This attack tree has been mapped to MITRE ATT&CK techniques:
 
-### Rogue WiFi access point
+### Sophisticated attacker with network interception capabilities
 
-- **Technique**: [T1584.008](https://attack.mitre.org/techniques/T1584/008/) - Network Devices
-- **Tactic**: Resource Development
-- **Similarity Score**: 45.34%
-- **Mitigations (1):**
-  - 🛡️ **Pre-compromise**
-    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
-
-### Manipulate charging transactions
-
-- **Technique**: [T1078](https://attack.mitre.org/techniques/T1078/) - Valid Accounts
-- **Tactic**: Defense Evasion, Persistence, Privilege Escalation, Initial Access
-- **Similarity Score**: 34.82%
-- **Mitigations (8):**
-  - 🛡️ **Password Policies**
-    Set and enforce secure password policies for accounts to reduce the likelihood of unauthorized access. Strong password p...
+- **Technique**: [T1040](https://attack.mitre.org/techniques/T1040/) - Network Sniffing
+- **Tactic**: Credential Access, Discovery
+- **Similarity Score**: 39.48%
+- **Mitigations (4):**
   - 🛡️ **User Account Management**
     User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
-  - 🛡️ **Privileged Account Management**
-    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...
-  - *5 more mitigation(s) available*
+  - 🛡️ **Multi-factor Authentication**
+    Multi-Factor Authentication (MFA) enhances security by requiring users to provide at least two forms of verification to ...
+  - 🛡️ **Encrypt Sensitive Information**
+    Protect sensitive information at rest, in transit, and during processing by using strong encryption algorithms. Encrypti...
+  - *1 more mitigation(s) available*
 
 ### Gain network access to OCPP communication path
 
@@ -83,11 +74,11 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
     Protect sensitive information at rest, in transit, and during processing by using strong encryption algorithms. Encrypti...
   - *1 more mitigation(s) available*
 
-### Sophisticated attacker with network interception capabilities
+### Intercept unencrypted OCPP traffic
 
 - **Technique**: [T1040](https://attack.mitre.org/techniques/T1040/) - Network Sniffing
 - **Tactic**: Credential Access, Discovery
-- **Similarity Score**: 39.48%
+- **Similarity Score**: 41.90%
 - **Mitigations (4):**
   - 🛡️ **User Account Management**
     User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
@@ -96,6 +87,15 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
   - 🛡️ **Encrypt Sensitive Information**
     Protect sensitive information at rest, in transit, and during processing by using strong encryption algorithms. Encrypti...
   - *1 more mitigation(s) available*
+
+### Certificate spoofingMITM proxy
+
+- **Technique**: [T1608.003](https://attack.mitre.org/techniques/T1608/003/) - Install Digital Certificate
+- **Tactic**: Resource Development
+- **Similarity Score**: 41.88%
+- **Mitigations (1):**
+  - 🛡️ **Pre-compromise**
+    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
 
 ### DNS hijacking
 
@@ -108,25 +108,11 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
   - 🛡️ **Network Intrusion Prevention**
     Use intrusion detection signatures to block traffic at network boundaries.
 
-### Decrypt TLSSSL if weak ciphers used
+### Analyze OCPP protocol messages
 
-- **Technique**: [T1600.002](https://attack.mitre.org/techniques/T1600/002/) - Disable Crypto Hardware
-- **Tactic**: Defense Evasion
-- **Similarity Score**: 31.35%
-
-### BGP hijacking
-
-- **Technique**: [T1557.002](https://attack.mitre.org/techniques/T1557/002/) - ARP Cache Poisoning
-- **Tactic**: Credential Access, Collection
-- **Similarity Score**: 44.21%
-- **Mitigations (6):**
-  - 🛡️ **Encrypt Sensitive Information**
-    Protect sensitive information at rest, in transit, and during processing by using strong encryption algorithms. Encrypti...
-  - 🛡️ **Network Intrusion Prevention**
-    Use intrusion detection signatures to block traffic at network boundaries.
-  - 🛡️ **User Training**
-    User Training involves educating employees and contractors on recognizing, reporting, and preventing cyber threats that ...
-  - *3 more mitigation(s) available*
+- **Technique**: [T1188](https://attack.mitre.org/techniques/T1188/) - Multi-hop Proxy
+- **Tactic**: Command And Control
+- **Similarity Score**: 31.00%
 
 ### Loss of integrity in transaction management and audit data
 
@@ -141,29 +127,25 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
   - 🛡️ **Boot Integrity**
     Boot Integrity ensures that a system starts securely by verifying the integrity of its boot process, operating system, a...
 
-### Alter session duration
+### Manipulate charging transactions
 
-- **Technique**: [T1499.001](https://attack.mitre.org/techniques/T1499/001/) - OS Exhaustion Flood
-- **Tactic**: Impact
-- **Similarity Score**: 41.25%
-- **Mitigations (1):**
-  - 🛡️ **Filter Network Traffic**
-    Employ network appliances and endpoint software to filter ingress, egress, and lateral network traffic. This includes pr...
+- **Technique**: [T1078](https://attack.mitre.org/techniques/T1078/) - Valid Accounts
+- **Tactic**: Defense Evasion, Persistence, Privilege Escalation, Initial Access
+- **Similarity Score**: 34.82%
+- **Mitigations (8):**
+  - 🛡️ **Password Policies**
+    Set and enforce secure password policies for accounts to reduce the likelihood of unauthorized access. Strong password p...
+  - 🛡️ **User Account Management**
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
+  - 🛡️ **Privileged Account Management**
+    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...
+  - *5 more mitigation(s) available*
 
-### Certificate spoofingMITM proxy
-
-- **Technique**: [T1608.003](https://attack.mitre.org/techniques/T1608/003/) - Install Digital Certificate
-- **Tactic**: Resource Development
-- **Similarity Score**: 41.88%
-- **Mitigations (1):**
-  - 🛡️ **Pre-compromise**
-    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
-
-### ARP spoofingpoisoning
+### BGP hijacking
 
 - **Technique**: [T1557.002](https://attack.mitre.org/techniques/T1557/002/) - ARP Cache Poisoning
 - **Tactic**: Credential Access, Collection
-- **Similarity Score**: 54.28%
+- **Similarity Score**: 44.21%
 - **Mitigations (6):**
   - 🛡️ **Encrypt Sensitive Information**
     Protect sensitive information at rest, in transit, and during processing by using strong encryption algorithms. Encrypti...
@@ -182,25 +164,43 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
   - 🛡️ **Data Loss Prevention**
     Data Loss Prevention (DLP) involves implementing strategies and technologies to identify, categorize, monitor, and contr...
 
-### Intercept unencrypted OCPP traffic
+### Rogue WiFi access point
 
-- **Technique**: [T1040](https://attack.mitre.org/techniques/T1040/) - Network Sniffing
-- **Tactic**: Credential Access, Discovery
-- **Similarity Score**: 41.90%
-- **Mitigations (4):**
-  - 🛡️ **User Account Management**
-    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
-  - 🛡️ **Multi-factor Authentication**
-    Multi-Factor Authentication (MFA) enhances security by requiring users to provide at least two forms of verification to ...
+- **Technique**: [T1584.008](https://attack.mitre.org/techniques/T1584/008/) - Network Devices
+- **Tactic**: Resource Development
+- **Similarity Score**: 45.34%
+- **Mitigations (1):**
+  - 🛡️ **Pre-compromise**
+    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
+
+### ARP spoofingpoisoning
+
+- **Technique**: [T1557.002](https://attack.mitre.org/techniques/T1557/002/) - ARP Cache Poisoning
+- **Tactic**: Credential Access, Collection
+- **Similarity Score**: 54.28%
+- **Mitigations (6):**
   - 🛡️ **Encrypt Sensitive Information**
     Protect sensitive information at rest, in transit, and during processing by using strong encryption algorithms. Encrypti...
-  - *1 more mitigation(s) available*
+  - 🛡️ **Network Intrusion Prevention**
+    Use intrusion detection signatures to block traffic at network boundaries.
+  - 🛡️ **User Training**
+    User Training involves educating employees and contractors on recognizing, reporting, and preventing cyber threats that ...
+  - *3 more mitigation(s) available*
 
-### Analyze OCPP protocol messages
+### Decrypt TLSSSL if weak ciphers used
 
-- **Technique**: [T1188](https://attack.mitre.org/techniques/T1188/) - Multi-hop Proxy
-- **Tactic**: Command And Control
-- **Similarity Score**: 31.00%
+- **Technique**: [T1600.002](https://attack.mitre.org/techniques/T1600/002/) - Disable Crypto Hardware
+- **Tactic**: Defense Evasion
+- **Similarity Score**: 31.35%
+
+### Alter session duration
+
+- **Technique**: [T1499.001](https://attack.mitre.org/techniques/T1499/001/) - OS Exhaustion Flood
+- **Tactic**: Impact
+- **Similarity Score**: 41.25%
+- **Mitigations (1):**
+  - 🛡️ **Filter Network Traffic**
+    Employ network appliances and endpoint software to filter ingress, egress, and lateral network traffic. This includes pr...
 
 
 *Total technique mappings: 14 | Mitigations found: 41*
