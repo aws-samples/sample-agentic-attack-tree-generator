@@ -46,8 +46,8 @@ class Config:
     
     @property
     def stix_bundle_path(self) -> Path:
-        """Get absolute path to STIX bundle file"""
-        return ROOT_DIR / self.get('data.stix_bundle', 'data/aaf-bundle.json')
+        """Get absolute path to STIX bundle file (hardcoded internal path)"""
+        return ROOT_DIR / "data/threat-intelligence/enterprise-attack-18.0.json"
     
     @property
     def embeddings_model(self) -> str:

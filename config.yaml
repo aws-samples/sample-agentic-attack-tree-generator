@@ -1,11 +1,5 @@
 # ThreatForest Configuration
 
-
-# Data paths
-data:
-  # STIX bundle file containing MITRE ATT&CK data
-  stix_bundle: "data/threat-intelligence/enterprise-attack-18.0.json"
-
 # Model Provider Configuration
 
 # AWS Bedrock (ACTIVE)
@@ -28,8 +22,8 @@ data:
 #   # Requires OPENAI_API_KEY in .env
 
 # # Google Gemini
-gemini:
-  model_id: "gemini-2.5-flash"
+# gemini:
+#   model_id: "gemini-2.5-flash"
 #   # Requires GEMINI_API_KEY in .env
 
 # # LiteLLM (Multi-provider proxy)
@@ -57,4 +51,4 @@ gemini:
 embeddings:
   model: "cisco-ai/SecureBERT2.0-biencoder"
   graph_file: "data/graphs/mitre_attack_graph.json"
-  ttc_threshold: 0.3  # Similarity threshold for TTC matching (0-1, lowered from 0.8 for better local graph matching)
+  ttc_threshold: 0.3  # Similarity threshold for TTC matching (0-1)
