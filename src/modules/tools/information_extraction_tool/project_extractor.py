@@ -3,14 +3,11 @@ import json
 from typing import Dict, Any, Optional
 from pathlib import Path
 from src.config import config
-from boto3 import Session
-from strands import Agent
-from strands.models import BedrockModel
-from strands.handlers import null_callback_handler
+from src.modules.core import BaseAgent
 from .text_utils import parse_json_response
 
 
-class ProjectExtractor:
+class ProjectExtractor(BaseAgent):
     """Extracts project metadata and context using LLM analysis"""
     
     def __init__(self, logger):
@@ -42,16 +39,8 @@ class ProjectExtractor:
 """
         
         try:
-            # Create Strands agent directly
-            session = Session(profile_name=aws_profile) if aws_profile else Session()
-            model = BedrockModel(model_id=bedrock_model, boto_session=session, temperature=0)
-            
-            # Load system prompt
-            prompt_path = Path(__file__).parent.parent.parent.parent / "prompts" / "project-analysis.md"
-            with open(prompt_path, 'r') as f:
-                system_prompt = f.read()
-            
-            agent = Agent(model=model, system_prompt=system_prompt, tools=[], callback_handler=null_callback_handler())
+            # Use model factory via BaseAgent (auto-detects provider)
+            agent = self.get_strands_agent('project-analysis.md')
             
             # Run agent synchronously
             result = agent(user_prompt)

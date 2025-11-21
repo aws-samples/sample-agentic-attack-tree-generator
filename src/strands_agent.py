@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 import traceback
-import logging
 
 from .modules.core import Context, ThreatForestState, WorkflowStage, StateManager
 from .modules.core import ProgressEmitter, ProgressEvent, ProgressEventType

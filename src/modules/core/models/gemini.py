@@ -30,10 +30,7 @@ def create_gemini_model(config, temperature: float = 0):
         client_args={"api_key": api_key},
         model_id=gemini_config['model_id'],
         params={
-            "temperature": temperature,
-            "max_output_tokens": 8192,
-            "top_p": 0.95,
-            "top_k": 40
+            "temperature": temperature
         }
     )
     

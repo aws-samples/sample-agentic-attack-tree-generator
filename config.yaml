@@ -9,8 +9,8 @@ data:
 # Model Provider Configuration
 
 # AWS Bedrock (ACTIVE)
-bedrock:
-  model_id: "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+# bedrock:
+#   model_id: "us.anthropic.claude-haiku-4-5-20251001-v1:0"
   # Other options:
   # - "us.anthropic.claude-sonnet-4-20250514-v1:0"      # Claude Sonnet 4
   # - "us.anthropic.claude-sonnet-4-5-20250929-v1:0"    # Claude Sonnet 4.5
@@ -28,8 +28,8 @@ bedrock:
 #   # Requires OPENAI_API_KEY in .env
 
 # # Google Gemini
-# gemini:
-#   model_id: "gemini-2.5-flash"
+gemini:
+  model_id: "gemini-2.5-flash"
 #   # Requires GEMINI_API_KEY in .env
 
 # # LiteLLM (Multi-provider proxy)
@@ -58,8 +58,3 @@ embeddings:
   model: "cisco-ai/SecureBERT2.0-biencoder"
   graph_file: "data/graphs/mitre_attack_graph.json"
   ttc_threshold: 0.3  # Similarity threshold for TTC matching (0-1, lowered from 0.8 for better local graph matching)
-  
-# AWS settings
-aws:
-  default_profile: "team-prod"
-  default_region: "us-east-1"

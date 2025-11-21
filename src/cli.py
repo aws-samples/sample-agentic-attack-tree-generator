@@ -47,13 +47,19 @@ def run(project_path, threat_model, mode, input_dir, output_dir):
         # Show welcome
         display.show_welcome()
         
-        # Show config from config.yaml
-        display.show_config({
-            'aws_profile': config.default_aws_profile,
-            'bedrock_model': config.default_bedrock_model,
+        # Show config from config.yaml (conditionally show AWS profile)
+        config_display = {
+            'model': config.default_bedrock_model,
             'embeddings_model': config.embeddings_model,
             'graph_file': str(config.graph_file_path)
-        })
+        }
+        
+        # Only show AWS profile if using AWS providers
+        if (config.bedrock and config.bedrock.get('model_id')) or \
+           (config.sagemaker and config.sagemaker.get('endpoint_name')):
+            config_display['aws_profile'] = config.default_aws_profile
+        
+        display.show_config(config_display)
         
         # Interactive mode if no project path provided
         if project_path is None:

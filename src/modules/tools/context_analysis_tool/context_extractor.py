@@ -3,14 +3,11 @@ import json
 from typing import Dict, Any, Optional
 from pathlib import Path
 from src.config import config
-from boto3 import Session
-from strands import Agent
-from strands.models import BedrockModel
-from strands.handlers import null_callback_handler
+from src.modules.core import BaseAgent
 from .file_categorizer import FileCategorizer
 
 
-class ContextExtractor:
+class ContextExtractor(BaseAgent):
     """Extracts enhanced context using LLM"""
     
     def __init__(self, logger):
@@ -34,17 +31,8 @@ class ContextExtractor:
             
             self.logger.info(f"Analyzing {len(files_to_analyze)} files via Strands for enhanced context")
             
-            # Create Strands agent directly
-            session = Session(profile_name=aws_profile) if aws_profile else Session()
-            model = BedrockModel(model_id=bedrock_model, boto_session=session, temperature=0)
-            
-            # Load system prompt
-            from pathlib import Path
-            prompt_path = Path(__file__).parent.parent.parent.parent / "prompts" / "context-extraction.md"
-            with open(prompt_path, 'r') as f:
-                system_prompt = f.read()
-            
-            agent = Agent(model=model, system_prompt=system_prompt, tools=[], callback_handler=null_callback_handler())
+            # Use model factory via BaseAgent (auto-detects provider)
+            agent = self.get_strands_agent('context-extraction.md')
             
             # Build user prompt
             file_list = '\n'.join([f"- {Path(f).name}" for f in files_to_analyze[:5]])
