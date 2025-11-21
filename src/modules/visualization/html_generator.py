@@ -19,6 +19,21 @@ class HTMLGenerator:
     
     def __init__(self):
         self.logger = ThreatForestLogger.get_logger(self.__class__.__name__)
+        self._vis_network_script = None
+    
+    def _get_vis_network_script(self) -> str:
+        """Load vis-network library script (cached after first load)"""
+        if self._vis_network_script is None:
+            script_path = Path(__file__).parent / 'templates' / 'vis-network.min.js'
+            try:
+                with open(script_path, 'r', encoding='utf-8') as f:
+                    self._vis_network_script = f.read()
+                self.logger.debug(f"Loaded vis-network script from {script_path}")
+            except Exception as e:
+                self.logger.error(f"Failed to load vis-network script: {e}")
+                # Fallback to CDN if local file not found
+                self._vis_network_script = ''
+        return self._vis_network_script
     
     def generate_dashboard_from_data(self, trees_data: List[Dict], output_path: str, summary_data: Dict = None):
         """
@@ -433,12 +448,15 @@ class HTMLGenerator:
         category = metadata.get('category', 'Unknown')
         threat_statement = metadata.get('threat_statement', '')
         
+        # Get vis-network script content
+        vis_script = self._get_vis_network_script()
+        
         return f"""<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <title>Attack Tree: {threat_id} - {category}</title>
-    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <script type="text/javascript">{vis_script}</script>
     <style>
         body {{
             font-family: Arial, sans-serif;
@@ -732,12 +750,15 @@ class HTMLGenerator:
         
         trees_json = json.dumps(trees_data, indent=4)
         
+        # Get vis-network script content
+        vis_script = self._get_vis_network_script()
+        
         return f"""<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <title>ThreatForest Attack Trees Dashboard</title>
-    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <script type="text/javascript">{vis_script}</script>
     <style>
         * {{ box-sizing: border-box; }}
         body {{
