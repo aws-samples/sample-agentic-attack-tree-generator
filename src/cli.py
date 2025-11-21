@@ -50,9 +50,8 @@ def run(project_path, threat_model, mode, input_dir, output_dir):
         display.show_config({
             'aws_profile': config.default_aws_profile,
             'bedrock_model': config.default_bedrock_model,
-            'neptune_graph_id': config.neptune_graph_id,
-            'neptune_region': config.neptune_region,
-            'embeddings_mode': config.embeddings_mode
+            'embeddings_model': config.embeddings_model,
+            'graph_file': str(config.graph_file_path)
         })
         
         # Interactive mode if no project path provided

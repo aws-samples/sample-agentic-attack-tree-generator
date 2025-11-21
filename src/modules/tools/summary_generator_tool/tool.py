@@ -104,6 +104,24 @@ class SummaryGeneratorTool:
                 self.logger.warning(f"JSON export generation failed: {e}")
                 json_file = None
             
+            # Emit progress
+            if PROGRESS_AVAILABLE and progress_emitter:
+                progress_emitter.emit(ProgressEvent(
+                    type=ProgressEventType.STAGE_UPDATE,
+                    stage="summary",
+                    percentage=98.0,
+                    message="Generating HTML visualizations"
+                ))
+            
+            # Generate HTML visualizations from structured tree data
+            try:
+                trees = attack_trees.get('ttc_mapped_trees', []) or attack_trees.get('attack_trees', [])
+                html_files = self.file_gen.generate_html_visualizations(output_path, trees=trees)
+                self.logger.info(f"Generated {len(html_files)} HTML visualizations")
+            except Exception as e:
+                self.logger.warning(f"HTML visualization generation failed: {e}")
+                html_files = []
+            
             # Collect output files
             output_files = []
             if summary_file:
@@ -111,12 +129,14 @@ class SummaryGeneratorTool:
             if json_file:
                 output_files.append(json_file)
             output_files.extend(tree_files)
+            output_files.extend(html_files)
             
             return {
                 'output_files': output_files,
                 'summary_file': summary_file,
                 'json_file': json_file,
-                'tree_files': tree_files
+                'tree_files': tree_files,
+                'html_files': html_files
             }
             
         except Exception as e:

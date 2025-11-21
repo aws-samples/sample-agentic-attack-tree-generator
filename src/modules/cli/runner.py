@@ -49,44 +49,10 @@ class WorkflowRunner:
         output_path = Path(output_dir).expanduser().resolve()
         output_path.mkdir(parents=True, exist_ok=True)
         
-        # Initialize matcher based on config
-        if config.embeddings_mode == 'local':
-            matcher = TTCMatcher(
-                mode='local',
-                embeddings_path=str(config.embeddings_file_path),
-                model_name=config.embeddings_model,
-                min_similarity=0.8
-            )
-        else:  # neptune
-            import boto3
-            from neptune_graph_manager import NeptuneGraphManager
-            
-            session = boto3.Session(profile_name=config.default_aws_profile, region_name=config.neptune_region)
-            
-            # Validate Neptune account ID
-            if config.neptune_account_id:
-                sts_client = session.client('sts', region_name=config.neptune_region)
-                identity = sts_client.get_caller_identity()
-                current_account_id = identity['Account']
-                
-                if current_account_id != config.neptune_account_id:
-                    raise ValueError(
-                        f"Account ID mismatch! "
-                        f"Expected: {config.neptune_account_id}, "
-                        f"Current: {current_account_id}"
-                    )
-            
-            neptune_manager = NeptuneGraphManager(
-                session=session,
-                graph_id=config.neptune_graph_id,
-                embedding_model=config.embeddings_model
-            )
-            
-            matcher = TTCMatcher(
-                mode='neptune',
-                neptune_manager=neptune_manager,
-                min_similarity=0.8
-            )
+        # Initialize matcher with local graph (will lazy-load on first use)
+        # Use threshold from config.yaml
+        from src.config import config
+        matcher = TTCMatcher(min_similarity=config.ttc_threshold)
         
         enricher = AttackTreeEnricher(matcher)
         

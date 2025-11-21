@@ -1,11 +1,10 @@
 """Base utility class for ThreatForest components using Strands framework"""
 from pathlib import Path
 from typing import Optional, List
-from boto3 import Session
 from strands import Agent
-from strands.models import BedrockModel
 from strands.handlers import null_callback_handler
 from src.config import config
+from .models.model_factory import create_model
 
 
 class BaseAgent:
@@ -36,33 +35,21 @@ class BaseAgent:
         self, 
         prompt_file: str, 
         tools: Optional[List] = None,
-        temperature: float = 0,
-        model_name: Optional[str] = None
+        temperature: float = 0
     ) -> Agent:
         """
-        Create a Strands Agent with BedrockModel
+        Create a Strands Agent with auto-detected model provider
         
         Args:
             prompt_file: Markdown file in prompts/ (e.g., 'generate-attack-trees.md')
             tools: Optional list of Strands tools for the agent
             temperature: Model temperature (default 0 for deterministic)
-            model_name: Optional model ID override (defaults to config.yaml)
             
         Returns:
             Configured Strands Agent
         """
-        model_id = model_name or config.default_bedrock_model
-        profile = config.default_aws_profile
-        
-        # Create boto3 session with configured profile
-        session = Session(profile_name=profile) if profile else Session()
-        
-        # Create Strands BedrockModel
-        model = BedrockModel(
-            model_id=model_id,
-            boto_session=session,
-            temperature=temperature
-        )
+        # Auto-detect and create model from config.yaml
+        model = create_model(config, temperature)
         
         # Load system prompt from markdown file
         system_prompt = self.get_prompt_from_file(prompt_file)

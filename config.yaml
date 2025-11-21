@@ -5,37 +5,61 @@
 data:
   # STIX bundle file containing MITRE ATT&CK data
   stix_bundle: "data/threat-intelligence/enterprise-attack-18.0.json"
-  
-  # Embeddings file
-  embeddings_file: "data/embeddings/attack_pattern_embeddings_qwen.json"
-  
-  # Input directory for processing (empty means user must specify)
-  input_dir: ""
-  
-  # Output directory for generated files
-  output_dir: ""
 
-# Model settings
-models:
-  default_bedrock_model: "us.anthropic.claude-haiku-4-5-20251001-v1:0"
-  # Examples:
+# Model Provider Configuration
+
+# AWS Bedrock (ACTIVE)
+bedrock:
+  model_id: "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+  # Other options:
   # - "us.anthropic.claude-sonnet-4-20250514-v1:0"      # Claude Sonnet 4
   # - "us.anthropic.claude-sonnet-4-5-20250929-v1:0"    # Claude Sonnet 4.5
   # - "us.anthropic.claude-opus-4-1-20250805-v1:0"      # Claude Opus 4.1
+  # Note: Set AWS_PROFILE or AWS credentials in .env
+
+# # Anthropic Direct API
+# anthropic:
+#   model_id: "claude-sonnet-4-20250514"
+#   # Requires ANTHROPIC_API_KEY in .env
+
+# # OpenAI
+# openai:
+#   model_id: "gpt-4o"
+#   # Requires OPENAI_API_KEY in .env
+
+# # Google Gemini
+# gemini:
+#   model_id: "gemini-2.5-flash"
+#   # Requires GEMINI_API_KEY in .env
+
+# # LiteLLM (Multi-provider proxy)
+# litellm:
+#   model_id: "anthropic/claude-3-7-sonnet-20250219"
+#   # Requires LITELLM_API_KEY in .env
+
+# # LlamaAPI
+# llamaapi:
+#   model_id: "Llama-4-Maverick-17B-128E-Instruct-FP8"
+#   # Requires LLAMAAPI_API_KEY in .env
+
+# # Ollama (Local)
+# ollama:
+#   host: "http://localhost:11434"
+#   model_id: "llama3.1"
+#   # No API key needed (local server)
+
+# # AWS SageMaker
+# sagemaker:
+#   endpoint_name: "my-llm-endpoint"
+#   # Note: Set AWS_PROFILE or AWS credentials in .env
 
 # Embeddings settings
 embeddings:
-  mode: "neptune"  # Options: "local" or "neptune"
   model: "cisco-ai/SecureBERT2.0-biencoder"
-  
-# Neptune settings (required when embeddings.mode=neptune)
-neptune:
-  graph_id: "g-csewvv20d7"
-  region: "us-east-1"
-  s3_bucket: "threatforest-neptune"
-  account_id: "092797877696"
+  graph_file: "data/graphs/mitre_attack_graph.json"
+  ttc_threshold: 0.3  # Similarity threshold for TTC matching (0-1, lowered from 0.8 for better local graph matching)
   
 # AWS settings
 aws:
-  default_profile: "threatforest"
+  default_profile: "team-prod"
   default_region: "us-east-1"

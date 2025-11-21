@@ -34,7 +34,7 @@ class TreeGenerator(BaseAgent):
         """
         try:
             # Create Strands agent with generate-attack-trees.md as system prompt
-            agent = self.get_strands_agent('generate-attack-trees.md', model_name=bedrock_model)
+            agent = self.get_strands_agent('generate-attack-trees.md')
             
             # Build threat-specific user prompt
             user_prompt = self.context_builder.build_user_prompt(threat, project_info)

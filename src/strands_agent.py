@@ -25,7 +25,6 @@ class ThreatForestConfig:
     threat_model_path: Optional[str] = None
     aws_profile: Optional[str] = None
     output_dir: Optional[Path] = None
-    ttc_threshold: float = 0.8
     resume: bool = False  # Enable resume from checkpoint
 
 
@@ -43,12 +42,15 @@ class ThreatForestOrchestrator:
         from .modules.utils.logger import ThreatForestLogger
         self.logger = ThreatForestLogger.get_logger(self.__class__.__name__)
         
+        # Get threshold from config.yaml
+        from .config import config as app_config
+        
         # Initialize tools as instance attributes for direct access
         self.setup_tool = SetupTool()
         self.context_tool = ContextAnalysisTool()
         self.extraction_tool = InformationExtractionTool()
         self.tree_generator_tool = AttackTreeGeneratorTool(console=console)
-        self.ttc_tool = TTCMappingTool(threshold=config.ttc_threshold, console=console)
+        self.ttc_tool = TTCMappingTool(threshold=app_config.ttc_threshold, console=console)
         self.summary_tool = SummaryGeneratorTool()
     
     def _initialize_state(self) -> ThreatForestState:

@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="threatforest",
-    version="2.0.0",
+    version="1.0.0",
     description="AI-Driven Threat Modeling & Attack Tree Generation",
     packages=find_packages(where="src"),
     package_dir={"": "src"},

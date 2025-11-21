@@ -50,55 +50,62 @@ class Config:
         return ROOT_DIR / self.get('data.stix_bundle', 'data/aaf-bundle.json')
     
     @property
-    def embeddings_file_path(self) -> Path:
-        """Get absolute path to embeddings file"""
-        return ROOT_DIR / self.get('data.embeddings_file', 'data/embeddings/attack_pattern_embeddings_qwen.json')
-    
-    @property
-    def output_dir(self) -> str:
-        """Get output directory"""
-        return self.get('data.output_dir', 'output')
-    
-    @property
-    def input_dir(self) -> str:
-        """Get input directory"""
-        return self.get('data.input_dir', '')
-    
-    @property
     def embeddings_model(self) -> str:
         """Get embeddings model name"""
-        return self.get('embeddings.model', 'cisco-ai/SecureBERT2.0-base')
+        return self.get('embeddings.model', 'cisco-ai/SecureBERT2.0-biencoder')
     
     @property
-    def embeddings_mode(self) -> str:
-        """Get embeddings mode (local or neptune)"""
-        return self.get('embeddings.mode', 'local')
+    def graph_file_path(self) -> Path:
+        """Get absolute path to graph file"""
+        return ROOT_DIR / self.get('embeddings.graph_file', 'data/graphs/mitre_attack_graph.json')
     
     @property
-    def neptune_graph_id(self) -> str:
-        """Get Neptune graph ID"""
-        return self.get('neptune.graph_id', '')
+    def ttc_threshold(self) -> float:
+        """Get TTC matching similarity threshold"""
+        return self.get('embeddings.ttc_threshold', 0.3)
+    
+    # Model provider configurations
+    @property
+    def bedrock(self) -> Dict[str, Any]:
+        """Get Bedrock configuration"""
+        return self.get('bedrock', {})
     
     @property
-    def neptune_region(self) -> str:
-        """Get Neptune region"""
-        return self.get('neptune.region', 'us-east-1')
+    def anthropic(self) -> Dict[str, Any]:
+        """Get Anthropic configuration"""
+        return self.get('anthropic', {})
     
     @property
-    def neptune_s3_bucket(self) -> str:
-        """Get Neptune S3 bucket"""
-        return self.get('neptune.s3_bucket', '')
+    def openai(self) -> Dict[str, Any]:
+        """Get OpenAI configuration"""
+        return self.get('openai', {})
     
     @property
-    def neptune_account_id(self) -> str:
-        """Get Neptune account ID"""
-        return self.get('neptune.account_id', '')
+    def gemini(self) -> Dict[str, Any]:
+        """Get Gemini configuration"""
+        return self.get('gemini', {})
     
     @property
-    def default_bedrock_model(self) -> str:
-        """Get default Bedrock model"""
-        return self.get('models.default_bedrock_model', '')
+    def litellm(self) -> Dict[str, Any]:
+        """Get LiteLLM configuration"""
+        return self.get('litellm', {})
     
+    @property
+    def llamaapi(self) -> Dict[str, Any]:
+        """Get LlamaAPI configuration"""
+        return self.get('llamaapi', {})
+    
+    @property
+    def ollama(self) -> Dict[str, Any]:
+        """Get Ollama configuration"""
+        return self.get('ollama', {})
+    
+    @property
+    def sagemaker(self) -> Dict[str, Any]:
+        """Get SageMaker configuration"""
+        return self.get('sagemaker', {})
+    
+    # Legacy AWS settings (kept for backward compatibility)
     @property
     def default_aws_profile(self) -> str:
         """Get default AWS profile"""
@@ -108,6 +115,17 @@ class Config:
     def default_aws_region(self) -> str:
         """Get default AWS region"""
         return self.get('aws.default_region', 'us-east-1')
+    
+    # Helper properties for display/logging
+    @property
+    def default_bedrock_model(self) -> str:
+        """Get active model ID (for display purposes)"""
+        # Return model_id from whichever provider is configured
+        for provider in ['bedrock', 'anthropic', 'openai', 'gemini', 'ollama', 'litellm', 'llamaapi', 'sagemaker']:
+            provider_config = getattr(self, provider, {})
+            if provider_config:
+                return provider_config.get('model_id', f'{provider} (configured)')
+        return 'No model configured'
 
 # Singleton instance
 config = Config()

@@ -4,6 +4,7 @@ from typing import Dict, Any, List, Optional
 from pathlib import Path
 from datetime import datetime
 from .report_formatters import ReportFormatters
+from ...visualization import AttackTreeParser, HTMLGenerator
 
 
 class PathEncoder(json.JSONEncoder):
@@ -242,6 +243,40 @@ Review this attack tree to:
         ttc_content += summary_text
         
         return ttc_content
+    
+    def generate_html_visualizations(self, output_path: Path, trees: List[Dict] = None) -> List[str]:
+        """
+        Generate unified HTML dashboard from structured tree data
+        
+        Args:
+            output_path: Directory to save HTML dashboard
+            trees: List of tree dictionaries with TTC mappings (from TTC mapper)
+            
+        Returns:
+            List containing the dashboard HTML file path
+        """
+        generator = HTMLGenerator()
+        
+        if not trees:
+            self.logger.warning("No tree data provided for HTML generation")
+            return []
+        
+        self.logger.info(f"Generating unified dashboard for {len(trees)} attack trees...")
+        
+        try:
+            # Generate unified dashboard from structured data
+            dashboard_path = output_path / "attack_trees_dashboard.html"
+            generator.generate_dashboard_from_data(
+                trees_data=trees,
+                output_path=str(dashboard_path)
+            )
+            
+            self.logger.info(f"✓ Generated unified dashboard with {len(trees)} tabs")
+            return [str(dashboard_path)]
+            
+        except Exception as e:
+            self.logger.error(f"Failed to generate dashboard: {e}")
+            return []
     
     def generate_json_export(self, output_path: Path, attack_trees: Dict, extracted_info: Dict) -> str:
         """Generate JSON data export"""

@@ -45,7 +45,6 @@ class TTCMappingTool:
                 "total_mappings": total_mappings,
                 "successful_mappings": successful_mappings,
                 "threshold_used": self.threshold,
-                "mode": self.matcher.mode if self.matcher else "unknown",
-                "model": getattr(self.matcher, 'model_name', "Neptune-native")
+                "model": "local"
             }
         }
