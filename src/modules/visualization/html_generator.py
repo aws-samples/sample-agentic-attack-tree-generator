@@ -565,14 +565,6 @@ class HTMLGenerator:
                 <div class="legend-color" style="background: {self.COLORS['goal']}"></div>
                 <span>Goals</span>
             </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background: {self.COLORS['technique']}"></div>
-                <span>MITRE Techniques</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background: {self.COLORS['mitigation']}"></div>
-                <span>Mitigations</span>
-            </div>
         </div>
     </div>
     
@@ -941,14 +933,6 @@ class HTMLGenerator:
                 <div class="legend-item">
                     <div class="legend-color" style="background: {self.COLORS['goal']}"></div>
                     <span>Goals</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background: {self.COLORS['technique']}"></div>
-                    <span>MITRE Techniques</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background: {self.COLORS['mitigation']}"></div>
-                    <span>Mitigations</span>
                 </div>
             </div>
         </div>
