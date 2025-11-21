@@ -8,7 +8,6 @@ import traceback
 
 from .modules.core import Context, ThreatForestState, WorkflowStage, StateManager
 from .modules.core import ProgressEmitter, ProgressEvent, ProgressEventType
-from .modules.tools.setup_tool import SetupTool
 from .modules.tools.context_analysis_tool import ContextAnalysisTool
 from .modules.tools.information_extraction_tool import InformationExtractionTool
 from .modules.tools.attack_tree_generator_tool import AttackTreeGeneratorTool
@@ -45,7 +44,6 @@ class ThreatForestOrchestrator:
         from .config import config as app_config
         
         # Initialize tools as instance attributes for direct access
-        self.setup_tool = SetupTool()
         self.context_tool = ContextAnalysisTool()
         self.extraction_tool = InformationExtractionTool()
         self.tree_generator_tool = AttackTreeGeneratorTool(console=console)

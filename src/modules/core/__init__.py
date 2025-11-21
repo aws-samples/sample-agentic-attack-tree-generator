@@ -8,7 +8,6 @@ from .base_agent import BaseAgent
 from .context import Context
 from .state import ThreatForestState, WorkflowStage
 from .state_manager import StateManager
-from .bedrock_client import BedrockClientManager
 from .file_discovery import FileDiscovery, DiscoveredFiles
 from .progress_events import ProgressEvent, ProgressEventType
 from .progress_emitter import ProgressEmitter
@@ -22,9 +21,6 @@ __all__ = [
     'ThreatForestState',
     'WorkflowStage',
     'StateManager',
-    
-    # AWS integration
-    'BedrockClientManager',
     
     # File operations
     'FileDiscovery',
