@@ -330,6 +330,45 @@ If you prefer JSON format, use this structure:
 ./threatforest/tools/threat_jq.sh your-threats.tc extract
 ```
 
+## 🔗 IDE Integration
+
+### Kiro IDE Hook Integration
+
+ThreatForest integrates with [Kiro IDE](https://kiro.dev) to automatically trigger threat analysis when ThreatComposer files are saved.
+
+#### Quick Setup
+
+1. **Configure Kiro Hook** in Kiro IDE:
+   - Navigate to **Agent Hooks** section
+   - Create new hook with pattern `**/*.tc.json`
+   - Set command: `/path/to/ThreatForest-internal/src/modules/utils/kiro_wrapper.sh {file_path}`
+
+2. **Enable in config.yaml**:
+```yaml
+kiro_integration:
+  enabled: true
+  auto_run_on_save: true
+```
+
+3. **Use it**: Edit and save any `.tc.json` file - ThreatForest runs automatically!
+
+#### Benefits
+- ✅ Automatic analysis on every save
+- ✅ Immediate feedback on threat models
+- ✅ No manual CLI invocation needed
+- ✅ Results in `{project_dir}/threatforest/attack_trees/`
+
+**📖 Full Documentation**: See [docs/KIRO_INTEGRATION.md](docs/KIRO_INTEGRATION.md) for complete setup guide, troubleshooting, and advanced configuration.
+
+#### Manual Testing
+```bash
+# Test the hook directly
+./src/modules/utils/kiro_wrapper.sh /path/to/your/threats.tc.json
+
+# Or use Python handler
+python3 src/modules/utils/kiro_hook.py /path/to/your/threats.tc.json
+```
+
 ## 🔧 Troubleshooting
 
 ### Common Issues
