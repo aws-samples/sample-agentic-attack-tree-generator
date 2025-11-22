@@ -52,3 +52,10 @@ embeddings:
   model: "cisco-ai/SecureBERT2.0-biencoder"
   graph_file: "data/graphs/mitre_attack_graph.json"
   ttc_threshold: 0.3  # Similarity threshold for TTC matching (0-1)
+
+# Kiro IDE Integration
+kiro_integration:
+  enabled: true  # Enable/disable automatic ThreatForest execution via Kiro hooks
+  auto_run_on_save: true  # Automatically run when ThreatComposer files are saved
+  notification_level: "summary"  # Output verbosity: 'full', 'summary', or 'silent'
+  timeout_seconds: 300  # Maximum execution time (5 minutes)
