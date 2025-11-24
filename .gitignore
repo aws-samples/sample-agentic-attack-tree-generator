@@ -183,3 +183,5 @@ Thumbs.db
 
 # ThreatForest custom
 archive_docs/
+output/
+scripts/

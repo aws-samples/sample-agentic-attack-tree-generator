@@ -1,6 +1,6 @@
 # 🌳 ThreatForest Interactive UI
 
-ThreatForest provides a React-based terminal UI for automated threat modeling and attack tree generation with three workflow options that can be run independently or sequentially.
+ThreatForest provides a Python-based terminal UI for automated threat modeling and attack tree generation with three workflow options that can be run independently or sequentially.
 
 ## 🚀 Quick Start
 
