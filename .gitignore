@@ -185,3 +185,5 @@ Thumbs.db
 archive_docs/
 output/
 scripts/
+.threatforest/
+.kiro

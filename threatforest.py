@@ -9,10 +9,10 @@ Usage: python threatforest.py
 import sys
 from pathlib import Path
 
-# Add src to path so we can import the CLI
-sys.path.insert(0, str(Path(__file__).parent))
+# Add src to path so we can import the package
+sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from src.cli import main
+from threatforest.cli import main
 
 if __name__ == "__main__":
     main()

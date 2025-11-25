@@ -1,28 +1,47 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "threatforest-strands"
-version = "0.1.0"
-description = "Strands-based agentic AI implementation for automated attack tree generation"
+name = "threatforest"
+version = "1.0.0"
+description = "AI-Driven Threat Modeling & Attack Tree Generation with MITRE ATT&CK Integration"
 readme = "README.md"
-license = {text = "MIT"}
+requires-python = ">=3.11"
+license = {text = "Apache-2.0"}
 authors = [
-    {name = "ThreatForest Team", email = "team@threatforest.ai"}
+    {name = "Cristian Leo", email = "crisleoo@amazon.com"},
+    {name = "Danny Cortegaca", email = "dicorteg@amazon.co.uk"},
+    {name = "Anton Dykyi", email = "antondk@amazon.co.uk"},
+]
+maintainers = [
+    {name = "Cristian Leo", email = "crisleoo@amazon.com"},
+]
+keywords = [
+    "threat-modeling",
+    "security",
+    "attack-trees",
+    "mitre-attack",
+    "ai",
+    "aws-bedrock",
+    "cybersecurity",
 ]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
+    "Intended Audience :: Information Technology", 
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Security",
-    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: System :: Monitoring",
 ]
-requires-python = ">=3.9"
+
 dependencies = [
     "aioboto3>=15.5.0",
     "aiobotocore>=2.25.0",
@@ -48,22 +67,86 @@ dependencies = [
 dev = [
     "pytest>=7.0.0",
     "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
     "black>=23.0.0",
     "isort>=5.12.0",
+    "flake8>=6.0.0",
     "mypy>=1.0.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/YOUR-ORG/ThreatForest"
+Documentation = "https://github.com/YOUR-ORG/ThreatForest#readme"
+Repository = "https://github.com/YOUR-ORG/ThreatForest"
+Issues = "https://github.com/YOUR-ORG/ThreatForest/issues"
+Changelog = "https://github.com/YOUR-ORG/ThreatForest/releases"
+
 [project.scripts]
-threatforest-strands = "threatforest.strands_cli:main"
+threatforest = "threatforest.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["src"]
 include = ["threatforest*"]
+
+[tool.setuptools.package-data]
+threatforest = [
+    "*.yaml",
+    "prompts/*.md",
+    "data/**/*.json",
+]
 
 [tool.black]
 line-length = 100
-target-version = ['py39']
+target-version = ["py311", "py312", "py313"]
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | venv
+)/
+'''
 
 [tool.isort]
 profile = "black"
 line_length = 100
+skip_gitignore = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers"
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["tests/*", "*/venv/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
