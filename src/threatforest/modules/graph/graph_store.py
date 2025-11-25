@@ -83,19 +83,33 @@ class GraphStore:
         """Check if graph file exists"""
         return self.graph_path.exists()
     
-    def is_stale(self, stix_bundle_path: str) -> bool:
+    def is_stale(self, stix_bundle_path: str, expected_embedding_model: str = None) -> bool:
         """
-        Check if graph is older than STIX bundle
+        Check if graph is older than STIX bundle or uses different embedding model
         
         Args:
             stix_bundle_path: Path to STIX bundle file
+            expected_embedding_model: Expected embedding model name to validate against
             
         Returns:
-            True if graph is stale or doesn't exist
+            True if graph is stale, doesn't exist, or uses wrong embedding model
         """
         if not self.exists():
             return True
         
+        # Check if embedding model matches (if specified)
+        if expected_embedding_model:
+            try:
+                graph = self.load()
+                if graph.embedding_model != expected_embedding_model:
+                    self.logger.info(f"Graph uses different embedding model: {graph.embedding_model} != {expected_embedding_model}")
+                    self.logger.info("Graph will be rebuilt with new embedding model")
+                    return True
+            except Exception as e:
+                self.logger.warning(f"Could not validate graph embedding model: {e}")
+                return True
+        
+        # Check if STIX bundle is newer
         stix_path = Path(stix_bundle_path)
         if not stix_path.exists():
             return False

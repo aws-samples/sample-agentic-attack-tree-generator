@@ -173,7 +173,8 @@ class GraphBuilder:
         graph_path: str,
         stix_bundle_path: str,
         embedding_model: str,
-        force_rebuild: bool = False
+        force_rebuild: bool = False,
+        show_progress: bool = False
     ) -> MitreAttackGraph:
         """
         Get existing graph or build new one
@@ -183,6 +184,7 @@ class GraphBuilder:
             stix_bundle_path: Path to STIX bundle
             embedding_model: Model name for embeddings
             force_rebuild: Force rebuild even if graph exists
+            show_progress: Show progress in CLI
             
         Returns:
             MitreAttackGraph instance
@@ -190,19 +192,34 @@ class GraphBuilder:
         logger = ThreatForestLogger.get_logger(cls.__name__)
         store = GraphStore(graph_path)
         
-        # Check if we need to build
-        need_build = force_rebuild or not store.exists() or store.is_stale(stix_bundle_path)
+        # Check if we need to build (now includes embedding model validation)
+        need_build = force_rebuild or not store.exists() or store.is_stale(stix_bundle_path, expected_embedding_model=embedding_model)
         
         if not need_build:
+            if show_progress:
+                from rich.console import Console
+                console = Console()
+                console.print("📊 [cyan]Loading existing MITRE ATT&CK graph...[/cyan]")
             logger.info("Loading existing graph...")
             try:
-                return store.load()
+                graph = store.load()
+                if show_progress:
+                    from rich.console import Console
+                    console = Console()
+                    console.print(f"[green]✓[/green] Graph loaded: {len(graph)} techniques")
+                return graph
             except Exception as e:
                 logger.warning(f"Failed to load existing graph: {e}")
                 logger.info("Will build new graph...")
                 need_build = True
         
         # Build new graph
+        if show_progress:
+            from rich.console import Console
+            console = Console()
+            console.print("\n🔨 [bold cyan]Building MITRE ATT&CK graph...[/bold cyan]")
+            console.print(f"   [dim]Embedding model: {embedding_model}[/dim]")
+        
         logger.info("Building new graph from STIX bundle...")
         embedding_service = EmbeddingService(embedding_model)
         builder = cls(embedding_service)
@@ -211,5 +228,10 @@ class GraphBuilder:
         
         # Save for future use
         store.save(graph)
+        
+        if show_progress:
+            from rich.console import Console
+            console = Console()
+            console.print(f"[green]✓[/green] Graph built and cached: {len(graph)} techniques\n")
         
         return graph

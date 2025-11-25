@@ -1,5 +1,6 @@
 """HTML generator for attack tree visualizations"""
 import json
+import base64
 from typing import Dict, List, Any
 from pathlib import Path
 from ..utils.logger import ThreatForestLogger
@@ -671,7 +672,7 @@ class HTMLGenerator:
             // Label
             html += '<div style="margin-bottom: 15px;">';
             html += '<div style="font-weight: 600; color: #7f8c8d; font-size: 10px; margin-bottom: 5px;">LABEL</div>';
-            html += '<div style="color: #2c3e50; font-size: 14px;">' + (node.full_label || node.label) + '</div>';
+            html += '<div style="color: #2c3e50; font-size: 14px;">' + escapeHtml(node.full_label || node.label) + '</div>';
             html += '</div>';
             
             // Technique-specific details
@@ -737,7 +738,7 @@ class HTMLGenerator:
         if has_summary:
             exec_summary_html = self._build_executive_summary_html(summary_data, all_trees)
         
-        # Build tree data JSON
+        # Build tree data JSON and base64 encode it to avoid JavaScript escaping issues
         trees_data = []
         for tree in all_trees:
             threat_id = tree['metadata']['threat_id']
@@ -748,12 +749,27 @@ class HTMLGenerator:
                 'edges': tree['edges']
             })
         
-        trees_json = json.dumps(trees_data, indent=4)
+        trees_json = json.dumps(trees_data, ensure_ascii=True)
+        # Base64 encode to safely embed complex JSON with special characters
+        trees_json_b64 = base64.b64encode(trees_json.encode('utf-8')).decode('ascii')
         
         # Get vis-network script content
         vis_script = self._get_vis_network_script()
         
-        return f"""<!DOCTYPE html>
+        # Build tabs HTML
+        tabs_html = '<div class="tabs-container">\n'
+        if has_summary:
+            tabs_html += f'        <div class="tab {"active" if has_summary else ""}" onclick="switchTab(\'exec-summary\')">📊 Executive Summary</div>\n'
+        
+        for i, tree in enumerate(all_trees):
+            threat_id = tree["metadata"]["threat_id"]
+            category = tree["metadata"]["category"]
+            is_active = 'active' if (i == 0 and not has_summary) else ''
+            tabs_html += f'        <div class="tab {is_active}" onclick="switchTab(\'{threat_id}\')">{ threat_id}: {category}</div>\n'
+        
+        tabs_html += '    </div>'
+        
+        return rf"""<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -922,6 +938,8 @@ class HTMLGenerator:
         <h1>🌳 ThreatForest: Attack Trees Dashboard</h1>
     </div>
     
+    {tabs_html}
+    
     <div class="content">
         {f'<div id="tree-exec-summary" class="tree-container {"active" if has_summary else ""}">{exec_summary_html}</div>' if has_summary else ''}
         {"".join([f'''
@@ -959,12 +977,12 @@ class HTMLGenerator:
         </div>
     </div>
     
-    <script type="application/json" id="trees-data">
-{trees_json}
+    <script type="text/plain" id="trees-data">
+{trees_json_b64}
     </script>
     
     <script>
-        var treesData = JSON.parse(document.getElementById('trees-data').textContent);
+        var treesData = JSON.parse(atob(document.getElementById('trees-data').textContent.trim()));
         var networks = {{}};
         var hasSummary = {'true' if has_summary else 'false'};
         var currentTab = hasSummary ? 'exec-summary' : treesData[0].id;
@@ -1207,13 +1225,13 @@ class HTMLGenerator:
             // Node ID - modern card
             html += '<div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-bottom: 16px;">';
             html += '<div style="font-weight: 700; color: #6b7280; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Node ID</div>';
-            html += '<div style="color: #111827; font-size: 12px; font-family: monospace; font-weight: 600;">' + node.id + '</div>';
+            html += '<div style="color: #111827; font-size: 12px; font-family: monospace; font-weight: 600;">' + escapeHtml(node.id) + '</div>';
             html += '</div>';
             
             // Label/Description - modern card
             html += '<div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-bottom: 16px;">';
             html += '<div style="font-weight: 700; color: #6b7280; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Description</div>';
-            html += '<div style="color: #374151; font-size: 13px; line-height: 1.6;">' + (node.full_label || node.label) + '</div>';
+            html += '<div style="color: #374151; font-size: 13px; line-height: 1.6;">' + escapeHtml(node.full_label || node.label) + '</div>';
             html += '</div>';
             
             // MITRE Techniques (for attack steps with TTC mappings)
@@ -1231,26 +1249,26 @@ class HTMLGenerator:
                     // Technique header
                     html += '<div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">';
                     html += '<div>';
-                    html += '<div style="font-weight: 700; color: #111827; font-size: 13px;">' + tech.technique_id + '</div>';
-                    html += '<div style="color: #6b7280; font-size: 11px; margin-top: 2px;">' + tech.technique_name + '</div>';
+                    html += '<div style="font-weight: 700; color: #111827; font-size: 13px;">' + escapeHtml(tech.technique_id) + '</div>';
+                    html += '<div style="color: #6b7280; font-size: 11px; margin-top: 2px;">' + escapeHtml(tech.technique_name) + '</div>';
                     html += '</div>';
                     html += '<div style="background: #dcfce7; color: #166534; padding: 3px 8px; border-radius: 8px; font-size: 10px; font-weight: 700;">' + (similarity * 100).toFixed(0) + '%</div>';
                     html += '</div>';
                     
                     // Technique description (if available)
                     if (tech.technique_description) {{
-                        html += '<div style="color: #6b7280; font-size: 11px; line-height: 1.5; margin-bottom: 10px;">' + tech.technique_description + '</div>';
+                        html += '<div style="color: #6b7280; font-size: 11px; line-height: 1.5; margin-bottom: 10px;">' + escapeHtml(tech.technique_description) + '</div>';
                     }}
                     
                     // Tactic badge
                     if (tech.tactics && tech.tactics.length > 0) {{
-                        html += '<div style="margin-bottom: 10px;"><span style="display: inline-block; background: #dbeafe; color: #1e40af; padding: 3px 8px; border-radius: 8px; font-size: 10px; font-weight: 600;">' + tech.tactics.join(', ') + '</span></div>';
+                        html += '<div style="margin-bottom: 10px;"><span style="display: inline-block; background: #dbeafe; color: #1e40af; padding: 3px 8px; border-radius: 8px; font-size: 10px; font-weight: 600;">' + escapeHtml(tech.tactics.join(', ')) + '</span></div>';
                     }}
                     
                     // Expandable mitigations
                     if (tech.mitigations && tech.mitigations.length > 0) {{
                         html += '<div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(124, 45, 18, 0.2);">';
-                        html += '<div onclick="toggleAccordion(\\'' + accordionId + '\\')" style="cursor: pointer; font-weight: 700; color: #111827; font-size: 11px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">';
+                        html += '<div onclick="toggleAccordion(\'' + accordionId + '\')" style="cursor: pointer; font-weight: 700; color: #111827; font-size: 11px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">';
                         html += '<span>🛡️ Mitigations (' + tech.mitigations.length + ')</span>';
                         html += '<span id="' + accordionId + '-icon" style="font-size: 16px;">▼</span>';
                         html += '</div>';

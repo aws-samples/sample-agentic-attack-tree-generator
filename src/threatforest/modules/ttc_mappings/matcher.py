@@ -43,7 +43,8 @@ class TTCMatcher:
             graph_path=str(config.graph_file_path),
             stix_bundle_path=str(config.stix_bundle_path),
             embedding_model=config.embeddings_model,
-            force_rebuild=False
+            force_rebuild=False,
+            show_progress=False  # Silent during TTC mapping to avoid console overlap
         )
         
         # Initialize embedding service (reuses same model)

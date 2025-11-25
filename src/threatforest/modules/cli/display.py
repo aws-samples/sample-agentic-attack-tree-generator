@@ -46,16 +46,27 @@ class CLIDisplay:
         """Display current configuration with icons and better formatting"""
         config_lines = []
         
+        # New format: model_provider, model_id, embeddings_model, ttc_threshold
+        if config.get('model_provider'):
+            config_lines.append(f"[bold blue]🤖 Model Provider[/bold blue]       {config['model_provider']}")
+        if config.get('model_id'):
+            model_id = config['model_id']
+            # Truncate long model IDs for display
+            if len(model_id) > 50:
+                model_id = model_id[:47] + "..."
+            config_lines.append(f"[bold blue]🎯 Model ID[/bold blue]             {model_id}")
+        if config.get('embeddings_model'):
+            config_lines.append(f"[bold blue]🧠 Embeddings Model[/bold blue]     {config['embeddings_model']}")
+        if config.get('ttc_threshold'):
+            config_lines.append(f"[bold blue]📊 TTC Threshold[/bold blue]        {config['ttc_threshold']}")
+        
+        # Legacy support (old keys for backward compatibility)
         if config.get('aws_profile'):
-            config_lines.append(f"[bold blue]🔧 AWS Profile[/bold blue]        {config['aws_profile']}")
+            config_lines.append(f"[bold blue]🔧 AWS Profile[/bold blue]          {config['aws_profile']}")
         if config.get('bedrock_model'):
-            config_lines.append(f"[bold blue]🤖 Bedrock Model[/bold blue]      {config['bedrock_model']}")
-        if config.get('neptune_graph_id'):
-            config_lines.append(f"[bold blue]🗄️  Neptune Graph[/bold blue]      {config['neptune_graph_id']}")
-        if config.get('neptune_region'):
-            config_lines.append(f"[bold blue]📍 Region[/bold blue]             {config['neptune_region']}")
-        if config.get('embeddings_mode'):
-            config_lines.append(f"[bold blue]🧠 Embeddings[/bold blue]         {config['embeddings_mode']}")
+            config_lines.append(f"[bold blue]🤖 Bedrock Model[/bold blue]        {config['bedrock_model']}")
+        if config.get('graph_file'):
+            config_lines.append(f"[bold blue]📁 Graph File[/bold blue]           {config['graph_file']}")
         
         if config_lines:
             panel = Panel(

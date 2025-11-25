@@ -49,7 +49,6 @@ bedrock:
 # Embeddings settings
 embeddings:
   model: "basel/ATTACK-BERT"
-  graph_file: "data/graphs/mitre_attack_graph.json"
   ttc_threshold: 0.3  # Similarity threshold for TTC matching (0-1)
 
 # Kiro IDE Integration

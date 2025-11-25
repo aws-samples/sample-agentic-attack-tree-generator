@@ -72,18 +72,39 @@ def run(project_path, threat_model, mode, input_dir, output_dir):
         # Show welcome
         display.show_welcome()
 
-        # Show config from config.yaml (conditionally show AWS profile)
+        # Show config from config.yaml (no secrets like AWS profile)
+        # Detect active provider
+        active_provider = None
+        model_id = None
+        
+        if config.bedrock and config.bedrock.get("model_id"):
+            active_provider = "AWS Bedrock"
+            model_id = config.bedrock.get("model_id")
+        elif config.anthropic and config.anthropic.get("model_id"):
+            active_provider = "Anthropic"
+            model_id = config.anthropic.get("model_id")
+        elif config.openai and config.openai.get("model_id"):
+            active_provider = "OpenAI"
+            model_id = config.openai.get("model_id")
+        elif config.gemini and config.gemini.get("model_id"):
+            active_provider = "Google Gemini"
+            model_id = config.gemini.get("model_id")
+        elif config.ollama and config.ollama.get("model_id"):
+            active_provider = "Ollama"
+            model_id = config.ollama.get("model_id")
+        elif config.sagemaker and config.sagemaker.get("endpoint_name"):
+            active_provider = "AWS SageMaker"
+            model_id = config.sagemaker.get("endpoint_name")
+        else:
+            active_provider = "Not configured"
+            model_id = "None"
+        
         config_display = {
-            "model": config.default_bedrock_model,
+            "model_provider": active_provider,
+            "model_id": model_id,
             "embeddings_model": config.embeddings_model,
-            "graph_file": str(config.graph_file_path),
+            "ttc_threshold": config.ttc_threshold,
         }
-
-        # Only show AWS profile if using AWS providers
-        if (config.bedrock and config.bedrock.get("model_id")) or (
-            config.sagemaker and config.sagemaker.get("endpoint_name")
-        ):
-            config_display["aws_profile"] = config.default_aws_profile
 
         display.show_config(config_display)
 

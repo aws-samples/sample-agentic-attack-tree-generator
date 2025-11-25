@@ -88,20 +88,22 @@ class Config:
     @property
     def embeddings_model(self) -> str:
         """Get embeddings model name"""
-        return self.get('embeddings.model', 'cisco-ai/SecureBERT2.0-biencoder')
+        return self.get('embeddings.model', 'basel/ATTACK-BERT')
     
     @property
     def graph_file_path(self) -> Path:
-        """Get absolute path to graph file"""
-        graph_file = self.get('embeddings.graph_file', 'data/graphs/mitre_attack_graph.json')
+        """Get absolute path to graph file in .threatforest/ directory"""
+        # Use .threatforest/graphs/ for user-generated graph cache
+        # This allows per-user, per-embedding-model graphs
+        graph_dir = Path.cwd() / ".threatforest" / "graphs"
+        graph_dir.mkdir(parents=True, exist_ok=True)
         
-        # Try current directory first
-        current_path = Path.cwd() / graph_file
-        if current_path.exists():
-            return current_path
+        # Use embedding model name in filename for versioning
+        # Sanitize model name for filesystem
+        model_name = self.embeddings_model.replace('/', '_').replace('\\', '_')
+        graph_file = graph_dir / f"mitre_attack_graph_{model_name}.json"
         
-        # Use bundled data in package
-        return Path(__file__).parent / graph_file
+        return graph_file
     
     @property
     def ttc_threshold(self) -> float:

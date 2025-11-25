@@ -40,25 +40,47 @@ class ConfigManager:
         from threatforest.config import config
         
         # Determine which config is being used
-        if (Path.cwd() / "config.yaml").exists():
-            config_source = f"{Path.cwd()}/config.yaml (project override)"
-        elif self.user_config_file.exists():
-            config_source = f"~/.threatforest/config.yaml (user config)"
+        if (Path.cwd() / ".threatforest" / "config.yaml").exists():
+            config_source = f".threatforest/config.yaml (project config)"
+        elif (Path.cwd() / "config.yaml").exists():
+            config_source = f"config.yaml (root override)"
         else:
             config_source = "Bundled default"
+        
+        # Detect active provider
+        active_provider = "Not configured"
+        model_id = "None"
+        
+        if config.bedrock and config.bedrock.get("model_id"):
+            active_provider = "AWS Bedrock"
+            model_id = config.bedrock.get("model_id")
+        elif config.anthropic and config.anthropic.get("model_id"):
+            active_provider = "Anthropic"
+            model_id = config.anthropic.get("model_id")
+        elif config.openai and config.openai.get("model_id"):
+            active_provider = "OpenAI"
+            model_id = config.openai.get("model_id")
+        elif config.gemini and config.gemini.get("model_id"):
+            active_provider = "Google Gemini"
+            model_id = config.gemini.get("model_id")
+        elif config.ollama and config.ollama.get("model_id"):
+            active_provider = "Ollama"
+            model_id = config.ollama.get("model_id")
+        elif config.sagemaker and config.sagemaker.get("endpoint_name"):
+            active_provider = "AWS SageMaker"
+            model_id = config.sagemaker.get("endpoint_name")
         
         # Create table
         table = Table(title="ThreatForest Configuration", show_header=True)
         table.add_column("Setting", style="cyan", width=30)
         table.add_column("Value", style="green")
         
-        # Add rows
+        # Add rows (no secrets like AWS profile)
         table.add_row("Config Source", config_source)
-        table.add_row("Model", config.default_bedrock_model)
+        table.add_row("Model Provider", active_provider)
+        table.add_row("Model ID", model_id)
         table.add_row("Embeddings Model", config.embeddings_model)
         table.add_row("TTC Threshold", str(config.ttc_threshold))
-        table.add_row("AWS Profile", config.default_aws_profile)
-        table.add_row("AWS Region", config.default_aws_region)
         
         self.console.print()
         self.console.print(table)
@@ -93,19 +115,104 @@ class ConfigManager:
         
         if provider_choice != "Keep current":
             self.console.print(f"\n[green]✓[/green] Selected: {provider_choice}")
-            # Would implement provider-specific config here
+            
+            # Model selection based on provider
+            if provider_choice == "AWS Bedrock":
+                from threatforest.modules.utils.model_configs import BEDROCK_MODELS, DEFAULT_MODELS
+                
+                bedrock_models = BEDROCK_MODELS + ["Keep current"]
+                current_model = config_data.get('bedrock', {}).get('model_id', DEFAULT_MODELS['bedrock'])
+                model_choice = select(
+                    f"Select Bedrock Model (current: {current_model}):",
+                    choices=bedrock_models
+                ).ask()
+                
+                if model_choice != "Keep current":
+                    if 'bedrock' not in config_data:
+                        config_data['bedrock'] = {}
+                    config_data['bedrock']['model_id'] = model_choice
+                    self.console.print(f"[green]✓[/green] Model: {model_choice}")
+            
+            elif provider_choice == "Anthropic":
+                from threatforest.modules.utils.model_configs import ANTHROPIC_MODELS, DEFAULT_MODELS
+                
+                anthropic_models = ANTHROPIC_MODELS + ["Keep current"]
+                current_model = config_data.get('anthropic', {}).get('model_id', DEFAULT_MODELS['anthropic'])
+                model_choice = select(
+                    f"Select Anthropic Model (current: {current_model}):",
+                    choices=anthropic_models
+                ).ask()
+                
+                if model_choice != "Keep current":
+                    if 'anthropic' not in config_data:
+                        config_data['anthropic'] = {}
+                    config_data['anthropic']['model_id'] = model_choice
+                    self.console.print(f"[green]✓[/green] Model: {model_choice}")
+            
+            elif provider_choice == "OpenAI":
+                from threatforest.modules.utils.model_configs import OPENAI_MODELS, DEFAULT_MODELS
+                
+                openai_models = OPENAI_MODELS + ["Keep current"]
+                current_model = config_data.get('openai', {}).get('model_id', DEFAULT_MODELS['openai'])
+                model_choice = select(
+                    f"Select OpenAI Model (current: {current_model}):",
+                    choices=openai_models
+                ).ask()
+                
+                if model_choice != "Keep current":
+                    if 'openai' not in config_data:
+                        config_data['openai'] = {}
+                    config_data['openai']['model_id'] = model_choice
+                    self.console.print(f"[green]✓[/green] Model: {model_choice}")
+            
+            elif provider_choice == "Google Gemini":
+                from threatforest.modules.utils.model_configs import GEMINI_MODELS, DEFAULT_MODELS
+                
+                gemini_models = GEMINI_MODELS + ["Keep current"]
+                current_model = config_data.get('gemini', {}).get('model_id', DEFAULT_MODELS['gemini'])
+                model_choice = select(
+                    f"Select Gemini Model (current: {current_model}):",
+                    choices=gemini_models
+                ).ask()
+                
+                if model_choice != "Keep current":
+                    if 'gemini' not in config_data:
+                        config_data['gemini'] = {}
+                    config_data['gemini']['model_id'] = model_choice
+                    self.console.print(f"[green]✓[/green] Model: {model_choice}")
+            
+            elif provider_choice == "Ollama (Local)":
+                from threatforest.modules.utils.model_configs import DEFAULT_MODELS
+                
+                # For Ollama, allow custom model input
+                current_model = config_data.get('ollama', {}).get('model_id', DEFAULT_MODELS['ollama'])
+                model_id = text(
+                    f"Enter Ollama Model ID (current: {current_model}):",
+                    default=current_model
+                ).ask()
+                
+                if 'ollama' not in config_data:
+                    config_data['ollama'] = {}
+                config_data['ollama']['model_id'] = model_id
+                self.console.print(f"[green]✓[/green] Model: {model_id}")
         
-        # AWS Profile (if using AWS services)
+        # AWS Profile (if using AWS services) - write to .env instead of config.yaml
         if provider_choice in ["AWS Bedrock", "Keep current"]:
-            current_profile = config_data.get('aws', {}).get('default_profile', 'default')
+            from threatforest.modules.utils.env_manager import EnvManager
+            import os
+            
+            # Get current profile from .env or environment
+            current_profile = os.getenv('AWS_PROFILE', 'default')
             new_profile = text(
                 f"AWS Profile (current: {current_profile}):",
                 default=current_profile
             ).ask()
             
-            if 'aws' not in config_data:
-                config_data['aws'] = {}
-            config_data['aws']['default_profile'] = new_profile
+            # Write to .env file, not config.yaml
+            env_manager = EnvManager()
+            env_manager.ensure_exists()
+            env_manager.set_value('AWS_PROFILE', new_profile)
+            self.console.print(f"[green]✓[/green] AWS Profile saved to .env: {new_profile}")
         
         # Save changes
         with open(self.user_config_file, 'w') as f:

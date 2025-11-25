@@ -99,6 +99,7 @@ threatforest = [
     "*.yaml",
     "prompts/*.md",
     "data/**/*.json",
+    "modules/visualization/templates/*",
 ]
 
 [tool.black]

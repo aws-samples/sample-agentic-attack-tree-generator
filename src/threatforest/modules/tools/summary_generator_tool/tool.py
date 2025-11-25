@@ -116,7 +116,7 @@ class SummaryGeneratorTool:
             # Generate HTML visualizations from structured tree data
             try:
                 trees = attack_trees.get('ttc_mapped_trees', []) or attack_trees.get('attack_trees', [])
-                html_files = self.file_gen.generate_html_visualizations(output_path, trees=trees)
+                html_files = self.file_gen.generate_html_visualizations(output_path, trees=trees, extracted_info=extracted_info)
                 self.logger.info(f"Generated {len(html_files)} HTML visualizations")
             except Exception as e:
                 self.logger.warning(f"HTML visualization generation failed: {e}")
