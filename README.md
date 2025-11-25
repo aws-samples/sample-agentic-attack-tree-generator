@@ -1,39 +1,192 @@
 # 🌳 ThreatForest
 
-ThreatForest is an AI-powered threat modeling tool that automatically generates comprehensive attack trees and security analysis for your applications. Built on the [Strands](https://github.com/awslabs/strands) agentic framework, ThreatForest orchestrates multiple AI agents to analyze your systems using Large Language Models (LLMs) and MITRE ATT&CK framework integration. It transforms your project documentation and threat models into actionable security insights with detailed attack paths and mitigation strategies.
+<div align="center">
 
-## Table of Contents
-- [Features](#features)
-- [How It Works](#how-it-works)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Workflow Options](#workflow-options)
-- [Input Files](#input-files)
-- [Output Structure](#output-structure)
-- [IDE Integration](#ide-integration)
-- [Data Privacy Considerations](#data-privacy-considerations)
-- [Contributing](#contributing)
-- [License](#license)
+**AI-Driven Threat Modeling & Attack Tree Generation with MITRE ATT&CK Integration**
 
-## Features
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-- **🔄 Strands-Powered Architecture**: Built on AWS Labs' [Strands](https://github.com/awslabs/strands) agentic framework for reliable, orchestrated AI workflows with state management and error recovery
-- **🤖 Multi-Agent Orchestration**: Coordinates specialized AI agents for context analysis, threat extraction, attack tree generation, and mitigation mapping
-- **🤖 AI-Powered Analysis**: Leverages LLMs (AWS Bedrock, Anthropic, OpenAI, Google Gemini, Ollama) to analyze your application and generate threat models
-- **🌳 Attack Tree Generation**: Automatically creates detailed attack trees for identified threats with step-by-step attack paths
-- **🎯 MITRE ATT&CK Integration**: Maps attack steps to MITRE ATT&CK techniques (TTC) for industry-standard threat intelligence
-- **🛡️ Mitigation Recommendations**: Provides actionable security controls and countermeasures for each identified threat
-- **📊 Interactive Dashboard**: Visualizes attack trees with an interactive HTML dashboard using vis-network
-- **🔄 Flexible Workflows**: Run full analysis or individual stages (generation, enrichment, mitigation) independently
-- **📁 Multiple Input Formats**: Supports ThreatComposer workspaces, custom threat models, architecture diagrams, and documentation
-- **🎨 Rich CLI Interface**: Beautiful terminal UI with progress tracking and step-by-step guidance
-- **💾 State Management**: Resume interrupted workflows from checkpoints with Strands-based state persistence
-- **🔌 Kiro IDE Integration**: Edit ThreatComposer files and get instant attack tree generation by using a Kiro hook
-- **🔒 No Data Storage**: Application details are processed locally and not stored by ThreatForest
+[Features](#-features) • [Quick Start](#-quick-start) • [How It Works](#-how-it-works) • [Documentation](#-documentation) • [IDE Integration](#-ide-integration) • [Contributing](#-contributing)
 
-## How It Works
+</div>
 
-ThreatForest uses a multi-stage workflow to transform your application context into comprehensive security analysis:
+---
+
+## 🎯 Overview
+
+ThreatForest is an intelligent threat modeling platform built on the [Strands](https://github.com/awslabs/strands) agentic framework that combines AI-powered analysis with MITRE ATT&CK framework integration. It orchestrates multiple AI agents to automatically generate comprehensive attack trees from your project documentation, threat models, and architecture diagrams, transforming them into actionable security insights with detailed attack paths and mitigation strategies.
+
+### Why ThreatForest?
+
+- 🔄 **Strands-Powered Architecture** - Built on AWS Labs' agentic framework for reliable, orchestrated AI workflows with state management and error recovery
+- 🤖 **Multi-Agent Orchestration** - Coordinates specialized AI agents for context analysis, threat extraction, attack tree generation, and mitigation mapping
+- 🌳 **Attack Tree Generation** - Automatically creates detailed attack trees for identified threats with step-by-step attack paths
+- 🎯 **MITRE ATT&CK Integration** - Maps attack paths to TTPs (Tactics, Techniques, and Procedures)
+- 🛡️ **Mitigation Recommendations** - Provides actionable security controls and countermeasures
+- 📊 **Interactive Dashboards** - Visualize threats with interactive HTML dashboards using vis-network
+- 🔄 **Multi-Provider Support** - Works with AWS Bedrock, Anthropic, OpenAI, Gemini, Ollama, and more
+- 🔌 **Kiro IDE Integration** - Edit ThreatComposer files and get instant attack tree generation
+
+## ✨ Features
+
+### Core Capabilities
+
+- **🤖 AI-Powered Analysis** - Leverages LLMs to analyze your application and generate threat models
+- **🔍 Intelligent Context Analysis** - Discovers and analyzes threat models, diagrams, and documentation using Strands `file_read` tool
+- **🔄 Flexible Workflows** - Run full analysis or individual stages (generation, enrichment, mitigation) independently
+- **🌳 Attack Tree Generation** - Creates detailed attack trees with multiple paths and prerequisites
+- **🎯 MITRE ATT&CK Integration** - Maps attack steps to techniques using semantic similarity matching
+- **🛡️ Mitigation Recommendations** - Provides actionable security controls for each identified threat
+- **📊 Interactive Dashboard** - Visual network graphs with dynamic filtering and search capabilities
+- **💾 State Management** - Resume interrupted workflows from checkpoints with Strands-based state persistence
+- **🔒 No Data Storage** - Application details are processed locally and not stored by ThreatForest
+
+### Supported Input Formats
+
+- 📋 **Threat Models**: ThreatComposer (.tc), JSON, YAML, Markdown
+- 🏗️ **Diagrams**: PNG, JPG, PDF, Mermaid (.mmd), Draw.io, PlantUML
+- 📖 **Documentation**: Markdown, PDF, Text files
+
+### Flexible Workflows
+
+1. **🌳 Full Analysis** - Complete threat modeling pipeline from discovery to mitigation
+2. **🎯 TTP Enrichment** - Add MITRE ATT&CK mappings to existing attack trees
+3. **🛡️ Mitigation Mapping** - Add security controls to enriched trees
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.11 or higher
+- AWS Account with Bedrock access (or API keys for other providers)
+- Git
+
+### Installation
+
+For a permanent `threatforest` command you can run from anywhere:
+
+#### Using pipx (Recommended)
+
+```bash
+# Install pipx if you don't have it
+python3 -m pip install --user pipx
+python3 -m pipx ensurepath
+
+# Install ThreatForest
+git clone https://github.com/YOUR-ORG/ThreatForest.git
+cd ThreatForest
+pipx install .
+
+# Now run from anywhere!
+threatforest
+```
+
+#### Using uv tool (Modern & Fast)
+
+```bash
+# Install uv if you don't have it
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Install ThreatForest globally
+git clone https://github.com/YOUR-ORG/ThreatForest.git
+cd ThreatForest
+uv tool install .
+
+# Now run from anywhere!
+threatforest
+```
+
+#### Using pip (Traditional)
+
+```bash
+# Clone and install
+git clone https://github.com/YOUR-ORG/ThreatForest.git
+cd ThreatForest
+pip install .
+
+# Run the CLI
+threatforest
+```
+
+#### For Development
+
+Contributors working on ThreatForest code:
+
+```bash
+git clone https://github.com/YOUR-ORG/ThreatForest.git
+cd ThreatForest
+
+# Editable install - code changes reflect immediately!
+pip install -e ".[dev]"
+
+# Now you can:
+# 1. Edit code
+# 2. Run threatforest
+# 3. See changes instantly (no reinstall needed!)
+threatforest
+```
+
+**Alternative: Using uv (Modern)**
+```bash
+# No install needed - always uses latest code
+uv run threatforest
+
+# Make changes and run again
+uv run threatforest  # Automatically uses your edits
+```
+
+### Configuration
+
+1. **Copy the environment template:**
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Configure your provider in `.env`:**
+   ```bash
+   # For AWS Bedrock
+   AWS_PROFILE=your-profile
+   AWS_REGION=us-east-1
+   
+   # Or for Anthropic
+   ANTHROPIC_API_KEY=your-key-here
+   ```
+
+3. **Select provider in `config.yaml`:**
+   ```yaml
+   # AWS Bedrock (default)
+   bedrock:
+     enabled: true
+     model_id: "anthropic.claude-3-sonnet-20240229-v1:0"
+     region: "us-east-1"
+   
+   # Or Anthropic Direct
+   # anthropic:
+   #   enabled: true
+   #   model_id: "claude-3-sonnet-20240229"
+   ```
+
+### Running ThreatForest
+
+After installation, simply run:
+
+```bash
+threatforest
+```
+
+The interactive wizard will guide you through:
+1. **Mode Selection** - Choose workflow option (Full/Enrich/Mitigate)
+2. **Configuration** - AWS profile, model selection, project path
+3. **Analysis** - Run selected workflow with progress tracking
+4. **Results** - View summary and access output files
+
+> **Note:** First run will be slower as it downloads AI model dependencies (sentence-transformers, torch). Subsequent runs are much faster.
+
+## 🔍 How It Works
+
+ThreatForest uses a multi-stage workflow powered by the Strands agentic framework to transform your application context into comprehensive security analysis:
 
 ```mermaid
 graph TB
@@ -41,7 +194,7 @@ graph TB
     Setup --> Context[Context Analysis]
     Context --> Extract[Information Extraction]
     Extract --> Generate[Attack Tree Generation]
-    Generate --> Enrich[TTC Enrichment]
+    Generate --> Enrich[TTP Enrichment]
     Enrich --> Mitigate[Mitigation Mapping]
     Mitigate --> Summary[Generate Reports]
     Summary --> End([Complete])
@@ -113,94 +266,12 @@ graph TB
    - Produces markdown analysis report
    - Compiles summary statistics and metrics
 
-## Installation
+## 📚 Documentation
 
-### Prerequisites
+### Workflow Modes
 
-- **Python 3.8+** installed
-- **AWS Account** with Bedrock access (if using AWS Bedrock)
-- **AWS CLI** configured (for AWS providers)
-- **Node.js 14+** (for UI components)
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/threatforest.git
-cd threatforest
-```
-
-2. Create and activate virtual environment:
-```bash
-# Create virtual environment
-python3 -m venv venv
-
-# Activate virtual environment
-# On macOS/Linux:
-source venv/bin/activate
-# On Windows:
-venv\Scripts\activate
-```
-
-3. Install Python dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-4. Configure your settings:
-```bash
-# Copy example configuration
-cp config.yaml.example config.yaml
-
-# Edit config.yaml with your settings
-nano config.yaml
-```
-
-5. Set up environment variables (optional):
-```bash
-# Copy example environment file
-cp .env.example .env
-
-# Edit .env with your API keys
-nano .env
-```
-
-
-## Usage
-
-### Interactive CLI Mode (Primary Method)
-
-Run ThreatForest with the interactive wizard:
-
-```bash
-# Activate virtual environment
-source venv/bin/activate
-
-# Run ThreatForest wizard
-python threatforest.py
-```
-
-The wizard will guide you through:
-1. **Mode Selection** - Choose workflow option (Full/Enrich/Mitigate)
-2. **Configuration** - AWS profile, model selection, project path
-3. **Analysis** - Run selected workflow with progress tracking
-4. **Results** - View summary and access output files
-
-### Kiro IDE Integration (Alternative Method)
-
-ThreatForest seamlessly integrates with [Kiro IDE](https://kiro.dev) to provide automatic threat analysis whenever you save ThreatComposer files. This enables a live threat modeling workflow where you can iterate on threats and immediately see the generated attack trees.
-
-For complete setup instructions, troubleshooting, and advanced configuration, see the dedicated [IDE Integration](#ide-integration) section below.
-
-
-
-## Workflow Options
-
-ThreatForest offers three workflow modes that can be run independently or sequentially:
-
-### 🌳 Full Analysis (Option 1)
-
-Generate complete attack trees from your project:
+#### 🌳 Full Analysis
+Analyzes your entire project and generates complete attack trees:
 
 **Input:**
 - Project directory with documentation
@@ -214,17 +285,12 @@ Generate complete attack trees from your project:
 4. Maps to MITRE ATT&CK techniques
 5. Adds mitigation recommendations
 
-**Output:** `project/threatforest/attack_trees/`
+**Output:** `<project>/threatforest/attack_trees/`
 
-```bash
-python -m src.cli run --project-path /path/to/project
-```
+#### 🎯 TTP Enrichment  
+Enriches existing attack trees with MITRE ATT&CK techniques:
 
-### TTP  Enrichment (Option 2)
-
-Add MITRE ATT&CK technique mappings to existing attack trees:
-
-**Input:** Attack trees from Option 1
+**Input:** Attack trees from Full Analysis
 
 **Process:**
 1. Reads attack tree markdown files
@@ -232,19 +298,13 @@ Add MITRE ATT&CK technique mappings to existing attack trees:
 3. Maps to MITRE ATT&CK techniques using semantic similarity
 4. Enriches trees with technique IDs and descriptions
 
-**Output:** `project/threatforest/enriched/`
+**Input:** `<project>/threatforest/attack_trees/`
+**Output:** `<project>/threatforest/enriched/`
 
-```bash
-python -m src.cli run --mode enrich \
-  --input-dir ./project/threatforest/attack_trees \
-  --output-dir ./project/threatforest/enriched
-```
+#### 🛡️ Mitigation Mapping
+Adds security controls to enriched trees:
 
-### 🛡️ Mitigation Mapping (Option 3)
-
-Add security controls and mitigation strategies:
-
-**Input:** Enriched attack trees from Option 2
+**Input:** Enriched attack trees from TTP Enrichment
 
 **Process:**
 1. Reads enriched attack trees
@@ -252,21 +312,16 @@ Add security controls and mitigation strategies:
 3. Adds mitigation strategies for each technique
 4. Provides implementation guidance
 
-**Output:** `project/threatforest/mitigated/`
+**Input:** `<project>/threatforest/enriched/`
+**Output:** `<project>/threatforest/mitigated/`
 
-```bash
-python -m src.cli run --mode mitigate \
-  --input-dir ./project/threatforest/enriched \
-  --output-dir ./project/threatforest/mitigated
-```
-
-## Input Files
+### Input Files
 
 ThreatForest is flexible and works with various input combinations. Threat models are recommended but not required - ThreatForest can generate threats using AI analysis.
 
-### Threat Models (Recommended)
+#### Threat Models (Recommended)
 
-#### ThreatComposer Workspace Files ⭐ **RECOMMENDED**
+**ThreatComposer Workspace Files ⭐ RECOMMENDED**
 - **Create at**: https://awslabs.github.io/threat-composer/
 - **File patterns**: `*.tc`, `*ThreatComposer*.json`
 - **Best for**: Comprehensive threat modeling with priorities
@@ -279,17 +334,16 @@ ThreatForest is flexible and works with various input combinations. Threat model
 4. Export workspace as `.tc` file
 5. Place in project directory
 
-#### Custom Threat Model Files
-- **Files**: Any file with where you have a threat model, e.g. `threats.json`, `security.yaml`, `threat-model.md`
+**Custom Threat Model Files**
+- **Files**: `threats.json`, `security.yaml`, `threat-model.md`
 - **Format**: JSON/YAML/Markdown
 
+#### Documentation Files
 
-### Documentation Files
+ThreatForest uses the Strands framework's advanced `file_read` tool for intelligent document processing with automatic format detection, content extraction, and semantic analysis.
 
-ThreatForest uses the Strands framework's advanced `file_read.py` tool for intelligent document processing with multifaceted capabilities including automatic format detection, content extraction, and semantic analysis.
-
-#### README and Markdown Files
-- **Files**: `README.md`, `ARCHITECTURE.md`, `*.md`, `PDF`
+**README and Markdown Files**
+- **Files**: `README.md`, `ARCHITECTURE.md`, `*.md`, PDF
 - **Processing**: Strands `file_read` tool automatically extracts and analyzes content
 - **Should include**:
   - Application description and purpose
@@ -297,7 +351,7 @@ ThreatForest uses the Strands framework's advanced `file_read.py` tool for intel
   - Architecture overview
   - Security considerations
 
-#### Architecture Diagrams
+**Architecture Diagrams**
 - **Formats**: `*.png`, `*.pdf`, `*.jpg`, `*.jpeg`, `*.drawio`, `*.mmd`, `*.puml`
 - **Should show**:
   - System components and services
@@ -305,14 +359,14 @@ ThreatForest uses the Strands framework's advanced `file_read.py` tool for intel
   - Network topology
   - External dependencies
 
-## Output Structure
+### Output Structure
 
 ThreatForest creates a comprehensive output directory structure:
 
 ```
 project/
 └── threatforest/
-    ├── attack_trees/                          # Option 1 output
+    ├── attack_trees/                          # Full Analysis output
     │   ├── .threatforest_state.json          # State tracking
     │   ├── attack_tree_T001_sql_injection.md # Individual attack trees
     │   ├── attack_tree_T002_xss_attack.md
@@ -320,18 +374,16 @@ project/
     │   ├── threatforest_data.json            # JSON export
     │   └── threatforest_analysis_report.md   # Summary report
     │
-    ├── enriched/                              # Option 2 output
-    │   ├── enriched_attack_tree_T001.md      # TTC-enriched trees
+    ├── enriched/                              # TTP Enrichment output
+    │   ├── enriched_attack_tree_T001.md      # TTP-enriched trees
     │   └── enriched_attack_tree_T002.md
     │
-    └── mitigated/                             # Option 3 output
+    └── mitigated/                             # Mitigation Mapping output
         ├── mitigated_enriched_attack_tree_T001.md  # With mitigations
         └── mitigated_enriched_attack_tree_T002.md
 ```
 
-### Output Files
-
-#### Interactive Dashboard (`attack_trees_dashboard.html`) ⭐ **PRIMARY OUTPUT**
+#### Interactive Dashboard (`attack_trees_dashboard.html`) ⭐ PRIMARY OUTPUT
 
 The HTML dashboard is the **recommended way to review and explore your attack trees**. It provides an interactive, visual experience that makes understanding complex attack paths intuitive and engaging.
 
@@ -358,59 +410,13 @@ The HTML dashboard is the **recommended way to review and explore your attack tr
 open project/threatforest/attack_trees/attack_trees_dashboard.html
 ```
 
-#### Attack Tree Markdown (`attack_tree_*.md`)
+#### Other Output Files
 
-Individual markdown files for each threat, useful for version control and detailed review.
+**Attack Tree Markdown** (`attack_tree_*.md`) - Individual files for version control and detailed review
+**JSON Export** (`threatforest_data.json`) - Structured data for programmatic access and tool integration
+**Analysis Report** (`threatforest_analysis_report.md`) - Executive summary and statistics
 
-**Contents:**
-- Threat description and context
-- Step-by-step attack paths with prerequisites
-- Impact assessment and likelihood
-- Mermaid diagram visualization
-- MITRE ATT&CK technique mappings (if enriched)
-- Mitigation recommendations (if mitigated)
-
-**Use Cases:**
-- Version control tracking of threat evolution
-- Detailed technical review and documentation
-- Integration with documentation systems
-- Offline review and annotation
-
-#### JSON Export (`threatforest_data.json`)
-
-Structured data export for programmatic access and integration.
-
-**Contents:**
-- All attack trees with complete metadata
-- Threat statements and priorities
-- MITRE ATT&CK mappings
-- Generation timestamps and configuration
-- Application context and assets
-
-**Use Cases:**
-- Integration with security tools (SIEM, ticketing systems)
-- Custom reporting and analytics
-- Automated compliance checking
-- CI/CD pipeline integration
-
-#### Analysis Report (`threatforest_analysis_report.md`)
-
-Executive summary and statistics for high-level overview.
-
-**Contents:**
-- Executive summary of findings
-- Threat statistics and severity distribution
-- Coverage analysis (threats analyzed vs. total)
-- Key recommendations and next steps
-- MITRE ATT&CK technique coverage
-
-**Use Cases:**
-- Executive briefings and status reports
-- Security posture documentation
-- Audit and compliance evidence
-- Team communication and planning
-
-## IDE Integration
+## 🔌 IDE Integration
 
 ### Kiro IDE Integration
 
@@ -454,7 +460,7 @@ kiro /path/to/your/project
    - **Action**: Select "Ask Agent"
    - **Prompt**: 
      ```
-     execute the following script on the file that was just saved /absolute/path/to/ThreatForest/src/modules/utils/kiro_wrapper.sh {file}
+     execute the following script on the file that was just saved /absolute/path/to/ThreatForest/src/threatforest/modules/utils/kiro_wrapper.sh {file}
      ```
      
      **Important**: Replace `/absolute/path/to/ThreatForest` with your actual ThreatForest installation path
@@ -480,7 +486,7 @@ Create a file at `.kiro/hooks/threatforest-analysis.kiro.hook` in your project:
   },
   "then": {
     "type": "askAgent",
-    "prompt": "execute the following script on the file that was just saved /absolute/path/to/ThreatForest/src/modules/utils/kiro_wrapper.sh {file}"
+    "prompt": "execute the following script on the file that was just saved /absolute/path/to/ThreatForest/src/threatforest/modules/utils/kiro_wrapper.sh {file}"
   },
   "shortName": "threatforest-analysis",
   "workspaceFolderName": "your-project-name"
@@ -556,20 +562,6 @@ cp ~/Downloads/MyApp.tc.json /path/to/my-project/
 open my-project/threatforest/attack_trees/attack_trees_dashboard.html
 ```
 
-#### Hook Output Location
-
-When triggered via Kiro hook, ThreatForest creates outputs in:
-
-```
-your-project/
-└── threatforest/
-    └── attack_trees/
-        ├── attack_tree_*.md              # Individual attack trees
-        ├── attack_trees_dashboard.html   # Interactive visualization
-        ├── threatforest_data.json        # JSON export
-        └── threatforest_analysis_report.md  # Summary report
-```
-
 #### Troubleshooting Kiro Integration
 
 ##### Hook Not Triggering
@@ -598,7 +590,7 @@ your-project/
 Solution: Use absolute path in hook configuration:
 ```json
 {
-  "prompt": "execute the following script on the file that was just saved /Users/yourname/ThreatForest/src/modules/utils/kiro_wrapper.sh {file}"
+  "prompt": "execute the following script on the file that was just saved /Users/yourname/ThreatForest/src/threatforest/modules/utils/kiro_wrapper.sh {file}"
 }
 ```
 
@@ -645,66 +637,7 @@ aws bedrock list-foundation-models --region us-east-1
 
 Solution: Make wrapper script executable:
 ```bash
-chmod +x /path/to/ThreatForest/src/modules/utils/kiro_wrapper.sh
-```
-
-#### Advanced Configuration
-
-##### Custom Output Directory
-
-Modify the wrapper script to use custom output location:
-
-```bash
-# Edit src/modules/utils/kiro_wrapper.sh
-# Add OUTPUT_DIR environment variable
-export OUTPUT_DIR="/custom/path/output"
-```
-
-##### Multiple File Patterns
-
-Support additional file patterns:
-
-```json
-{
-  "when": {
-    "type": "fileEdited",
-    "patterns": [
-      "**/*.tc.json",
-      "**/threats.json",
-      "**/security/*.json"
-    ]
-  }
-}
-```
-
-##### Conditional Execution
-
-Only run for specific directories:
-
-```json
-{
-  "when": {
-    "type": "fileEdited",
-    "patterns": [
-      "security/**/*.tc.json",
-      "threat-models/**/*.tc.json"
-    ]
-  }
-}
-```
-
-#### Manual Testing
-
-Test the hook manually without Kiro:
-
-```bash
-# Test wrapper script directly
-/path/to/ThreatForest/src/modules/utils/kiro_wrapper.sh /path/to/your/file.tc.json
-
-# Test Python handler
-cd /path/to/ThreatForest
-source venv/bin/activate
-python3 src/modules/utils/kiro_hook.py /path/to/your/file.tc.json
+chmod +x /path/to/ThreatForest/src/threatforest/modules/utils/kiro_wrapper.sh
 ```
 
 #### Benefits Summary
@@ -718,22 +651,7 @@ python3 src/modules/utils/kiro_hook.py /path/to/your/file.tc.json
 | **Dashboard Access** | Manual open | Auto-generated |
 | **Version Control** | Manual commit | Automatic tracking |
 
-#### Next Steps
-
-After setting up Kiro integration:
-
-1. **Create Threat Models**: Use ThreatComposer to create comprehensive threat models
-2. **Iterate Quickly**: Edit threats and see results immediately
-3. **Review Outputs**: Check generated attack trees and dashboard
-4. **Refine Analysis**: Update threat priorities based on attack tree insights
-5. **Share Results**: Commit generated files to version control
-
-**📖 Additional Resources**:
-- [Kiro IDE Documentation](https://docs.kiro.dev)
-- [ThreatComposer Guide](https://awslabs.github.io/threat-composer/)
-- [ThreatForest Kiro Integration Guide](docs/KIRO_INTEGRATION.md)
-
-## Data Privacy Considerations
+## 🔒 Data Privacy Considerations
 
 ### What Data is Sent to LLM Providers
 
@@ -773,9 +691,41 @@ ollama:
   model_id: "llama3:70b"
 ```
 
-## Configuration
+## 🔧 Advanced Usage
 
-### config.yaml
+### Command Line Options
+
+```bash
+# Full workflow with specific project
+threatforest --project-path /path/to/project
+
+# TTP enrichment only
+threatforest --mode enrich \
+  --input-dir ./threatforest/attack_trees \
+  --output-dir ./threatforest/enriched
+
+# Mitigation mapping only
+threatforest --mode mitigate \
+  --input-dir ./threatforest/enriched \
+  --output-dir ./threatforest/mitigated
+```
+
+### Multiple AI Provider Support
+
+ThreatForest supports multiple AI providers:
+
+- **AWS Bedrock** (Claude, Llama, etc.)
+- **Anthropic** (Claude 3/4)
+- **OpenAI** (GPT-4, GPT-4o)
+- **Google Gemini**
+- **Ollama** (Local LLMs)
+- **LiteLLM** (Multi-provider proxy)
+- **LlamaAPI**
+- **AWS SageMaker** (Custom endpoints)
+
+Configure your preferred provider in `config.yaml`.
+
+### Configuration
 
 ThreatForest uses a YAML configuration file for settings:
 
@@ -816,22 +766,7 @@ aws:
   default_region: "us-east-1"
 ```
 
-### Environment Variables
-
-Create a `.env` file for sensitive credentials:
-
-```bash
-# AWS Credentials
-AWS_PROFILE=default
-AWS_REGION=us-east-1
-
-# API Keys (if not using AWS Bedrock)
-ANTHROPIC_API_KEY=your_key_here
-OPENAI_API_KEY=your_key_here
-GOOGLE_API_KEY=your_key_here
-```
-
-## Troubleshooting
+## 🛠️ Troubleshooting
 
 ### Common Issues
 
@@ -845,7 +780,7 @@ GOOGLE_API_KEY=your_key_here
 3. Request Bedrock model access in AWS Console
 
 #### "externally-managed-environment"
-**Solution**: Always use virtual environment:
+**Solution**: Always use virtual environment or pipx/uv:
 ```bash
 python3 -m venv venv
 source venv/bin/activate
@@ -866,9 +801,34 @@ pip install -r requirements.txt
 - Check AWS credentials: `aws configure list`
 - Test Bedrock access: `aws bedrock list-foundation-models --region us-east-1`
 - Review logs: `./output/threatforest.log`
-- Open an issue: https://github.com/yourusername/threatforest/issues
+- Open an issue: https://github.com/YOUR-ORG/ThreatForest/issues
 
-## Security
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+### Development Setup
+
+```bash
+# Clone your fork
+git clone https://github.com/YOUR-ORG/ThreatForest.git
+cd ThreatForest
+
+# Install in editable mode with dev dependencies
+pip install -e ".[dev]"
+
+# Run tests
+pytest tests/
+
+# Format code
+black src/
+isort src/
+
+# Run security scans
+bandit -r src/
+```
+
+## 🔒 Security
 
 ThreatForest follows security best practices:
 
@@ -878,48 +838,17 @@ ThreatForest follows security best practices:
 - ✅ Regular security audits
 - ✅ Secure credential handling
 
-**Security Report**: See [docs/ASH_SECURITY_SCAN_REPORT.md](docs/ASH_SECURITY_SCAN_REPORT.md) for latest security scan results.
+**Security Report**: See [SECURITY.md](SECURITY.md) for our security policy.
 
 **Reporting Issues**: Found a security issue? Please report it responsibly via GitHub Security Advisories.
 
-## Contributing
+## 📝 License
 
-Contributions are welcome! Please follow these guidelines:
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+## 🙏 Acknowledgments
 
-### Development Setup
-
-```bash
-# Clone your fork
-git clone https://github.com/yourusername/threatforest.git
-cd threatforest
-
-# Create virtual environment
-python3 -m venv venv
-source venv/bin/activate
-
-# Install development dependencies
-pip install -r requirements.txt
-pip install -r requirements-dev.txt
-
-# Run tests
-pytest tests/
-
-# Run security scans
-bandit -r src/
-```
-
-## License
-
-[MIT](https://choosealicense.com/licenses/mit/)
-
-## Acknowledgments
-
+- **AWS Labs Strands** - Powerful agentic framework for orchestrating AI workflows
 - **AWS ThreatComposer** - Excellent threat modeling tool and inspiration
 - **MITRE ATT&CK** - Comprehensive threat intelligence framework
 - **STRIDE GPT** - Inspiration for AI-powered threat modeling
@@ -928,6 +857,6 @@ bandit -r src/
 
 ---
 
-**Ready to start?** Follow the [Installation](#installation) guide and run your first threat analysis!
+**Ready to start?** Follow the [Quick Start](#-quick-start) guide and run your first threat analysis!
 
-For questions, issues, or feature requests, please visit our [GitHub repository](https://github.com/yourusername/threatforest).
+For questions, issues, or feature requests, please visit our [GitHub repository](https://github.com/YOUR-ORG/ThreatForest).

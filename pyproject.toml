@@ -8,7 +8,7 @@ version = "1.0.0"
 description = "AI-Driven Threat Modeling & Attack Tree Generation with MITRE ATT&CK Integration"
 readme = "README.md"
 requires-python = ">=3.11"
-license = {text = "Apache-2.0"}
+license = {text = "MIT"}
 authors = [
     {name = "Cristian Leo", email = "crisleoo@amazon.com"},
     {name = "Danny Cortegaca", email = "dicorteg@amazon.co.uk"},
@@ -16,6 +16,8 @@ authors = [
 ]
 maintainers = [
     {name = "Cristian Leo", email = "crisleoo@amazon.com"},
+    {name = "Danny Cortegaca", email = "dicorteg@amazon.co.uk"},
+    {name = "Anton Dykyi", email = "antondk@amazon.co.uk"},
 ]
 keywords = [
     "threat-modeling",
@@ -31,7 +33,7 @@ classifiers = [
     "Intended Audience :: Developers",
     "Intended Audience :: Information Technology", 
     "Intended Audience :: System Administrators",
-    "License :: OSI Approved :: Apache Software License",
+    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
