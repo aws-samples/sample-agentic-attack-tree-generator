@@ -3,6 +3,10 @@ import yaml
 from pathlib import Path
 from typing import Dict, Any
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file (override existing env vars)
+load_dotenv(override=True)
 
 # Root directory of the ThreatForest project  
 # When running from source: /path/to/ThreatForest-internal
@@ -148,13 +152,13 @@ class Config:
     # Legacy AWS settings (kept for backward compatibility)
     @property
     def default_aws_profile(self) -> str:
-        """Get default AWS profile"""
-        return self.get('aws.default_profile', 'default')
+        """Get default AWS profile - reads from .env first, then config.yaml"""
+        return os.getenv('AWS_PROFILE') or self.get('aws.default_profile', 'default')
     
     @property
     def default_aws_region(self) -> str:
-        """Get default AWS region"""
-        return self.get('aws.default_region', 'us-east-1')
+        """Get default AWS region - reads from .env first, then config.yaml"""
+        return os.getenv('AWS_REGION') or self.get('aws.default_region', 'us-east-1')
     
     # Helper properties for display/logging
     @property

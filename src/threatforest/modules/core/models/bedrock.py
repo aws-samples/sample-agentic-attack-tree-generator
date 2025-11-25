@@ -5,6 +5,7 @@ from botocore.exceptions import ClientError, NoCredentialsError, ProfileNotFound
 from strands.models import BedrockModel
 from dotenv import load_dotenv
 
+# Load environment variables from .env file (override existing env vars)
 load_dotenv()
 
 

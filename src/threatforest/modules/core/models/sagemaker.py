@@ -34,7 +34,7 @@ def create_sagemaker_model(config, temperature: float = 0):
         if profile:
             # Use named profile from ~/.aws/credentials
             session = Session(profile_name=profile, region_name=region)
-            os.environ['AWS_PROFILE'] = profile
+            # os.environ['AWS_PROFILE'] = profile
         else:
             session = Session(region_name=region)
         
