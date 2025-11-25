@@ -154,20 +154,6 @@ uv run threatforest  # Automatically uses your edits
    ANTHROPIC_API_KEY=your-key-here
    ```
 
-3. **Select provider in `config.yaml`:**
-   ```yaml
-   # AWS Bedrock (default)
-   bedrock:
-     enabled: true
-     model_id: "anthropic.claude-3-sonnet-20240229-v1:0"
-     region: "us-east-1"
-   
-   # Or Anthropic Direct
-   # anthropic:
-   #   enabled: true
-   #   model_id: "claude-3-sonnet-20240229"
-   ```
-
 ### Running ThreatForest
 
 After installation, simply run:
