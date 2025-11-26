@@ -137,23 +137,6 @@ uv run threatforest
 uv run threatforest  # Automatically uses your edits
 ```
 
-### Configuration
-
-1. **Copy the environment template:**
-   ```bash
-   cp .env.example .env
-   ```
-
-2. **Configure your provider in `.env`:**
-   ```bash
-   # For AWS Bedrock
-   AWS_PROFILE=your-profile
-   AWS_REGION=us-east-1
-   
-   # Or for Anthropic
-   ANTHROPIC_API_KEY=your-key-here
-   ```
-
 ### Running ThreatForest
 
 After installation, simply run:
