@@ -49,7 +49,7 @@ bedrock:
 # Embeddings settings
 embeddings:
   model: "basel/ATTACK-BERT"
-  ttc_threshold: 0.3  # Similarity threshold for TTC matching (0-1)
+  ttc_threshold: 0.3  # Similarity threshold for TTP matching (0-1)
 
 # Kiro IDE Integration
 kiro_integration:

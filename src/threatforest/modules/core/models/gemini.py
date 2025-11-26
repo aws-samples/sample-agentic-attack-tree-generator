@@ -1,10 +1,6 @@
 """Google Gemini model wrapper"""
-import os
-from dotenv import load_dotenv
 from strands.models.gemini import GeminiModel
-
-# Load environment variables from .env
-load_dotenv()
+from threatforest.modules.utils.env_manager import EnvManager
 
 
 def create_gemini_model(config, temperature: float = 0):
@@ -20,8 +16,9 @@ def create_gemini_model(config, temperature: float = 0):
     """
     gemini_config = config.gemini
     
-    # Get API key from environment
-    api_key = os.getenv('GEMINI_API_KEY')
+    # Get API key from environment using EnvManager
+    env_manager = EnvManager()
+    api_key = env_manager.get_value('GEMINI_API_KEY')
     if not api_key:
         raise ValueError("GEMINI_API_KEY not found in environment variables")
     

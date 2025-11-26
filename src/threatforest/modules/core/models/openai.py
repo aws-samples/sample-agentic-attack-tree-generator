@@ -1,10 +1,6 @@
 """OpenAI model wrapper"""
-import os
-from dotenv import load_dotenv
 from strands.models.openai import OpenAIModel
-
-# Load environment variables from .env
-load_dotenv()
+from threatforest.modules.utils.env_manager import EnvManager
 
 
 def create_openai_model(config, temperature: float = 0):
@@ -20,8 +16,9 @@ def create_openai_model(config, temperature: float = 0):
     """
     openai_config = config.openai
     
-    # Get API key from environment
-    api_key = os.getenv('OPENAI_API_KEY')
+    # Get API key from environment using EnvManager
+    env_manager = EnvManager()
+    api_key = env_manager.get_value('OPENAI_API_KEY')
     if not api_key:
         raise ValueError("OPENAI_API_KEY not found in environment variables")
     

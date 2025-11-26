@@ -123,7 +123,14 @@ class GraphBuilder:
             texts.append(text)
         
         # Generate embeddings in batch (more efficient)
-        embeddings = self.embedding_service.get_batch_embeddings(texts, show_progress=True)
+        # Suppress tqdm progress bar - we'll use Rich messages instead
+        from rich.console import Console
+        console = Console()
+        console.print("[cyan]   🧠 Computing embeddings for MITRE ATT&CK techniques...[/cyan]")
+        
+        embeddings = self.embedding_service.get_batch_embeddings(texts, show_progress=False)
+        
+        console.print("[green]   ✓ Embeddings computed[/green]")
         
         # Create TechniqueNode objects
         technique_nodes = []

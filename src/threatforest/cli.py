@@ -5,9 +5,6 @@ Main command-line interface using Rich for display
 """
 import os
 
-from dotenv import load_dotenv
-
-load_dotenv(override=True)
 # Suppress tokenizers parallelism warning
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
@@ -110,82 +107,126 @@ def run(project_path, threat_model, mode, input_dir, output_dir):
 
         # Interactive mode if no project path provided
         if project_path is None:
-            # Use wizard
-            selected_mode = wizard.select_mode()
+            # Loop to allow returning to menu after configuration changes
+            while True:
+                # Use wizard
+                selected_mode = wizard.select_mode()
 
-            # Handle settings mode
-            if selected_mode == "settings":
-                from threatforest.modules.utils.config_manager import ConfigManager
+                # Handle exit
+                if selected_mode == "exit":
+                    console.print("\n[cyan]👋 Thanks for using ThreatForest![/cyan]\n")
+                    sys.exit(0)
 
-                manager = ConfigManager()
-                manager.edit_interactive()
-                console.print("\n[green]Configuration updated![/green]")
-                console.print("[dim]Restart threatforest to use new settings.[/dim]\n")
+                # Handle configuration modes - don't exit, loop back to menu
+                if selected_mode == "credentials":
+                    wizard.update_credentials()
+                    
+                    # Reload environment variables
+                    from dotenv import load_dotenv
+                    from threatforest.config import ENV_FILE
+                    load_dotenv(dotenv_path=ENV_FILE, override=True)
+                    
+                    # Show updated config
+                    active_provider = None
+                    model_id = None
+                    
+                    if config.bedrock and config.bedrock.get("model_id"):
+                        active_provider = "AWS Bedrock"
+                        model_id = config.bedrock.get("model_id")
+                    elif config.anthropic and config.anthropic.get("model_id"):
+                        active_provider = "Anthropic"
+                        model_id = config.anthropic.get("model_id")
+                    elif config.openai and config.openai.get("model_id"):
+                        active_provider = "OpenAI"
+                        model_id = config.openai.get("model_id")
+                    elif config.gemini and config.gemini.get("model_id"):
+                        active_provider = "Google Gemini"
+                        model_id = config.gemini.get("model_id")
+                    elif config.ollama and config.ollama.get("model_id"):
+                        active_provider = "Ollama"
+                        model_id = config.ollama.get("model_id")
+                    elif config.sagemaker and config.sagemaker.get("endpoint_name"):
+                        active_provider = "AWS SageMaker"
+                        model_id = config.sagemaker.get("endpoint_name")
+                    
+                    config_display = {
+                        "model_provider": active_provider,
+                        "model_id": model_id,
+                        "embeddings_model": config.embeddings_model,
+                        "ttc_threshold": config.ttc_threshold,
+                    }
+                    display.show_config(config_display)
+                    
+                    # Loop back to mode selection
+                    continue
+                
+                elif selected_mode == "model_settings":
+                    wizard.configure_model_settings()
+                    
+                    # Reload config
+                    from threatforest.config import config as cfg
+                    cfg._load_config()
+                    
+                    # Show updated config
+                    active_provider = None
+                    model_id = None
+                    
+                    if cfg.bedrock and cfg.bedrock.get("model_id"):
+                        active_provider = "AWS Bedrock"
+                        model_id = cfg.bedrock.get("model_id")
+                    elif cfg.anthropic and cfg.anthropic.get("model_id"):
+                        active_provider = "Anthropic"
+                        model_id = cfg.anthropic.get("model_id")
+                    elif cfg.openai and cfg.openai.get("model_id"):
+                        active_provider = "OpenAI"
+                        model_id = cfg.openai.get("model_id")
+                    elif cfg.gemini and cfg.gemini.get("model_id"):
+                        active_provider = "Google Gemini"
+                        model_id = cfg.gemini.get("model_id")
+                    elif cfg.ollama and cfg.ollama.get("model_id"):
+                        active_provider = "Ollama"
+                        model_id = cfg.ollama.get("model_id")
+                    elif cfg.sagemaker and cfg.sagemaker.get("endpoint_name"):
+                        active_provider = "AWS SageMaker"
+                        model_id = cfg.sagemaker.get("endpoint_name")
+                    
+                    config_display = {
+                        "model_provider": active_provider,
+                        "model_id": model_id,
+                        "embeddings_model": cfg.embeddings_model,
+                        "ttc_threshold": cfg.ttc_threshold,
+                    }
+                    display.show_config(config_display)
+                    
+                    # Loop back to mode selection
+                    continue
+
+                wizard.show_mode_info(selected_mode)
+                
+                # Break out of loop to continue with workflow
+                break
+
+            # Only "full" mode in interactive - always run complete analysis
+            # Get project path
+            project_path = wizard.get_project_path()
+            # Get optional threat model
+            threat_model = wizard.get_threat_model_path()
+
+            # Show review configuration
+            display.show_review_config(
+                mode="full", project_path=project_path, threat_model=threat_model
+            )
+
+            # Confirm before starting
+            if not wizard.confirm_continue("Ready to start analysis?"):
+                display.show_info("Analysis cancelled by user")
                 sys.exit(0)
 
-            wizard.show_mode_info(selected_mode)
-
-            if selected_mode == "full":
-                # Get project path
-                project_path = wizard.get_project_path()
-                # Get optional threat model
-                threat_model = wizard.get_threat_model_path()
-
-                # Show review configuration
-                display.show_review_config(
-                    mode="full", project_path=project_path, threat_model=threat_model
-                )
-
-                # Confirm before starting
-                if not wizard.confirm_continue("Ready to start workflow?"):
-                    display.show_info("Workflow cancelled by user")
-                    sys.exit(0)
-
-                # Run full workflow with step indicator
-                display.show_step_header(
-                    4, 4, "Executing Workflow", "This may take several minutes..."
-                )
-                result = runner.run_full_workflow(project_path, threat_model)
-
-            elif selected_mode == "enrich":
-                # Get input/output directories
-                input_dir, output_dir = wizard.get_input_output_dirs("enrich")
-
-                # Show review configuration
-                display.show_review_config(
-                    mode="enrich", input_dir=input_dir, output_dir=output_dir
-                )
-
-                # Confirm before starting
-                if not wizard.confirm_continue("Ready to start enrichment?"):
-                    display.show_info("Enrichment cancelled by user")
-                    sys.exit(0)
-
-                # Run enrichment with step indicator
-                display.show_step_header(
-                    3, 3, "Executing TTC Enrichment", "Mapping to MITRE ATT&CK..."
-                )
-                result = asyncio.run(runner.run_enrichment(input_dir, output_dir))
-
-            elif selected_mode == "mitigate":
-                # Get input/output directories
-                input_dir, output_dir = wizard.get_input_output_dirs("mitigate")
-
-                # Show review configuration
-                display.show_review_config(
-                    mode="mitigate", input_dir=input_dir, output_dir=output_dir
-                )
-
-                # Confirm before starting
-                if not wizard.confirm_continue("Ready to start mitigation mapping?"):
-                    display.show_info("Mitigation mapping cancelled by user")
-                    sys.exit(0)
-
-                # Run mitigation with step indicator
-                display.show_step_header(
-                    3, 3, "Executing Mitigation Mapping", "Finding security controls..."
-                )
-                result = asyncio.run(runner.run_mitigation(input_dir, output_dir))
+            # Run full workflow with step indicator
+            display.show_step_header(
+                4, 4, "Executing Analysis", "This may take several minutes..."
+            )
+            result = runner.run_full_workflow(project_path, threat_model)
 
         else:
             # Non-interactive mode - project path provided
@@ -447,7 +488,7 @@ def help_cmd():
   # Full workflow with project path
   threatforest run --project-path /path/to/project
 
-  # TTC enrichment only
+  # TTP enrichment only
   threatforest run --mode enrich --input-dir ./threatforest/attack_trees --output-dir ./threatforest/enriched
 
 For more information, visit: https://github.com/YOUR-ORG/ThreatForest

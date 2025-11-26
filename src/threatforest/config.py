@@ -6,32 +6,14 @@ import os
 from dotenv import load_dotenv
 
 
-def _find_and_load_dotenv():
-    """Find and load .env file from multiple locations"""
-    # Search locations in priority order
-    search_paths = [
-        Path.cwd() / ".env",  # Current working directory
-        Path.cwd().parent / ".env",  # Parent directory  
-        Path(__file__).parent.parent / ".env",  # ThreatForest-internal root (when running from source)
-    ]
-    
-    for env_path in search_paths:
-        if env_path.exists():
-            load_dotenv(dotenv_path=env_path, override=True)
-            return str(env_path)
-    
-    # Fallback: try default load_dotenv behavior
-    load_dotenv(override=True)
-    return None
+# Root directory of the ThreatForest project - use __file__ path, not cwd
+# This gives us the repo root: /path/to/ThreatForest-internal
+ROOT_DIR = Path(__file__).parent.parent.parent
 
-
-# Load environment variables from .env file (override existing env vars)
-_find_and_load_dotenv()
-
-# Root directory of the ThreatForest project  
-# When running from source: /path/to/ThreatForest-internal
-# When installed: current working directory
-ROOT_DIR = Path(os.getcwd())
+# Load environment variables from fixed location in .threatforest/.env
+ENV_FILE = ROOT_DIR / ".threatforest" / ".env"
+ENV_FILE.parent.mkdir(parents=True, exist_ok=True)  # Ensure directory exists
+load_dotenv(dotenv_path=ENV_FILE, override=True)
 
 class Config:
     """Configuration manager for ThreatForest"""

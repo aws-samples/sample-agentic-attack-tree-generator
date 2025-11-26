@@ -1,12 +1,8 @@
 """AWS SageMaker model wrapper"""
-import os
-from dotenv import load_dotenv
 from boto3 import Session
 from botocore.exceptions import ClientError, NoCredentialsError, ProfileNotFound
 from strands.models.sagemaker import SageMakerAIModel
-
-# Load environment variables from .env (override existing env vars)
-load_dotenv(override=True)
+from threatforest.modules.utils.env_manager import EnvManager
 
 
 def create_sagemaker_model(config, temperature: float = 0):
@@ -25,9 +21,10 @@ def create_sagemaker_model(config, temperature: float = 0):
     """
     sagemaker_config = config.sagemaker
     
-    # Get AWS credentials from environment variables
-    profile = os.getenv('AWS_PROFILE')
-    region = os.getenv('AWS_REGION', 'us-east-1')
+    # Get AWS credentials from environment variables using EnvManager
+    env_manager = EnvManager()
+    profile = env_manager.get_value('AWS_PROFILE')
+    region = env_manager.get_value('AWS_REGION') or 'us-east-1'
     
     try:
         # Create boto3 session if profile specified

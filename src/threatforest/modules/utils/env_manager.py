@@ -4,14 +4,16 @@ from pathlib import Path
 from typing import Dict, Optional
 from dotenv import load_dotenv
 
-load_dotenv(override=True)
-
 
 class EnvManager:
     """Manages .env file operations"""
     
     def __init__(self):
-        self.env_file = Path.cwd() / ".env"
+        # Import ROOT_DIR from config to use CLI-managed .env location
+        from threatforest.config import ROOT_DIR
+        self.env_file = ROOT_DIR / ".threatforest" / ".env"
+        # Ensure directory exists
+        self.env_file.parent.mkdir(parents=True, exist_ok=True)
     
     def get_value(self, key: str) -> Optional[str]:
         """Get value from .env file or environment"""

@@ -80,7 +80,7 @@ class ConfigManager:
         table.add_row("Model Provider", active_provider)
         table.add_row("Model ID", model_id)
         table.add_row("Embeddings Model", config.embeddings_model)
-        table.add_row("TTC Threshold", str(config.ttc_threshold))
+        table.add_row("TTP Threshold", str(config.ttc_threshold))
         
         self.console.print()
         self.console.print(table)
@@ -199,18 +199,18 @@ class ConfigManager:
         # AWS Profile (if using AWS services) - write to .env instead of config.yaml
         if provider_choice in ["AWS Bedrock", "Keep current"]:
             from threatforest.modules.utils.env_manager import EnvManager
-            import os
             
-            # Get current profile from .env or environment
-            current_profile = os.getenv('AWS_PROFILE', 'default')
+            env_manager = EnvManager()
+            env_manager.ensure_exists()
+            
+            # Get current profile from .env using EnvManager
+            current_profile = env_manager.get_value('AWS_PROFILE') or 'default'
             new_profile = text(
                 f"AWS Profile (current: {current_profile}):",
                 default=current_profile
             ).ask()
             
             # Write to .env file, not config.yaml
-            env_manager = EnvManager()
-            env_manager.ensure_exists()
             env_manager.set_value('AWS_PROFILE', new_profile)
             self.console.print(f"[green]✓[/green] AWS Profile saved to .env: {new_profile}")
         

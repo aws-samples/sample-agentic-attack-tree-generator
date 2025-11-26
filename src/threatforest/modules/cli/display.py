@@ -43,30 +43,66 @@ class CLIDisplay:
         self.console.print()
     
     def show_config(self, config: Dict[str, Any]):
-        """Display current configuration with icons and better formatting"""
+        """Display current configuration with provider-agnostic formatting"""
         config_lines = []
         
-        # New format: model_provider, model_id, embeddings_model, ttc_threshold
-        if config.get('model_provider'):
-            config_lines.append(f"[bold blue]🤖 Model Provider[/bold blue]       {config['model_provider']}")
-        if config.get('model_id'):
-            model_id = config['model_id']
-            # Truncate long model IDs for display
-            if len(model_id) > 50:
-                model_id = model_id[:47] + "..."
-            config_lines.append(f"[bold blue]🎯 Model ID[/bold blue]             {model_id}")
-        if config.get('embeddings_model'):
-            config_lines.append(f"[bold blue]🧠 Embeddings Model[/bold blue]     {config['embeddings_model']}")
-        if config.get('ttc_threshold'):
-            config_lines.append(f"[bold blue]📊 TTC Threshold[/bold blue]        {config['ttc_threshold']}")
+        provider = config.get('model_provider', 'Not configured')
+        model_id = config.get('model_id', 'None')
         
-        # Legacy support (old keys for backward compatibility)
-        if config.get('aws_profile'):
-            config_lines.append(f"[bold blue]🔧 AWS Profile[/bold blue]          {config['aws_profile']}")
-        if config.get('bedrock_model'):
-            config_lines.append(f"[bold blue]🤖 Bedrock Model[/bold blue]        {config['bedrock_model']}")
-        if config.get('graph_file'):
-            config_lines.append(f"[bold blue]📁 Graph File[/bold blue]           {config['graph_file']}")
+        # Truncate long model IDs for display
+        if len(model_id) > 50:
+            model_id = model_id[:47] + "..."
+        
+        # Always show provider and model
+        config_lines.append(f"[bold blue]🤖 Provider[/bold blue]            {provider}")
+        config_lines.append(f"[bold blue]🎯 Model[/bold blue]               {model_id}")
+        
+        # Provider-specific configuration
+        if provider in ["AWS Bedrock", "AWS SageMaker"]:
+            from threatforest.modules.utils.env_manager import EnvManager
+            env_manager = EnvManager()
+            
+            region = env_manager.get_value('AWS_REGION') or 'us-east-1'
+            profile = env_manager.get_value('AWS_PROFILE')
+            access_key = env_manager.get_value('AWS_ACCESS_KEY_ID')
+            
+            config_lines.append(f"[bold blue]🌍 Region[/bold blue]              {region}")
+            
+            if profile:
+                config_lines.append(f"[bold blue]🔐 Auth[/bold blue]                Profile ({profile})")
+            elif access_key:
+                config_lines.append(f"[bold blue]🔐 Auth[/bold blue]                Access Keys")
+            else:
+                config_lines.append(f"[bold blue]🔐 Auth[/bold blue]                [yellow]⚠️  Not configured[/yellow]")
+        
+        elif provider in ["Anthropic", "OpenAI", "Google Gemini", "LiteLLM", "LlamaAPI"]:
+            from threatforest.modules.utils.env_manager import EnvManager
+            env_manager = EnvManager()
+            
+            key_var_map = {
+                "Anthropic": "ANTHROPIC_API_KEY",
+                "OpenAI": "OPENAI_API_KEY",
+                "Google Gemini": "GEMINI_API_KEY",
+                "LiteLLM": "LITELLM_API_KEY",
+                "LlamaAPI": "LLAMAAPI_API_KEY"
+            }
+            
+            key_var = key_var_map.get(provider)
+            if key_var and env_manager.get_value(key_var):
+                config_lines.append(f"[bold blue]🔑 API Key[/bold blue]             [green]✓ Configured[/green]")
+            else:
+                config_lines.append(f"[bold blue]🔑 API Key[/bold blue]             [yellow]⚠️  Missing[/yellow]")
+        
+        elif provider == "Ollama":
+            from threatforest.config import config as cfg
+            host = cfg.ollama.get('host', 'localhost:11434') if cfg.ollama else 'localhost:11434'
+            config_lines.append(f"[bold blue]🖥️  Host[/bold blue]               {host}")
+        
+        # Common settings
+        if config.get('embeddings_model'):
+            config_lines.append(f"[bold blue]🧠 Embeddings[/bold blue]          {config['embeddings_model']}")
+        if config.get('ttc_threshold'):
+            config_lines.append(f"[bold blue]📊 TTP Threshold[/bold blue]       {config['ttc_threshold']}")
         
         if config_lines:
             panel = Panel(
@@ -120,7 +156,7 @@ class CLIDisplay:
         if 'attack_trees' in summary:
             content += f"[cyan]├─[/cyan] Attack Trees         [bold bright_green]{summary['attack_trees']}[/bold bright_green]\n"
         if 'ttc_mappings' in summary:
-            content += f"[cyan]├─[/cyan] TTC Mappings         [bold bright_green]{summary['ttc_mappings']}[/bold bright_green]\n"
+            content += f"[cyan]├─[/cyan] TTP Mappings         [bold bright_green]{summary['ttc_mappings']}[/bold bright_green]\n"
         if 'total_mitigations' in summary:
             content += f"[cyan]└─[/cyan] Mitigations Added    [bold bright_green]{summary['total_mitigations']}[/bold bright_green]\n"
         
