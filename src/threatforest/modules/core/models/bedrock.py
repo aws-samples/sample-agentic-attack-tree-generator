@@ -1,12 +1,33 @@
 """AWS Bedrock model wrapper"""
 import os
+from pathlib import Path
 from boto3 import Session
 from botocore.exceptions import ClientError, NoCredentialsError, ProfileNotFound
 from strands.models import BedrockModel
 from dotenv import load_dotenv
 
+
+def _find_and_load_dotenv():
+    """Find and load .env file from multiple locations"""
+    # Search locations in priority order
+    search_paths = [
+        Path.cwd() / ".env",  # Current working directory
+        Path.cwd().parent / ".env",  # Parent directory
+        Path(__file__).parent.parent.parent.parent.parent / ".env",  # Package root
+    ]
+    
+    for env_path in search_paths:
+        if env_path.exists():
+            load_dotenv(dotenv_path=env_path, override=True)
+            return str(env_path)
+    
+    # Fallback: try default load_dotenv behavior
+    load_dotenv(override=True)
+    return None
+
+
 # Load environment variables from .env file (override existing env vars)
-load_dotenv()
+_find_and_load_dotenv()
 
 
 def create_bedrock_model(config, temperature: float = 0):
@@ -24,6 +45,10 @@ def create_bedrock_model(config, temperature: float = 0):
         ValueError: If AWS credentials are invalid or expired
     """
     bedrock_config = config.bedrock
+    
+    # Re-load .env at function call time to ensure we get the latest values
+    # This handles cases where module was imported before cwd was set correctly
+    _find_and_load_dotenv()
     
     # Get AWS credentials from environment variables
     profile = os.getenv('AWS_PROFILE')

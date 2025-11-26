@@ -5,8 +5,8 @@ from boto3 import Session
 from botocore.exceptions import ClientError, NoCredentialsError, ProfileNotFound
 from strands.models.sagemaker import SageMakerAIModel
 
-# Load environment variables from .env
-load_dotenv()
+# Load environment variables from .env (override existing env vars)
+load_dotenv(override=True)
 
 
 def create_sagemaker_model(config, temperature: float = 0):

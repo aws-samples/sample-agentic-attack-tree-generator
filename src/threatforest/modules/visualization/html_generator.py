@@ -808,6 +808,10 @@ class HTMLGenerator:
             overflow-x: auto;
             white-space: nowrap;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            display: none;
+        }}
+        .tabs-container.visible {{
+            display: block;
         }}
         .tab {{
             display: inline-block;
@@ -946,7 +950,8 @@ class HTMLGenerator:
         <div id="tree-{tree["metadata"]["threat_id"]}" class="tree-container {"active" if i == 0 and not has_summary else ""}">
             {'<button onclick="switchTab(\'exec-summary\')" style="background: #6366f1; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3); transition: all 0.3s ease;" onmouseover="this.style.background=\'#4f46e5\'; this.style.transform=\'translateY(-1px)\'; this.style.boxShadow=\'0 4px 8px rgba(99, 102, 241, 0.4)\';" onmouseout="this.style.background=\'#6366f1\'; this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 2px 4px rgba(99, 102, 241, 0.3)\';">← Executive Summary</button>' if has_summary else ''}
             <div class="tree-header">
-                <div class="tree-title">{tree["metadata"]["threat_id"]}: {tree["metadata"]["category"]}</div>
+                <div class="tree-title">Threat: {tree["metadata"]["category"]}</div>
+                <div class="tree-id" style="font-size: 14px; color: #6b7280; font-weight: 600; margin-bottom: 12px;">{tree["metadata"]["threat_id"]}</div>
                 <div class="tree-statement">{tree["metadata"]["threat_statement"]}</div>
             </div>
             <div class="graph-and-sidebar">
@@ -958,7 +963,7 @@ class HTMLGenerator:
         </div>
         ''' for i, tree in enumerate(all_trees)])}
         
-        <div class="legend">
+        <div id="legend-container" class="legend" style="display: none;">
             <div class="legend-title">Legend</div>
             <div class="legend-items">
                 <div class="legend-item">
@@ -1134,7 +1139,9 @@ class HTMLGenerator:
         function switchTab(treeId) {{
             // Update tab styling
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            event.target.classList.add('active');
+            if (event && event.target) {{
+                event.target.classList.add('active');
+            }}
             
             // Hide all tree containers
             document.querySelectorAll('.tree-container').forEach(container => {{
@@ -1144,8 +1151,19 @@ class HTMLGenerator:
             // Show selected tree
             document.getElementById('tree-' + treeId).classList.add('active');
             
-            // Initialize network if first time (only for attack trees, not exec summary)
-            if (treeId !== 'exec-summary') {{
+            // Show/hide tabs and legend based on current view
+            var tabsContainer = document.querySelector('.tabs-container');
+            var legendContainer = document.getElementById('legend-container');
+            
+            if (treeId === 'exec-summary') {{
+                // Hide tabs and legend on exec summary
+                tabsContainer.classList.remove('visible');
+                legendContainer.style.display = 'none';
+            }} else {{
+                // Show tabs and legend on attack tree pages
+                tabsContainer.classList.add('visible');
+                legendContainer.style.display = 'block';
+                // Initialize network if first time
                 initializeNetwork(treeId);
             }}
             
@@ -1307,7 +1325,11 @@ class HTMLGenerator:
         // Initialize first tree (only if not showing exec summary first)
         if (!hasSummary) {{
             initializeNetwork(treesData[0].id);
+            // Show tabs and legend for attack tree view
+            document.querySelector('.tabs-container').classList.add('visible');
+            document.getElementById('legend-container').style.display = 'block';
         }}
+        // If showing exec summary first, tabs and legend stay hidden (default state)
         
         console.log('Dashboard loaded with ' + treesData.length + ' attack trees' + (hasSummary ? ' and executive summary' : ''));
     </script>
