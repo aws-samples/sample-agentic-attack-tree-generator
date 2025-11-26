@@ -45,7 +45,7 @@ class ThreatForestOrchestrator:
         
         # Initialize tools as instance attributes for direct access
         self.context_tool = ContextAnalysisTool()
-        self.extraction_tool = InformationExtractionTool()
+        self.extraction_tool = InformationExtractionTool(console=console)
         self.tree_generator_tool = AttackTreeGeneratorTool(console=console)
         self.ttc_tool = TTCMappingTool(threshold=app_config.ttc_threshold, console=console)
         self.summary_tool = SummaryGeneratorTool()
@@ -163,19 +163,20 @@ class ThreatForestOrchestrator:
                 message="Extracting project information with AI"
             ))
             
-            # Step 3: Information extraction
+            # Step 3: Information extraction (using new agent-based architecture)
             if not self.state.extraction_complete:
                 self.state.advance_to(WorkflowStage.EXTRACTION)
                 
-                # Add threat model path to context if provided
+                # Add project path to context for agents
                 context_files = dict(self.state.context_files)
-                if self.config.threat_model_path:
-                    context_files['threat_model_path'] = self.config.threat_model_path
+                context_files['project_path'] = str(self.config.project_path)
                 
+                # Pass threat_model_path as threat_file_path for agent-based extraction
                 extraction_result = self.extraction_tool.run(
                     context_files=context_files,
                     bedrock_model=self.config.bedrock_model,
-                    aws_profile=self.config.aws_profile
+                    aws_profile=self.config.aws_profile,
+                    threat_file_path=self.config.threat_model_path  # New parameter for agent workflow
                 )
                 self.state.extracted_info = extraction_result
                 self.state.extraction_complete = True

@@ -101,10 +101,10 @@ class ConfigManager:
         # Provider selection
         providers = [
             "AWS Bedrock",
-            "Anthropic",
-            "OpenAI",
-            "Google Gemini",
-            "Ollama (Local)",
+            "Anthropic (Experimental)",
+            "OpenAI (Experimental)",
+            "Google Gemini (Experimental)",
+            "Ollama (Experimental)",
             "Keep current"
         ]
         
@@ -112,6 +112,9 @@ class ConfigManager:
             "Select AI Provider:",
             choices=providers
         ).ask()
+        
+        # Strip experimental flag from provider name
+        provider_choice = provider_choice.replace(" (Experimental)", "")
         
         if provider_choice != "Keep current":
             self.console.print(f"\n[green]✓[/green] Selected: {provider_choice}")

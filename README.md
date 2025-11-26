@@ -21,7 +21,8 @@ ThreatForest is an intelligent threat modeling platform built on the [Strands](h
 ### Why ThreatForest?
 
 - 🔄 **Strands-Powered Architecture** - Built on AWS Labs' agentic framework for reliable, orchestrated AI workflows with state management and error recovery
-- 🤖 **Multi-Agent Orchestration** - Coordinates specialized AI agents for context analysis, threat extraction, attack tree generation, and mitigation mapping
+- 🤖 **Autonomous Agent System** - Three specialized agents (RepositoryAnalysisAgent, ParserAgent, ThreatGenerationAgent) work together using Strands community tools
+- 🔍 **Intelligent Repository Exploration** - Agents autonomously navigate projects using `file_read`, `editor`, and `image_reader` tools
 - 🌳 **Attack Tree Generation** - Automatically creates detailed attack trees for identified threats with step-by-step attack paths
 - 🎯 **MITRE ATT&CK Integration** - Maps attack paths to TTPs (Tactics, Techniques, and Procedures)
 - 🛡️ **Mitigation Recommendations** - Provides actionable security controls and countermeasures
@@ -34,14 +35,24 @@ ThreatForest is an intelligent threat modeling platform built on the [Strands](h
 ### Core Capabilities
 
 - **🤖 AI-Powered Analysis** - Leverages LLMs to analyze your application and generate threat models
-- **🔍 Intelligent Context Analysis** - Discovers and analyzes threat models, diagrams, and documentation using Strands `file_read` tool
-- **🔄 Flexible Workflows** - Run full analysis or individual stages (generation, enrichment, mitigation) independently
+- **🔍 Autonomous Repository Exploration** - RepositoryAnalysisAgent uses Strands tools to intelligently navigate and analyze projects
+- **🔄 Flexible Threat Input** - Choose to provide existing threats or let ThreatGenerationAgent create them automatically
 - **🌳 Attack Tree Generation** - Creates detailed attack trees with multiple paths and prerequisites
 - **🎯 MITRE ATT&CK Integration** - Maps attack steps to techniques using semantic similarity matching
 - **🛡️ Mitigation Recommendations** - Provides actionable security controls for each identified threat
 - **📊 Interactive Dashboard** - Visual network graphs with dynamic filtering and search capabilities
 - **💾 State Management** - Resume interrupted workflows from checkpoints with Strands-based state persistence
 - **🔒 No Data Storage** - Application details are processed locally and not stored by ThreatForest
+
+### Agent-Based Architecture
+
+ThreatForest uses three specialized Strands agents with community tools:
+
+1. **RepositoryAnalysisAgent** - Autonomously explores repositories using `file_read`, `editor`, and `image_reader` tools
+2. **ParserAgent** - Parses existing threat statements from various formats using `file_read` tool
+3. **ThreatGenerationAgent** - Generates contextual threats when none exist (pure LLM reasoning)
+
+**Learn more:** See [docs/AGENT_ARCHITECTURE.md](docs/AGENT_ARCHITECTURE.md) for detailed architecture documentation.
 
 ### Supported Input Formats
 

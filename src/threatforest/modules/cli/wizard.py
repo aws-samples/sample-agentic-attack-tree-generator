@@ -68,15 +68,18 @@ class CLIWizard:
                 "Select your AI provider:",
                 choices=[
                     "AWS Bedrock",
-                    "Anthropic",
-                    "OpenAI",
-                    "Google Gemini",
-                    "Ollama",
-                    "LiteLLM",
-                    "LlamaAPI",
-                    "AWS SageMaker"
+                    "Anthropic (Experimental)",
+                    "OpenAI (Experimental)",
+                    "Google Gemini (Experimental)",
+                    "Ollama (Experimental)",
+                    "LiteLLM (Experimental)",
+                    "LlamaAPI (Experimental)",
+                    "AWS SageMaker (Experimental)"
                 ]
             ).ask()
+            
+            # Strip experimental flag from provider name for internal use
+            provider = provider.replace(" (Experimental)", "")
             
             # 2. Model/Endpoint selection
             model_id = None
@@ -300,66 +303,10 @@ class CLIWizard:
         return mode if mode else "exit"
     
     def get_project_path(self) -> str:
-        """Get project path from user with GUI or manual entry"""
+        """Get project path from user with validation"""
         self._show_step_indicator(2, 4, "Select Project Directory")
         self.console.print("[dim]📂 Choose the project directory to analyze[/dim]\n")
         
-        # Ask user how they want to select
-        selection_method = questionary.select(
-            "How would you like to select the project?",
-            choices=[
-                questionary.Choice("📂 Browse (file explorer)", value="browse"),
-                questionary.Choice("⌨️  Type path manually", value="manual")
-            ],
-            style=questionary.Style([
-                ('qmark', 'fg:#61afef bold'),
-                ('question', 'bold fg:#e5c07b'),
-                ('pointer', 'fg:#61afef bold'),
-                ('highlighted', 'fg:#61afef bold'),
-            ])
-        ).ask()
-        
-        if selection_method == "browse":
-            return self._browse_for_directory()
-        else:
-            return self._manual_path_entry()
-    
-    def _browse_for_directory(self) -> str:
-        """Open GUI file picker using tkinter"""
-        try:
-            import tkinter as tk
-            from tkinter import filedialog
-            
-            # Create hidden root window
-            root = tk.Tk()
-            root.withdraw()  # Hide the main window
-            root.attributes('-topmost', True)  # Bring dialog to front
-            
-            # Show directory picker
-            selected_path = filedialog.askdirectory(
-                title="Select Project Directory to Analyze",
-                initialdir=str(Path.cwd()),
-                mustexist=True
-            )
-            
-            root.destroy()
-            
-            if selected_path:
-                project_path = Path(selected_path).resolve()
-                self.console.print(f"[bright_green]✓[/bright_green] Selected: [cyan]{project_path}[/cyan]\n")
-                return str(project_path)
-            else:
-                # User cancelled dialog
-                self.console.print("[dim]No folder selected, switching to manual entry...[/dim]\n")
-                return self._manual_path_entry()
-                
-        except Exception as e:
-            self.console.print(f"[yellow]Could not open file picker: {e}[/yellow]")
-            self.console.print("[dim]Falling back to manual entry...[/dim]\n")
-            return self._manual_path_entry()
-    
-    def _manual_path_entry(self) -> str:
-        """Manual path entry with validation"""
         while True:
             path_str = questionary.path(
                 "Project directory path:",
@@ -392,8 +339,84 @@ class CLIWizard:
                 self.console.print(error_panel)
                 self.console.print()
     
+    def ask_threat_statement_preference(self) -> tuple[bool, Optional[str]]:
+        """Ask if user has existing threat statements
+        
+        Returns:
+            Tuple of (has_threats, threat_file_path)
+            - has_threats: True if user has existing threats
+            - threat_file_path: Path to threat file if provided, None otherwise
+        """
+        self._show_step_indicator(3, 4, "Threat Statements")
+        
+        info_panel = Panel(
+            "[bold blue]📋 Threat Statements[/bold blue]\n\n"
+            "[dim]Do you have existing threat statements for this project?[/dim]\n"
+            "[dim]If not, we'll generate them automatically using AI analysis.[/dim]",
+            border_style="blue",
+            box=box.ROUNDED,
+            padding=(1, 2)
+        )
+        self.console.print(info_panel)
+        self.console.print()
+        
+        has_threats = Confirm.ask(
+            "[bold]Do you have existing threat statements?[/bold]",
+            default=False
+        )
+        
+        if not has_threats:
+            self.console.print("[cyan]✓[/cyan] Threat statements will be auto-generated\n")
+            return False, None
+        
+        # User has threats, ask for file path
+        self.console.print("[dim]Please provide the path to your threat statements file[/dim]")
+        self.console.print("[dim]Supported formats: JSON, YAML, Markdown, ThreatComposer (.tc.json)[/dim]\n")
+        
+        while True:
+            path_str = questionary.path(
+                "Threat statements file path:",
+                default="",
+                only_directories=False,
+                style=questionary.Style([
+                    ('qmark', 'fg:#61afef bold'),
+                    ('question', 'bold fg:#e5c07b'),
+                    ('answer', 'fg:#98c379 bold'),
+                ])
+            ).ask()
+            
+            if path_str is None:
+                # User cancelled
+                self.console.print("[yellow]⚠️  No file provided, will auto-generate threats[/yellow]\n")
+                return False, None
+            
+            if not path_str:
+                # Empty string, ask again
+                self.console.print("[yellow]Please provide a file path or press Ctrl+C to skip[/yellow]\n")
+                continue
+            
+            threat_path = Path(path_str).expanduser().resolve()
+            
+            if threat_path.exists() and threat_path.is_file():
+                self.console.print(f"[bright_green]✓[/bright_green] Using threat file: [cyan]{threat_path}[/cyan]\n")
+                return True, str(threat_path)
+            else:
+                error_panel = Panel(
+                    f"[red]File not found:[/red] [yellow]{threat_path}[/yellow]\n\n"
+                    "[dim]💡 Tip: Use tab for autocomplete[/dim]",
+                    border_style="red",
+                    box=box.ROUNDED,
+                    padding=(1, 2)
+                )
+                self.console.print(error_panel)
+                self.console.print()
+    
     def get_threat_model_path(self) -> Optional[str]:
-        """Get optional threat model path with validation"""
+        """Get optional threat model path with validation
+        
+        DEPRECATED: Use ask_threat_statement_preference instead.
+        This method is kept for backward compatibility.
+        """
         self._show_step_indicator(3, 4, "Threat Model (Optional)")
         
         info_panel = Panel(
@@ -520,47 +543,47 @@ This will execute a complete security analysis:
         else:
             choices.append(questionary.Choice(f"○ AWS Bedrock [Not configured]", value="AWS Bedrock"))
         
-        # AWS SageMaker
+        # AWS SageMaker (Experimental)
         if env_manager.get_value('AWS_PROFILE'):
             profile = env_manager.get_value('AWS_PROFILE')
-            choices.append(questionary.Choice(f"✓ AWS SageMaker [Profile: {profile}]", value="AWS SageMaker"))
+            choices.append(questionary.Choice(f"✓ AWS SageMaker (Experimental) [Profile: {profile}]", value="AWS SageMaker"))
         elif env_manager.get_value('AWS_ACCESS_KEY_ID'):
-            choices.append(questionary.Choice(f"✓ AWS SageMaker [Access Keys]", value="AWS SageMaker"))
+            choices.append(questionary.Choice(f"✓ AWS SageMaker (Experimental) [Access Keys]", value="AWS SageMaker"))
         else:
-            choices.append(questionary.Choice(f"○ AWS SageMaker [Not configured]", value="AWS SageMaker"))
+            choices.append(questionary.Choice(f"○ AWS SageMaker (Experimental) [Not configured]", value="AWS SageMaker"))
         
-        # Anthropic
+        # Anthropic (Experimental)
         if env_manager.get_value('ANTHROPIC_API_KEY'):
-            choices.append(questionary.Choice(f"✓ Anthropic [API Key configured]", value="Anthropic"))
+            choices.append(questionary.Choice(f"✓ Anthropic (Experimental) [API Key configured]", value="Anthropic"))
         else:
-            choices.append(questionary.Choice(f"○ Anthropic [Not configured]", value="Anthropic"))
+            choices.append(questionary.Choice(f"○ Anthropic (Experimental) [Not configured]", value="Anthropic"))
         
-        # OpenAI
+        # OpenAI (Experimental)
         if env_manager.get_value('OPENAI_API_KEY'):
-            choices.append(questionary.Choice(f"✓ OpenAI [API Key configured]", value="OpenAI"))
+            choices.append(questionary.Choice(f"✓ OpenAI (Experimental) [API Key configured]", value="OpenAI"))
         else:
-            choices.append(questionary.Choice(f"○ OpenAI [Not configured]", value="OpenAI"))
+            choices.append(questionary.Choice(f"○ OpenAI (Experimental) [Not configured]", value="OpenAI"))
         
-        # Google Gemini
+        # Google Gemini (Experimental)
         if env_manager.get_value('GEMINI_API_KEY'):
-            choices.append(questionary.Choice(f"✓ Google Gemini [API Key configured]", value="Google Gemini"))
+            choices.append(questionary.Choice(f"✓ Google Gemini (Experimental) [API Key configured]", value="Google Gemini"))
         else:
-            choices.append(questionary.Choice(f"○ Google Gemini [Not configured]", value="Google Gemini"))
+            choices.append(questionary.Choice(f"○ Google Gemini (Experimental) [Not configured]", value="Google Gemini"))
         
-        # LiteLLM
+        # LiteLLM (Experimental)
         if env_manager.get_value('LITELLM_API_KEY'):
-            choices.append(questionary.Choice(f"✓ LiteLLM [API Key configured]", value="LiteLLM"))
+            choices.append(questionary.Choice(f"✓ LiteLLM (Experimental) [API Key configured]", value="LiteLLM"))
         else:
-            choices.append(questionary.Choice(f"○ LiteLLM [Not configured]", value="LiteLLM"))
+            choices.append(questionary.Choice(f"○ LiteLLM (Experimental) [Not configured]", value="LiteLLM"))
         
-        # LlamaAPI
+        # LlamaAPI (Experimental)
         if env_manager.get_value('LLAMAAPI_API_KEY'):
-            choices.append(questionary.Choice(f"✓ LlamaAPI [API Key configured]", value="LlamaAPI"))
+            choices.append(questionary.Choice(f"✓ LlamaAPI (Experimental) [API Key configured]", value="LlamaAPI"))
         else:
-            choices.append(questionary.Choice(f"○ LlamaAPI [Not configured]", value="LlamaAPI"))
+            choices.append(questionary.Choice(f"○ LlamaAPI (Experimental) [Not configured]", value="LlamaAPI"))
         
-        # Ollama (no credentials)
-        choices.append(questionary.Choice(f"✓ Ollama [No credentials needed]", value="Ollama"))
+        # Ollama (Experimental, no credentials)
+        choices.append(questionary.Choice(f"✓ Ollama (Experimental) [No credentials needed]", value="Ollama"))
         
         # Add cancel option
         choices.append(questionary.Choice(f"← Cancel", value="cancel"))

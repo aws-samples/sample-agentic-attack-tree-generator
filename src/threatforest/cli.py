@@ -209,12 +209,15 @@ def run(project_path, threat_model, mode, input_dir, output_dir):
             # Only "full" mode in interactive - always run complete analysis
             # Get project path
             project_path = wizard.get_project_path()
-            # Get optional threat model
-            threat_model = wizard.get_threat_model_path()
+            
+            # Ask about threat statements (new agent-based workflow)
+            has_threats, threat_file_path = wizard.ask_threat_statement_preference()
 
             # Show review configuration
             display.show_review_config(
-                mode="full", project_path=project_path, threat_model=threat_model
+                mode="full", 
+                project_path=project_path, 
+                threat_model=threat_file_path  # Use threat_file_path for display
             )
 
             # Confirm before starting
@@ -226,7 +229,7 @@ def run(project_path, threat_model, mode, input_dir, output_dir):
             display.show_step_header(
                 4, 4, "Executing Analysis", "This may take several minutes..."
             )
-            result = runner.run_full_workflow(project_path, threat_model)
+            result = runner.run_full_workflow(project_path, threat_file_path)
 
         else:
             # Non-interactive mode - project path provided
