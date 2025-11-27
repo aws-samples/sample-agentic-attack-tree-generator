@@ -708,6 +708,43 @@ This will execute a complete security analysis:
         
         return True
     
+    def ask_open_docs(self) -> bool:
+        """Ask user if they want to open the attack trees documentation now.
+        
+        Returns:
+            True if user wants to open docs, False otherwise
+        """
+        self.console.print()
+        
+        info_panel = Panel(
+            "[bold cyan]📚 Documentation Generation[/bold cyan]\n\n"
+            "[dim]Would you like to generate and open the attack trees documentation now?[/dim]\n\n"
+            "[bright_green]✓[/bright_green] Generates a navigable MkDocs site\n"
+            "[bright_green]✓[/bright_green] Opens automatically in your browser\n"
+            "[bright_green]✓[/bright_green] Includes all attack trees and threat statements",
+            border_style="cyan",
+            box=box.ROUNDED,
+            padding=(1, 2)
+        )
+        self.console.print(info_panel)
+        self.console.print()
+        
+        choice = questionary.select(
+            "Do you want to open the attack trees now?",
+            choices=[
+                questionary.Choice("✓ Yes, generate and open documentation", value=True),
+                questionary.Choice("✗ No, I'll do it manually later", value=False)
+            ],
+            style=questionary.Style([
+                ('qmark', 'fg:#61afef bold'),
+                ('question', 'bold fg:#e5c07b'),
+                ('pointer', 'fg:#61afef bold'),
+                ('highlighted', 'fg:#61afef bold'),
+            ])
+        ).ask()
+        
+        return choice
+    
     def _show_step_indicator(self, current: int, total: int, title: str):
         """Show step progress indicator"""
         progress_bar = ""

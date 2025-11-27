@@ -1,0 +1,1539 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Threat Analysis Report for AWS Connected Vehicle Solution - Vehicle Registration Feature">
+      
+      
+      
+      
+        <link rel="prev" href="../attack_tree_9b4dbea5-ccaa-41ea-a057-c6dd47f99523_authorization/">
+      
+      
+        <link rel="next" href="../attack_tree_c5ac485c-a985-4004-be21-1fb26173a2d3_authorization/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>Breach (9c19d403) - AWS Connected Vehicle Solution - Vehicle Registration Feature</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.618322db.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-orange" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#attack-tree-data-breach" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AWS Connected Vehicle Solution - Vehicle Registration Feature" class="md-header__button md-logo" aria-label="AWS Connected Vehicle Solution - Vehicle Registration Feature" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AWS Connected Vehicle Solution - Vehicle Registration Feature
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Breach (9c19d403)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-orange" data-md-color-accent="teal"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../threats/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Threat Statements
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+  Attack Trees
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AWS Connected Vehicle Solution - Vehicle Registration Feature" class="md-nav__button md-logo" aria-label="AWS Connected Vehicle Solution - Vehicle Registration Feature" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AWS Connected Vehicle Solution - Vehicle Registration Feature
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../threats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Threat Statements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Attack Trees
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Attack Trees
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../attack_tree_2df06a4e-b1eb-4303-bb48-46cf05182f58_authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication (2df06a4e)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../attack_tree_9b4dbea5-ccaa-41ea-a057-c6dd47f99523_authorization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authorization (9b4dbea5)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Breach (9c19d403)
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Breach (9c19d403)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#attack-tree-diagram" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attack Tree Diagram
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mitre-attck-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MITRE ATT&amp;CK Mapping
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MITRE ATT&amp;CK Mapping">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#steal-access-keys-from-code-repositories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Steal access keys from code repositories
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#insecure-api-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Insecure API endpoints
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exploit-iam-misconfigurations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exploit IAM misconfigurations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#misconfigured-resource-based-policies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Misconfigured resource-based policies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phishing-aws-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phishing AWS credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#threat-actor-with-potential-dynamodb-access-vectors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Threat actor with potential DynamoDB access vectors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exploit-leaked-credentials-in-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exploit leaked credentials in logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#unauthorized-access-to-confidential-vehicle-information" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unauthorized access to confidential vehicle information
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extract-sensitive-vehicle-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Extract sensitive vehicle data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#server-side-request-forgery-ssrf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Server-Side Request Forgery SSRF
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sqlnosql-injection-in-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SQLNoSQL injection in application
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scan-registration-status-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scan registration status table
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exfiltrate-data-to-external-location" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exfiltrate data to external location
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compromise-aws-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compromise AWS credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gain-dynamodb-read-permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gain DynamoDB read permissions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exploit-application-vulnerabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exploit application vulnerabilities
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#query-dynamodb-tables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Query DynamoDB tables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overly-permissive-iam-policies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overly permissive IAM policies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scan-vehicle-listing-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scan vehicle listing table
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scan-vehicle-registration-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scan vehicle registration table
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#attack-path-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attack Path Analysis
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../attack_tree_c5ac485c-a985-4004-be21-1fb26173a2d3_authorization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authorization (c5ac485c)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../attack_tree_d38a0bd2-35cc-4c35-a48b-f73db6794a6e_data_breach/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Breach (d38a0bd2)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../attack_tree_e0e6089f-66d2-49ca-8be0-f9346ab85a14_spoofing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spoofing (e0e6089f)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#attack-tree-diagram" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attack Tree Diagram
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mitre-attck-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MITRE ATT&amp;CK Mapping
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MITRE ATT&amp;CK Mapping">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#steal-access-keys-from-code-repositories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Steal access keys from code repositories
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#insecure-api-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Insecure API endpoints
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exploit-iam-misconfigurations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exploit IAM misconfigurations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#misconfigured-resource-based-policies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Misconfigured resource-based policies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phishing-aws-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phishing AWS credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#threat-actor-with-potential-dynamodb-access-vectors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Threat actor with potential DynamoDB access vectors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exploit-leaked-credentials-in-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exploit leaked credentials in logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#unauthorized-access-to-confidential-vehicle-information" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unauthorized access to confidential vehicle information
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extract-sensitive-vehicle-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Extract sensitive vehicle data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#server-side-request-forgery-ssrf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Server-Side Request Forgery SSRF
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sqlnosql-injection-in-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SQLNoSQL injection in application
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scan-registration-status-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scan registration status table
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exfiltrate-data-to-external-location" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exfiltrate data to external location
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compromise-aws-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compromise AWS credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gain-dynamodb-read-permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gain DynamoDB read permissions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exploit-application-vulnerabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exploit application vulnerabilities
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#query-dynamodb-tables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Query DynamoDB tables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overly-permissive-iam-policies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overly permissive IAM policies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scan-vehicle-listing-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scan vehicle listing table
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scan-vehicle-registration-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scan vehicle registration table
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#attack-path-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attack Path Analysis
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="attack-tree-data-breach">Attack Tree: Data Breach</h1>
+<p><strong>Threat ID</strong>: 9c19d403-f595-45f8-ba66-df2e60744f67
+<strong>Statement</strong>: A threat actor who is able to access the DynamoDB tables can access sensitive data, which leads to unauthorized access, resulting in reduced confidentiality of vehicle registration, vehicle listing and registration status</p>
+<h2 id="attack-tree-diagram">Attack Tree Diagram</h2>
+<p><code>mermaid
+graph TD
+    A["Threat actor with potential DynamoDB access vectors"] --&gt; B["Exploit IAM misconfigurations"]
+    A --&gt; C["Compromise AWS credentials"]
+    A --&gt; D["Exploit application vulnerabilities"]
+    B --&gt; B1["Overly permissive IAM policies"]
+    B --&gt; B2["Misconfigured resource-based policies"]
+    B1 --&gt; E["Gain DynamoDB read permissions"]
+    B2 --&gt; E
+    C --&gt; C1["Phishing AWS credentials"]
+    C --&gt; C2["Steal access keys from code repositories"]
+    C --&gt; C3["Exploit leaked credentials in logs"]
+    C1 --&gt; E
+    C2 --&gt; E
+    C3 --&gt; E
+    D --&gt; D1["SQLNoSQL injection in application"]
+    D --&gt; D2["Insecure API endpoints"]
+    D --&gt; D3["Server-Side Request Forgery SSRF"]
+    D1 --&gt; E
+    D2 --&gt; E
+    D3 --&gt; E
+    E --&gt; F["Query DynamoDB tables"]
+    F --&gt; F1["Scan vehicle registration table"]
+    F --&gt; F2["Scan vehicle listing table"]
+    F --&gt; F3["Scan registration status table"]
+    F1 --&gt; G["Extract sensitive vehicle data"]
+    F2 --&gt; G
+    F3 --&gt; G
+    G --&gt; H["Exfiltrate data to external location"]
+    H --&gt; I["Unauthorized access to confidential vehicle information"]
+    classDef attack fill:#ffcccc
+    classDef goal fill:#ffcc99
+    classDef fact fill:#ccccff
+    class B,B1,B2,C,C1,C2,C3,D,D1,D2,D3,E,F,F1,F2,F3,G,H attack
+    class I goal
+    class A fact
+    classDef mitigation fill:#ccffcc</code></p>
+<h2 id="mitre-attck-mapping">MITRE ATT&amp;CK Mapping</h2>
+<p>This attack tree has been mapped to MITRE ATT&amp;CK techniques:</p>
+<h3 id="steal-access-keys-from-code-repositories">Steal access keys from code repositories</h3>
+<ul>
+<li><strong>Technique</strong>: <a href="https://attack.mitre.org/techniques/T1213/003/">T1213.003</a> - Code Repositories</li>
+<li><strong>Tactic</strong>: Collection</li>
+<li><strong>Similarity Score</strong>: 51.53%</li>
+<li><strong>Mitigations (4):</strong></li>
+<li>🛡️ <strong>User Training</strong>
+    User Training involves educating employees and contractors on recognizing, reporting, and preventing cyber threats that ...</li>
+<li>🛡️ <strong>Audit</strong>
+    Auditing is the process of recording activity and systematically reviewing and analyzing the activity and system configu...</li>
+<li>🛡️ <strong>User Account Management</strong>
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...</li>
+<li><em>1 more mitigation(s) available</em></li>
+</ul>
+<h3 id="insecure-api-endpoints">Insecure API endpoints</h3>
+<ul>
+<li><strong>Technique</strong>: <a href="https://attack.mitre.org/techniques/T1001/003/">T1001.003</a> - Protocol or Service Impersonation</li>
+<li><strong>Tactic</strong>: Command And Control</li>
+<li><strong>Similarity Score</strong>: 52.18%</li>
+<li><strong>Mitigations (1):</strong></li>
+<li>🛡️ <strong>Network Intrusion Prevention</strong>
+    Use intrusion detection signatures to block traffic at network boundaries.</li>
+</ul>
+<h3 id="exploit-iam-misconfigurations">Exploit IAM misconfigurations</h3>
+<ul>
+<li><strong>Technique</strong>: <a href="https://attack.mitre.org/techniques/T1059/008/">T1059.008</a> - Network Device CLI</li>
+<li><strong>Tactic</strong>: Execution</li>
+<li><strong>Similarity Score</strong>: 43.63%</li>
+<li><strong>Mitigations (3):</strong></li>
+<li>🛡️ <strong>Execution Prevention</strong>
+    Prevent the execution of unauthorized or malicious code on systems by implementing application control, script blocking,...</li>
+<li>🛡️ <strong>Privileged Account Management</strong>
+    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...</li>
+<li>🛡️ <strong>User Account Management</strong>
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...</li>
+</ul>
+<h3 id="misconfigured-resource-based-policies">Misconfigured resource-based policies</h3>
+<ul>
+<li><strong>Technique</strong>: <a href="https://attack.mitre.org/techniques/T1484/001/">T1484.001</a> - Group Policy Modification</li>
+<li><strong>Tactic</strong>: Defense Evasion, Privilege Escalation</li>
+<li><strong>Similarity Score</strong>: 57.97%</li>
+<li><strong>Mitigations (2):</strong></li>
+<li>🛡️ <strong>Audit</strong>
+    Auditing is the process of recording activity and systematically reviewing and analyzing the activity and system configu...</li>
+<li>🛡️ <strong>User Account Management</strong>
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...</li>
+</ul>
+<h3 id="phishing-aws-credentials">Phishing AWS credentials</h3>
+<ul>
+<li><strong>Technique</strong>: <a href="https://attack.mitre.org/techniques/T1589/001/">T1589.001</a> - Credentials</li>
+<li><strong>Tactic</strong>: Reconnaissance</li>
+<li><strong>Similarity Score</strong>: 74.42%</li>
+<li><strong>Mitigations (1):</strong></li>
+<li>🛡️ <strong>Pre-compromise</strong>
+    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...</li>
+</ul>
+<h3 id="threat-actor-with-potential-dynamodb-access-vectors">Threat actor with potential DynamoDB access vectors</h3>
+<ul>
+<li><strong>Technique</strong>: <a href="https://attack.mitre.org/techniques/T1530/">T1530</a> - Data from Cloud Storage</li>
+<li><strong>Tactic</strong>: Collection</li>
+<li><strong>Similarity Score</strong>: 52.68%</li>
+<li><strong>Mitigations (6):</strong></li>
+<li>🛡️ <strong>User Account Management</strong>
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...</li>
+<li>🛡️ <strong>Encrypt Sensitive Information</strong>
+    Protect sensitive information at rest, in transit, and during processing by using strong encryption algorithms. Encrypti...</li>
+<li>🛡️ <strong>Restrict File and Directory Permissions</strong>
+    Restricting file and directory permissions involves setting access controls at the file system level to limit which user...</li>
+<li><em>3 more mitigation(s) available</em></li>
+</ul>
+<h3 id="exploit-leaked-credentials-in-logs">Exploit leaked credentials in logs</h3>
+<ul>
+<li><strong>Technique</strong>: <a href="https://attack.mitre.org/techniques/T1552/008/">T1552.008</a> - Chat Messages</li>
+<li><strong>Tactic</strong>: Credential Access</li>
+<li><strong>Similarity Score</strong>: 77.45%</li>
+<li><strong>Mitigations (2):</strong></li>
+<li>🛡️ <strong>Audit</strong>
+    Auditing is the process of recording activity and systematically reviewing and analyzing the activity and system configu...</li>
+<li>🛡️ <strong>User Training</strong>
+    User Training involves educating employees and contractors on recognizing, reporting, and preventing cyber threats that ...</li>
+</ul>
+<h3 id="unauthorized-access-to-confidential-vehicle-information">Unauthorized access to confidential vehicle information</h3>
+<ul>
+<li><strong>Technique</strong>: <a href="https://attack.mitre.org/techniques/T1213/">T1213</a> - Data from Information Repositories</li>
+<li><strong>Tactic</strong>: Collection</li>
+<li><strong>Similarity Score</strong>: 47.23%</li>
+<li><strong>Mitigations (7):</strong></li>
+<li>🛡️ <strong>Multi-factor Authentication</strong>
+    Multi-Factor Authentication (MFA) enhances security by requiring users to provide at least two forms of verification to ...</li>
+<li>🛡️ <strong>Out-of-Band Communications Channel</strong>
+    Establish secure out-of-band communication channels to ensure the continuity of critical communications during security ...</li>
+<li>🛡️ <strong>User Training</strong>
+    User Training involves educating employees and contractors on recognizing, reporting, and preventing cyber threats that ...</li>
+<li><em>4 more mitigation(s) available</em></li>
+</ul>
+<h3 id="extract-sensitive-vehicle-data">Extract sensitive vehicle data</h3>
+<ul>
+<li><strong>Technique</strong>: <a href="https://attack.mitre.org/techniques/T1025/">T1025</a> - Data from Removable Media</li>
+<li><strong>Tactic</strong>: Collection</li>
+<li><strong>Similarity Score</strong>: 63.45%</li>
+<li><strong>Mitigations (1):</strong></li>
+<li>🛡️ <strong>Data Loss Prevention</strong>
+    Data Loss Prevention (DLP) involves implementing strategies and technologies to identify, categorize, monitor, and contr...</li>
+</ul>
+<h3 id="server-side-request-forgery-ssrf">Server-Side Request Forgery SSRF</h3>
+<ul>
+<li><strong>Technique</strong>: <a href="https://attack.mitre.org/techniques/T1672/">T1672</a> - Email Spoofing</li>
+<li><strong>Tactic</strong>: Defense Evasion</li>
+<li><strong>Similarity Score</strong>: 49.63%</li>
+<li><strong>Mitigations (1):</strong></li>
+<li>🛡️ <strong>Software Configuration</strong>
+    Software configuration refers to making security-focused adjustments to the settings of applications, middleware, databa...</li>
+</ul>
+<h3 id="sqlnosql-injection-in-application">SQLNoSQL injection in application</h3>
+<ul>
+<li><strong>Technique</strong>: <a href="https://attack.mitre.org/techniques/T1505/001/">T1505.001</a> - SQL Stored Procedures</li>
+<li><strong>Tactic</strong>: Persistence</li>
+<li><strong>Similarity Score</strong>: 41.26%</li>
+<li><strong>Mitigations (3):</strong></li>
+<li>🛡️ <strong>Audit</strong>
+    Auditing is the process of recording activity and systematically reviewing and analyzing the activity and system configu...</li>
+<li>🛡️ <strong>Code Signing</strong>
+    Code Signing is a security process that ensures the authenticity and integrity of software by digitally signing executab...</li>
+<li>🛡️ <strong>Privileged Account Management</strong>
+    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...</li>
+</ul>
+<h3 id="scan-registration-status-table">Scan registration status table</h3>
+<ul>
+<li><strong>Technique</strong>: <a href="https://attack.mitre.org/techniques/T1087/">T1087</a> - Account Discovery</li>
+<li><strong>Tactic</strong>: Discovery</li>
+<li><strong>Similarity Score</strong>: 57.06%</li>
+<li><strong>Mitigations (2):</strong></li>
+<li>🛡️ <strong>Operating System Configuration</strong>
+    Operating System Configuration involves adjusting system settings and hardening the default configurations of an operati...</li>
+<li>🛡️ <strong>User Account Management</strong>
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...</li>
+</ul>
+<h3 id="exfiltrate-data-to-external-location">Exfiltrate data to external location</h3>
+<ul>
+<li><strong>Technique</strong>: <a href="https://attack.mitre.org/techniques/T1052/">T1052</a> - Exfiltration Over Physical Medium</li>
+<li><strong>Tactic</strong>: Exfiltration</li>
+<li><strong>Similarity Score</strong>: 76.26%</li>
+<li><strong>Mitigations (3):</strong></li>
+<li>🛡️ <strong>Data Loss Prevention</strong>
+    Data Loss Prevention (DLP) involves implementing strategies and technologies to identify, categorize, monitor, and contr...</li>
+<li>🛡️ <strong>Limit Hardware Installation</strong>
+    Prevent unauthorized users or groups from installing or using hardware, such as external drives, peripheral devices, or ...</li>
+<li>🛡️ <strong>Disable or Remove Feature or Program</strong>
+    Disable or remove unnecessary and potentially vulnerable software, features, or services to reduce the attack surface an...</li>
+</ul>
+<h3 id="compromise-aws-credentials">Compromise AWS credentials</h3>
+<ul>
+<li><strong>Technique</strong>: <a href="https://attack.mitre.org/techniques/T1021/007/">T1021.007</a> - Cloud Services</li>
+<li><strong>Tactic</strong>: Lateral Movement</li>
+<li><strong>Similarity Score</strong>: 74.40%</li>
+<li><strong>Mitigations (2):</strong></li>
+<li>🛡️ <strong>Multi-factor Authentication</strong>
+    Multi-Factor Authentication (MFA) enhances security by requiring users to provide at least two forms of verification to ...</li>
+<li>🛡️ <strong>Privileged Account Management</strong>
+    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...</li>
+</ul>
+<h3 id="gain-dynamodb-read-permissions">Gain DynamoDB read permissions</h3>
+<ul>
+<li><strong>Technique</strong>: <a href="https://attack.mitre.org/techniques/T1530/">T1530</a> - Data from Cloud Storage</li>
+<li><strong>Tactic</strong>: Collection</li>
+<li><strong>Similarity Score</strong>: 51.41%</li>
+<li><strong>Mitigations (6):</strong></li>
+<li>🛡️ <strong>User Account Management</strong>
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...</li>
+<li>🛡️ <strong>Encrypt Sensitive Information</strong>
+    Protect sensitive information at rest, in transit, and during processing by using strong encryption algorithms. Encrypti...</li>
+<li>🛡️ <strong>Restrict File and Directory Permissions</strong>
+    Restricting file and directory permissions involves setting access controls at the file system level to limit which user...</li>
+<li><em>3 more mitigation(s) available</em></li>
+</ul>
+<h3 id="exploit-application-vulnerabilities">Exploit application vulnerabilities</h3>
+<ul>
+<li><strong>Technique</strong>: <a href="https://attack.mitre.org/techniques/T1211/">T1211</a> - Exploitation for Defense Evasion</li>
+<li><strong>Tactic</strong>: Defense Evasion</li>
+<li><strong>Similarity Score</strong>: 68.09%</li>
+<li><strong>Mitigations (4):</strong></li>
+<li>🛡️ <strong>Exploit Protection</strong>
+    Deploy capabilities that detect, block, and mitigate conditions indicative of software exploits. These capabilities aim ...</li>
+<li>🛡️ <strong>Update Software</strong>
+    Software updates ensure systems are protected against known vulnerabilities by applying patches and upgrades provided by...</li>
+<li>🛡️ <strong>Threat Intelligence Program</strong>
+    A Threat Intelligence Program enables organizations to proactively identify, analyze, and act on cyber threats by levera...</li>
+<li><em>1 more mitigation(s) available</em></li>
+</ul>
+<h3 id="query-dynamodb-tables">Query DynamoDB tables</h3>
+<ul>
+<li><strong>Technique</strong>: <a href="https://attack.mitre.org/techniques/T1119/">T1119</a> - Automated Collection</li>
+<li><strong>Tactic</strong>: Collection</li>
+<li><strong>Similarity Score</strong>: 53.32%</li>
+<li><strong>Mitigations (2):</strong></li>
+<li>🛡️ <strong>Remote Data Storage</strong>
+    Remote Data Storage focuses on moving critical data, such as security logs and sensitive files, to secure, off-host loca...</li>
+<li>🛡️ <strong>Encrypt Sensitive Information</strong>
+    Protect sensitive information at rest, in transit, and during processing by using strong encryption algorithms. Encrypti...</li>
+</ul>
+<h3 id="overly-permissive-iam-policies">Overly permissive IAM policies</h3>
+<ul>
+<li><strong>Technique</strong>: <a href="https://attack.mitre.org/techniques/T1556/009/">T1556.009</a> - Conditional Access Policies</li>
+<li><strong>Tactic</strong>: Credential Access, Defense Evasion, Persistence</li>
+<li><strong>Similarity Score</strong>: 74.28%</li>
+<li><strong>Mitigations (1):</strong></li>
+<li>🛡️ <strong>User Account Management</strong>
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...</li>
+</ul>
+<h3 id="scan-vehicle-listing-table">Scan vehicle listing table</h3>
+<ul>
+<li><strong>Technique</strong>: <a href="https://attack.mitre.org/techniques/T1083/">T1083</a> - File and Directory Discovery</li>
+<li><strong>Tactic</strong>: Discovery</li>
+<li><strong>Similarity Score</strong>: 47.98%</li>
+</ul>
+<h3 id="scan-vehicle-registration-table">Scan vehicle registration table</h3>
+<ul>
+<li><strong>Technique</strong>: <a href="https://attack.mitre.org/techniques/T1590/001/">T1590.001</a> - Domain Properties</li>
+<li><strong>Tactic</strong>: Reconnaissance</li>
+<li><strong>Similarity Score</strong>: 45.90%</li>
+<li><strong>Mitigations (1):</strong></li>
+<li>🛡️ <strong>Pre-compromise</strong>
+    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...</li>
+</ul>
+<p><em>Total technique mappings: 20 | Mitigations found: 52</em></p>
+<h2 id="attack-path-analysis">Attack Path Analysis</h2>
+<p>Review this attack tree to:
+1. Identify critical attack paths
+2. Implement appropriate security controls
+3. Monitor for indicators
+4. Develop incident response procedures</p>
+<hr />
+<p><em>Generated by ThreatForest</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "content.code.copy"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -28,6 +28,120 @@ with _loading_console.status("[bold cyan]🌳 Initializing ThreatForest...", spi
 console = Console()
 
 
+def _prompt_for_docs_generation(output_directory, wizard, display, logger):
+    """Prompt user to generate and open documentation after workflow completion.
+    
+    Args:
+        output_directory: Path to the output directory containing attack trees
+        wizard: CLIWizard instance for prompting
+        display: CLIDisplay instance for showing messages
+        logger: Logger instance
+    """
+    import subprocess
+    from threatforest.modules.visualization import DocsGenerator
+    
+    # Determine the attack_trees directory
+    attack_trees_dir = Path(output_directory) / "attack_trees"
+    if not attack_trees_dir.exists():
+        # output_directory might already be the attack_trees directory
+        if Path(output_directory).name == "attack_trees":
+            attack_trees_dir = Path(output_directory)
+        else:
+            logger.warning(f"Could not find attack_trees directory in {output_directory}")
+            return
+    
+    # Check if mkdocs is available
+    if not DocsGenerator.is_mkdocs_available():
+        console.print("\n[yellow]📚 Documentation generation is available but MkDocs is not installed[/yellow]")
+        console.print(f"   [dim]To generate docs later, run:[/dim]")
+        console.print(f"   [cyan]threatforest docs build {attack_trees_dir}[/cyan]")
+        console.print(f"   [cyan]threatforest docs serve {attack_trees_dir}[/cyan]\n")
+        console.print(f"   [dim]Install MkDocs with:[/dim]")
+        console.print(f"   [cyan]pip install mkdocs mkdocs-material pymdown-extensions[/cyan]\n")
+        return
+    
+    # Ask user if they want to generate docs
+    try:
+        wants_docs = wizard.ask_open_docs()
+    except KeyboardInterrupt:
+        console.print("\n[dim]Skipping documentation generation[/dim]\n")
+        return
+    
+    if not wants_docs:
+        # Show manual instructions
+        console.print("\n[cyan]📚 To generate documentation later, run:[/cyan]")
+        console.print(f"   [bold]threatforest docs build {attack_trees_dir}[/bold]")
+        console.print(f"   [bold]threatforest docs serve {attack_trees_dir}[/bold]\n")
+        return
+    
+    # Generate docs
+    try:
+        display.show_info(f"Generating documentation from: {attack_trees_dir}")
+        
+        generator = DocsGenerator(attack_trees_dir)
+        
+        # Validate required files
+        missing_files = generator.validate_output_dir()
+        if missing_files:
+            display.show_error(
+                f"Missing required files: {', '.join(missing_files)}",
+                "Cannot Generate Documentation",
+                suggestions=[
+                    "Ensure the workflow completed successfully",
+                    "Check that attack trees were generated",
+                ]
+            )
+            return
+        
+        # Generate MkDocs structure
+        docs_dir = generator.generate()
+        logger.info(f"Generated docs structure at {docs_dir}")
+        
+        # Build static site
+        display.show_info("Building static site with MkDocs...")
+        mkdocs_yml = attack_trees_dir / "mkdocs.yml"
+        
+        result = subprocess.run(
+            ["mkdocs", "build", "-f", str(mkdocs_yml.resolve())],
+            capture_output=True,
+            text=True,
+            cwd=str(attack_trees_dir.resolve()),
+        )
+        
+        if result.returncode != 0:
+            display.show_error(
+                f"MkDocs build failed: {result.stderr}",
+                "Build Error"
+            )
+            return
+        
+        # Open in browser
+        site_dir = attack_trees_dir / "site"
+        index_file = site_dir / "index.html"
+        
+        if index_file.exists():
+            display.show_success("Documentation site built successfully!")
+            console.print(f"\n📚 [bold cyan]Opening documentation in browser...[/bold cyan]")
+            
+            try:
+                site_uri = index_file.resolve().as_uri()
+                webbrowser.open(site_uri)
+                console.print(f"   [dim]Documentation: {site_dir}[/dim]\n")
+            except Exception as e:
+                logger.warning(f"Failed to auto-open docs: {e}")
+                console.print(f"   [yellow]Could not auto-open browser[/yellow]")
+                console.print(f"   [bold green]Open manually:[/bold green] {index_file}\n")
+        else:
+            logger.error(f"Built site index not found at {index_file}")
+            display.show_error("Documentation build completed but index.html not found")
+            
+    except FileNotFoundError as e:
+        display.show_error(str(e), "File Not Found")
+    except Exception as e:
+        logger.error(f"Documentation generation failed: {e}")
+        display.show_error(str(e), "Documentation Generation Failed")
+
+
 @click.group(invoke_without_command=True)
 @click.pass_context
 def cli(ctx):
@@ -302,72 +416,22 @@ def run(project_path, threat_model, mode, input_dir, output_dir):
 
             display.show_summary(summary)
 
-            # Display clickable dashboard link if it exists
+            # Get output directory for docs generation
             output_directory = (
                 summary.get("output_dir")
                 or result.get("output_dir")
                 or result.get("output_directory")
             )
 
-            # Get logger to track dashboard detection
+            # Get logger
             logger = ThreatForestLogger.get_logger()
 
-            logger.info(f"Checking for dashboard - output_directory: {output_directory}")
-
             if output_directory:
-                # Try multiple possible dashboard paths
-                possible_paths = [
-                    Path(output_directory) / "attack_trees" / "attack_trees_dashboard.html",
-                    Path(output_directory) / "attack_trees_dashboard.html",
-                    Path(output_directory).parent / "attack_trees" / "attack_trees_dashboard.html",
-                ]
-
-                dashboard_path = None
-                for path in possible_paths:
-                    logger.info(f"Checking dashboard path: {path}")
-                    if path.exists():
-                        dashboard_path = path
-                        logger.info(f"Found dashboard at: {path}")
-                        break
-                    else:
-                        logger.debug(f"Dashboard not found at: {path}")
-
-                if dashboard_path:
-                    # Detect OS and show appropriate command
-                    system = platform.system()
-                    abs_path = str(dashboard_path.resolve())
-                    dashboard_uri = dashboard_path.resolve().as_uri()
-
-                    if system == "Darwin":  # macOS
-                        open_cmd = f"open {abs_path}"
-                    elif system == "Linux":
-                        open_cmd = f"xdg-open {abs_path}"
-                    elif system == "Windows":
-                        open_cmd = f'start "" "{abs_path}"'
-                    else:
-                        open_cmd = f"<open command for your OS> {abs_path}"
-
-                    # Attempt to open dashboard automatically
-                    console.print("\n📊 [bold cyan]Opening dashboard in browser...[/bold cyan]")
-                    try:
-                        webbrowser.open(dashboard_uri)
-                        console.print(
-                            f"   [dim]If browser doesn't open automatically, run: {open_cmd}[/dim]\n"
-                        )
-                    except Exception as e:
-                        logger.warning(f"Failed to auto-open dashboard: {e}")
-                        console.print(f"   [yellow]Could not auto-open browser[/yellow]")
-                        console.print(f"   [bold green]To open manually:[/bold green] {open_cmd}\n")
-                else:
-                    logger.warning(
-                        f"Dashboard HTML not found in output directory: {output_directory}"
-                    )
-                    console.print(
-                        f"\n📁 [bold cyan]Output Directory:[/bold cyan] {output_directory}"
-                    )
-                    console.print(
-                        "   [yellow]Dashboard not found - check if attack trees were generated[/yellow]\n"
-                    )
+                logger.info(f"Output directory: {output_directory}")
+                console.print(f"\n📁 [bold cyan]Output Directory:[/bold cyan] {output_directory}\n")
+                
+                # Prompt for docs generation (HTML dashboard has been replaced with MkDocs)
+                _prompt_for_docs_generation(output_directory, wizard, display, logger)
             else:
                 logger.warning("No output directory found in result")
                 console.print("\n[yellow]⚠️  Output directory information not available[/yellow]\n")
@@ -403,6 +467,172 @@ def status():
     """Show current workflow status"""
     display = CLIDisplay()
     display.print("Status command not yet implemented", style="yellow")
+
+
+# ============================================================================
+# Documentation Commands
+# ============================================================================
+
+
+@cli.group()
+def docs():
+    """Documentation generation commands"""
+    pass
+
+
+@docs.command(name="build")
+@click.argument("output_dir", type=click.Path(exists=True))
+def docs_build(output_dir: str):
+    """Build static documentation site from ThreatForest output.
+    
+    OUTPUT_DIR is the path to the ThreatForest output directory containing
+    threatforest_data.json, attack_trees_dashboard.html, and analysis files.
+    """
+    import subprocess
+    from threatforest.modules.visualization import DocsGenerator
+    
+    display = CLIDisplay()
+    output_path = Path(output_dir)
+    
+    # Check if mkdocs is available
+    if not DocsGenerator.is_mkdocs_available():
+        display.show_error(
+            "MkDocs is not installed or not available in PATH",
+            "MkDocs Not Found",
+            suggestions=[
+                DocsGenerator.get_mkdocs_install_instructions(),
+                "After installation, try the command again",
+            ],
+        )
+        sys.exit(1)
+    
+    # Initialize DocsGenerator
+    generator = DocsGenerator(output_path)
+    
+    # Validate output directory has required files
+    missing_files = generator.validate_output_dir()
+    if missing_files:
+        display.show_error(
+            f"Missing required files: {', '.join(missing_files)}",
+            "Invalid Output Directory",
+            suggestions=[
+                "Ensure you've run a ThreatForest analysis first",
+                "Check that the output directory contains threatforest_data.json",
+                "Verify attack_trees_dashboard.html exists",
+            ],
+        )
+        sys.exit(1)
+    
+    try:
+        # Generate MkDocs structure
+        display.show_info(f"Generating documentation from: {output_path}")
+        docs_dir = generator.generate()
+        
+        # Run mkdocs build
+        display.show_info("Building static site with MkDocs...")
+        mkdocs_yml = output_path / "mkdocs.yml"
+        
+        result = subprocess.run(
+            ["mkdocs", "build", "-f", str(mkdocs_yml.resolve())],
+            capture_output=True,
+            text=True,
+            cwd=str(output_path.resolve()),
+        )
+        
+        if result.returncode != 0:
+            display.show_error(
+                f"MkDocs build failed: {result.stderr}",
+                "Build Error",
+                suggestions=[
+                    "Verify the generated mkdocs.yml is valid",
+                    "Check the error message above for details",
+                ],
+            )
+            sys.exit(1)
+        
+        site_dir = output_path / "site"
+        display.show_success(f"Documentation site built successfully!")
+        console.print(f"\n📁 [bold cyan]Site location:[/bold cyan] {site_dir}")
+        console.print(f"   [dim]Open {site_dir / 'index.html'} in a browser to view[/dim]\n")
+        
+    except FileNotFoundError as e:
+        display.show_error(str(e), "File Not Found")
+        sys.exit(1)
+    except Exception as e:
+        display.show_error(str(e), "Documentation Generation Failed")
+        sys.exit(1)
+
+
+@docs.command(name="serve")
+@click.argument("output_dir", type=click.Path(exists=True))
+@click.option("--port", "-p", default=8000, help="Port for local server")
+def docs_serve(output_dir: str, port: int):
+    """Serve documentation locally for preview.
+    
+    OUTPUT_DIR is the path to the ThreatForest output directory.
+    Starts a local development server with live reload.
+    """
+    import subprocess
+    from threatforest.modules.visualization import DocsGenerator
+    
+    display = CLIDisplay()
+    output_path = Path(output_dir)
+    
+    # Check if mkdocs is available
+    if not DocsGenerator.is_mkdocs_available():
+        display.show_error(
+            "MkDocs is not installed or not available in PATH",
+            "MkDocs Not Found",
+            suggestions=[
+                DocsGenerator.get_mkdocs_install_instructions(),
+                "After installation, try the command again",
+            ],
+        )
+        sys.exit(1)
+    
+    # Initialize DocsGenerator
+    generator = DocsGenerator(output_path)
+    
+    # Validate output directory has required files
+    missing_files = generator.validate_output_dir()
+    if missing_files:
+        display.show_error(
+            f"Missing required files: {', '.join(missing_files)}",
+            "Invalid Output Directory",
+            suggestions=[
+                "Ensure you've run a ThreatForest analysis first",
+                "Check that the output directory contains threatforest_data.json",
+                "Verify attack_trees_dashboard.html exists",
+            ],
+        )
+        sys.exit(1)
+    
+    try:
+        # Generate MkDocs structure if not present
+        mkdocs_yml = output_path / "mkdocs.yml"
+        if not mkdocs_yml.exists():
+            display.show_info(f"Generating documentation structure...")
+            generator.generate()
+        
+        # Start mkdocs serve
+        display.show_info(f"Starting documentation server on port {port}...")
+        console.print(f"\n🌐 [bold cyan]Server URL:[/bold cyan] http://127.0.0.1:{port}")
+        console.print("   [dim]Press Ctrl+C to stop the server[/dim]\n")
+        
+        # Run mkdocs serve (this will block until interrupted)
+        subprocess.run(
+            ["mkdocs", "serve", "-f", str(mkdocs_yml.resolve()), "-a", f"127.0.0.1:{port}"],
+            cwd=str(output_path.resolve()),
+        )
+        
+    except FileNotFoundError as e:
+        display.show_error(str(e), "File Not Found")
+        sys.exit(1)
+    except KeyboardInterrupt:
+        console.print("\n[yellow]👋 Server stopped[/yellow]")
+    except Exception as e:
+        display.show_error(str(e), "Server Error")
+        sys.exit(1)
 
 
 @cli.group()
@@ -472,6 +702,8 @@ def help_cmd():
   [cyan]config edit[/cyan]      Edit configuration interactively
   [cyan]config set[/cyan]       Set a specific config value
   [cyan]config path[/cyan]      Show path to active config file
+  [cyan]docs build[/cyan]       Build static documentation site from ThreatForest output
+  [cyan]docs serve[/cyan]       Serve documentation locally for preview
   [cyan]status[/cyan]           Show current workflow status
 
 [bold]Examples:[/bold]
@@ -493,6 +725,12 @@ def help_cmd():
 
   # TTP enrichment only
   threatforest run --mode enrich --input-dir ./threatforest/attack_trees --output-dir ./threatforest/enriched
+
+  # Build documentation site
+  threatforest docs build ./output/threatforest
+
+  # Serve documentation locally
+  threatforest docs serve ./output/threatforest --port 8080
 
 For more information, visit: https://github.com/YOUR-ORG/ThreatForest
     """

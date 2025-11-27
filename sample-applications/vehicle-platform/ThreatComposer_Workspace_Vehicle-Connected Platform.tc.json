@@ -122,10 +122,10 @@
       "content": "REST-based APIs are served by AWS Lambda and the Amazon API Gateway."
     },
     {
-      "numericId": 19,
-      "content": "MFA is not used by users",
       "id": "0236e8ad-dad7-4b2c-8ccf-72a32f1c12c8",
-      "displayOrder": 19
+      "numericId": 19,
+      "displayOrder": 19,
+      "content": "MFA is not used by users"
     }
   ],
   "mitigations": [
@@ -294,8 +294,8 @@
   "assumptionLinks": [
     {
       "type": "Threat",
-      "linkedId": "2df06a4e-b1eb-4303-bb48-46cf05182f58",
-      "assumptionId": "0236e8ad-dad7-4b2c-8ccf-72a32f1c12c8"
+      "assumptionId": "0236e8ad-dad7-4b2c-8ccf-72a32f1c12c8",
+      "linkedId": "2df06a4e-b1eb-4303-bb48-46cf05182f58"
     }
   ],
   "mitigationLinks": [],
@@ -304,52 +304,58 @@
       "id": "9b4dbea5-ccaa-41ea-a057-c6dd47f99523",
       "numericId": 11,
       "displayOrder": 11,
-      "status": "threatIdentified",
-      "statement": "An internal actor with access to the AWS account can deploy a lambda function that will use existing execution role, which leads to unauthorised access to sensitive data, resulting in reduced confidentiality of registration status",
-      "threatSource": "internal actor",
-      "prerequisites": "with access to the AWS account",
-      "threatAction": "deploy a lambda function that will use existing execution role",
-      "threatImpact": "unauthorised access to sensitive data",
-      "impactedAssets": [
-        "registration status"
-      ],
-      "impactedGoal": [
-        "confidentiality"
-      ],
       "metadata": [
         {
           "key": "Priority",
           "value": "High"
         }
-      ]
+      ],
+      "threatSource": "internal actor",
+      "prerequisites": "with access to the AWS account",
+      "threatAction": "deploy a lambda function that will use existing execution role",
+      "threatImpact": "unauthorised access to sensitive data",
+      "impactedGoal": [
+        "confidentiality"
+      ],
+      "impactedAssets": [
+        "registration status"
+      ],
+      "statement": "An internal actor with access to the AWS account can deploy a lambda function that will use existing execution role, which leads to unauthorised access to sensitive data, resulting in reduced confidentiality of registration status",
+      "status": "threatIdentified"
     },
     {
       "id": "2df06a4e-b1eb-4303-bb48-46cf05182f58",
       "numericId": 10,
       "displayOrder": 10,
-      "status": "threatIdentified",
-      "statement": "An external threat actor with knowledge of employee email addresses can password spray Cognito, which leads to unauthorized access to Vehicle Registration System, resulting in reduced confidentiality of vehicle registration documents",
-      "threatSource": "external threat actor",
-      "prerequisites": "with knowledge of employee email addresses",
-      "threatAction": "password spray Cognito",
-      "threatImpact": "unauthorized access to Vehicle Registration System",
-      "impactedAssets": [
-        "vehicle registration documents"
-      ],
-      "impactedGoal": [
-        "confidentiality"
-      ],
       "metadata": [
         {
           "key": "Priority",
           "value": "High"
         }
-      ]
+      ],
+      "threatSource": "external threat actor",
+      "prerequisites": "with knowledge of employee email addresses",
+      "threatAction": "password spray Cognito",
+      "threatImpact": "unauthorized access to Vehicle Registration System",
+      "impactedGoal": [
+        "confidentiality"
+      ],
+      "impactedAssets": [
+        "vehicle registration documents"
+      ],
+      "statement": "An external threat actor with knowledge of employee email addresses can password spray Cognito, which leads to unauthorized access to Vehicle Registration System, resulting in reduced confidentiality of vehicle registration documents",
+      "status": "threatIdentified"
     },
     {
       "id": "c5ac485c-a985-4004-be21-1fb26173a2d3",
       "numericId": 9,
       "displayOrder": 9,
+      "metadata": [
+        {
+          "key": "Priority",
+          "value": "High"
+        }
+      ],
       "threatSource": "threat actor",
       "prerequisites": "with access to modify network traffic",
       "threatAction": "manipulate API parameter input",
@@ -365,18 +371,18 @@
         "vehicle registration documents"
       ],
       "statement": "A threat actor with access to modify network traffic can manipulate API parameter input which leads to the API Gateway performing actions on another user's resources, resulting in reduced integrity and confidentiality of vehicle registration, vehicle listing, registration status, and vehicle registration documents.",
-      "status": "threatIdentified",
-      "metadata": [
-        {
-          "key": "Priority",
-          "value": "High"
-        }
-      ]
+      "status": "threatIdentified"
     },
     {
       "id": "68fa5393-4f94-4c19-96eb-3438498ce3fd",
       "numericId": 8,
       "displayOrder": 8,
+      "metadata": [
+        {
+          "key": "Priority",
+          "value": "Low"
+        }
+      ],
       "threatSource": "threat actor",
       "prerequisites": "with access to an IAM Principal with modify access to the S3 bucket",
       "threatAction": "cause data in the Amazon S3 bucket to be deleted",
@@ -389,18 +395,18 @@
         "vehicle registration documents"
       ],
       "statement": "A threat actor with access to an IAM Principal with modify access to the S3 bucket can cause data in the Amazon S3 bucket to be deleted, resulting in reduced availability of vehicle registration documents.",
-      "status": "threatIdentified",
-      "metadata": [
-        {
-          "key": "Priority",
-          "value": "Low"
-        }
-      ]
+      "status": "threatIdentified"
     },
     {
       "id": "d38a0bd2-35cc-4c35-a48b-f73db6794a6e",
       "numericId": 7,
       "displayOrder": 7,
+      "metadata": [
+        {
+          "key": "Priority",
+          "value": "High"
+        }
+      ],
       "threatSource": "threat actor",
       "prerequisites": "with access to an IAM Principal with modify access to the DynamoDB tables",
       "threatAction": "delete the data",
@@ -414,18 +420,18 @@
         "registration status"
       ],
       "statement": "A threat actor with access to an IAM Principal with modify access to the DynamoDB tables can delete the data, resulting in reduced availability of vehicle registration, vehicle listing, and registration status.",
-      "status": "threatIdentified",
-      "metadata": [
-        {
-          "key": "Priority",
-          "value": "High"
-        }
-      ]
+      "status": "threatIdentified"
     },
     {
       "id": "21abf821-0205-46a7-bc90-f3c32e6118f7",
       "numericId": 6,
       "displayOrder": 6,
+      "metadata": [
+        {
+          "key": "Priority",
+          "value": "Low"
+        }
+      ],
       "threatSource": "threat actor",
       "prerequisites": "who is able to access the AWS Lambda function logs",
       "threatAction": "find sensitive data captured within the logs",
@@ -440,18 +446,18 @@
         "vehicle registration documents"
       ],
       "statement": "A threat actor who is able to access the AWS Lambda function logs can find sensitive data captured within the logs, resulting in reduced confidentiality of vehicle registration, vehicle listing, registration status, and vehicle registration documents.",
-      "status": "threatIdentified",
-      "metadata": [
-        {
-          "key": "Priority",
-          "value": "Low"
-        }
-      ]
+      "status": "threatIdentified"
     },
     {
       "id": "c61677a4-9bae-416f-b903-f434c6160787",
       "numericId": 5,
       "displayOrder": 5,
+      "metadata": [
+        {
+          "key": "Priority",
+          "value": "Low"
+        }
+      ],
       "threatSource": "threat actor",
       "prerequisites": "who is authenticated and",
       "threatAction": "make API requests can read information they should not be authorized to read",
@@ -466,18 +472,18 @@
         "vehicle registration documents"
       ],
       "statement": "A threat actor who is authenticated and can make API requests can read information they should not be authorized to read, resulting in reduced confidentiality of vehicle registration, vehicle listing, registration status, and vehicle registration documents.",
-      "status": "threatIdentified",
-      "metadata": [
-        {
-          "key": "Priority",
-          "value": "Low"
-        }
-      ]
+      "status": "threatIdentified"
     },
     {
       "id": "411207a4-2344-470d-9e4d-74ca592129c4",
       "numericId": 4,
       "displayOrder": 4,
+      "metadata": [
+        {
+          "key": "Priority",
+          "value": "Medium"
+        }
+      ],
       "threatSource": "threat actor",
       "prerequisites": "who",
       "threatAction": "register a vehicle can claim they did not do so",
@@ -489,13 +495,7 @@
         "billing"
       ],
       "statement": "A threat actor who can register a vehicle can claim they did not do so which leads to the actor disputing financial charges related to the registration of a vehicle, resulting in reduced integrity of billing.",
-      "status": "threatIdentified",
-      "metadata": [
-        {
-          "key": "Priority",
-          "value": "Medium"
-        }
-      ]
+      "status": "threatIdentified"
     },
     {
       "id": "0d244afc-8cbf-42c6-ac44-6408d41d290c",
@@ -520,6 +520,12 @@
       "id": "9c19d403-f595-45f8-ba66-df2e60744f67",
       "numericId": 2,
       "displayOrder": 2,
+      "metadata": [
+        {
+          "key": "Priority",
+          "value": "High"
+        }
+      ],
       "threatSource": "threat actor",
       "prerequisites": "who is able to access the DynamoDB tables",
       "threatAction": "access sensitive data",
@@ -533,18 +539,18 @@
         "registration status"
       ],
       "statement": "A threat actor who is able to access the DynamoDB tables can access sensitive data, which leads to unauthorized access, resulting in reduced confidentiality of vehicle registration, vehicle listing and registration status",
-      "status": "threatIdentified",
-      "metadata": [
-        {
-          "key": "Priority",
-          "value": "High"
-        }
-      ]
+      "status": "threatIdentified"
     },
     {
       "id": "e0e6089f-66d2-49ca-8be0-f9346ab85a14",
       "numericId": 1,
       "displayOrder": 1,
+      "metadata": [
+        {
+          "key": "Priority",
+          "value": "High"
+        }
+      ],
       "threatSource": "threat actor",
       "prerequisites": "with possession of a similar domain name",
       "threatAction": "trick our users into interacting with a fake endpoint",
@@ -556,13 +562,7 @@
         "vehicle registration documents"
       ],
       "statement": "A threat actor with possession of a similar domain name can trick our users into interacting with a fake endpoint, which leads to interception of valid API requests, negatively impacting vehicle registration, vehicle listing, registration status and vehicle registration documents",
-      "status": "threatIdentified",
-      "metadata": [
-        {
-          "key": "Priority",
-          "value": "High"
-        }
-      ]
+      "status": "threatIdentified"
     }
   ]
 }

@@ -1,0 +1,41 @@
+site_name: AWS Connected Vehicle Solution - Vehicle Registration Feature
+site_description: Threat Analysis Report for AWS Connected Vehicle Solution - Vehicle
+  Registration Feature
+theme:
+  name: material
+  palette:
+  - scheme: slate
+    primary: deep orange
+    accent: teal
+  features:
+  - navigation.tabs
+  - navigation.sections
+  - navigation.expand
+  - content.code.copy
+nav:
+- Home: index.md
+- Threat Statements: threats.md
+- Attack Trees:
+  - Overview: attack_trees/index.md
+  - Authentication (2df06a4e): attack_trees/attack_tree_2df06a4e-b1eb-4303-bb48-46cf05182f58_authentication.md
+  - Authorization (9b4dbea5): attack_trees/attack_tree_9b4dbea5-ccaa-41ea-a057-c6dd47f99523_authorization.md
+  - Breach (9c19d403): attack_trees/attack_tree_9c19d403-f595-45f8-ba66-df2e60744f67_data_breach.md
+  - Authorization (c5ac485c): attack_trees/attack_tree_c5ac485c-a985-4004-be21-1fb26173a2d3_authorization.md
+  - Breach (d38a0bd2): attack_trees/attack_tree_d38a0bd2-35cc-4c35-a48b-f73db6794a6e_data_breach.md
+  - Spoofing (e0e6089f): attack_trees/attack_tree_e0e6089f-66d2-49ca-8be0-f9346ab85a14_spoofing.md
+markdown_extensions:
+- pymdownx.superfences
+- pymdownx.superfences:
+    custom_fences:
+    - name: mermaid
+      class: mermaid
+      format: '!!python/name:pymdownx.superfences.fence_code_format'
+- pymdownx.tabbed
+- pymdownx.details
+- admonition
+- tables
+- toc
+plugins:
+- search
+extra:
+  generator: ThreatForest MkDocs Integration

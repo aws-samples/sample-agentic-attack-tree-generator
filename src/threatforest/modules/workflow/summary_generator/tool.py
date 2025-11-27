@@ -12,6 +12,13 @@ try:
 except ImportError:
     PROGRESS_AVAILABLE = False
 
+# Import DocsGenerator if mkdocs is available
+try:
+    from ...visualization.docs_generator import DocsGenerator
+    MKDOCS_AVAILABLE = True
+except ImportError:
+    MKDOCS_AVAILABLE = False
+
 
 class SummaryGeneratorTool:
     """Tool for generating comprehensive summary reports
@@ -104,39 +111,43 @@ class SummaryGeneratorTool:
                 self.logger.warning(f"JSON export generation failed: {e}")
                 json_file = None
             
-            # Emit progress
-            if PROGRESS_AVAILABLE and progress_emitter:
-                progress_emitter.emit(ProgressEvent(
-                    type=ProgressEventType.STAGE_UPDATE,
-                    stage="summary",
-                    percentage=98.0,
-                    message="Generating HTML visualizations"
-                ))
-            
-            # Generate HTML visualizations from structured tree data
-            try:
-                trees = attack_trees.get('ttc_mapped_trees', []) or attack_trees.get('attack_trees', [])
-                html_files = self.file_gen.generate_html_visualizations(output_path, trees=trees, extracted_info=extracted_info)
-                self.logger.info(f"Generated {len(html_files)} HTML visualizations")
-            except Exception as e:
-                self.logger.warning(f"HTML visualization generation failed: {e}")
-                html_files = []
-            
-            # Collect output files
+            # Collect output files (HTML generation removed - using MkDocs instead)
             output_files = []
             if summary_file:
                 output_files.append(summary_file)
             if json_file:
                 output_files.append(json_file)
             output_files.extend(tree_files)
-            output_files.extend(html_files)
+            
+            # Generate MkDocs documentation if available
+            docs_dir = None
+            if MKDOCS_AVAILABLE:
+                try:
+                    if PROGRESS_AVAILABLE and progress_emitter:
+                        progress_emitter.emit(ProgressEvent(
+                            type=ProgressEventType.STAGE_UPDATE,
+                            stage="summary",
+                            percentage=99.0,
+                            message="Generating MkDocs documentation"
+                        ))
+                    
+                    # Get parent directory (threatforest/) for docs generation
+                    threatforest_dir = output_path.parent
+                    docs_generator = DocsGenerator(threatforest_dir)
+                    docs_dir = docs_generator.generate()
+                    self.logger.info(f"Generated MkDocs documentation at {docs_dir}")
+                except Exception as e:
+                    self.logger.warning(f"MkDocs documentation generation failed: {e}")
+                    # Don't fail the entire workflow if docs generation fails
+            else:
+                self.logger.debug("MkDocs not available - skipping documentation generation")
             
             return {
                 'output_files': output_files,
                 'summary_file': summary_file,
                 'json_file': json_file,
                 'tree_files': tree_files,
-                'html_files': html_files
+                'docs_dir': str(docs_dir) if docs_dir else None
             }
             
         except Exception as e:
