@@ -6,8 +6,8 @@ site_author: ThreatForest Team
 site_url: https://threatforest.dev
 
 # Repository
-repo_name: ThreatForest
-repo_url: https://github.com/YOUR-ORG/ThreatForest
+repo_name: aws-samples/sample-agentic-attack-tree-generator
+repo_url: https://github.com/aws-samples/sample-agentic-attack-tree-generator
 edit_uri: edit/main/docs/
 
 # Copyright
@@ -72,9 +72,9 @@ theme:
     - toc.follow
     - toc.integrate
   
-  # Logo and Favicon
-  logo: assets/logo.svg
-  favicon: assets/favicon.png
+  # Logo and Favicon - Using tree icon
+  logo: fontawesome/solid/tree
+  favicon: fontawesome/solid/tree
   
   # Icons
   icon:
@@ -223,7 +223,7 @@ extra:
   
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/YOUR-ORG/ThreatForest
+      link: https://github.com/aws-samples/sample-agentic-attack-tree-generator
       name: ThreatForest on GitHub
     - icon: fontawesome/brands/python
       link: https://pypi.org/project/threatforest/
