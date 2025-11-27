@@ -329,7 +329,7 @@ project/threatforest/attack_trees/
 
     Found a bug? Have a feature request?
 
-    [:octicons-arrow-right-24: GitHub Issues](https://github.com/YOUR-ORG/ThreatForest/issues)
+    [:octicons-arrow-right-24: GitHub Issues](https://github.com/aws-samples/sample-agentic-attack-tree-generator/issues)
 
 -   :material-frequently-asked-questions:{ .lg .middle } __Troubleshooting__
 
@@ -368,6 +368,6 @@ project/threatforest/attack_trees/
 Transform your threat modeling workflow with AI-powered automation.
 
 [Install ThreatForest](getting-started/installation.md){ .md-button .md-button--primary .md-button--large }
-[View on GitHub :fontawesome-brands-github:](https://github.com/YOUR-ORG/ThreatForest){ .md-button .md-button--large }
+[View on GitHub :fontawesome-brands-github:](https://github.com/aws-samples/sample-agentic-attack-tree-generator){ .md-button .md-button--large }
 
 </div>
