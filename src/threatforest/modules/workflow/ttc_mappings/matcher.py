@@ -1,8 +1,8 @@
 """TTC Matcher using local graph-based embeddings"""
 import numpy as np
 from typing import List, Dict, Any, Optional
-from ..utils.logger import ThreatForestLogger
-from ..graph import GraphBuilder, EmbeddingService, VectorSearch
+from ...utils.logger import ThreatForestLogger
+from ...graph import GraphBuilder, EmbeddingService, VectorSearch
 
 AWS_TERMS = ['aws', 's3', 'ec2', 'iam', 'lambda', 'dynamodb', 'rds', 'ecs', 
              'cloudformation', 'cloudwatch', 'sns', 'sqs', 'kinesis', 'athena',

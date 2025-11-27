@@ -12,15 +12,12 @@ class ReportFormatters:
         return '\n'.join(f'- {tech}' for tech in technologies)
     
     @staticmethod
-    def format_security_objectives(objectives: Dict[str, Any]) -> str:
+    def format_security_objectives(objectives: List[str]) -> str:
+        """Format security objectives (guaranteed list from ProjectInfo model)"""
         if not objectives:
             return "- Security objectives not specified"
         
-        result = []
-        for obj, value in objectives.items():
-            status = "✅ Required" if value else "❌ Not Required"
-            result.append(f"- **{obj.title()}**: {status}")
-        return '\n'.join(result)
+        return '\n'.join(f'- {obj}' for obj in objectives)
     
     @staticmethod
     def format_high_severity_threats(threats: List[Dict[str, Any]]) -> str:

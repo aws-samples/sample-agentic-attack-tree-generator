@@ -72,7 +72,10 @@ class RepositoryAnalysisAgent(BaseAgent):
             f"Exploring project repository: {project_path.name}"
         )
         
-        # Create agent with tools for exploration
+        # Import structured output model
+        from ..models import ProjectInfo
+        
+        # Create agent with tools for exploration and structured output
         agent = self.get_strands_agent(
             prompt_file='repository-analysis.md',
             tools=[file_read, editor, image_reader],
@@ -84,28 +87,37 @@ class RepositoryAnalysisAgent(BaseAgent):
 
 Your goal is to autonomously explore this repository and extract comprehensive project context.
 
-You have access to these tools:
-- file_read: Read specific files you identify as important
-- editor: View directory structure (use command="view" on directories)
-- image_reader: Analyze architecture diagrams and visual documentation
+IMPORTANT: Return a structured ProjectInfo response with these fields:
+- application_name: Name of the application
+- technologies: List of technologies used
+- architecture_type: Type of architecture
+- deployment_environment: Where deployed
+- sector: Industry sector
+- security_objectives: List of security goals
+- data_assets: Sensitive data identified
+- entry_points: External interfaces
+- trust_boundaries: Security boundaries
 
-Begin by viewing the directory structure, then strategically read files to understand:
-1. What this application does
-2. What technologies it uses
-3. How it's architected
-4. Where it's deployed
-5. What security concerns might exist
-
-Be thorough but efficient - focus on files that provide the most context."""
+Begin by viewing the directory structure, then strategically read files."""
 
         try:
-            # Run the agent - it will autonomously explore using tools
+            # Run the agent with structured output - it will autonomously explore using tools
             self.console_display.show_agent_action("Starting autonomous exploration...")
-            result = agent(user_prompt)
             
-            # Parse the agent's findings
-            self.console_display.show_agent_action("Parsing agent findings...")
-            analysis = self._parse_analysis_results(str(result))
+            result = agent(
+                user_prompt,
+                structured_output_model=ProjectInfo
+            )
+            
+            # Extract validated ProjectInfo from structured output
+            self.console_display.show_agent_action("Extracting validated project information...")
+            
+            if result.structured_output:
+                # Convert Pydantic model to dict for compatibility
+                analysis = result.structured_output.model_dump()
+            else:
+                self.logger.warning("No structured output received, using fallback")
+                analysis = self._get_fallback_analysis(project_path)
             
             # Show what was found
             tech_count = len(analysis.get('technologies', []))
@@ -159,7 +171,7 @@ Be thorough but efficient - focus on files that provide the most context."""
             Structured dictionary with extracted information
         """
         # Import JSON parsing utility
-        from ..tools.information_extraction_tool.text_utils import parse_json_response
+        from ..workflow.information_extraction.text_utils import parse_json_response
         
         try:
             # Try to parse as JSON first
@@ -184,6 +196,28 @@ Be thorough but efficient - focus on files that provide the most context."""
             
             # Fallback: Extract information from text
             return self._extract_from_text(agent_output)
+    
+    def _get_fallback_analysis(self, project_path: Path) -> Dict[str, Any]:
+        """Get fallback analysis when structured output fails
+        
+        Args:
+            project_path: Path to project
+            
+        Returns:
+            Basic project info structure
+        """
+        return {
+            "application_name": project_path.name,
+            "technologies": [],
+            "architecture_type": "Unknown",
+            "deployment_environment": "Unknown",
+            "sector": "Unknown",
+            "security_objectives": [],
+            "data_assets": [],
+            "entry_points": [],
+            "trust_boundaries": [],
+            "summary": f"Analysis of {project_path.name}"
+        }
     
     def _extract_from_text(self, text: str) -> Dict[str, Any]:
         """Extract structured information from plain text output

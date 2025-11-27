@@ -12,7 +12,7 @@ breaking down the monolithic tool into specialized, single-responsibility module
 - tool: Main orchestrator class
 
 Usage:
-    from ..tools.information_extraction_tool import InformationExtractionTool
+    from ..workflow.information_extraction import InformationExtractionTool
     
     tool = InformationExtractionTool()
     result = tool.execute(context_files, bedrock_model)

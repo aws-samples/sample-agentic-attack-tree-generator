@@ -17,7 +17,7 @@ Key improvements over original:
 - Modular, testable architecture
 
 Usage:
-    from ..tools.attack_tree_generator_tool import AttackTreeGeneratorTool
+    from ..workflow.attack_tree_generator import AttackTreeGeneratorTool
     
     tool = AttackTreeGeneratorTool()
     result = tool.execute(threat_statements, extracted_info, bedrock_model)

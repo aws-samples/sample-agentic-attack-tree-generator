@@ -8,11 +8,11 @@ import traceback
 
 from .modules.core import Context, ThreatForestState, WorkflowStage, StateManager
 from .modules.core import ProgressEmitter, ProgressEvent, ProgressEventType
-from .modules.tools.context_analysis_tool import ContextAnalysisTool
-from .modules.tools.information_extraction_tool import InformationExtractionTool
-from .modules.tools.attack_tree_generator_tool import AttackTreeGeneratorTool
-from .modules.tools.ttc_mapping_tool import TTCMappingTool
-from .modules.tools.summary_generator_tool import SummaryGeneratorTool
+from .modules.workflow.context_analysis import ContextAnalysisTool
+from .modules.workflow.information_extraction import InformationExtractionTool
+from .modules.workflow.attack_tree_generator import AttackTreeGeneratorTool
+from .modules.workflow.ttc_mappings import TTCMappingTool
+from .modules.workflow.summary_generator import SummaryGeneratorTool
 
 
 @dataclass

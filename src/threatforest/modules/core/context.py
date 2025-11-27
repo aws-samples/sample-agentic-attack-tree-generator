@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 class Context:
-    """Manages state and data flow between tools and agents"""
+    """Manages state and data flow between workflows and agents"""
     
     def __init__(self):
         self.data: Dict[str, Any] = {}

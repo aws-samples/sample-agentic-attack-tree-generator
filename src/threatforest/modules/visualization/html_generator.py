@@ -49,7 +49,7 @@ class HTMLGenerator:
         
         # Initialize mitigation mapper to fetch mitigations
         from threatforest.config import config
-        from threatforest.modules.ttc_mappings import MitigationMapper
+        from threatforest.modules.workflow.ttc_mappings import MitigationMapper
         mitigation_mapper = None
         try:
             if config.stix_bundle_path and Path(config.stix_bundle_path).exists():

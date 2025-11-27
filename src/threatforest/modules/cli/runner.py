@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import Dict, Any, Optional
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn, TimeElapsedColumn
 from rich.console import Console
-from threatforest.strands_agent import ThreatForestOrchestrator, ThreatForestConfig
-from threatforest.modules.ttc_mappings import TTCMatcher, AttackTreeEnricher, MitigationMapper
+from threatforest.orchestrator import ThreatForestOrchestrator, ThreatForestConfig
+from threatforest.modules.workflow.ttc_mappings import TTCMatcher, AttackTreeEnricher, MitigationMapper
 from threatforest.config import config
 
 

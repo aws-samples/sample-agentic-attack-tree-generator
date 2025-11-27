@@ -222,7 +222,7 @@ def handle_threatcomposer_change(tc_file_path: str) -> Dict[str, Any]:
     
     try:
         # Import ThreatForest modules
-        from threatforest.strands_agent import ThreatForestOrchestrator, ThreatForestConfig
+        from threatforest.orchestrator import ThreatForestOrchestrator, ThreatForestConfig
         from threatforest.config import config
         
         print(f"\n🚀 Starting ThreatForest analysis...")

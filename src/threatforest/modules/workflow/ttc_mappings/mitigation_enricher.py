@@ -2,7 +2,7 @@
 import json
 from typing import Dict, List, Any, Optional
 from pathlib import Path
-from ..utils.logger import ThreatForestLogger
+from ...utils.logger import ThreatForestLogger
 
 
 class MitigationEnricher:

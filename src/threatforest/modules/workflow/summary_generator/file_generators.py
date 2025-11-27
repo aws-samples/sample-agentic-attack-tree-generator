@@ -28,7 +28,7 @@ class FileGenerators:
         """Initialize mitigation mapper if STIX bundle is available"""
         try:
             from threatforest.config import config
-            from threatforest.modules.ttc_mappings import MitigationMapper
+            from threatforest.modules.workflow.ttc_mappings import MitigationMapper
             
             if config.stix_bundle_path and Path(config.stix_bundle_path).exists():
                 self.mitigation_mapper = MitigationMapper(str(config.stix_bundle_path))

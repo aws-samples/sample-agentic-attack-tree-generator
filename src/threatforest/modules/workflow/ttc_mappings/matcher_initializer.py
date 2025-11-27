@@ -13,7 +13,7 @@ class MatcherInitializer:
     def initialize_matcher(self, aws_profile: Optional[str] = None):
         """Initialize TTCMatcher with local graph (aws_profile kept for compatibility)"""
         try:
-            from ...ttc_mappings import TTCMatcher
+            from .matcher import TTCMatcher
             
             # Simple initialization - graph will be lazy-loaded on first use
             matcher = TTCMatcher(min_similarity=self.threshold)

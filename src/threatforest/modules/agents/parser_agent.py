@@ -174,7 +174,7 @@ IMPORTANT: Return a structured response with:
         Returns:
             List of structured threat dictionaries
         """
-        from ..tools.information_extraction_tool.text_utils import parse_json_response
+        from ..workflow.information_extraction.text_utils import parse_json_response
         
         try:
             # Try to parse as JSON

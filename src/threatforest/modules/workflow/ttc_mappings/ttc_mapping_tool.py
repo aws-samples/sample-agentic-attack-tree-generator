@@ -1,7 +1,8 @@
 """Main TTC Mapping Tool - Orchestrates technique mapping"""
 from typing import Dict, Any, Optional
 from ...utils.logger import ThreatForestLogger
-from ...ttc_mappings import TTCMatcher, AttackTreeEnricher
+from .matcher import TTCMatcher
+from .enricher import AttackTreeEnricher
 from .matcher_initializer import MatcherInitializer
 from .mapping_processor import MappingProcessor
 

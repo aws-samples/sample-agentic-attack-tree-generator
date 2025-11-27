@@ -2,7 +2,7 @@
 import re
 from typing import Dict, List, Any
 from pathlib import Path
-from ..utils.logger import ThreatForestLogger
+from ...utils.logger import ThreatForestLogger
 
 class AttackTreeEnricher:
     """Enrich attack trees with TTC technique mappings"""

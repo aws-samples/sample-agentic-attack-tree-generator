@@ -2,8 +2,8 @@
 from typing import Dict, Any, List, Optional
 from pathlib import Path
 from ..core.base_agent import BaseAgent
-from ..tools.information_extraction_tool.text_utils import parse_json_response
-from ..tools.information_extraction_tool.threat_formatter import ThreatFormatter
+from ..workflow.information_extraction.text_utils import parse_json_response
+from ..workflow.information_extraction.threat_formatter import ThreatFormatter
 
 
 class ThreatGenerationAgent(BaseAgent):
