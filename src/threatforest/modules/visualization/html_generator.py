@@ -331,16 +331,18 @@ class HTMLGenerator:
         # Hero section with statistics
         html += '''
         <div style="margin-bottom: 32px;">
-            <h2 style="font-size: 28px; font-weight: 700; color: #111827; margin-bottom: 24px; letter-spacing: -0.5px;">📊 Executive Summary</h2>
+            <h2 style="font-size: 28px; font-weight: 700; color: #111827; margin-bottom: 12px; letter-spacing: -0.5px;">📊 Executive Summary</h2>
+            <p style="color: #4b5563; font-size: 14px; line-height: 1.6; margin-bottom: 8px;">This dashboard summarizes ThreatForest's agentic analysis of your application, including identified threats, attack trees, and MITRE ATT&CK mappings.</p>
+            <p style="color: #6b7280; font-size: 12px; font-style: italic; margin-bottom: 24px; padding: 10px; background: #fef3c7; border-radius: 6px; border-left: 3px solid #f59e0b;">⚠️ AI-Generated Content: This analysis was produced by AI agents and should be reviewed for accuracy and completeness by security professionals.</p>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 32px;">
         '''
         
-        # Statistics cards
+        # Statistics cards - use special format for High Severity to show "X of Y"
         stats = [
-            ('Total Threats', total_threats, '#6366f1'),
-            ('High Severity', high_severity_count, '#dc2626'),
-            ('Attack Trees', len(all_trees), '#15803d'),
-            ('Total Nodes', total_techniques, '#ea580c')
+            ('Total Threats', str(total_threats), '#6366f1'),
+            ('High Severity', f'{high_severity_count} of {total_threats}', '#dc2626'),
+            ('Attack Trees', str(len(all_trees)), '#15803d'),
+            ('Total Nodes', str(total_techniques), '#ea580c')
         ]
         
         for label, value, color in stats:
@@ -388,58 +390,48 @@ class HTMLGenerator:
         
         html += '</div>'
         
-        # High Severity Threats
+        # High Severity Threats with links to attack trees
         if high_severity:
             html += '''
-            <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.07); margin-bottom: 24px;">
+            <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.07);">
                 <h3 style="font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 20px;">⚠️ High Severity Threats</h3>
             '''
             
-            for idx, threat in enumerate(high_severity, 1):  # Show ALL high severity threats
+            # Build a lookup from threat_id to tree metadata for linking
+            tree_lookup = {tree['metadata']['threat_id']: tree for tree in all_trees}
+            
+            for idx, threat in enumerate(high_severity, 1):
                 threat_id = threat.get('id', 'Unknown')
                 category = threat.get('category', 'Unknown')
                 statement = threat.get('statement', threat.get('description', ''))
-                # Show friendly name: "Threat X: Category" instead of UUID
+                
+                # Find matching attack tree for this threat
+                matching_tree = tree_lookup.get(threat_id)
+                has_tree = matching_tree is not None
+                node_count = len(matching_tree.get('nodes', [])) if matching_tree else 0
+                
+                # Build the link section
+                if has_tree:
+                    link_html = f'''
+                        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(220, 38, 38, 0.2); display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 11px; color: #6b7280;">{node_count} attack tree nodes</span>
+                            <span onclick="switchTab('{threat_id}')" style="color: #dc2626; font-size: 12px; font-weight: 600; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">View Attack Tree →</span>
+                        </div>
+                    '''
+                else:
+                    link_html = ''
+                
                 html += f'''
                     <div style="background: linear-gradient(135deg, rgba(220, 38, 38, 0.05) 0%, rgba(220, 38, 38, 0.02) 100%); border: 1px solid rgba(220, 38, 38, 0.2); border-left: 4px solid #dc2626; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
                         <div style="font-weight: 700; color: #dc2626; font-size: 13px; margin-bottom: 8px;">Threat {idx}: {category}</div>
                         <div style="color: #374151; font-size: 13px; line-height: 1.6;">{statement}</div>
+                        {link_html}
                     </div>
                 '''
             
             html += '</div>'
         
-        # Attack Trees Overview
-        html += '''
-        <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.07);">
-            <h3 style="font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 20px;">🌲 Attack Trees Overview</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
-        '''
-        
-        for idx, tree in enumerate(all_trees, 1):
-            metadata = tree['metadata']
-            threat_id = metadata['threat_id']
-            category = metadata['category']
-            statement = metadata['threat_statement']
-            node_count = len(tree.get('nodes', []))
-            
-            # Show friendly name: "Threat X" instead of UUID
-            html += f'''
-                <div onclick="switchTab('{threat_id}')" style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border: 1px solid #e5e7eb; padding: 20px; border-radius: 10px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05);" onmouseover="this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)'; this.style.transform='translateY(0)';">
-                    <div style="font-weight: 700; color: #6366f1; font-size: 14px; margin-bottom: 8px;">Threat {idx}</div>
-                    <div style="font-weight: 600; color: #111827; font-size: 15px; margin-bottom: 12px;">{category}</div>
-                    <div style="color: #6b7280; font-size: 12px; line-height: 1.5; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{statement}</div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #e5e7eb;">
-                        <span style="font-size: 11px; color: #6b7280;">{node_count} nodes</span>
-                        <span style="color: #6366f1; font-size: 12px; font-weight: 600;">View Tree →</span>
-                    </div>
-                </div>
-            '''
-        
-        html += '''
-            </div>
-        </div>
-        </div>'''
+        html += '</div>'
         
         return html
     
