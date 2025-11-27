@@ -6,7 +6,7 @@ site_author: ThreatForest Team
 site_url: https://threatforest.dev
 
 # Repository
-repo_name: aws-samples/sample-agentic-attack-tree-generator
+repo_name: ThreatForest
 repo_url: https://github.com/aws-samples/sample-agentic-attack-tree-generator
 edit_uri: edit/main/docs/
 
