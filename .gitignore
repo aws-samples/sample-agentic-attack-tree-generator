@@ -187,3 +187,5 @@ output/
 scripts/
 .threatforest/
 .kiro
+**/site/
+**/.mkdocs_cache/
