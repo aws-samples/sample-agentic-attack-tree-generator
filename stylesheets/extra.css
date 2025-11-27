@@ -1,0 +1,249 @@
+/* ThreatForest Custom Styles */
+
+:root {
+  --tf-green: #15803d;
+  --tf-green-light: #22c55e;
+  --tf-green-dark: #166534;
+  --tf-red: #dc2626;
+  --tf-orange: #ea580c;
+  --tf-blue: #0369a1;
+}
+
+/* Hero Section */
+.hero {
+  background: linear-gradient(135deg, var(--tf-green-dark) 0%, var(--tf-green) 50%, var(--tf-green-light) 100%);
+  color: white;
+  padding: 4rem 2rem;
+  margin: -2rem -2rem 2rem -2rem;
+  border-radius: 0 0 1rem 1rem;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: white !important;
+}
+
+.hero h2 {
+  font-size: 1.5rem;
+  font-weight: 400;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+  color: white !important;
+}
+
+.hero .md-button {
+  margin: 0.5rem;
+  font-size: 1.1rem;
+  padding: 0.75rem 2rem;
+}
+
+.hero .md-button--primary {
+  background-color: white;
+  color: var(--tf-green-dark);
+  border: none;
+}
+
+.hero .md-button--primary:hover {
+  background-color: #f0f0f0;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+/* Feature Grid */
+.grid.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.grid.cards > * {
+  background: var(--md-default-bg-color);
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.grid.cards > *:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  border-color: var(--tf-green);
+}
+
+/* Call to Action Section */
+.cta-section {
+  background: linear-gradient(135deg, rgba(21, 128, 61, 0.1) 0%, rgba(34, 197, 94, 0.1) 100%);
+  padding: 3rem;
+  border-radius: 1rem;
+  text-align: center;
+  margin: 3rem 0;
+  border: 2px solid var(--tf-green);
+}
+
+.cta-section h2 {
+  margin-top: 0;
+}
+
+.cta-section .md-button {
+  font-size: 1.2rem;
+  padding: 1rem 2.5rem;
+  margin: 0.5rem;
+}
+
+/* Feature Grid for Admonitions */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+/* Code Blocks */
+.highlight {
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+/* Tables */
+table {
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+/* Tabbed Content */
+.tabbed-set {
+  margin: 1.5rem 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+/* Admonitions */
+.admonition {
+  border-radius: 0.5rem;
+  border-left-width: 4px;
+}
+
+.admonition.success {
+  border-left-color: var(--tf-green);
+}
+
+.admonition.warning {
+  border-left-color: var(--tf-orange);
+}
+
+.admonition.danger {
+  border-left-color: var(--tf-red);
+}
+
+/* Screenshot Container */
+.screenshot-container {
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.screenshot-container img {
+  max-width: 100%;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  border: 1px solid var(--md-default-fg-color--lightest);
+}
+
+/* Use Cases Grid */
+.use-cases {
+  margin: 2rem 0;
+}
+
+.use-cases h3 {
+  color: var(--tf-green);
+  margin-top: 2rem;
+}
+
+/* Learning Path */
+.learning-path {
+  background: linear-gradient(135deg, rgba(21, 128, 61, 0.05) 0%, rgba(34, 197, 94, 0.05) 100%);
+  padding: 2rem;
+  border-radius: 0.5rem;
+  border-left: 4px solid var(--tf-green);
+}
+
+.learning-path ol {
+  font-size: 1.1rem;
+  line-height: 2;
+}
+
+/* Architecture Overview */
+.architecture-overview {
+  padding: 2rem;
+  background: var(--md-code-bg-color);
+  border-radius: 0.5rem;
+  margin: 2rem 0;
+}
+
+/* Large Buttons */
+.md-button--large {
+  font-size: 1.2rem !important;
+  padding: 0.75rem 2rem !important;
+}
+
+/* Icon Styling */
+.lg {
+  font-size: 2.5rem !important;
+}
+
+.middle {
+  vertical-align: middle;
+}
+
+/* Dark Mode Adjustments */
+[data-md-color-scheme="slate"] .hero {
+  background: linear-gradient(135deg, #0f4c28 0%, var(--tf-green-dark) 50%, var(--tf-green) 100%);
+}
+
+[data-md-color-scheme="slate"] .cta-section {
+  background: linear-gradient(135deg, rgba(21, 128, 61, 0.2) 0%, rgba(34, 197, 94, 0.2) 100%);
+  border-color: var(--tf-green-light);
+}
+
+/* Responsive Design */
+@media screen and (max-width: 76.1875em) {
+  .hero h1 {
+    font-size: 2rem;
+  }
+  
+  .hero h2 {
+    font-size: 1.2rem;
+  }
+  
+  .grid.cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Smooth Animations */
+* {
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+/* Enhanced Code Copy Button */
+.md-clipboard {
+  transition: opacity 0.2s ease;
+}
+
+.md-clipboard:hover {
+  opacity: 1 !important;
+}
+
+/* Navigation Tabs Enhancement */
+.md-tabs {
+  background: linear-gradient(90deg, var(--tf-green-dark) 0%, var(--tf-green) 100%);
+}
+
+/* Search Enhancement */
+.md-search__form {
+  border-radius: 2rem;
+}
+
