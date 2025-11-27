@@ -67,7 +67,7 @@ This report presents a comprehensive threat analysis for **{project_info.get('ap
 {self.fmt.format_technologies(project_info.get('technologies', []))}
 
 ### Security Objectives
-{self.fmt.format_security_objectives(project_info.get('security_objectives', {}))}
+{self.fmt.format_security_objectives(project_info.get('security_objectives', []))}
 
 ## Threat Analysis Results
 

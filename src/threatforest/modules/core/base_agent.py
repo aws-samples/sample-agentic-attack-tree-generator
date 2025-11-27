@@ -4,7 +4,7 @@ from typing import Optional, List
 from strands import Agent
 from strands.handlers import null_callback_handler
 from threatforest.config import config
-from .models.model_factory import create_model
+from .providers.provider_factory import create_model
 
 
 class BaseAgent:

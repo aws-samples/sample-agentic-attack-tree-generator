@@ -305,7 +305,8 @@ class CLIWizard:
     def get_project_path(self) -> str:
         """Get project path from user with validation"""
         self._show_step_indicator(2, 4, "Select Project Directory")
-        self.console.print("[dim]📂 Choose the project directory to analyze[/dim]\n")
+        self.console.print("[dim]📂 Choose the directory where your application information is stored[/dim]")
+        self.console.print("[dim]   (README, architecture diagrams, dataflow diagrams, etc.)[/dim]\n")
         
         while True:
             path_str = questionary.path(

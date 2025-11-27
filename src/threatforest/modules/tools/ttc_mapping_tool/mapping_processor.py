@@ -45,7 +45,9 @@ class MappingProcessor:
             
             for idx, tree in enumerate(trees, 1):
                 threat_id = tree.get('threat_id', 'unknown')
-                progress.update(task, description=f"[cyan]Mapping {threat_id} ({idx}/{len(trees)})...")
+                category = tree.get('threat_category', tree.get('category', 'Unknown'))
+                # Show friendly name: "Threat X (Category)" instead of UUID
+                progress.update(task, description=f"[cyan]Mapping Threat {idx} ({category})...")
                 
                 mapped_tree, mappings, successful = self._process_single_tree(tree, threshold)
                 mapped_trees.append(mapped_tree)

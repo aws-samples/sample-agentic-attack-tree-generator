@@ -162,7 +162,7 @@ The interactive wizard will guide you through:
 3. **Analysis** - Run selected workflow with progress tracking
 4. **Results** - View summary and access output files
 
-> **Note:** First run will be slower as it downloads AI model dependencies (sentence-transformers, torch). Subsequent runs are much faster.
+> **⏱️ First Run:** Initial startup takes 2-3 minutes while downloading AI model dependencies (sentence-transformers, torch). Subsequent runs are much faster (seconds).
 
 ## 🔍 How It Works
 

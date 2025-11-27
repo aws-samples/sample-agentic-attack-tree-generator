@@ -18,13 +18,14 @@ class WorkflowRunner:
     def run_full_workflow(
         self,
         project_path: str,
-        threat_model_path: Optional[str] = None
+        threat_file_path: Optional[str] = None
     ) -> Dict[str, Any]:
         """Execute full workflow (generate + enrich + mitigate)"""
         
         # Create ThreatForestConfig using values from config.yaml
         tf_config = ThreatForestConfig(
             project_path=Path(project_path),
+            threat_model_path=threat_file_path,  # Pass the threat file path
             aws_profile=config.default_aws_profile,
             bedrock_model=config.default_bedrock_model,
             resume=False

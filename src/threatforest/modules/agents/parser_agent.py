@@ -3,10 +3,6 @@ from typing import Dict, Any, List, Optional
 from pathlib import Path
 from strands_tools import file_read
 from ..core.base_agent import BaseAgent
-from ..parsers import (
-    ParserChain, JSONThreatParser, YAMLThreatParser,
-    MarkdownThreatParser, ThreatComposerParser
-)
 
 
 class ParserAgent(BaseAgent):
@@ -38,13 +34,7 @@ class ParserAgent(BaseAgent):
             from ..utils.agent_console import AgentConsole
             self.console_display = AgentConsole()
         
-        # Initialize parser chain with priority ordering
-        self.parser_chain = ParserChain()
-        self.parser_chain.register(ThreatComposerParser(), priority=4)
-        self.parser_chain.register(JSONThreatParser(), priority=3)
-        self.parser_chain.register(YAMLThreatParser(), priority=2)
-        self.parser_chain.register(MarkdownThreatParser(), priority=1)
-        self.logger.debug("Parser chain initialized with 4 parsers")
+        self.logger.debug("ParserAgent initialized (Strands-only, no parser chain)")
     
     def parse_threats(self, threat_file_path: str, model_name: Optional[str] = None) -> List[Dict[str, Any]]:
         """Parse threat statements from a file using Strands agent
@@ -85,7 +75,10 @@ class ParserAgent(BaseAgent):
             f"Parsing threat statements from: {threat_file_path.name}"
         )
         
-        # Create agent with file_read tool
+        # Import structured output models
+        from ..models import ThreatList
+        
+        # Create agent with file_read tool and structured output
         agent = self.get_strands_agent(
             prompt_file='threat-parsing.md',
             tools=[file_read],
@@ -98,66 +91,78 @@ Your goal is to:
 1. Read the file using the file_read tool
 2. Identify the format (JSON, YAML, Markdown, ThreatComposer)
 3. Extract all threat statements
-4. Structure them in a consistent format
 
-Each threat should include:
-- id: Unique identifier (e.g., T001, T002)
-- description/statement: The threat description
-- severity/priority: High, Medium, or Low
-- category: Threat category
-- Any additional metadata from the source file
-
-Return the threats as a JSON array."""
+IMPORTANT: Return a structured response with:
+- threats: array of threat objects
+- Each threat must have: id, statement, priority, category
+- Optional fields: threatSource, prerequisites, threatAction, threatImpact, impactedGoal, impactedAssets"""
 
         try:
-            # Run the agent - it will use file_read to access the file
+            # Run the agent with structured output - it will use file_read to access the file
             self.console_display.show_agent_action("Reading and analyzing threat file...")
-            result = agent(user_prompt)
             
-            # Parse the agent's response
-            self.console_display.show_agent_action("Extracting threat statements from agent output...")
-            threats = self._parse_threat_response(str(result), threat_file_path)
+            # Use structured output for guaranteed parsing
+            result = agent(
+                user_prompt,
+                structured_output_model=ThreatList
+            )
             
-            # Also try the parser chain as fallback/validation
-            if not threats:
-                self.console_display.show_agent_action("Using parser chain fallback...")
-                chain_threats = self._parse_with_chain(threat_file_path)
+            # Extract threats from structured output
+            self.console_display.show_agent_action("Extracting threat statements from structured output...")
+            
+            if result.structured_output and result.structured_output.threats:
+                # Convert Pydantic models to dicts
+                threats = []
+                for threat in result.structured_output.threats:
+                    threat_dict = {
+                        "id": threat.id,
+                        "description": threat.statement,  # Map 'statement' to 'description'
+                        "severity": threat.priority,  # Map 'priority' to 'severity'
+                        "category": threat.category,
+                        "source_file": str(threat_file_path),
+                    }
+                    
+                    # Add optional fields if present
+                    if threat.threatSource:
+                        threat_dict["threatSource"] = threat.threatSource
+                    if threat.prerequisites:
+                        threat_dict["prerequisites"] = threat.prerequisites
+                    if threat.threatAction:
+                        threat_dict["threatAction"] = threat.threatAction
+                    if threat.threatImpact:
+                        threat_dict["threatImpact"] = threat.threatImpact
+                    if threat.impactedGoal:
+                        threat_dict["impactedGoal"] = threat.impactedGoal
+                    if threat.impactedAssets:
+                        threat_dict["impactedAssets"] = threat.impactedAssets
+                    
+                    threats.append(threat_dict)
             else:
-                chain_threats = []
-            
-            # Use agent results if available, otherwise use chain
-            final_threats = threats if threats else chain_threats
+                self.logger.warning("Structured output had no threats")
+                threats = []
             
             # Show what was parsed
-            if final_threats:
-                high_severity = sum(1 for t in final_threats if t.get('severity') == 'High')
-                self.console_display.show_agent_action(
-                    f"Extracted {len(final_threats)} threats",
-                    f"{high_severity} High severity, {len(final_threats) - high_severity} Medium/Low"
-                )
-            
-            self.logger.info(f"Successfully parsed {len(final_threats)} threats from {threat_file_path.name}")
-            self.console_display.show_agent_complete(
-                f"Parsing complete - {len(final_threats)} threat statements extracted"
-            )
-            return final_threats
-            
-        except Exception as e:
-            self.logger.error(f"Agent parsing failed, falling back to parser chain: {e}")
-            self.console_display.show_agent_action("Agent parsing failed, using fallback parser...")
-            
-            # Fallback to traditional parser chain
-            threats = self._parse_with_chain(threat_file_path)
-            
             if threats:
+                high_severity = sum(1 for t in threats if t.get('severity') == 'High')
+                self.console_display.show_agent_action(
+                    f"Extracted {len(threats)} threats",
+                    f"{high_severity} High severity, {len(threats) - high_severity} Medium/Low"
+                )
+                
+                self.logger.info(f"Successfully parsed {len(threats)} threats from {threat_file_path.name}")
                 self.console_display.show_agent_complete(
-                    f"Fallback successful - {len(threats)} threats parsed",
-                    success=True
+                    f"Parsing complete - {len(threats)} threat statements extracted"
                 )
             else:
-                self.console_display.show_agent_error("No threats could be parsed")
+                self.logger.warning(f"No threats extracted from {threat_file_path.name}")
+                self.console_display.show_agent_error("No threat statements could be extracted")
             
             return threats
+            
+        except Exception as e:
+            self.logger.error(f"Agent parsing failed: {e}")
+            self.console_display.show_agent_error(f"Parsing failed: {str(e)}")
+            return []
     
     def _parse_threat_response(self, agent_output: str, source_file: Path) -> List[Dict[str, Any]]:
         """Parse agent's threat extraction response
@@ -206,36 +211,4 @@ Return the threats as a JSON array."""
             
         except Exception as e:
             self.logger.warning(f"Could not parse agent output as JSON: {e}")
-            return []
-    
-    def _parse_with_chain(self, threat_file_path: Path) -> List[Dict[str, Any]]:
-        """Parse threat file using traditional parser chain
-        
-        Args:
-            threat_file_path: Path to threat file
-            
-        Returns:
-            List of threat dictionaries
-        """
-        try:
-            # Read file content
-            with open(threat_file_path, 'r', encoding='utf-8') as f:
-                content = f.read()
-            
-            # Try each parser in the chain
-            file_info = {
-                "path": str(threat_file_path),
-                "content": content
-            }
-            
-            threats = self.parser_chain.parse(file_info)
-            
-            # Add source file to each threat
-            for threat in threats:
-                threat["source_file"] = str(threat_file_path)
-            
-            return threats
-            
-        except Exception as e:
-            self.logger.error(f"Parser chain failed: {e}")
             return []

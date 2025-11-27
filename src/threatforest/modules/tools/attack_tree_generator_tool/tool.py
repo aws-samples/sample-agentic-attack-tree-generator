@@ -137,8 +137,10 @@ class AttackTreeGeneratorTool(BaseAgent):
             
             for idx, threat in enumerate(threats, 1):
                 threat_id = threat.get("id", "unknown")
+                category = threat.get('category', 'Unknown')
                 threat_desc = threat.get('statement', '')[:50]
-                progress.update(task, description=f"[cyan]Processing {threat_id}: {threat_desc}...")
+                # Show friendly name: "Threat X (Category)" instead of UUID
+                progress.update(task, description=f"[cyan]Processing Threat {idx} ({category}): {threat_desc}...")
                 
                 self._process_single_threat(
                     threat, idx, len(threats), extracted_info, bedrock_model,

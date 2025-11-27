@@ -395,12 +395,14 @@ class HTMLGenerator:
                 <h3 style="font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 20px;">⚠️ High Severity Threats</h3>
             '''
             
-            for threat in high_severity:  # Show ALL high severity threats
+            for idx, threat in enumerate(high_severity, 1):  # Show ALL high severity threats
                 threat_id = threat.get('id', 'Unknown')
-                statement = threat.get('statement', '')
+                category = threat.get('category', 'Unknown')
+                statement = threat.get('statement', threat.get('description', ''))
+                # Show friendly name: "Threat X: Category" instead of UUID
                 html += f'''
                     <div style="background: linear-gradient(135deg, rgba(220, 38, 38, 0.05) 0%, rgba(220, 38, 38, 0.02) 100%); border: 1px solid rgba(220, 38, 38, 0.2); border-left: 4px solid #dc2626; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
-                        <div style="font-weight: 700; color: #dc2626; font-size: 13px; margin-bottom: 8px;">Threat {threat_id}</div>
+                        <div style="font-weight: 700; color: #dc2626; font-size: 13px; margin-bottom: 8px;">Threat {idx}: {category}</div>
                         <div style="color: #374151; font-size: 13px; line-height: 1.6;">{statement}</div>
                     </div>
                 '''
@@ -414,16 +416,17 @@ class HTMLGenerator:
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
         '''
         
-        for tree in all_trees:
+        for idx, tree in enumerate(all_trees, 1):
             metadata = tree['metadata']
             threat_id = metadata['threat_id']
             category = metadata['category']
             statement = metadata['threat_statement']
             node_count = len(tree.get('nodes', []))
             
+            # Show friendly name: "Threat X" instead of UUID
             html += f'''
                 <div onclick="switchTab('{threat_id}')" style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border: 1px solid #e5e7eb; padding: 20px; border-radius: 10px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05);" onmouseover="this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)'; this.style.transform='translateY(0)';">
-                    <div style="font-weight: 700; color: #6366f1; font-size: 14px; margin-bottom: 8px;">{threat_id}</div>
+                    <div style="font-weight: 700; color: #6366f1; font-size: 14px; margin-bottom: 8px;">Threat {idx}</div>
                     <div style="font-weight: 600; color: #111827; font-size: 15px; margin-bottom: 12px;">{category}</div>
                     <div style="color: #6b7280; font-size: 12px; line-height: 1.5; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{statement}</div>
                     <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #e5e7eb;">
@@ -765,7 +768,9 @@ class HTMLGenerator:
             threat_id = tree["metadata"]["threat_id"]
             category = tree["metadata"]["category"]
             is_active = 'active' if (i == 0 and not has_summary) else ''
-            tabs_html += f'        <div class="tab {is_active}" onclick="switchTab(\'{threat_id}\')">{ threat_id}: {category}</div>\n'
+            # Show friendly name: "Threat X: Category" instead of UUID
+            tab_num = i + 1
+            tabs_html += f'        <div class="tab {is_active}" onclick="switchTab(\'{threat_id}\')">Threat {tab_num}: {category}</div>\n'
         
         tabs_html += '    </div>'
         

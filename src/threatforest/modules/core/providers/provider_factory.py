@@ -19,12 +19,12 @@ def create_model(config, temperature: float = 0):
         ValueError: If no provider is configured or provider is unknown
     """
     # Check for each provider configuration (first with model_id wins)
-    logger.info("🔍 Detecting model provider...")
-    logger.info(f"  Bedrock config: {config.bedrock if hasattr(config, 'bedrock') else 'None'}")
-    logger.info(f"  Anthropic config: {config.anthropic if hasattr(config, 'anthropic') else 'None'}")
-    logger.info(f"  OpenAI config: {config.openai if hasattr(config, 'openai') else 'None'}")
-    logger.info(f"  Gemini config: {config.gemini if hasattr(config, 'gemini') else 'None'}")
-    logger.info(f"  Ollama config: {config.ollama if hasattr(config, 'ollama') else 'None'}")
+    logger.debug("🔍 Detecting model provider...")
+    logger.debug(f"  Bedrock config: {config.bedrock if hasattr(config, 'bedrock') else 'None'}")
+    logger.debug(f"  Anthropic config: {config.anthropic if hasattr(config, 'anthropic') else 'None'}")
+    logger.debug(f"  OpenAI config: {config.openai if hasattr(config, 'openai') else 'None'}")
+    logger.debug(f"  Gemini config: {config.gemini if hasattr(config, 'gemini') else 'None'}")
+    logger.debug(f"  Ollama config: {config.ollama if hasattr(config, 'ollama') else 'None'}")
     
     if hasattr(config, 'bedrock') and config.bedrock and config.bedrock.get('model_id'):
         logger.info(f"✅ Using Bedrock: {config.bedrock['model_id']}")

@@ -25,7 +25,7 @@ class TestAgentIntegration:
         agent = ParserAgent()
         assert agent.name == "parser"
         assert agent.logger is not None
-        assert agent.parser_chain is not None
+        # Parser chain removed - now fully Strands-only
     
     def test_threat_generation_agent_init(self):
         """Test ThreatGenerationAgent initialization"""
@@ -36,38 +36,20 @@ class TestAgentIntegration:
         assert agent.logger is not None
         assert agent.formatter is not None
     
-    def test_parser_agent_with_json_file(self):
-        """Test ParserAgent with a JSON threat file"""
+    def test_parser_agent_strands_only(self):
+        """Test ParserAgent uses Strands tools only (no parser chain)"""
         from threatforest.modules.agents import ParserAgent
         
-        # Create temporary JSON threat file
-        threats_data = {
-            "threats": [
-                {
-                    "id": "T001",
-                    "statement": "Test threat statement",
-                    "priority": "High",
-                    "category": "Authentication"
-                }
-            ]
-        }
+        agent = ParserAgent()
         
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            json.dump(threats_data, f)
-            temp_path = f.name
+        # Verify parser chain is not present
+        assert not hasattr(agent, 'parser_chain') or agent.parser_chain is None
         
-        try:
-            agent = ParserAgent()
-            
-            # Test with parser chain fallback (agent might fail without real model)
-            threats = agent._parse_with_chain(Path(temp_path))
-            
-            assert len(threats) == 1
-            assert threats[0]['id'] == 'T001'
-            assert threats[0]['severity'] == 'High'
-            
-        finally:
-            Path(temp_path).unlink()
+        # Verify it's Strands-only
+        assert agent.description == "Parse existing threat statement files"
+        
+        # Note: Actual parsing requires LLM, so we just test initialization
+        print("  ✓ ParserAgent is now Strands-only (no parser chain)")
     
     def test_threat_generation_fallback(self):
         """Test ThreatGenerationAgent fallback threats"""

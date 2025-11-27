@@ -1,0 +1,33 @@
+threats:
+  - id: T001
+    statement: "A malicious attacker with network access can exploit weak authentication mechanisms, which leads to unauthorized system access, resulting in reduced confidentiality of user data."
+    priority: High
+    category: Authentication
+    threatSource: malicious attacker
+    prerequisites: network access
+    threatAction: exploit weak authentication mechanisms
+    threatImpact: unauthorized system access
+    impactedGoal: confidentiality
+    impactedAssets: user data
+  
+  - id: T002
+    statement: "An authorized user with elevated privileges can perform SQL injection attacks, which leads to data exfiltration, resulting in reduced integrity of database records."
+    priority: High
+    category: Injection
+    threatSource: authorized user
+    prerequisites: elevated privileges
+    threatAction: perform SQL injection attacks
+    threatImpact: data exfiltration
+    impactedGoal: integrity
+    impactedAssets: database records
+  
+  - id: T003
+    statement: "A distributed attacker with internet connectivity can launch denial of service attacks, which leads to service unavailability, resulting in reduced availability of application services."
+    priority: Medium
+    category: Availability
+    threatSource: distributed attacker
+    prerequisites: internet connectivity
+    threatAction: launch denial of service attacks
+    threatImpact: service unavailability
+    impactedGoal: availability
+    impactedAssets: application services

@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "threats": [
+    {
+      "id": "uuid-001",
+      "numericId": 1,
+      "statement": "A malicious attacker with network access can exploit weak authentication mechanisms.",
+      "priority": "High",
+      "category": "Authentication"
+    },
+    {
+      "id": "uuid-002",
+      "numericId": 2,
+      "statement": "An authorized user can perform SQL injection attacks.",
+      "priority": "High",
+      "category": "Injection"
+    }
+  ]
+}
