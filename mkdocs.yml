@@ -1,0 +1,252 @@
+# ThreatForest Documentation Configuration
+
+site_name: ThreatForest
+site_description: AI-Driven Threat Modeling & Attack Tree Generation with MITRE ATT&CK Integration
+site_author: ThreatForest Team
+site_url: https://threatforest.dev
+
+# Repository
+repo_name: ThreatForest
+repo_url: https://github.com/YOUR-ORG/ThreatForest
+edit_uri: edit/main/docs/
+
+# Copyright
+copyright: Copyright &copy; 2024 ThreatForest Team
+
+# Theme Configuration
+theme:
+  name: material
+  language: en
+  
+  # Color Palette - Forest Green Theme
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: green
+      accent: teal
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: green
+      accent: teal
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  
+  # Fonts
+  font:
+    text: Roboto
+    code: Roboto Mono
+  
+  # Features
+  features:
+    - announce.dismiss
+    - content.action.edit
+    - content.action.view
+    - content.code.annotate
+    - content.code.copy
+    - content.tabs.link
+    - content.tooltips
+    - header.autohide
+    - navigation.expand
+    - navigation.footer
+    - navigation.indexes
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.path
+    - navigation.prune
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+    - toc.integrate
+  
+  # Logo and Favicon
+  logo: assets/logo.svg
+  favicon: assets/favicon.png
+  
+  # Icons
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    view: material/eye
+
+# Plugins
+plugins:
+  - search:
+      separator: '[\s\-,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+  - tags:
+      tags_file: tags.md
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: timeago
+  - git-authors
+  - minify:
+      minify_html: true
+      minify_js: true
+      minify_css: true
+      htmlmin_opts:
+        remove_comments: true
+  - social:
+      cards: true
+      cards_layout_options:
+        background_color: "#15803d"
+        color: "#ffffff"
+
+# Extensions
+markdown_extensions:
+  # Python Markdown
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+      permalink_title: Anchor link to this section
+  
+  # Python Markdown Extensions
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:pymdownx.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets:
+      auto_append:
+        - includes/abbreviations.md
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+      combine_header_slug: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+# Navigation Structure
+nav:
+  - Home: index.md
+  - Getting Started:
+    - getting-started/index.md
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quick-start.md
+    - First Analysis: getting-started/first-analysis.md
+    - Configuration: getting-started/configuration.md
+  
+  - User Guide:
+    - user-guide/workflows.md
+    - user-guide/input-formats.md
+    - user-guide/cli-reference.md
+    - user-guide/ide-integration.md
+    - user-guide/dashboard.md
+    - user-guide/output-files.md
+  
+  - Architecture:
+    - architecture/overview.md
+    - architecture/agents.md
+    - architecture/workflow-stages.md
+    - architecture/strands-integration.md
+    - architecture/mitre-attack-mapping.md
+    - architecture/state-management.md
+  
+  - Modules:
+    - modules/index.md
+    - Agents: modules/agents.md
+    - Workflow Tools: modules/workflow.md
+    - Core: modules/core.md
+    - Graph & Embeddings: modules/graph.md
+    - Visualization: modules/visualization.md
+  
+  - Advanced:
+    - advanced/customization.md
+    - advanced/multi-provider.md
+    - advanced/performance.md
+    - advanced/security.md
+    - advanced/troubleshooting.md
+  
+  - Examples:
+    - examples/index.md
+    - examples/healthcare.md
+    - examples/iot.md
+    - examples/microservices.md
+    - examples/vehicle-platform.md
+  
+  - API Reference:
+    - api/orchestrator.md
+    - api/agents.md
+    - api/workflow-tools.md
+    - api/models.md
+  
+  - Contributing:
+    - contributing/index.md
+    - contributing/development.md
+    - contributing/testing.md
+    - contributing/code-style.md
+  
+  - About:
+    - about/changelog.md
+    - about/license.md
+    - about/security.md
+    - about/acknowledgments.md
+
+# Extra Configuration
+extra:
+  version:
+    provider: mike
+    default: latest
+  
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/YOUR-ORG/ThreatForest
+      name: ThreatForest on GitHub
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/threatforest/
+      name: ThreatForest on PyPI
+  
+  analytics:
+    provider: google
+    property: G-XXXXXXXXXX  # Replace with your Google Analytics ID
+  
+  generator: false  # Hide "Made with Material for MkDocs" footer
+
+# Extra CSS and JavaScript
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - javascripts/extra.js
+  - https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js
+  - javascripts/tablesort.js
+
+# Watch for changes
+watch:
+  - src/threatforest
+  - README.md
+  - CONTRIBUTING.md
+  - SECURITY.md
