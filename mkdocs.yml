@@ -18,13 +18,13 @@ theme:
   name: material
   language: en
   
-  # Color Palette - Forest Green Theme
+  # Color Palette - ThreatForest Black & Green Theme
   palette:
     # Light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: green
-      accent: teal
+      primary: custom
+      accent: green
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
@@ -32,8 +32,8 @@ theme:
     # Dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: green
-      accent: teal
+      primary: custom
+      accent: green
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
@@ -72,9 +72,9 @@ theme:
     - toc.follow
     - toc.integrate
   
-  # Logo and Favicon - Using tree icon
-  logo: fontawesome/solid/tree
-  favicon: fontawesome/solid/tree
+  # Logo and Favicon - Custom ThreatForest logo
+  logo: assets/logo.svg
+  favicon: assets/favicon.svg
   
   # Icons
   icon:
@@ -84,25 +84,67 @@ theme:
 
 # Plugins
 plugins:
+  # Search plugin with custom separator for better search results
   - search:
       separator: '[\s\-,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
-  - tags:
-      tags_file: tags.md
+      lang: en
+      pipeline:
+        - stemmer
+        - stopWordFilter
+        - trimmer
+  
+  # Tags plugin for content categorization
+  - tags
+  
+  # Git revision date plugin for last updated timestamps
   - git-revision-date-localized:
       enable_creation_date: true
       type: timeago
-  - git-authors
+      fallback_to_build_date: true
+      enable_git_follow: false
+  
+  # Git authors plugin for contributor information
+  - git-authors:
+      show_contribution: true
+      show_line_count: true
+      count_empty_lines: true
+      fallback_to_empty: false
+  
+  # Minify plugin for optimized HTML, CSS, and JavaScript
   - minify:
       minify_html: true
       minify_js: true
       minify_css: true
       htmlmin_opts:
         remove_comments: true
+        remove_empty_space: true
+        reduce_boolean_attributes: true
+      js_files:
+        - javascripts/extra.js
+        - javascripts/architecture-diagram.js
+        - javascripts/tablesort.js
+  
+  # Social cards plugin with ThreatForest branding
+  # Note: Requires Pillow and CairoSVG for image generation
+  # Install with: pip install "mkdocs-material[imaging]"
+  # If imaging libraries are not available, social cards will be skipped gracefully
   - social:
       cards: true
       cards_layout_options:
-        background_color: "#15803d"
-        color: "#ffffff"
+        background_color: "#000000"  # ThreatForest black
+        color: "#10B981"              # ThreatForest emerald green
+        font_family: Roboto
+        title: ThreatForest
+        description: AI-Driven Threat Modeling & Attack Tree Generation
+      cards_layout: default/variant
+      cards_dir: assets/social
+      cards_include:
+        - home
+        - getting-started
+        - user-guide
+        - architecture
+        - examples
+        - contributing
 
 # Extensions
 markdown_extensions:
@@ -125,7 +167,8 @@ markdown_extensions:
   - pymdownx.caret
   - pymdownx.details
   - pymdownx.emoji:
-      emoji_generator: !!python/name:pymdownx.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
@@ -152,20 +195,15 @@ markdown_extensions:
 # Navigation Structure
 nav:
   - Home: index.md
-  - Getting Started:
-    - getting-started/index.md
-    - Installation: getting-started/installation.md
-    - Quick Start: getting-started/quick-start.md
-    - First Analysis: getting-started/first-analysis.md
-    - Configuration: getting-started/configuration.md
+  
+  - Getting Started: getting-started/index.md
   
   - User Guide:
-    - user-guide/workflows.md
-    - user-guide/input-formats.md
-    - user-guide/cli-reference.md
-    - user-guide/ide-integration.md
-    - user-guide/dashboard.md
-    - user-guide/output-files.md
+    - user-guide/running-threatforest.md
+    - user-guide/preparing-your-project.md
+    - user-guide/understanding-results.md
+  
+  - How It Works: how-it-works.md
   
   - Architecture:
     - architecture/overview.md
@@ -175,39 +213,25 @@ nav:
     - architecture/mitre-attack-mapping.md
     - architecture/state-management.md
   
-  - Modules:
-    - modules/index.md
-    - Agents: modules/agents.md
-    - Workflow Tools: modules/workflow.md
-    - Core: modules/core.md
-    - Graph & Embeddings: modules/graph.md
-    - Visualization: modules/visualization.md
-  
-  - Advanced:
-    - advanced/customization.md
-    - advanced/multi-provider.md
-    - advanced/performance.md
-    - advanced/security.md
-    - advanced/troubleshooting.md
-  
   - Examples:
     - examples/index.md
-    - examples/healthcare.md
-    - examples/iot.md
-    - examples/microservices.md
-    - examples/vehicle-platform.md
-  
-  - API Reference:
-    - api/orchestrator.md
-    - api/agents.md
-    - api/workflow-tools.md
-    - api/models.md
+    - GenAI Chatbot: examples/genai-chatbot.md
+    - Vehicle Platform: examples/vehicle-platform.md
+    - Healthcare: examples/healthcare.md
+    - IoT Device Management: examples/iot.md
+    - Microservices API: examples/microservices.md
   
   - Contributing:
     - contributing/index.md
     - contributing/development.md
     - contributing/testing.md
     - contributing/code-style.md
+    - Advanced Topics:
+      - advanced/customization.md
+      - advanced/multi-provider.md
+      - advanced/performance.md
+      - advanced/security.md
+      - advanced/troubleshooting.md
   
   - About:
     - about/changelog.md
@@ -235,14 +259,13 @@ extra:
   
   generator: false  # Hide "Made with Material for MkDocs" footer
 
-# Extra CSS and JavaScript
-extra_css:
-  - stylesheets/extra.css
-
+# Extra JavaScript
 extra_javascript:
   - javascripts/extra.js
+  - javascripts/architecture-diagram.js
   - https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js
   - javascripts/tablesort.js
+  - https://d3js.org/d3.v7.min.js
 
 # Watch for changes
 watch:
