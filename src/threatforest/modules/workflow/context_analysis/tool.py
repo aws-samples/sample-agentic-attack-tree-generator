@@ -5,7 +5,7 @@ from ...utils.logger import ThreatForestLogger
 from ...core import FileDiscovery, BaseAgent
 from .file_categorizer import FileCategorizer
 from .threat_extractor import ThreatExtractor
-from .context_extractor import ContextExtractor
+from ...agents.context_extractor_agent import ContextExtractor
 from .summary_generator import SummaryGenerator
 
 

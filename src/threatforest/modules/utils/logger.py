@@ -3,10 +3,12 @@
 import logging
 import json
 import uuid
+import shutil
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 from contextvars import ContextVar
+from threatforest.config import ROOT_DIR
 
 # Correlation ID context variable for request tracing
 correlation_id_var: ContextVar[str] = ContextVar('correlation_id', default=None)
@@ -83,7 +85,7 @@ class ThreatForestLogger:
         """Initialize the logger with output directory
         
         Args:
-            output_dir: Directory for log files (default: ./output)
+            output_dir: Directory for log files (default: .threatforest/logs/)
             json_mode: Use JSON format for logs (default: False)
             
         Returns:
@@ -92,17 +94,20 @@ class ThreatForestLogger:
         # If already initialized, return existing log file path
         if cls._log_file_path is not None and cls._log_file_path.exists():
             return cls._log_file_path
-            
-        if output_dir is None:
-            output_dir = Path.cwd() / "output"
         
-        # Ensure logs go into logs/ subdirectory
-        log_dir = output_dir / "logs"
+        # Use ROOT_DIR/.threatforest/logs/ for log storage
+        base_log_dir = ROOT_DIR / ".threatforest" / "logs"
+        
+        # Cleanup old logs before creating new ones (30-day TTL)
+        cls._cleanup_old_logs(base_log_dir, retention_days=30)
+        
+        # Create timestamp subdirectory for this run
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        log_dir = base_log_dir / timestamp
         log_dir.mkdir(parents=True, exist_ok=True)
         
-        # Create log file with timestamp
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        cls._log_file_path = log_dir / f"threatforest_run_{timestamp}.log"
+        # Simplified filename (no timestamp in filename, directory has it)
+        cls._log_file_path = log_dir / "threatforest.log"
         cls._json_mode = json_mode
         
         # Configure root logger
@@ -135,6 +140,31 @@ class ThreatForestLogger:
         return cls._log_file_path
     
     @classmethod
+    def _cleanup_old_logs(cls, base_log_dir: Path, retention_days: int = 30):
+        """Remove log directories older than retention_days
+        
+        Args:
+            base_log_dir: Base directory containing timestamped log directories
+            retention_days: Number of days to retain logs (default: 30)
+        """
+        if not base_log_dir.exists():
+            return
+        
+        cutoff_date = datetime.now() - timedelta(days=retention_days)
+        
+        for log_dir in base_log_dir.iterdir():
+            if log_dir.is_dir():
+                try:
+                    # Parse timestamp from directory name (YYYYMMDD_HHMMSS)
+                    dir_timestamp = datetime.strptime(log_dir.name, "%Y%m%d_%H%M%S")
+                    if dir_timestamp < cutoff_date:
+                        shutil.rmtree(log_dir)
+                        # Note: Can't log this yet as logger may not be initialized
+                except (ValueError, OSError):
+                    # Skip directories that don't match expected format or can't be deleted
+                    pass
+    
+    @classmethod
     def _configure_strands_logging(cls, log_dir: Path):
         """Configure Strands framework logging to suppress console warnings
         
@@ -142,7 +172,7 @@ class ThreatForestLogger:
         capturing everything in a dedicated log file.
         
         Args:
-            log_dir: Directory for log files
+            log_dir: Directory for log files (timestamp subdirectory)
         """
         # Get the root Strands logger
         strands_logger = logging.getLogger('strands')
@@ -153,9 +183,9 @@ class ThreatForestLogger:
             if isinstance(handler, logging.StreamHandler) and handler.stream.name in ['<stdout>', '<stderr>']:
                 strands_logger.removeHandler(handler)
         
-        # Add file handler for Strands logs (captures everything including warnings)
+        # Add file handler for Strands logs in same timestamp directory
         strands_file_handler = logging.FileHandler(
-            log_dir / f"strands_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log",
+            log_dir / "strands.log",
             mode='a',
             encoding='utf-8'
         )

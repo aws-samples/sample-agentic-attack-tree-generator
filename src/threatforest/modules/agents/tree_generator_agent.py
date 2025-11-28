@@ -1,9 +1,9 @@
 """Core attack tree generation using Strands Agent"""
 from typing import Dict, Any
-from ...core import BaseAgent
-from .context_builder import ContextBuilder
-from .mermaid_processor import MermaidProcessor
-from .tree_validator import TreeValidator
+from ..core import BaseAgent
+from ..workflow.attack_tree_generator.context_builder import ContextBuilder
+from ..workflow.attack_tree_generator.mermaid_processor import MermaidProcessor
+from ..workflow.attack_tree_generator.tree_validator import TreeValidator
 
 
 class TreeGenerator(BaseAgent):
