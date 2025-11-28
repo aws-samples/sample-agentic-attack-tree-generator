@@ -293,7 +293,7 @@ class ThreatForestOrchestrator:
                     self.state.advance_to(WorkflowStage.MAPPING)
                     num_trees = len(attack_trees.get('attack_trees', []))
                     self.logger.info(f"Starting TTC mapping for {num_trees} attack trees")
-                    print(f"\n🔍 Starting TTC mapping for {num_trees} attack trees...")
+                    # Console output removed for cleaner display
                     
                     ttc_mapped = self.ttc_tool.run(
                         attack_trees=attack_trees,
@@ -306,7 +306,7 @@ class ThreatForestOrchestrator:
                     total_mappings = mapping_summary.get('total_mappings', 0)
                     successful_mappings = mapping_summary.get('successful_mappings', 0)
                     self.logger.info(f"TTC mapping complete: {successful_mappings}/{total_mappings} mappings above threshold")
-                    print(f"✅ TTC mapping complete: {successful_mappings}/{total_mappings} mappings above threshold")
+                    # Console output removed for cleaner display
                     
                     # Update attack_trees with mapped versions
                     attack_trees = ttc_mapped

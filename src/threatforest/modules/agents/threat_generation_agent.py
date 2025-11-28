@@ -33,7 +33,9 @@ class ThreatGenerationAgent(BaseAgent):
             self.console_display = console
         else:
             from ..utils.agent_console import AgentConsole
-            self.console_display = AgentConsole()
+            from threatforest.config import config
+            show_errors = config.get('cli', {}).get('show_errors', True)
+            self.console_display = AgentConsole(show_errors=show_errors)
         
         self.formatter = ThreatFormatter(self.logger)
     
@@ -74,10 +76,12 @@ class ThreatGenerationAgent(BaseAgent):
         )
         
         # Create agent for threat generation (no tools needed - pure reasoning)
+        # Summarization not enabled by default as threat generation is typically single-turn
         agent = self.get_strands_agent(
             prompt_file='threat-generation-new.md',
             tools=[],  # No tools - just LLM reasoning
-            temperature=0
+            temperature=0,
+            use_summarization=False  # Can be enabled if multi-turn threat refinement is needed
         )
         
         # Build comprehensive user prompt with all context
@@ -91,12 +95,13 @@ class ThreatGenerationAgent(BaseAgent):
         
         try:
             # Run agent to generate threats
-            self.console_display.show_agent_action("Analyzing security risks and generating threats...")
-            result = agent(user_prompt)
+            with self.console_display.show_agent_spinner("Analyzing security risks and generating threats..."):
+                result = agent(user_prompt)
+            self.console_display.show_agent_action("✓ Threat analysis complete")
             
             # Parse the generated threats
-            self.console_display.show_agent_action("Extracting threat statements from generation...")
-            threats = self._parse_generation_response(str(result))
+            with self.console_display.show_agent_spinner("Extracting threat statements from generation..."):
+                threats = self._parse_generation_response(str(result))
             
             if not threats:
                 self.logger.warning("No threats generated, using fallback")
@@ -112,7 +117,8 @@ class ThreatGenerationAgent(BaseAgent):
                 )
             
             # Create markdown file with generated threats
-            self.console_display.show_agent_action("Saving threats to markdown file...")
+            with self.console_display.show_agent_spinner("Saving threats to markdown file..."):
+                pass
             filename = self.formatter.create_threats_markdown_file(
                 threats, 
                 project_path, 

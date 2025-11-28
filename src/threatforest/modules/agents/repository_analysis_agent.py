@@ -75,11 +75,13 @@ class RepositoryAnalysisAgent(BaseAgent):
         # Import structured output model
         from ..models import ProjectInfo
         
-        # Create agent with tools for exploration and structured output
+        # Create agent with tools and callback handler
+        # Enable summarization for long repository explorations
         agent = self.get_strands_agent(
             prompt_file='repository-analysis.md',
             tools=[file_read, editor, image_reader],
-            temperature=0
+            temperature=0,
+            use_summarization=False
         )
         
         # Provide the agent with the project path and let it explore
@@ -102,15 +104,16 @@ Begin by viewing the directory structure, then strategically read files."""
 
         try:
             # Run the agent with structured output - it will autonomously explore using tools
-            self.console_display.show_agent_action("Starting autonomous exploration...")
-            
-            result = agent(
-                user_prompt,
-                structured_output_model=ProjectInfo
-            )
+            with self.console_display.show_agent_spinner("Analyzing repository structure and files..."):
+                result = agent(
+                    user_prompt,
+                    structured_output_model=ProjectInfo
+                )
+            self.console_display.show_agent_action("✓ Repository analysis complete")
             
             # Extract validated ProjectInfo from structured output
-            self.console_display.show_agent_action("Extracting validated project information...")
+            with self.console_display.show_agent_spinner("Processing project information..."):
+                pass  # Quick operation, spinner for consistency
             
             if result.structured_output:
                 # Convert Pydantic model to dict for compatibility
