@@ -12,6 +12,36 @@ from contextvars import ContextVar
 correlation_id_var: ContextVar[str] = ContextVar('correlation_id', default=None)
 
 
+class SuppressStrandsWarningsFilter(logging.Filter):
+    """Filter to suppress WARNING level logs from Strands framework
+    
+    This filter allows:
+    - All ThreatForest logs (regardless of level)
+    - ERROR and CRITICAL from Strands (go to file only)
+    - Blocks WARNING and below from Strands going to console
+    """
+    
+    def filter(self, record: logging.LogRecord) -> bool:
+        """Filter log records
+        
+        Args:
+            record: Log record to filter
+            
+        Returns:
+            True if record should be logged, False otherwise
+        """
+        # Always allow ThreatForest logs
+        if record.name.startswith('ThreatForest'):
+            return True
+        
+        # For Strands logs, only allow ERROR and above
+        if record.name.startswith('strands'):
+            return record.levelno >= logging.ERROR
+        
+        # Allow everything else
+        return True
+
+
 class StructuredFormatter(logging.Formatter):
     """JSON formatter for structured logging"""
     
@@ -99,7 +129,56 @@ class ThreatForestLogger:
         cls._logger.info("="*80)
         cls._logger.info(f"Log file: {cls._log_file_path}")
         
+        # Configure Strands framework logging based on config
+        cls._configure_strands_logging(log_dir)
+        
         return cls._log_file_path
+    
+    @classmethod
+    def _configure_strands_logging(cls, log_dir: Path):
+        """Configure Strands framework logging to suppress console warnings
+        
+        Always suppresses intermediate Strands warnings/errors from CLI while
+        capturing everything in a dedicated log file.
+        
+        Args:
+            log_dir: Directory for log files
+        """
+        # Get the root Strands logger
+        strands_logger = logging.getLogger('strands')
+        strands_logger.setLevel(logging.DEBUG)
+        
+        # Remove any existing console handlers from Strands logger
+        for handler in strands_logger.handlers[:]:
+            if isinstance(handler, logging.StreamHandler) and handler.stream.name in ['<stdout>', '<stderr>']:
+                strands_logger.removeHandler(handler)
+        
+        # Add file handler for Strands logs (captures everything including warnings)
+        strands_file_handler = logging.FileHandler(
+            log_dir / f"strands_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log",
+            mode='a',
+            encoding='utf-8'
+        )
+        strands_file_handler.setLevel(logging.DEBUG)
+        strands_file_handler.setFormatter(logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S'
+        ))
+        strands_logger.addHandler(strands_file_handler)
+        
+        # Add filter to root logger to suppress Strands warnings from any console output
+        root_logger = logging.getLogger()
+        suppress_filter = SuppressStrandsWarningsFilter()
+        
+        # Apply filter to all console-bound handlers on root logger
+        for handler in root_logger.handlers:
+            if isinstance(handler, logging.StreamHandler):
+                handler.addFilter(suppress_filter)
+        
+        # Prevent propagation to root logger to avoid duplicate console output
+        strands_logger.propagate = False
+        
+        cls._logger.debug("Configured Strands logging: intermediate errors suppressed from CLI, all logs in file")
     
     @classmethod
     def get_logger(cls, name: str = None) -> logging.Logger:
@@ -172,4 +251,3 @@ def log_performance(logger: logging.Logger, operation: str, duration: float, **k
         duration_seconds=duration,
         **kwargs
     )
-

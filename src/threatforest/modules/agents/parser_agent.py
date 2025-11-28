@@ -1,7 +1,7 @@
 """Parser Agent - Parse existing threat statement files"""
 from typing import Dict, Any, List, Optional
 from pathlib import Path
-from strands_tools import file_read
+from strands_tools import file_read, editor, image_reader
 from ..core.base_agent import BaseAgent
 
 
@@ -79,10 +79,12 @@ class ParserAgent(BaseAgent):
         from ..models import ThreatList
         
         # Create agent with file_read tool and structured output
+        # Summarization not enabled by default as parsing is typically single-turn
         agent = self.get_strands_agent(
             prompt_file='threat-parsing.md',
-            tools=[file_read],
-            temperature=0
+            tools=[file_read, editor, image_reader],
+            temperature=0,
+            use_summarization=False  # Can be enabled for complex multi-file parsing scenarios
         )
         
         user_prompt = f"""Parse threat statements from the file: {threat_file_path}
@@ -99,16 +101,17 @@ IMPORTANT: Return a structured response with:
 
         try:
             # Run the agent with structured output - it will use file_read to access the file
-            self.console_display.show_agent_action("Reading and analyzing threat file...")
-            
-            # Use structured output for guaranteed parsing
-            result = agent(
-                user_prompt,
-                structured_output_model=ThreatList
-            )
+            with self.console_display.show_agent_spinner("Reading and analyzing threat file..."):
+                # Use structured output for guaranteed parsing
+                result = agent(
+                    user_prompt,
+                    structured_output_model=ThreatList
+                )
+            self.console_display.show_agent_action("✓ Read threat file")
             
             # Extract threats from structured output
-            self.console_display.show_agent_action("Extracting threat statements from structured output...")
+            with self.console_display.show_agent_spinner("Extracting threat statements..."):
+                pass  # Extraction is fast, spinner just for consistency
             
             if result.structured_output and result.structured_output.threats:
                 # Convert Pydantic models to dicts
