@@ -11,11 +11,15 @@ Before installing ThreatForest, ensure you have:
 - [x] **Python 3.11 or higher** - Check with `python3 --version`
 - [x] **Git** - For cloning the repository
 - [x] **LLM Provider Access** - At least one of:
-    - AWS Account with Bedrock access
-    - Anthropic API key
-    - OpenAI API key  
-    - Google Gemini API key
-    - Local Ollama installation
+    - AWS Account with Bedrock access (Recommended - fully tested and supported)
+        - Requires AWS Profile with IAM permissions for:
+            - `bedrock:Converse`
+            - `bedrock:ConverseStream`
+            - `bedrock:InvokeModel`
+    - Anthropic API key (Experimental - outputs not fully tested)
+    - OpenAI API key (Experimental - outputs not fully tested)
+    - Google Gemini API key (Experimental - outputs not fully tested)
+    - Local Ollama installation (Experimental - outputs not fully tested)
 
 ### Recommended
 
@@ -23,20 +27,8 @@ Before installing ThreatForest, ensure you have:
 - [x] **IDE** - VSCode, PyCharm, or Kiro IDE for best experience
 - [x] **Git Repository** - For version controlling your threat models
 
-!!! tip "First Time with AI Tools?"
-    If you're new to using AI/LLM providers, we recommend starting with **AWS Bedrock** for its comprehensive documentation and enterprise support.
-
----
-
-## 🎯 What You'll Learn
-
-By the end of this guide, you'll be able to:
-
-1. Install ThreatForest on your system
-2. Configure your preferred LLM provider
-3. Run your first threat analysis
-4. Understand the generated outputs
-5. Navigate the interactive dashboard
+!!! tip "Recommended Provider"
+    **AWS Bedrock is the recommended and fully supported provider.** ThreatForest has been extensively tested with Bedrock models. Other providers (Anthropic, OpenAI, Google Gemini, Ollama) are experimental and their outputs have not been fully tested or validated.
 
 ---
 
@@ -57,8 +49,6 @@ Choose your preferred installation method:
     threatforest
     ```
 
-    [:octicons-arrow-right-24: Detailed steps](installation.md#pipx-installation)
-
 -   :material-speedometer:{ .lg .middle } __uv (Modern & Fast)__
 
     ---
@@ -69,8 +59,6 @@ Choose your preferred installation method:
     uv tool install threatforest
     threatforest
     ```
-
-    [:octicons-arrow-right-24: Detailed steps](installation.md#uv-installation)
 
 -   :material-code-braces:{ .lg .middle } __Development Mode__
 
@@ -84,8 +72,6 @@ Choose your preferred installation method:
     threatforest
     ```
 
-    [:octicons-arrow-right-24: Development setup](../contributing/development.md)
-
 -   :material-docker:{ .lg .middle } __Docker (Coming Soon)__
 
     ---
@@ -95,8 +81,6 @@ Choose your preferred installation method:
     ```bash
     docker run threatforest
     ```
-
-    [:octicons-arrow-right-24: Stay tuned](#)
 
 </div>
 
@@ -114,7 +98,7 @@ Choose your preferred installation method:
     python3 -m pipx ensurepath
     
     # Install ThreatForest
-    git clone https://github.com/YOUR-ORG/ThreatForest.git
+    git clone https://github.com/aws-samples/sample-agentic-attack-tree-generator.git
     cd ThreatForest
     pipx install .
     
@@ -129,7 +113,7 @@ Choose your preferred installation method:
     curl -LsSf https://astral.sh/uv/install.sh | sh
     
     # Install ThreatForest
-    git clone https://github.com/YOUR-ORG/ThreatForest.git
+    git clone https://github.com/aws-samples/sample-agentic-attack-tree-generator.git
     cd ThreatForest
     uv tool install .
     
@@ -141,7 +125,7 @@ Choose your preferred installation method:
 
     ```bash
     # Clone repository
-    git clone https://github.com/YOUR-ORG/ThreatForest.git
+    git clone https://github.com/aws-samples/sample-agentic-attack-tree-generator.git
     cd ThreatForest
     
     # Create virtual environment
@@ -161,19 +145,29 @@ Choose your AI provider and configure credentials:
 
 === "AWS Bedrock"
 
+    **Option 1: AWS Profile (Recommended)**
+    
+    Configure an AWS profile that the ThreatForest wizard will use:
+    
     ```bash
-    # Configure AWS credentials
-    aws configure
+    # Configure AWS profile
+    aws configure --profile your-profile-name
     # AWS Access Key ID: [your-access-key]
     # AWS Secret Access Key: [your-secret-key]
     # Default region name: us-east-1
     # Default output format: json
     
     # Test Bedrock access
-    aws bedrock list-foundation-models --region us-east-1
+    aws bedrock list-foundation-models --region us-east-1 --profile your-profile-name
     ```
     
-    [:octicons-arrow-right-24: AWS Bedrock Setup Guide](configuration.md#aws-bedrock)
+    When you run `threatforest`, the wizard will prompt you to:
+    - Select your AWS profile name
+    - Specify the AWS region (e.g., us-east-1)
+    
+    **Option 2: AWS Access Keys (Alternative)**
+    
+    Alternatively, you can provide AWS access keys directly when prompted by the wizard.
 
 === "Anthropic"
 
@@ -185,20 +179,6 @@ Choose your AI provider and configure credentials:
     echo "ANTHROPIC_API_KEY=your-api-key-here" >> .env
     ```
     
-    [:octicons-arrow-right-24: Anthropic Setup Guide](configuration.md#anthropic)
-
-=== "OpenAI"
-
-    ```bash
-    # Set API key
-    export OPENAI_API_KEY="your-api-key-here"
-    
-    # Or add to .env file
-    echo "OPENAI_API_KEY=your-api-key-here" >> .env
-    ```
-    
-    [:octicons-arrow-right-24: OpenAI Setup Guide](configuration.md#openai)
-
 === "Ollama (Local)"
 
     ```bash
@@ -211,38 +191,31 @@ Choose your AI provider and configure credentials:
     # Verify it's running
     ollama list
     ```
-    
-    [:octicons-arrow-right-24: Ollama Setup Guide](configuration.md#ollama)
 
 ### Step 3: Prepare Your Project
 
-ThreatForest works best with proper project structure:
+At minimum, ThreatForest needs one of the following in your project directory:
+
+- **ThreatComposer file** (`.tc.json`) - Recommended, created at [threat-composer](https://awslabs.github.io/threat-composer/)
+- **README.md** - Application description and architecture overview
+- **Architecture diagrams** - PNG, PDF, Mermaid, or other diagram formats
+
+**Quick Setup:**
 
 ```
 your-project/
-├── README.md                    # Application description
-├── ARCHITECTURE.md              # System architecture (optional)
-├── threats.tc.json              # Threat model (optional)
-└── diagrams/                    # Architecture diagrams (optional)
-    ├── system-architecture.png
-    └── data-flow.mmd
+├── README.md              # Describes your application
+└── MyApp.tc.json         # Your threat model
 ```
 
-!!! tip "No Threat Model Yet?"
-    That's okay! ThreatForest can generate threats automatically by analyzing your documentation and architecture. Just ensure you have:
-    
-    - A README.md describing your application
-    - Some architecture documentation or diagrams
-    - Clear indication of technologies used
+!!! tip "Learn More"
+    See the [User Guide → Preparing Your Project](../user-guide/preparing-your-project.md) for complete details on supported formats and best practices.
 
 ### Step 4: Run Your First Analysis
 
 ```bash
 # Launch the interactive wizard
 threatforest
-
-# Or specify project directly
-threatforest --project-path /path/to/your/project
 ```
 
 The wizard will guide you through:
@@ -256,100 +229,43 @@ The wizard will guide you through:
 
 ---
 
-## ✅ Verify Installation
-
-Test your installation with these commands:
-
-```bash
-# Check ThreatForest is installed
-threatforest --version
-
-# View help
-threatforest --help
-
-# Check configuration
-threatforest config show
-
-# Test AWS access (if using Bedrock)
-aws bedrock list-foundation-models --region us-east-1
-```
-
-**Expected Output:**
-```
-ThreatForest v1.0.0
-Python 3.11.x
-AWS Bedrock: ✓ Connected
-Model: Claude 3 Sonnet
-```
-
----
-
-## ⏱️ First Run: What to Expect
-
-!!! info "Initial Startup Time"
-    **First run takes 2-3 minutes** while ThreatForest downloads AI model dependencies:
-    
-    - `sentence-transformers` models (~500MB)
-    - `torch` library
-    - MITRE ATT&CK embeddings graph
-    
-    **Subsequent runs are much faster** (seconds), as dependencies are cached.
-
-**Progress Indicators:**
-
-```
-🌳 ThreatForest Analysis
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 
-
-✓ Setup & Validation (5s)
-✓ Context Analysis (15s)
-✓ Information Extraction (30s)
-✓ Attack Tree Generation (60s)
-✓ TTP Enrichment (20s)
-✓ Report Generation (10s)
-
-📊 Analysis Complete! (140s total)
-```
-
----
-
-## 🎓 Next Steps
+##  Next Steps
 
 Now that you have ThreatForest installed, explore these guides:
 
 <div class="grid cards" markdown>
 
--   :material-rocket-launch:{ .lg .middle } __Quick Start Tutorial__
+-   :material-rocket-launch:{ .lg .middle } __Running ThreatForest__
 
     ---
 
-    Complete walkthrough of your first threat analysis
+    Learn to use the interactive wizard and manage your workflow
 
-    [:octicons-arrow-right-24: Start Tutorial](quick-start.md)
+    [:octicons-arrow-right-24: Learn More](../user-guide/running-threatforest.md)
 
--   :material-cog-outline:{ .lg .middle } __Configuration Guide__
-
-    ---
-
-    Customize ThreatForest for your environment
-
-    [:octicons-arrow-right-24: Configure](configuration.md)
-
--   :material-file-tree:{ .lg .middle } __First Analysis__
+-   :material-file-tree:{ .lg .middle } __Preparing Your Project__
 
     ---
 
-    Step-by-step guide to analyzing your first project
+    Optimize inputs for better threat analysis results
 
-    [:octicons-arrow-right-24: Analyze Project](first-analysis.md)
+    [:octicons-arrow-right-24: Prepare Project](../user-guide/preparing-your-project.md)
 
--   :material-book-open:{ .lg .middle } __User Guide__
+-   :material-chart-box:{ .lg .middle } __Understanding Results__
 
     ---
 
-    Learn about workflows, inputs, and outputs
+    Explore outputs and use the interactive dashboard
 
-    [:octicons-arrow-right-24: User Guide](../user-guide/workflows.md)
+    [:octicons-arrow-right-24: Explore Results](../user-guide/understanding-results.md)
+
+-   :material-cog:{ .lg .middle } __How It Works__
+
+    ---
+
+    Technical deep dive into the analysis pipeline
+
+    [:octicons-arrow-right-24: Technical Details](../how-it-works.md)
 
 </div>
 
@@ -408,26 +324,3 @@ Having issues? Check these common problems:
     Subsequent runs are much faster (seconds instead of minutes).
 
 [:octicons-arrow-right-24: Full Troubleshooting Guide](../advanced/troubleshooting.md)
-
----
-
-## 📚 Additional Resources
-
-- [Installation Methods](installation.md) - Detailed installation options
-- [Configuration](configuration.md) - Complete configuration reference
-- [CLI Reference](../user-guide/cli-reference.md) - All commands and options
-- [Architecture Overview](../architecture/overview.md) - How ThreatForest works
-- [Examples](../examples/index.md) - Real-world demonstrations
-
----
-
-<div class="cta-section" markdown>
-
-## Ready to Dive Deeper?
-
-Continue your ThreatForest journey with our comprehensive guides.
-
-[Run Your First Analysis](quick-start.md){ .md-button .md-button--primary }
-[Explore Examples](../examples/index.md){ .md-button }
-
-</div>

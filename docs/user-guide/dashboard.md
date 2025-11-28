@@ -1,3 +1,0 @@
-# Dashboard
-
-Documentation coming soon.
