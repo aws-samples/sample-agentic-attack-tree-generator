@@ -2,7 +2,7 @@
 from typing import Dict, List, Any, Optional
 from ...utils.logger import ThreatForestLogger
 from ...core import BaseAgent
-from .tree_generator import TreeGenerator
+from ...agents.tree_generator_agent import TreeGenerator
 from .state_manager import StateManager
 
 # Import progress types if available
@@ -138,9 +138,8 @@ class AttackTreeGeneratorTool(BaseAgent):
             for idx, threat in enumerate(threats, 1):
                 threat_id = threat.get("id", "unknown")
                 category = threat.get('category', 'Unknown')
-                threat_desc = threat.get('statement', '')[:50]
                 # Show friendly name: "Threat X (Category)" instead of UUID
-                progress.update(task, description=f"[cyan]Processing Threat {idx} ({category}): {threat_desc}...")
+                progress.update(task, description=f"[cyan]Processing Threat {idx} ({category})")
                 
                 self._process_single_threat(
                     threat, idx, len(threats), extracted_info, bedrock_model,

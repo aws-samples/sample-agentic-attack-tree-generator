@@ -3,8 +3,8 @@ import json
 from typing import Dict, Any, Optional
 from pathlib import Path
 from threatforest.config import config
-from threatforest.modules.core import BaseAgent
-from .file_categorizer import FileCategorizer
+from ..core import BaseAgent
+from ..workflow.context_analysis.file_categorizer import FileCategorizer
 
 
 class ContextExtractor(BaseAgent):
