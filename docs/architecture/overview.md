@@ -12,33 +12,25 @@ graph LR
     C --> E[ParserAgent]
     C --> F[ThreatGenerationAgent]
     C --> G[AttackTreeGenerator]
-    
+
     D --> H[(Strands Tools)]
     E --> H
-    
+
     G --> I[TTP Matcher]
     I --> J[MITRE ATT&CK<br/>Graph]
-    
+
     I --> K[MitigationMapper]
     K --> L[(STIX Bundle)]
-    
+
     G --> M[HTML Generator]
     M --> N[📊 Dashboard]
-    
-    style A fill:#0369a1,stroke:#025a82,color:#fff
-    style B fill:#0369a1,stroke:#025a82,color:#fff
-    style C fill:#15803d,stroke:#166534,color:#fff
-    style D fill:#6366f1,stroke:#4f46e5,color:#fff
-    style E fill:#6366f1,stroke:#4f46e5,color:#fff
-    style F fill:#6366f1,stroke:#4f46e5,color:#fff
-    style G fill:#ea580c,stroke:#c2410c,color:#fff
-    style H fill:#0369a1,stroke:#025a82,color:#fff
-    style I fill:#f59e0b,stroke:#d97706,color:#fff
-    style J fill:#7c2d12,stroke:#5a1f0a,color:#fff
-    style K fill:#8b5cf6,stroke:#7c3aed,color:#fff
-    style L fill:#15803d,stroke:#0f5a2a,color:#fff
-    style M fill:#ec4899,stroke:#db2777,color:#fff
-    style N fill:#dc2626,stroke:#b91c1c,color:#fff
+
+    style C fill:#15803d,color:#fff
+    style D fill:#6366f1,color:#fff
+    style E fill:#6366f1,color:#fff
+    style F fill:#6366f1,color:#fff
+    style G fill:#ea580c,color:#fff
+    style N fill:#dc2626,color:#fff
 ```
 
 ## Key Components
