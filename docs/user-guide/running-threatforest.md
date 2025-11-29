@@ -16,22 +16,12 @@ This launches a guided interface that walks you through the entire analysis proc
 
 ### Welcome Screen
 
-When you launch ThreatForest, you'll see:
+When you launch ThreatForest for the first time, you'll see:
 
-```
-╭─────────────────────────────────────────╮
-│ ThreatForest - AI-Powered Threat       │
-│ Modeling & Attack Tree Generation      │
-├─────────────────────────────────────────┤
-│ Version: 1.0.0                          │
-│ Provider: AWS Bedrock                   │
-╰─────────────────────────────────────────╯
+![ThreatForest Welcome Screen](images/welcome-screen.png)
+*Screenshot: Initial welcome screen when launching ThreatForest*
 
-What would you like to do?
-1. Run Full Analysis
-2. View Configuration
-3. Exit
-```
+The wizard will guide you through the initial setup and then the analysis workflow.
 
 ### Step 1: Workflow Selection
 
@@ -50,14 +40,8 @@ This is what most users need and what this guide focuses on.
 
 Enter the path to your project directory:
 
-```
-📁 Project Directory
-Enter the path to your project: /Users/me/my-project
-
-Validating project path...
-✓ Project directory found
-✓ Scanning for threat models and documentation...
-```
+![Project Path Selection](images/project-path.png)
+*Screenshot: Entering project directory path and validation*
 
 **What ThreatForest Looks For:**
 - ThreatComposer files (`*.tc.json`)
@@ -69,23 +53,8 @@ Validating project path...
 
 If using AWS Bedrock, you'll be prompted for AWS details:
 
-```
-☁️ AWS Configuration
-
-Select AWS Profile:
-1. default
-2. work
-3. personal
-4. Enter custom profile name
-
-Choice: 1
-
-AWS Region: us-east-1
-
-Testing Bedrock access...
-✓ Successfully connected to AWS Bedrock
-✓ Model access verified
-```
+![AWS Configuration](images/aws-configuration.png)
+*Screenshot: AWS profile selection and Bedrock access validation*
 
 **What's Happening:**
 - ThreatForest uses your AWS profile credentials
@@ -96,34 +65,15 @@ Testing Bedrock access...
 
 Choose your AI model:
 
-```
-🤖 Model Selection
-
-Available Models:
-1. Claude 3.5 Sonnet (Recommended) - Balanced quality and speed
-2. Claude 3 Haiku - Faster, good for iteration
-3. Claude 3 Opus - Highest quality, slower
-
-Choice: 1
-
-✓ Model configured: anthropic.claude-3-sonnet-20240229-v1:0
-```
+![Model Selection](images/model-selection.png)
+*Screenshot: Selecting AI model for analysis*
 
 ### Step 5: Confirmation
 
 Review your settings before starting:
 
-```
-📋 Analysis Summary
-
-Project: /Users/me/my-project
-Workflow: Full Analysis
-Provider: AWS Bedrock (us-east-1)
-Model: Claude 3.5 Sonnet
-Threats Found: 5 (3 High, 2 Medium)
-
-Proceed with analysis? (y/n): y
-```
+![Analysis Summary](images/analysis-summary.png)
+*Screenshot: Pre-analysis summary and confirmation*
 
 ## During Analysis
 
@@ -131,23 +81,8 @@ Proceed with analysis? (y/n): y
 
 Once analysis begins, you'll see real-time progress:
 
-```
-🌳 ThreatForest Analysis
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 45% 
-
-Current Stage: Attack Tree Generation
-Processing: T001 - SQL Injection in Login Form
-Completed: 2 of 5 threats
-
-✓ Setup & Validation (5s)
-✓ Context Analysis (15s)
-✓ Information Extraction (30s)
-⏳ Attack Tree Generation (60s)
-⏺ TTP Enrichment
-⏺ Mitigation Mapping
-⏺ Report Generation
-```
+![Analysis Progress](images/analysis-progress.png)
+*Screenshot: Real-time analysis progress tracking*
 
 **What Each Stage Does:**
 
@@ -194,27 +129,8 @@ Based on:
 
 ### Success Message
 
-```
-✓ Analysis Complete!
-
-📊 Summary:
-- Threats Analyzed: 5
-- Attack Trees Generated: 5
-- Total Attack Paths: 15
-- MITRE Techniques Mapped: 42
-- Mitigations Recommended: 28
-
-📁 Output Location:
-/Users/me/my-project/threatforest/attack_trees/
-
-Generated Files:
-├── attack_trees_dashboard.html  ⭐ Interactive visualization
-├── threatforest_data.json       📊 Structured data export
-├── threatforest_analysis_report.md
-└── attack_tree_*.md (5 files)
-
-🌐 Open interactive dashboard? (y/n): y
-```
+![Analysis Complete](images/analysis-complete.png)
+*Screenshot: Analysis completion summary and generated files*
 
 ### Next Steps
 
@@ -229,111 +145,22 @@ After completion, you can:
 - [Understanding Your Results](understanding-results.md) - Explore all outputs
 - [How ThreatForest Works](../how-it-works.md) - Technical deep dive
 
-## State Management
-
-### Automatic Progress Saving
-
-ThreatForest automatically saves progress after each threat:
-
-```
-💾 Progress saved: 2 of 5 threats completed
-State file: .threatforest_state.json
-```
-
-**What's Saved:**
-- Completed threats
-- Current progress
-- Configuration settings
-- Timestamp information
-
-### Resuming Interrupted Analysis
-
-If analysis is interrupted, simply run the wizard again:
-
-```bash
-threatforest
-```
-
-ThreatForest detects existing progress:
-
-```
-🔄 Resuming Analysis
-
-Previous session detected:
-- Started: 2025-11-28 14:30:00
-- Completed: 2 of 5 threats
-- Last threat: T002
-
-Resume from where you left off? (y/n): y
-
-Resuming analysis...
-Processing threat 3 of 5: T003 - XSS Attack
-```
-
-### Starting Fresh
-
-To start a new analysis:
-
-```
-Previous analysis detected. What would you like to do?
-1. Resume previous analysis
-2. Start new analysis (will archive previous results)
-3. Cancel
-
-Choice: 2
-
-✓ Previous results archived to: threatforest/archive/20251128-143000/
-✓ Starting fresh analysis...
-```
-
 ## Handling Errors
 
 ### Network Issues
 
-```
-❌ Error: Connection timeout
-
-Bedrock API connection failed. This could be due to:
-- Network connectivity issues
-- AWS service outage
-- Incorrect region configuration
-
-Retry? (y/n): y
-```
+![Network Error](images/error-network.png)
+*Screenshot: Network connectivity error and retry options*
 
 ### Validation Errors
 
-```
-❌ Error: No valid inputs found
-
-ThreatForest requires at least one of:
-- ThreatComposer file (*.tc.json)
-- README or documentation
-- Architecture diagrams
-
-Please add documentation to your project and try again.
-```
+![Validation Error](images/error-validation.png)
+*Screenshot: Project validation error messages*
 
 ### Model Errors
 
-```
-❌ Error: Model invocation failed
-
-The AI model returned an error. This could be due to:
-- Model throttling (too many requests)
-- Model not available in region
-- Insufficient permissions
-
-Suggestions:
-1. Wait a moment and retry
-2. Switch to different model
-3. Check IAM permissions
-
-What would you like to do?
-1. Retry with current model
-2. Switch model
-3. Cancel
-```
+![Model Error](images/error-model.png)
+*Screenshot: AI model invocation error and recovery options*
 
 ## Tips for Successful Analysis
 

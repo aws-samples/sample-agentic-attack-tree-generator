@@ -2,7 +2,7 @@
 
 Welcome to ThreatForest! This guide will help you get up and running with AI-powered threat modeling in minutes.
 
-## 📋 Prerequisites
+## Prerequisites
 
 Before installing ThreatForest, ensure you have:
 
@@ -32,7 +32,7 @@ Before installing ThreatForest, ensure you have:
 
 ---
 
-## ⚡ Quick Start Options
+## Quick Start Options
 
 Choose your preferred installation method:
 
@@ -86,7 +86,7 @@ Choose your preferred installation method:
 
 ---
 
-## 🚦 Installation Steps
+## Installation Steps
 
 ### Step 1: Install ThreatForest
 
@@ -102,8 +102,8 @@ Choose your preferred installation method:
     cd ThreatForest
     pipx install .
     
-    # Verify installation
-    threatforest --help
+    # Run ThreatForest
+    threatforest
     ```
 
 === "uv (Modern)"
@@ -117,8 +117,8 @@ Choose your preferred installation method:
     cd ThreatForest
     uv tool install .
     
-    # Verify installation
-    threatforest --help
+    # Run ThreatForest
+    threatforest
     ```
 
 === "pip (Traditional)"
@@ -135,62 +135,37 @@ Choose your preferred installation method:
     # Install
     pip install .
     
-    # Verify installation
-    threatforest --help
+    # Run ThreatForest
+    threatforest
     ```
 
-### Step 2: Configure LLM Provider
+### Step 2: Configure AWS Bedrock
 
-Choose your AI provider and configure credentials:
+Configure your AWS credentials for Bedrock access:
 
-=== "AWS Bedrock"
+**Option 1: AWS Profile (Recommended)**
 
-    **Option 1: AWS Profile (Recommended)**
-    
-    Configure an AWS profile that the ThreatForest wizard will use:
-    
-    ```bash
-    # Configure AWS profile
-    aws configure --profile your-profile-name
-    # AWS Access Key ID: [your-access-key]
-    # AWS Secret Access Key: [your-secret-key]
-    # Default region name: us-east-1
-    # Default output format: json
-    
-    # Test Bedrock access
-    aws bedrock list-foundation-models --region us-east-1 --profile your-profile-name
-    ```
-    
-    When you run `threatforest`, the wizard will prompt you to:
-    - Select your AWS profile name
-    - Specify the AWS region (e.g., us-east-1)
-    
-    **Option 2: AWS Access Keys (Alternative)**
-    
-    Alternatively, you can provide AWS access keys directly when prompted by the wizard.
+Configure an AWS profile that the ThreatForest wizard will use:
 
-=== "Anthropic"
+```bash
+# Configure AWS profile
+aws configure --profile your-profile-name
+# AWS Access Key ID: [your-access-key]
+# AWS Secret Access Key: [your-secret-key]
+# Default region name: us-east-1
+# Default output format: json
 
-    ```bash
-    # Set API key
-    export ANTHROPIC_API_KEY="your-api-key-here"
-    
-    # Or add to .env file
-    echo "ANTHROPIC_API_KEY=your-api-key-here" >> .env
-    ```
-    
-=== "Ollama (Local)"
+# Test Bedrock access
+aws bedrock list-foundation-models --region us-east-1 --profile your-profile-name
+```
 
-    ```bash
-    # Install Ollama
-    curl -fsSL https://ollama.ai/install.sh | sh
-    
-    # Pull a model
-    ollama pull llama3:70b
-    
-    # Verify it's running
-    ollama list
-    ```
+When you run `threatforest`, the wizard will prompt you to:
+- Select your AWS profile name
+- Specify the AWS region (e.g., us-east-1)
+
+**Option 2: AWS Access Keys (Alternative)**
+
+Alternatively, you can provide AWS access keys directly when prompted by the wizard.
 
 ### Step 3: Prepare Your Project
 
@@ -229,7 +204,7 @@ The wizard will guide you through:
 
 ---
 
-##  Next Steps
+## Next Steps
 
 Now that you have ThreatForest installed, explore these guides:
 
@@ -271,7 +246,7 @@ Now that you have ThreatForest installed, explore these guides:
 
 ---
 
-## 🆘 Troubleshooting
+## Troubleshooting
 
 Having issues? Check these common problems:
 
@@ -303,15 +278,6 @@ Having issues? Check these common problems:
     # - bedrock:InvokeModelWithResponseStream
     ```
 
-??? question "Error: 'No threat models found'"
-    
-    **Problem:** ThreatForest can't find threat statements
-    
-    **Solution:** Either:
-    1. Add a ThreatComposer file (`*.tc.json`)
-    2. Create `threats.json` in project root
-    3. Let ThreatForest generate threats automatically (just have good documentation)
-
 ??? question "Very slow first run"
     
     **Problem:** Downloading large AI models
@@ -323,4 +289,4 @@ Having issues? Check these common problems:
     
     Subsequent runs are much faster (seconds instead of minutes).
 
-[:octicons-arrow-right-24: Full Troubleshooting Guide](../advanced/troubleshooting.md)
+[:octicons-arrow-right-24: FAQ](../faq.md)

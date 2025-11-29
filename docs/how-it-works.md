@@ -130,9 +130,7 @@ Attack Tree
 
 **Strands Framework:**
 - Multi-agent orchestration
-- State management
 - Error recovery
-- Checkpoint-based resumption
 
 **AI Models:**
 - Claude 3.5 Sonnet (default)
@@ -343,45 +341,6 @@ project/threatforest/attack_trees/
 └── .threatforest_state.json                 # State
 ```
 
-## State Management
-
-### Checkpointing
-
-ThreatForest automatically saves progress:
-
-**After Each Threat:**
-- Updates state file
-- Records completed threats
-- Saves configuration
-- Timestamps progress
-
-**State File Structure:**
-```json
-{
-  "version": "1.0.0",
-  "started_at": "2025-11-28T14:30:00Z",
-  "last_updated": "2025-11-28T14:45:00Z",
-  "status": "in_progress",
-  "processed_threats": ["T001", "T002"],
-  "current_threat": "T003",
-  "total_threats": 5
-}
-```
-
-### Resume Capability
-
-**How It Works:**
-1. Detects existing state file
-2. Reads processed threats
-3. Identifies last completed threat
-4. Resumes from next threat
-5. Continues until completion
-
-**Benefits:**
-- No data loss from interruptions
-- Efficient resource usage
-- Flexible workflow management
-
 ## Performance Characteristics
 
 ### Analysis Duration
@@ -545,6 +504,6 @@ ThreatForest automatically saves progress:
 
 ## Next Steps
 
-- **[Running ThreatForest](running-threatforest.md)** - Learn to execute analysis
-- **[Preparing Your Project](preparing-your-project.md)** - Optimize inputs
-- **[Understanding Your Results](understanding-results.md)** - Explore outputs
+- **[Running ThreatForest](user-guide/running-threatforest.md)** - Learn to execute analysis
+- **[Preparing Your Project](user-guide/preparing-your-project.md)** - Optimize inputs
+- **[Understanding Your Results](user-guide/understanding-results.md)** - Explore outputs
