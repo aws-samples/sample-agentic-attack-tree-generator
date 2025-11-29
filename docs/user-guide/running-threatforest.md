@@ -229,28 +229,6 @@ After completion, you can:
 - Faster startup
 - Only analysis time
 
-## Common Questions
-
-??? question "Can I run ThreatForest without the wizard?"
-
-    The wizard is the recommended way to run ThreatForest. Command-line options are not supported in the current version.
-
-??? question "How do I analyze multiple projects?"
-
-    Run the wizard once for each project. ThreatForest will analyze them sequentially.
-
-??? question "Can I cancel during analysis?"
-
-    Yes, press `Ctrl+C` to cancel. Progress is saved automatically, so you can resume later.
-
-??? question "What if I don't have a ThreatComposer file?"
-
-    ThreatForest can work with just documentation and diagrams. It will analyze your architecture and identify potential threats automatically.
-
-??? question "How do I update existing analysis?"
-
-    Run the wizard again on the same project. You can choose to resume or start fresh.
-
 ## Next Steps
 
 - **[Understanding Your Results](understanding-results.md)** - Explore generated outputs

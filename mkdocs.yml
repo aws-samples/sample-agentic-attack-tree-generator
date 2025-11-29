@@ -11,7 +11,7 @@ repo_url: https://github.com/aws-samples/sample-agentic-attack-tree-generator
 edit_uri: edit/main/docs/
 
 # Copyright
-copyright: Copyright &copy; 2024 ThreatForest Team
+copyright: Copyright &copy; 2025 ThreatForest Team
 
 # Theme Configuration
 theme:
@@ -206,6 +206,11 @@ nav:
   - Architecture: architecture/overview.md
   
   - FAQ: faq.md
+  
+  - About:
+    - Release Notes: about/changelog.md
+    - Contributing: about/contributing.md
+    - License: about/license.md
 
 # Extra Configuration
 extra:
