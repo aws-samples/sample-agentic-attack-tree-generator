@@ -33,13 +33,21 @@ graph TB
     
     Summary -.->|Creates| Output[Output Files<br/>• Attack tree markdown<br/>• Interactive dashboard<br/>• JSON export<br/>• Analysis report]
     
-    style Start fill:#e1f5e1
-    style End fill:#e1f5e1
-    style AI1 fill:#fff4e1
-    style AI2 fill:#fff4e1
-    style MITRE fill:#e1f0ff
-    style Controls fill:#ffe1f0
-    style Output fill:#f0e1ff
+    style Start fill:#d4edda,stroke:#28a745
+    style End fill:#d4edda,stroke:#28a745
+    style Setup fill:#0369a1,stroke:#025a82,color:#fff
+    style Context fill:#0369a1,stroke:#025a82,color:#fff
+    style Extract fill:#0369a1,stroke:#025a82,color:#fff
+    style Generate fill:#ea580c,stroke:#c2410c,color:#fff
+    style Enrich fill:#7c2d12,stroke:#5a1f0a,color:#fff
+    style Mitigate fill:#15803d,stroke:#0f5a2a,color:#fff
+    style Summary fill:#dc2626,stroke:#b91c1c,color:#fff
+    style AI1 fill:#fff3cd,stroke:#ffc107
+    style AI2 fill:#fff3cd,stroke:#ffc107
+    style MITRE fill:#d1ecf1,stroke:#17a2b8
+    style Controls fill:#f8d7da,stroke:#dc3545
+    style Output fill:#e7d4f5,stroke:#6f42c1
+    style Files fill:#e2e3e5,stroke:#6c757d
 ```
 
 ### Timeline and Progress

@@ -83,12 +83,6 @@ The recommended installation method is using `pipx`:
 pipx install threatforest
 ```
 
-Or with `uv` for faster installation:
-
-```bash
-uv tool install threatforest
-```
-
 See the [Getting Started Guide](getting-started/index.md) for detailed instructions.
 
 ### Can I try ThreatForest without AWS?
@@ -293,6 +287,30 @@ Absolutely! ThreatForest is open source and welcomes contributions:
 - **Documentation**: Improve guides and examples
 
 See the [Contributing Guide](contributing/index.md) to get started.
+
+---
+
+## Running ThreatForest
+
+### Can I run ThreatForest without the wizard?
+
+The wizard is the recommended way to run ThreatForest. Command-line options are not supported in the current version.
+
+### How do I analyze multiple projects?
+
+Run the wizard once for each project. ThreatForest will analyze them sequentially.
+
+### Can I cancel during analysis?
+
+Yes, press `Ctrl+C` to cancel. Progress is saved automatically, so you can resume later.
+
+### What if I don't have a ThreatComposer file?
+
+ThreatForest can work with just documentation and diagrams. It will analyze your architecture and identify potential threats automatically.
+
+### How do I update existing analysis?
+
+Run the wizard again on the same project. You can choose to resume or start fresh.
 
 ---
 

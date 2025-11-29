@@ -1,4 +1,4 @@
-# 🌳 ThreatForest: AI powered threat modeling and attack treee generator
+# 🌳 ThreatForest: AI powered threat modeling and attack tree generator
 ## GitHub: sample-agentic-attack-tree-generator
 
 <div class="hero" markdown>
