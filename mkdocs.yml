@@ -121,8 +121,6 @@ plugins:
         reduce_boolean_attributes: true
       js_files:
         - javascripts/extra.js
-        - javascripts/architecture-diagram.js
-        - javascripts/tablesort.js
   
   # Social cards plugin with ThreatForest branding
   # Note: Requires Pillow and CairoSVG for image generation
@@ -205,39 +203,9 @@ nav:
   
   - How It Works: how-it-works.md
   
-  - Architecture:
-    - architecture/overview.md
-    - architecture/agents.md
-    - architecture/workflow-stages.md
-    - architecture/strands-integration.md
-    - architecture/mitre-attack-mapping.md
-    - architecture/state-management.md
+  - Architecture: architecture/overview.md
   
-  - Examples:
-    - examples/index.md
-    - GenAI Chatbot: examples/genai-chatbot.md
-    - Vehicle Platform: examples/vehicle-platform.md
-    - Healthcare: examples/healthcare.md
-    - IoT Device Management: examples/iot.md
-    - Microservices API: examples/microservices.md
-  
-  - Contributing:
-    - contributing/index.md
-    - contributing/development.md
-    - contributing/testing.md
-    - contributing/code-style.md
-    - Advanced Topics:
-      - advanced/customization.md
-      - advanced/multi-provider.md
-      - advanced/performance.md
-      - advanced/security.md
-      - advanced/troubleshooting.md
-  
-  - About:
-    - about/changelog.md
-    - about/license.md
-    - about/security.md
-    - about/acknowledgments.md
+  - FAQ: faq.md
 
 # Extra Configuration
 extra:
@@ -262,9 +230,7 @@ extra:
 # Extra JavaScript
 extra_javascript:
   - javascripts/extra.js
-  - javascripts/architecture-diagram.js
   - https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js
-  - javascripts/tablesort.js
   - https://d3js.org/d3.v7.min.js
 
 # Watch for changes

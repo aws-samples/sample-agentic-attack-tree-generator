@@ -1,16 +1,13 @@
-# 🌳 ThreatForest
+# 🌳 ThreatForest: AI powered threat modeling and attack treee generator
+## GitHub: sample-agentic-attack-tree-generator
 
 <div class="hero" markdown>
 
 <div class="hero-content" markdown>
 
-# AI-Driven Threat Modeling
-## Powered by AWS Labs Strands Framework
-
 Transform your applications into comprehensive security insights with autonomous AI agents that analyze, generate, and visualize attack trees mapped to MITRE ATT&CK.
 
 [Get Started](getting-started/index.md){ .md-button .md-button--primary }
-[View Examples](examples/index.md){ .md-button }
 
 </div>
 
@@ -36,15 +33,11 @@ ThreatForest is an intelligent threat modeling platform that combines the power 
 
     Three specialized AI agents work together using Strands community tools to explore your repository, parse threats, and generate comprehensive attack trees
 
-    [:octicons-arrow-right-24: Learn about agents](architecture/agents.md)
-
 -   :material-shield-check:{ .lg .middle } __MITRE ATT&CK Integration__
 
     ---
 
     Automatically maps attack steps to TTPs (Tactics, Techniques, and Procedures) using semantic similarity and vector embeddings
-
-    [:octicons-arrow-right-24: Understanding TTP mapping](architecture/mitre-attack-mapping.md)
 
 -   :material-chart-tree:{ .lg .middle } __Interactive Dashboards__
 
@@ -52,21 +45,20 @@ ThreatForest is an intelligent threat modeling platform that combines the power 
 
     Explore threats visually with interactive HTML dashboards powered by vis-network, complete with filtering and real-time search
 
-    [:octicons-arrow-right-24: Dashboard features](user-guide/dashboard.md)
-
--   :material-cog-outline:{ .lg .middle } __Multi-Provider Support__
+-   :material-cog-outline:{ .lg .middle } __AWS Bedrock Support__
 
     ---
 
-    Works with AWS Bedrock, Anthropic, OpenAI, Google Gemini, Ollama (local), and more - choose your preferred LLM provider
-
-    [:octicons-arrow-right-24: Configure providers](advanced/multi-provider.md)
+    Officially supports AWS Bedrock (Claude models). Other providers (Anthropic, OpenAI, Gemini, Ollama) are experimental and not fully tested.
 
 </div>
 
 ## 🚀 Quick Example
 
 Generate comprehensive attack trees in minutes:
+
+!!! tip "Prerequisites"
+    Before starting, ensure you have [Python 3.11+ and AWS Bedrock access](getting-started/index.md#prerequisites).
 
 === "Step 1: Run ThreatForest"
 
@@ -141,86 +133,9 @@ Generate comprehensive attack trees in minutes:
 
 </div>
 
-### Attack Tree Generation
-
-```mermaid
-graph TB
-    T[High Severity Threat] --> A1[Attack Path 1]
-    T --> A2[Attack Path 2]
-    A1 --> S1[Step 1: Recon]
-    A1 --> S2[Step 2: Initial Access]
-    S2 --> S3[Step 3: Privilege Escalation]
-    A2 --> S4[Step 1: Phishing]
-    S4 --> S5[Step 2: Lateral Movement]
-    
-    S2 -.->|T1190| M1[Exploit Public-Facing Application]
-    S3 -.->|T1068| M2[Exploitation for Privilege Escalation]
-    S4 -.->|T1566| M3[Phishing]
-    S5 -.->|T1021| M4[Remote Services]
-    
-    M1 --> MIT1[🛡️ Input Validation]
-    M2 --> MIT2[🛡️ Least Privilege]
-    M3 --> MIT3[🛡️ Security Awareness Training]
-    
-    style T fill:#dc2626,color:#fff
-    style M1 fill:#7c2d12,color:#fff
-    style M2 fill:#7c2d12,color:#fff
-    style M3 fill:#7c2d12,color:#fff
-    style M4 fill:#7c2d12,color:#fff
-    style MIT1 fill:#15803d,color:#fff
-    style MIT2 fill:#15803d,color:#fff
-    style MIT3 fill:#15803d,color:#fff
-```
-
 ---
 
-## 🔧 Architecture Overview
-
-<div class="architecture-overview" markdown>
-
-```mermaid
-graph LR
-    A[User/IDE] --> B[ThreatForest CLI]
-    B --> C[Orchestrator]
-    C --> D[RepositoryAnalysisAgent]
-    C --> E[ParserAgent]
-    C --> F[ThreatGenerationAgent]
-    C --> G[AttackTreeGenerator]
-    
-    D --> H[(Strands Tools)]
-    E --> H
-    
-    G --> I[TTC Matcher]
-    I --> J[MITRE ATT&CK<br/>Graph]
-    
-    I --> K[MitigationMapper]
-    K --> L[(STIX Bundle)]
-    
-    G --> M[HTML Generator]
-    M --> N[📊 Dashboard]
-    
-    style C fill:#15803d,color:#fff
-    style D fill:#6366f1,color:#fff
-    style E fill:#6366f1,color:#fff
-    style F fill:#6366f1,color:#fff
-    style G fill:#ea580c,color:#fff
-    style N fill:#dc2626,color:#fff
-```
-
-**Key Components:**
-
-- **Orchestrator**: Manages workflow stages with state persistence
-- **Agents**: Autonomous AI agents powered by Strands framework
-- **TTC Matcher**: Semantic similarity matching to MITRE ATT&CK
-- **Visualization**: Interactive HTML dashboards with network graphs
-
-[:octicons-arrow-right-24: Detailed Architecture](architecture/overview.md)
-
-</div>
-
----
-
-## 💡 Use Cases
+## 💼 Use Cases
 
 <div class="use-cases" markdown>
 
@@ -283,31 +198,17 @@ project/threatforest/attack_trees/
 
 ---
 
-## 🎓 Learning Path
-
-<div class="learning-path" markdown>
-
-1. **New Users** → Start with [Quick Start Guide](getting-started/quick-start.md)
-2. **Understanding Concepts** → Read [Architecture Overview](architecture/overview.md)
-3. **Advanced Usage** → Explore [Workflow Customization](advanced/customization.md)
-4. **Contributing** → Check [Development Guide](contributing/development.md)
-
-</div>
-
----
-
 ## 🔒 Privacy & Security
 
 !!! warning "Data Privacy"
-    ThreatForest sends application details to your chosen LLM provider for analysis. Review your provider's data handling policies, especially for sensitive systems.
+    ThreatForest relies on LLM providers to send application details that you provide sends application details to AWS Bedrock for analysis. AWS Bedrock provides enterprise-grade data handling. For alternative providers (experimental), review their data handling policies.
 
-**Privacy Options:**
+**Best Practices:**
 
-- ✅ **Local Models**: Use Ollama for complete data privacy
-- ✅ **AWS Bedrock**: Enterprise-grade data handling with AWS policies
-- ✅ **No Storage**: ThreatForest doesn't store or transmit data beyond LLM API calls
-
-[:octicons-arrow-right-24: Security Considerations](advanced/security.md)
+- Use AWS Bedrock for production workloads (officially supported)
+- Remove secrets and credentials from project files before analysis
+- Review generated output for any sensitive information
+- Store outputs in secure, access-controlled locations
 
 ---
 
@@ -331,33 +232,15 @@ project/threatforest/attack_trees/
 
     [:octicons-arrow-right-24: GitHub Issues](https://github.com/aws-samples/sample-agentic-attack-tree-generator/issues)
 
--   :material-frequently-asked-questions:{ .lg .middle } __Troubleshooting__
+-   :material-frequently-asked-questions:{ .lg .middle } __FAQ__
 
     ---
 
-    Common issues and solutions
+    Frequently asked questions
 
-    [:octicons-arrow-right-24: Troubleshooting Guide](advanced/troubleshooting.md)
-
--   :material-account-group:{ .lg .middle } __Contributing__
-
-    ---
-
-    Join the community and contribute
-
-    [:octicons-arrow-right-24: Contribution Guide](contributing/index.md)
+    [:octicons-arrow-right-24: FAQ](faq.md)
 
 </div>
-
----
-
-## ⚡ Quick Links
-
-- [Installation Guide](getting-started/installation.md) - Multiple installation methods
-- [CLI Reference](user-guide/cli-reference.md) - Complete command documentation
-- [Kiro IDE Integration](user-guide/ide-integration.md) - Automatic analysis on save
-- [Example Projects](examples/index.md) - Real-world demonstrations
-- [API Documentation](api/orchestrator.md) - Programmatic usage
 
 ---
 
@@ -367,7 +250,7 @@ project/threatforest/attack_trees/
 
 Transform your threat modeling workflow with AI-powered automation.
 
-[Install ThreatForest](getting-started/installation.md){ .md-button .md-button--primary .md-button--large }
+[Get Started](getting-started/index.md){ .md-button .md-button--primary .md-button--large }
 [View on GitHub :fontawesome-brands-github:](https://github.com/aws-samples/sample-agentic-attack-tree-generator){ .md-button .md-button--large }
 
 </div>
