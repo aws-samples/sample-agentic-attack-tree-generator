@@ -6,143 +6,28 @@ site_author: ThreatForest Team
 site_url: https://threatforest.dev
 
 # Repository
-repo_name: ThreatForest
+repo_name: GitHub
 repo_url: https://github.com/aws-samples/sample-agentic-attack-tree-generator
 edit_uri: edit/main/docs/
 
 # Copyright
 copyright: Copyright &copy; 2024 ThreatForest Team
 
-# Theme Configuration
+# Theme Configuration - Using basic MkDocs theme with fully custom CSS
 theme:
-  name: material
-  language: en
-  
-  # Color Palette - ThreatForest Black & Green Theme
-  palette:
-    # Light mode
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: custom
-      accent: green
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
-    
-    # Dark mode
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      primary: custom
-      accent: green
-      toggle:
-        icon: material/brightness-4
-        name: Switch to light mode
-  
-  # Fonts
-  font:
-    text: Roboto
-    code: Roboto Mono
-  
-  # Features
-  features:
-    - announce.dismiss
-    - content.action.edit
-    - content.action.view
-    - content.code.annotate
-    - content.code.copy
-    - content.tabs.link
-    - content.tooltips
-    - header.autohide
-    - navigation.expand
-    - navigation.footer
-    - navigation.indexes
-    - navigation.instant
-    - navigation.instant.prefetch
-    - navigation.instant.progress
-    - navigation.path
-    - navigation.prune
-    - navigation.sections
-    - navigation.tabs
-    - navigation.tabs.sticky
-    - navigation.top
-    - navigation.tracking
-    - search.highlight
-    - search.share
-    - search.suggest
-    - toc.follow
-    - toc.integrate
-  
-  # Logo and Favicon - Custom ThreatForest logo
-  logo: assets/logo.svg
-  favicon: assets/favicon.svg
-  
-  # Icons
-  icon:
-    repo: fontawesome/brands/github
-    edit: material/pencil
-    view: material/eye
+  name: mkdocs
+  navigation_depth: 2
+  nav_style: dark
+  include_search_page: false
+  search_index_only: false
+  include_next_prev: false
 
 # Plugins
-plugins:
-  # Search plugin with custom separator for better search results
-  - search:
-      separator: '[\s\-,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
-      lang: en
-      pipeline:
-        - stemmer
-        - stopWordFilter
-        - trimmer
-  
-  # Tags plugin for content categorization
-  - tags
-  
-  # Git revision date plugin for last updated timestamps
-  - git-revision-date-localized:
-      enable_creation_date: true
-      type: timeago
-      fallback_to_build_date: true
-      enable_git_follow: false
-  
-  # Git authors plugin for contributor information
-  - git-authors:
-      show_contribution: true
-      show_line_count: true
-      count_empty_lines: true
-      fallback_to_empty: false
-  
-  # Minify plugin for optimized HTML, CSS, and JavaScript
-  - minify:
-      minify_html: true
-      minify_js: true
-      minify_css: true
-      htmlmin_opts:
-        remove_comments: true
-        remove_empty_space: true
-        reduce_boolean_attributes: true
-      js_files:
-        - javascripts/extra.js
-  
-  # Social cards plugin with ThreatForest branding
-  # Note: Requires Pillow and CairoSVG for image generation
-  # Install with: pip install "mkdocs-material[imaging]"
-  # If imaging libraries are not available, social cards will be skipped gracefully
-  - social:
-      cards: true
-      cards_layout_options:
-        background_color: "#000000"  # ThreatForest black
-        color: "#10B981"              # ThreatForest emerald green
-        font_family: Roboto
-        title: ThreatForest
-        description: AI-Driven Threat Modeling & Attack Tree Generation
-      cards_layout: default/variant
-      cards_dir: assets/social
-      cards_include:
-        - home
-        - getting-started
-        - user-guide
-        - architecture
-        - examples
-        - contributing
+plugins: []
+
+# Custom CSS
+extra_css:
+  - stylesheets/extra.css
 
 # Extensions
 markdown_extensions:
@@ -156,6 +41,7 @@ markdown_extensions:
   - toc:
       permalink: true
       permalink_title: Anchor link to this section
+      toc_depth: 2-6
   
   # Python Markdown Extensions
   - pymdownx.arithmatex:
@@ -164,9 +50,7 @@ markdown_extensions:
       smart_enable: all
   - pymdownx.caret
   - pymdownx.details
-  - pymdownx.emoji:
-      emoji_index: !!python/name:material.extensions.emoji.twemoji
-      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.emoji
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
@@ -175,17 +59,10 @@ markdown_extensions:
   - pymdownx.keys
   - pymdownx.mark
   - pymdownx.smartsymbols
-  - pymdownx.snippets:
-      auto_append:
-        - includes/abbreviations.md
-  - pymdownx.superfences:
-      custom_fences:
-        - name: mermaid
-          class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.snippets
+  - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true
-      combine_header_slug: true
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.tilde
@@ -197,9 +74,10 @@ nav:
   - Getting Started: getting-started/index.md
   
   - User Guide:
-    - user-guide/running-threatforest.md
-    - user-guide/preparing-your-project.md
-    - user-guide/understanding-results.md
+    - Overview: user-guide/index.md
+    - Preparing Your Project: user-guide/preparing-your-project.md
+    - Running ThreatForest: user-guide/running-threatforest.md
+    - Understanding Results: user-guide/understanding-results.md
   
   - How It Works: how-it-works.md
   
@@ -232,6 +110,7 @@ extra_javascript:
   - javascripts/extra.js
   - https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js
   - https://d3js.org/d3.v7.min.js
+  - https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js
 
 # Watch for changes
 watch:
