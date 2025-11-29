@@ -1,0 +1,246 @@
+{
+  "type": "graph",
+  "id": "default_graph",
+  "status": "completed",
+  "completed_nodes": [
+    "application_info",
+    "threats",
+    "mitigations",
+    "dataflow",
+    "architecture_diagram",
+    "threat_model",
+    "dataflow_diagram",
+    "architecture"
+  ],
+  "failed_nodes": [],
+  "node_results": {
+    "application_info": {
+      "result": {
+        "type": "agent_result",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "text": "Analysis complete. Application information has been extracted and documented in the required Threat Composer format."
+            }
+          ]
+        },
+        "stop_reason": "end_turn"
+      },
+      "execution_time": 43456,
+      "status": "completed",
+      "accumulated_usage": {
+        "inputTokens": 197257,
+        "outputTokens": 2151,
+        "totalTokens": 225192,
+        "cacheReadInputTokens": 24864,
+        "cacheWriteInputTokens": 920
+      },
+      "accumulated_metrics": {
+        "latencyMs": 41357
+      },
+      "execution_count": 1
+    },
+    "architecture": {
+      "result": {
+        "type": "agent_result",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "text": "Analysis complete. Application architecture has been analyzed and documented in the required Threat Composer format."
+            }
+          ]
+        },
+        "stop_reason": "end_turn"
+      },
+      "execution_time": 83154,
+      "status": "completed",
+      "accumulated_usage": {
+        "inputTokens": 445775,
+        "outputTokens": 3096,
+        "totalTokens": 483843,
+        "cacheReadInputTokens": 33898,
+        "cacheWriteInputTokens": 1074
+      },
+      "accumulated_metrics": {
+        "latencyMs": 67190
+      },
+      "execution_count": 1
+    },
+    "architecture_diagram": {
+      "result": {
+        "type": "agent_result",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "text": "Architecture diagram generated successfully showing ThreatForest CLI tool structure with layered components, external integrations, and color-coded legend."
+            }
+          ]
+        },
+        "stop_reason": "end_turn"
+      },
+      "execution_time": 82973,
+      "status": "completed",
+      "accumulated_usage": {
+        "inputTokens": 9541,
+        "outputTokens": 4992,
+        "totalTokens": 29257,
+        "cacheReadInputTokens": 9816,
+        "cacheWriteInputTokens": 4908
+      },
+      "accumulated_metrics": {
+        "latencyMs": 45535
+      },
+      "execution_count": 1
+    },
+    "dataflow": {
+      "result": {
+        "type": "agent_result",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "text": "Analysis complete. Application data flow has been analyzed and documented in the required Threat Composer format."
+            }
+          ]
+        },
+        "stop_reason": "end_turn"
+      },
+      "execution_time": 98770,
+      "status": "completed",
+      "accumulated_usage": {
+        "inputTokens": 189712,
+        "outputTokens": 3529,
+        "totalTokens": 225455,
+        "cacheReadInputTokens": 31160,
+        "cacheWriteInputTokens": 1054
+      },
+      "accumulated_metrics": {
+        "latencyMs": 58240
+      },
+      "execution_count": 1
+    },
+    "dataflow_diagram": {
+      "result": {
+        "type": "agent_result",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "text": "SVG data flow diagram generated successfully with all 15 data flows mapped from the source file."
+            }
+          ]
+        },
+        "stop_reason": "end_turn"
+      },
+      "execution_time": 62224,
+      "status": "completed",
+      "accumulated_usage": {
+        "inputTokens": 10861,
+        "outputTokens": 5346,
+        "totalTokens": 25966,
+        "cacheReadInputTokens": 7532,
+        "cacheWriteInputTokens": 2227
+      },
+      "accumulated_metrics": {
+        "latencyMs": 58324
+      },
+      "execution_count": 1
+    },
+    "threats": {
+      "result": {
+        "type": "agent_result",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "text": "STRIDE threat analysis complete. Generated 20 high-quality threats focusing on HIGH and MEDIUM priority security concerns for the ThreatForest AI-driven threat modeling platform."
+            }
+          ]
+        },
+        "stop_reason": "end_turn"
+      },
+      "execution_time": 90727,
+      "status": "completed",
+      "accumulated_usage": {
+        "inputTokens": 46331,
+        "outputTokens": 7906,
+        "totalTokens": 76245,
+        "cacheReadInputTokens": 19890,
+        "cacheWriteInputTokens": 2118
+      },
+      "accumulated_metrics": {
+        "latencyMs": 86738
+      },
+      "execution_count": 1
+    },
+    "mitigations": {
+      "result": {
+        "type": "agent_result",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "text": "Defender Persona Agent mitigation analysis complete. Generated 24 practical, implementable mitigations targeting HIGH and MEDIUM priority threats for the ThreatForest AI-driven threat modeling platform."
+            }
+          ]
+        },
+        "stop_reason": "end_turn"
+      },
+      "execution_time": 186262,
+      "status": "completed",
+      "accumulated_usage": {
+        "inputTokens": 153394,
+        "outputTokens": 13821,
+        "totalTokens": 191690,
+        "cacheReadInputTokens": 23513,
+        "cacheWriteInputTokens": 962
+      },
+      "accumulated_metrics": {
+        "latencyMs": 184174
+      },
+      "execution_count": 1
+    },
+    "threat_model": {
+      "result": {
+        "type": "agent_result",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "text": "Threat Composer schema output successfully generated and validated at ./.threat-composer/20251125-1401/threatmodel.tc.json with 20 threats, 24 mitigations, and 21 assumptions."
+            }
+          ]
+        },
+        "stop_reason": "end_turn"
+      },
+      "execution_time": 9818,
+      "status": "completed",
+      "accumulated_usage": {
+        "inputTokens": 1833,
+        "outputTokens": 510,
+        "totalTokens": 5499,
+        "cacheReadInputTokens": 2104,
+        "cacheWriteInputTokens": 1052
+      },
+      "accumulated_metrics": {
+        "latencyMs": 9099
+      },
+      "execution_count": 1
+    }
+  },
+  "next_nodes_to_execute": [],
+  "current_task": "Analyze local directory: ./.",
+  "execution_order": [
+    "application_info",
+    "architecture",
+    "architecture_diagram",
+    "dataflow",
+    "dataflow_diagram",
+    "threats",
+    "mitigations",
+    "threat_model"
+  ]
+}

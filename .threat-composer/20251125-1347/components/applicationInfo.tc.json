@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "applicationInfo": {
+    "name": "ThreatForest",
+    "description": "### Summary\nAI-driven threat modeling platform that generates attack trees from project documentation using MITRE ATT&amp;CK framework integration.\n\n### Key objectives\n- Automate threat modeling through AI analysis\n- Generate comprehensive attack trees for security threats\n- Map attack paths to MITRE ATT&amp;CK techniques\n- Provide actionable mitigation recommendations\n- Enable interactive threat visualization\n\n### Use-cases\n- Analyze project documentation for security threats\n- Generate attack trees from ThreatComposer files\n- Map threats to industry-standard attack techniques\n- Create interactive security dashboards\n- Integrate with IDE workflows for live threat analysis\n\n### Features\n- Multi-provider AI model support (AWS Bedrock, Anthropic, OpenAI, Gemini, Ollama)\n- Intelligent context analysis using Strands framework\n- Attack tree generation with step-by-step paths\n- MITRE ATT&amp;CK technique mapping via semantic similarity\n- Interactive HTML dashboards with vis-network\n- Kiro IDE integration for real-time analysis\n- State management with workflow resumption"
+  },
+  "architecture": {},
+  "dataflow": {},
+  "assumptions": [
+    {
+      "id": "66001e10-a2e2-4476-a8f9-3f0606094ff1",
+      "numericId": 1,
+      "metadata": [
+        {
+          "key": "Comments",
+          "value": "Application details extracted from README.md, pyproject.toml, source code structure, and configuration files. Some features may not be fully represented if code is incomplete."
+        },
+        {
+          "key": "custom:agent",
+          "value": "System Analysis Agent"
+        }
+      ],
+      "tags": [
+        "Code Analysis",
+        "Documentation",
+        "AI Generated"
+      ],
+      "content": "Analysis based on available source code and documentation in working directory"
+    }
+  ],
+  "mitigations": [],
+  "assumptionLinks": [],
+  "mitigationLinks": [],
+  "threats": []
+}

@@ -38,7 +38,7 @@ Choose your preferred installation method:
 
 <div class="grid cards" markdown>
 
--   :material-package-variant:{ .lg .middle } __pipx (Recommended)__
+-   📦 __pipx (Recommended)__
 
     ---
 
@@ -49,7 +49,7 @@ Choose your preferred installation method:
     threatforest
     ```
 
--   :material-speedometer:{ .lg .middle } __uv (Modern & Fast)__
+-   ⚡ __uv (Modern & Fast)__
 
     ---
 
@@ -60,7 +60,7 @@ Choose your preferred installation method:
     threatforest
     ```
 
--   :material-code-braces:{ .lg .middle } __Development Mode__
+-   💻 __Development Mode__
 
     ---
 
@@ -72,7 +72,7 @@ Choose your preferred installation method:
     threatforest
     ```
 
--   :material-docker:{ .lg .middle } __Docker (Coming Soon)__
+-   🐳 __Docker (Coming Soon)__
 
     ---
 
@@ -210,37 +210,37 @@ Now that you have ThreatForest installed, explore these guides:
 
 <div class="grid cards" markdown>
 
--   :material-rocket-launch:{ .lg .middle } __Running ThreatForest__
+-   🚀 __Running ThreatForest__
 
     ---
 
     Learn to use the interactive wizard and manage your workflow
 
-    [:octicons-arrow-right-24: Learn More](../user-guide/running-threatforest.md)
+    [→ Learn More](../user-guide/running-threatforest.md)
 
--   :material-file-tree:{ .lg .middle } __Preparing Your Project__
+-   📁 __Preparing Your Project__
 
     ---
 
     Optimize inputs for better threat analysis results
 
-    [:octicons-arrow-right-24: Prepare Project](../user-guide/preparing-your-project.md)
+    [→ Prepare Project](../user-guide/preparing-your-project.md)
 
--   :material-chart-box:{ .lg .middle } __Understanding Results__
+-   📊 __Understanding Results__
 
     ---
 
     Explore outputs and use the interactive dashboard
 
-    [:octicons-arrow-right-24: Explore Results](../user-guide/understanding-results.md)
+    [→ Explore Results](../user-guide/understanding-results.md)
 
--   :material-cog:{ .lg .middle } __How It Works__
+-   ⚙️ __How It Works__
 
     ---
 
     Technical deep dive into the analysis pipeline
 
-    [:octicons-arrow-right-24: Technical Details](../how-it-works.md)
+    [→ Technical Details](../how-it-works.md)
 
 </div>
 
@@ -289,4 +289,4 @@ Having issues? Check these common problems:
     
     Subsequent runs are much faster (seconds instead of minutes).
 
-[:octicons-arrow-right-24: FAQ](../faq.md)
+[→ FAQ](../faq.md)
