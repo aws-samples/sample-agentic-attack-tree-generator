@@ -18,13 +18,11 @@ theme:
   name: material
   language: en
   
-  # Color Palette - ThreatForest Black & Green Theme
+  # Color Palette
   palette:
     # Light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: custom
-      accent: green
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
@@ -32,8 +30,6 @@ theme:
     # Dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: custom
-      accent: green
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
