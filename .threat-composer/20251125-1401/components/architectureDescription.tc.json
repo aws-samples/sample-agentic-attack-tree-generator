@@ -1,0 +1,142 @@
+{
+  "schema": 1,
+  "applicationInfo": {},
+  "architecture": {
+    "description": "### High Level Architecture\n\n#### Application type\nPython CLI tool for AI-driven threat modeling and attack tree generation\n\n#### Layers\n- CLI interface layer (Rich console, questionnaire)\n- Core orchestration layer (Strands agents, state management)\n- Tool modules layer (context analysis, extraction, generation, mapping)\n- External integrations layer (LLM providers, MITRE ATT&CK)\n\n#### Boundaries\n- Internal: Core modules, parsers, utilities\n- External: LLM providers (AWS Bedrock, Anthropic, OpenAI, etc.)\n- Data: Local file system, MITRE ATT&CK framework\n\n#### Technology components\n- Python 3.11+ runtime\n- Strands agentic framework for LLM orchestration\n- Rich library for CLI interface\n- Sentence-transformers for embeddings\n- PyTorch for ML operations\n- Boto3 for AWS integration\n\n#### Deployment architecture\n- Standalone CLI application\n- Local execution on user workstation\n- Output to project/threatforest/ directories\n- Optional Kiro IDE integration\n\n#### APIs\n| Endpoint | Method | Purpose |\n|----------|--------|----------|\n| AWS Bedrock | HTTP/REST | LLM inference |\n| Anthropic API | HTTP/REST | Claude model access |\n| OpenAI API | HTTP/REST | GPT model access |\n| Gemini API | HTTP/REST | Google model access |\n| Ollama | HTTP/REST | Local model access |\n\n#### Security relevant components\n- Multi-provider LLM authentication (API keys, AWS credentials)\n- File system access for project analysis\n- External API communication with threat intelligence\n- State management with checkpoint files\n\n### Low Level Architecture\n- CLI entry point (threatforest.py, cli.py)\n- Strands orchestrator (strands_agent.py)\n- Context analysis tool (file discovery, parsing)\n- Information extraction tool (project metadata, threat parsing)\n- Attack tree generator (Mermaid diagram generation)\n- TTC mapping tool (MITRE ATT&CK technique mapping)\n- Summary generator (reports, HTML dashboards)\n- Parser chain (JSON, YAML, Markdown, ThreatComposer)\n- State manager (workflow checkpoints, resume capability)\n- Configuration system (multi-provider model selection)"
+  },
+  "dataflow": {},
+  "assumptions": [
+    {
+      "id": "2cc837db-d584-4b11-8643-01c387c199ac",
+      "numericId": 1,
+      "content": "Application processes project files locally without uploading complete codebases to external services",
+      "tags": ["Data Privacy", "AI Generated"],
+      "metadata": [
+        {
+          "key": "Comments",
+          "value": "Only selected content and metadata sent to LLM providers for analysis"
+        },
+        {
+          "key": "custom:agent",
+          "value": "Architecture Analysis Agent"
+        }
+      ]
+    },
+    {
+      "id": "08d71284-3cd8-4c4c-bdb0-03245d8eac6a",
+      "numericId": 2,
+      "content": "Strands framework provides built-in rate limiting and retry logic for LLM provider interactions",
+      "tags": ["Reliability", "AI Generated"],
+      "metadata": [
+        {
+          "key": "Comments",
+          "value": "Eliminates need for manual rate limiting in tool implementations"
+        },
+        {
+          "key": "custom:agent",
+          "value": "Architecture Analysis Agent"
+        }
+      ]
+    },
+    {
+      "id": "7afd48a9-bd80-4c54-83f4-f9afa44b36e5",
+      "numericId": 3,
+      "content": "MITRE ATT&CK mappings use local embeddings and pre-loaded enterprise attack data for offline capability",
+      "tags": ["Performance", "AI Generated"],
+      "metadata": [
+        {
+          "key": "Comments",
+          "value": "SecureBERT embeddings and enterprise-attack-18.0.json enable local TTC mapping"
+        },
+        {
+          "key": "custom:agent",
+          "value": "Architecture Analysis Agent"
+        }
+      ]
+    },
+    {
+      "id": "1ac7a69b-b824-4f84-b240-9319b06c7b5a",
+      "numericId": 4,
+      "content": "State management enables workflow resumption after interruptions or failures",
+      "tags": ["Reliability", "AI Generated"],
+      "metadata": [
+        {
+          "key": "Comments",
+          "value": "Checkpoint files in ~/.threatforest/state allow resume from last successful stage"
+        },
+        {
+          "key": "custom:agent",
+          "value": "Architecture Analysis Agent"
+        }
+      ]
+    },
+    {
+      "id": "76ada96b-eed4-4b9d-89dc-6904cd6e820c",
+      "numericId": 5,
+      "content": "Parser chain architecture supports extensible file format processing with priority-based selection",
+      "tags": ["Extensibility", "AI Generated"],
+      "metadata": [
+        {
+          "key": "Comments",
+          "value": "ThreatComposer, JSON, YAML, and Markdown parsers with configurable priority ordering"
+        },
+        {
+          "key": "custom:agent",
+          "value": "Architecture Analysis Agent"
+        }
+      ]
+    },
+    {
+      "id": "e26169de-51e0-4cb5-a80a-b1a2a446c707",
+      "numericId": 6,
+      "content": "HTML dashboard generation creates interactive visualizations without requiring web server deployment",
+      "tags": ["Usability", "AI Generated"],
+      "metadata": [
+        {
+          "key": "Comments",
+          "value": "Self-contained HTML files with embedded vis-network.js for local viewing"
+        },
+        {
+          "key": "custom:agent",
+          "value": "Architecture Analysis Agent"
+        }
+      ]
+    },
+    {
+      "id": "e4274073-cdd4-433a-ac0c-32f4d4f74bd4",
+      "numericId": 7,
+      "content": "Tool modules follow single-responsibility principle with clear separation of concerns",
+      "tags": ["Architecture", "AI Generated"],
+      "metadata": [
+        {
+          "key": "Comments",
+          "value": "Context analysis, extraction, generation, mapping, and summary tools are independently testable"
+        },
+        {
+          "key": "custom:agent",
+          "value": "Architecture Analysis Agent"
+        }
+      ]
+    },
+    {
+      "id": "bad8ee16-b062-4c4f-bf81-1aeaebc52f92",
+      "numericId": 8,
+      "content": "Configuration system supports multiple LLM providers through unified model factory pattern",
+      "tags": ["Flexibility", "AI Generated"],
+      "metadata": [
+        {
+          "key": "Comments",
+          "value": "Auto-detection of configured provider from config.yaml enables provider switching"
+        },
+        {
+          "key": "custom:agent",
+          "value": "Architecture Analysis Agent"
+        }
+      ]
+    }
+  ],
+  "assumptionLinks": [],
+  "threats": [],
+  "mitigations": [],
+  "mitigationLinks": []
+}

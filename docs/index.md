@@ -1,13 +1,15 @@
-# 🌳 ThreatForest: AI powered threat modeling and attack tree generator
-## GitHub: sample-agentic-attack-tree-generator
-
 <div class="hero" markdown>
+
+# 🌳 ThreatForest
+<p style="font-size: 1.5rem; opacity: 1; margin-top: 1rem;">AI powered threat modeling and attack tree generator</p> 
 
 <div class="hero-content" markdown>
 
-Transform your applications into comprehensive security insights with autonomous AI agents that analyze, generate, and visualize attack trees mapped to MITRE ATT&CK.
+Get comprehensive threat models for your application, with autonomous AI agents that analyze, generate, and visualize attack trees mapped to MITRE ATT&CK
 
 [Get Started](getting-started/index.md){ .md-button .md-button--primary }
+
+<p style="font-size: 1rem; opacity: 0.8; margin-top: 1rem;">GitHub: sample-agentic-attack-tree-generator</p>
 
 </div>
 
@@ -17,40 +19,34 @@ Transform your applications into comprehensive security insights with autonomous
 
 ## ✨ What is ThreatForest?
 
-ThreatForest is an intelligent threat modeling platform that combines the power of AI with industry-standard security frameworks. Built on AWS Labs' **[Strands](https://github.com/awslabs/strands)** agentic framework, it orchestrates multiple specialized AI agents to automatically:
+<div class="expandable-cards-grid">
+  <div class="expandable-card">
+    <div class="card-title">🤖 Autonomous Agents</div>
+    <div class="card-content">
+      <p>Three specialized AI agents work together using Strands community tools to explore your repository, parse threats, and generate comprehensive attack trees</p>
+    </div>
+  </div>
 
-- 🔍 **Analyze** your project architecture and documentation
-- 🎯 **Identify** security threats and vulnerabilities
-- 🌳 **Generate** detailed attack trees showing exploit paths
-- 🔗 **Map** attacks to MITRE ATT&CK techniques
-- 🛡️ **Recommend** specific mitigation strategies
+  <div class="expandable-card">
+    <div class="card-title">🛡️ MITRE ATT&CK Integration</div>
+    <div class="card-content">
+      <p>Automatically maps attack steps to TTPs (Tactics, Techniques, and Procedures) using semantic similarity and vector embeddings</p>
+    </div>
+  </div>
 
-<div class="grid cards" markdown>
+  <div class="expandable-card">
+    <div class="card-title">📊 Interactive Dashboards</div>
+    <div class="card-content">
+      <p>Explore threats visually with interactive HTML dashboards powered by vis-network, complete with filtering and real-time search</p>
+    </div>
+  </div>
 
--   :material-robot-outline:{ .lg .middle } __Autonomous Agents__
-
-    ---
-
-    Three specialized AI agents work together using Strands community tools to explore your repository, parse threats, and generate comprehensive attack trees
-
--   :material-shield-check:{ .lg .middle } __MITRE ATT&CK Integration__
-
-    ---
-
-    Automatically maps attack steps to TTPs (Tactics, Techniques, and Procedures) using semantic similarity and vector embeddings
-
--   :material-chart-tree:{ .lg .middle } __Interactive Dashboards__
-
-    ---
-
-    Explore threats visually with interactive HTML dashboards powered by vis-network, complete with filtering and real-time search
-
--   :material-cog-outline:{ .lg .middle } __AWS Bedrock Support__
-
-    ---
-
-    Officially supports AWS Bedrock (Claude models). Other providers (Anthropic, OpenAI, Gemini, Ollama) are experimental and not fully tested.
-
+  <div class="expandable-card">
+    <div class="card-title">⚙️ AWS Bedrock Support</div>
+    <div class="card-content">
+      <p>Officially supports AWS Bedrock (Claude models). Other providers (Anthropic, OpenAI, Gemini, Ollama) are experimental and not fully tested</p>
+    </div>
+  </div>
 </div>
 
 ## 🚀 Quick Example
@@ -60,44 +56,10 @@ Generate comprehensive attack trees in minutes:
 !!! tip "Prerequisites"
     Before starting, ensure you have [Python 3.11+ and AWS Bedrock access](getting-started/index.md#prerequisites).
 
-=== "Step 1: Run ThreatForest"
-
-    ```bash
-    # Install ThreatForest
-    pipx install threatforest
-    
-    # Run interactive wizard
-    threatforest
-    ```
-
-=== "Step 2: Select Options"
-
-    ```
-    🌳 ThreatForest - AI-Driven Threat Modeling
-    
-    Select workflow mode:
-      ❯ 🌳 Full Analysis (Recommended)
-        🎯 TTP Enrichment Only
-        🛡️  Mitigation Mapping Only
-    
-    Project path: /path/to/my-project
-    AWS Profile: default
-    Model: Claude 3 Sonnet
-    ```
-
-=== "Step 3: View Results"
-
-    ```
-    ✓ Analysis Complete!
-    
-    📁 Output: my-project/threatforest/attack_trees/
-    
-    Generated Files:
-    ├── attack_trees_dashboard.html  ⭐ Interactive visualization
-    ├── threatforest_data.json       📊 Structured data export
-    ├── threatforest_analysis_report.md
-    └── attack_tree_*.md (7 files)
-    ```
+<div style="width: 100%; max-width: 800px; margin: 2rem auto; padding: 3rem; background: linear-gradient(135deg, rgba(21, 128, 61, 0.1) 0%, rgba(34, 197, 94, 0.1) 100%); border: 2px dashed var(--tf-green); border-radius: 1rem; text-align: center;">
+    <p style="font-size: 1.25rem; color: var(--tf-green); font-weight: 600; margin: 0;">📹 Demo GIF Coming Soon</p>
+    <p style="font-size: 0.875rem; color: var(--color-text-secondary); margin-top: 0.5rem;">Animated walkthrough of ThreatForest in action</p>
+</div>
 
 ---
 
@@ -216,41 +178,28 @@ project/threatforest/attack_trees/
 
 <div class="grid cards" markdown>
 
--   :material-book-open-variant:{ .lg .middle } __Documentation__
+-   📚 __Documentation__
 
     ---
 
     Browse comprehensive guides and API references
 
-    [:octicons-arrow-right-24: Read the docs](getting-started/index.md)
+    [→ Read the docs](getting-started/index.md)
 
--   :material-bug:{ .lg .middle } __Report Issues__
+-   🐛 __Report Issues__
 
     ---
 
     Found a bug? Have a feature request?
 
-    [:octicons-arrow-right-24: GitHub Issues](https://github.com/aws-samples/sample-agentic-attack-tree-generator/issues)
+    [→ GitHub Issues](https://github.com/aws-samples/sample-agentic-attack-tree-generator/issues)
 
--   :material-frequently-asked-questions:{ .lg .middle } __FAQ__
+-   ❓ __FAQ__
 
     ---
 
     Frequently asked questions
 
-    [:octicons-arrow-right-24: FAQ](faq.md)
-
-</div>
-
----
-
-<div class="cta-section" markdown>
-
-## Ready to Start?
-
-Transform your threat modeling workflow with AI-powered automation.
-
-[Get Started](getting-started/index.md){ .md-button .md-button--primary .md-button--large }
-[View on GitHub :fontawesome-brands-github:](https://github.com/aws-samples/sample-agentic-attack-tree-generator){ .md-button .md-button--large }
+    [→ FAQ](faq.md)
 
 </div>
