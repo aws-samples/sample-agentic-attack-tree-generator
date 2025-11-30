@@ -13,17 +13,122 @@ edit_uri: edit/main/docs/
 # Copyright
 copyright: Copyright &copy; 2025 ThreatForest Team
 
-# Theme Configuration - Using basic MkDocs theme with fully custom CSS
+# Theme Configuration
 theme:
-  name: mkdocs
-  navigation_depth: 2
-  nav_style: dark
-  include_search_page: false
-  search_index_only: false
-  include_next_prev: false
+  name: material
+  language: en
+  
+  # Color Palette - ThreatForest Black & Green Theme
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: green
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: green
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  
+  # Fonts
+  font:
+    text: Roboto
+    code: Roboto Mono
+  
+  # Features
+  features:
+    - announce.dismiss
+    - content.action.edit
+    - content.action.view
+    - content.code.annotate
+    - content.code.copy
+    - content.tabs.link
+    - content.tooltips
+    - header.autohide
+    - navigation.expand
+    - navigation.footer
+    - navigation.indexes
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.path
+    - navigation.prune
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+    - toc.integrate
+  
+  # Logo and Favicon
+  logo: assets/logo.svg
+  favicon: assets/favicon.svg
+  
+  # Icons
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    view: material/eye
 
 # Plugins
-plugins: []
+plugins:
+  - search:
+      separator: '[\s\-,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+      lang: en
+      pipeline:
+        - stemmer
+        - stopWordFilter
+        - trimmer
+  - tags
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: timeago
+      fallback_to_build_date: true
+      enable_git_follow: false
+  - git-authors:
+      show_contribution: true
+      show_line_count: true
+      count_empty_lines: true
+      fallback_to_empty: false
+  - minify:
+      minify_html: true
+      minify_js: true
+      minify_css: true
+      htmlmin_opts:
+        remove_comments: true
+        remove_empty_space: true
+        reduce_boolean_attributes: true
+      js_files:
+        - javascripts/extra.js
+  - social:
+      cards: true
+      cards_layout_options:
+        background_color: "#000000"
+        color: "#10B981"
+        font_family: Roboto
+        title: ThreatForest
+        description: AI-Driven Threat Modeling & Attack Tree Generation
+      cards_layout: default/variant
+      cards_dir: assets/social
+      cards_include:
+        - home
+        - getting-started
+        - user-guide
+        - architecture
+        - examples
+        - contributing
 
 # Custom CSS
 extra_css:
