@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "aws": {
+    "model_id": "global.anthropic.claude-sonnet-4-20250514-v1:0",
+    "region": "us-east-1"
+  },
+  "runtime": {
+    "max_handoffs": 15,
+    "max_iterations": 15,
+    "execution_timeout_seconds": 2400.0,
+    "node_timeout_seconds": 1200.0
+  },
+  "logging": {
+    "verbose": true,
+    "enable_telemetry": false
+  },
+  "features": {
+    "show_assistant_messages": true,
+    "show_tool_use": true,
+    "agent_auto_context": true
+  }
+}

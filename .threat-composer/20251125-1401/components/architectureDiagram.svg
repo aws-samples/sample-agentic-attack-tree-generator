@@ -1,0 +1,180 @@
+<svg viewBox="0 0 1200 1000" xmlns="http://www.w3.org/2000/svg">
+  <!-- Title -->
+  <text x="600" y="30" font-size="24" font-weight="bold" text-anchor="middle" fill="#1e293b">
+    ThreatForest CLI Tool
+  </text>
+  <text x="600" y="55" font-size="14" text-anchor="middle" fill="#64748b">
+    Architecture Diagram
+  </text>
+
+  <!-- Environment Container -->
+  <rect x="50" y="80" width="1100" height="840" fill="#f1f5f9" stroke="#94a3b8" stroke-width="4" rx="10"/>
+  <text x="70" y="105" font-size="12" font-weight="600" fill="#64748b">
+    ENVIRONMENT (Python 3.11+ Runtime)
+  </text>
+
+  <!-- Application Container -->
+  <rect x="80" y="120" width="1040" height="620" fill="white" stroke="#2563eb" stroke-width="3" rx="8"/>
+  <text x="100" y="145" font-size="16" font-weight="bold" fill="#1e40af">
+    THREATFOREST CLI APPLICATION
+  </text>
+
+  <!-- Configuration Layer -->
+  <rect x="100" y="165" width="980" height="65" fill="#f3e8ff" stroke="#9333ea" stroke-width="2" rx="6"/>
+  <text x="590" y="190" font-size="13" font-weight="600" text-anchor="middle" fill="#6b21a8">
+    Configuration System
+  </text>
+  <text x="120" y="210" font-size="10" fill="#6b21a8">config.yaml</text>
+  <text x="250" y="210" font-size="10" fill="#6b21a8">Multi-provider model factory</text>
+  <text x="450" y="210" font-size="10" fill="#6b21a8">API key management</text>
+  <text x="650" y="210" font-size="10" fill="#6b21a8">State checkpoints</text>
+
+  <!-- CLI Interface Layer -->
+  <rect x="100" y="250" width="980" height="80" fill="#cffafe" stroke="#0891b2" stroke-width="2" rx="6"/>
+  <text x="590" y="275" font-size="13" font-weight="600" text-anchor="middle" fill="#0e7490">
+    CLI Interface Layer
+  </text>
+  <rect x="120" y="295" width="200" height="25" fill="white" stroke="#22d3ee" stroke-width="1" rx="4"/>
+  <text x="220" y="312" font-size="11" font-weight="600" text-anchor="middle" fill="#0e7490">threatforest.py</text>
+  <rect x="340" y="295" width="200" height="25" fill="white" stroke="#22d3ee" stroke-width="1" rx="4"/>
+  <text x="440" y="312" font-size="11" font-weight="600" text-anchor="middle" fill="#0e7490">cli.py</text>
+  <rect x="560" y="295" width="200" height="25" fill="white" stroke="#22d3ee" stroke-width="1" rx="4"/>
+  <text x="660" y="312" font-size="11" font-weight="600" text-anchor="middle" fill="#0e7490">Rich Console</text>
+  <rect x="780" y="295" width="200" height="25" fill="white" stroke="#22d3ee" stroke-width="1" rx="4"/>
+  <text x="880" y="312" font-size="11" font-weight="600" text-anchor="middle" fill="#0e7490">Questionnaire</text>
+
+  <!-- Core Orchestration Layer -->
+  <rect x="100" y="350" width="980" height="80" fill="#dcfce7" stroke="#16a34a" stroke-width="2" rx="6"/>
+  <text x="590" y="375" font-size="13" font-weight="600" text-anchor="middle" fill="#15803d">
+    Core Orchestration Layer
+  </text>
+  <rect x="120" y="395" width="280" height="25" fill="white" stroke="#4ade80" stroke-width="1" rx="4"/>
+  <text x="260" y="412" font-size="11" font-weight="600" text-anchor="middle" fill="#15803d">Strands Agent Framework</text>
+  <rect x="420" y="395" width="280" height="25" fill="white" stroke="#4ade80" stroke-width="1" rx="4"/>
+  <text x="560" y="412" font-size="11" font-weight="600" text-anchor="middle" fill="#15803d">State Management</text>
+  <rect x="720" y="395" width="280" height="25" fill="white" stroke="#4ade80" stroke-width="1" rx="4"/>
+  <text x="860" y="412" font-size="11" font-weight="600" text-anchor="middle" fill="#15803d">Workflow Orchestration</text>
+
+  <!-- Tool Modules Layer -->
+  <rect x="100" y="450" width="980" height="120" fill="#fed7aa" stroke="#ea580c" stroke-width="2" rx="6"/>
+  <text x="590" y="475" font-size="13" font-weight="600" text-anchor="middle" fill="#c2410c">
+    Tool Modules Layer
+  </text>
+  <rect x="120" y="490" width="180" height="70" fill="white" stroke="#fb923c" stroke-width="1" rx="4"/>
+  <text x="210" y="510" font-size="11" font-weight="600" text-anchor="middle" fill="#c2410c">Context Analysis</text>
+  <text x="210" y="525" font-size="9" text-anchor="middle" fill="#c2410c">File discovery</text>
+  <text x="210" y="540" font-size="9" text-anchor="middle" fill="#c2410c">Parsing</text>
+  <text x="210" y="555" font-size="9" text-anchor="middle" fill="#c2410c">Parser chain</text>
+
+  <rect x="320" y="490" width="180" height="70" fill="white" stroke="#fb923c" stroke-width="1" rx="4"/>
+  <text x="410" y="510" font-size="11" font-weight="600" text-anchor="middle" fill="#c2410c">Info Extraction</text>
+  <text x="410" y="525" font-size="9" text-anchor="middle" fill="#c2410c">Project metadata</text>
+  <text x="410" y="540" font-size="9" text-anchor="middle" fill="#c2410c">Threat parsing</text>
+  <text x="410" y="555" font-size="9" text-anchor="middle" fill="#c2410c">Content analysis</text>
+
+  <rect x="520" y="490" width="180" height="70" fill="white" stroke="#fb923c" stroke-width="1" rx="4"/>
+  <text x="610" y="510" font-size="11" font-weight="600" text-anchor="middle" fill="#c2410c">Attack Tree Gen</text>
+  <text x="610" y="525" font-size="9" text-anchor="middle" fill="#c2410c">Mermaid diagrams</text>
+  <text x="610" y="540" font-size="9" text-anchor="middle" fill="#c2410c">Tree generation</text>
+  <text x="610" y="555" font-size="9" text-anchor="middle" fill="#c2410c">Visualization</text>
+
+  <rect x="720" y="490" width="180" height="70" fill="white" stroke="#fb923c" stroke-width="1" rx="4"/>
+  <text x="810" y="510" font-size="11" font-weight="600" text-anchor="middle" fill="#c2410c">TTC Mapping</text>
+  <text x="810" y="525" font-size="9" text-anchor="middle" fill="#c2410c">MITRE ATT&amp;CK</text>
+  <text x="810" y="540" font-size="9" text-anchor="middle" fill="#c2410c">SecureBERT</text>
+  <text x="810" y="555" font-size="9" text-anchor="middle" fill="#c2410c">Embeddings</text>
+
+  <rect x="920" y="490" width="140" height="70" fill="white" stroke="#fb923c" stroke-width="1" rx="4"/>
+  <text x="990" y="510" font-size="11" font-weight="600" text-anchor="middle" fill="#c2410c">Summary Gen</text>
+  <text x="990" y="525" font-size="9" text-anchor="middle" fill="#c2410c">HTML reports</text>
+  <text x="990" y="540" font-size="9" text-anchor="middle" fill="#c2410c">Dashboards</text>
+  <text x="990" y="555" font-size="9" text-anchor="middle" fill="#c2410c">vis-network.js</text>
+
+  <!-- ML/AI Components -->
+  <rect x="100" y="590" width="980" height="80" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2" rx="6"/>
+  <text x="590" y="615" font-size="13" font-weight="600" text-anchor="middle" fill="#4338ca">
+    ML/AI Components
+  </text>
+  <rect x="120" y="635" width="200" height="25" fill="white" stroke="#6366f1" stroke-width="1" rx="4"/>
+  <text x="220" y="652" font-size="11" font-weight="600" text-anchor="middle" fill="#4338ca">Sentence Transformers</text>
+  <rect x="340" y="635" width="200" height="25" fill="white" stroke="#6366f1" stroke-width="1" rx="4"/>
+  <text x="440" y="652" font-size="11" font-weight="600" text-anchor="middle" fill="#4338ca">PyTorch</text>
+  <rect x="560" y="635" width="200" height="25" fill="white" stroke="#6366f1" stroke-width="1" rx="4"/>
+  <text x="660" y="652" font-size="11" font-weight="600" text-anchor="middle" fill="#4338ca">Local Embeddings</text>
+  <rect x="780" y="635" width="200" height="25" fill="white" stroke="#6366f1" stroke-width="1" rx="4"/>
+  <text x="880" y="652" font-size="11" font-weight="600" text-anchor="middle" fill="#4338ca">MITRE ATT&amp;CK Data</text>
+
+  <!-- File System -->
+  <rect x="100" y="690" width="480" height="40" fill="#fef9c3" stroke="#eab308" stroke-width="2" rx="6"/>
+  <text x="340" y="715" font-size="13" font-weight="600" text-anchor="middle" fill="#854d0e">
+    Local File System
+  </text>
+
+  <!-- Kiro IDE Integration -->
+  <rect x="600" y="690" width="480" height="40" fill="#fef9c3" stroke="#eab308" stroke-width="2" rx="6"/>
+  <text x="840" y="715" font-size="13" font-weight="600" text-anchor="middle" fill="#854d0e">
+    Kiro IDE Integration (Optional)
+  </text>
+
+  <!-- External Integrations -->
+  <rect x="80" y="760" width="1040" height="140" fill="#fef2f2" stroke="#f87171" stroke-width="2" rx="6"/>
+  <text x="100" y="785" font-size="16" font-weight="bold" fill="#991b1b">
+    EXTERNAL INTEGRATIONS
+  </text>
+
+  <!-- LLM Providers -->
+  <rect x="100" y="800" width="180" height="80" fill="white" stroke="#fca5a5" stroke-width="1" rx="4"/>
+  <text x="190" y="820" font-size="11" font-weight="600" text-anchor="middle" fill="#991b1b">AWS Bedrock</text>
+  <text x="190" y="835" font-size="9" text-anchor="middle" fill="#991b1b">Boto3</text>
+  <text x="190" y="850" font-size="9" text-anchor="middle" fill="#991b1b">Claude, Titan</text>
+  <text x="190" y="865" font-size="9" text-anchor="middle" fill="#991b1b">HTTP/REST</text>
+
+  <rect x="300" y="800" width="180" height="80" fill="white" stroke="#fca5a5" stroke-width="1" rx="4"/>
+  <text x="390" y="820" font-size="11" font-weight="600" text-anchor="middle" fill="#991b1b">Anthropic API</text>
+  <text x="390" y="835" font-size="9" text-anchor="middle" fill="#991b1b">Claude models</text>
+  <text x="390" y="850" font-size="9" text-anchor="middle" fill="#991b1b">Direct API</text>
+  <text x="390" y="865" font-size="9" text-anchor="middle" fill="#991b1b">HTTP/REST</text>
+
+  <rect x="500" y="800" width="180" height="80" fill="white" stroke="#fca5a5" stroke-width="1" rx="4"/>
+  <text x="590" y="820" font-size="11" font-weight="600" text-anchor="middle" fill="#991b1b">OpenAI API</text>
+  <text x="590" y="835" font-size="9" text-anchor="middle" fill="#991b1b">GPT models</text>
+  <text x="590" y="850" font-size="9" text-anchor="middle" fill="#991b1b">ChatGPT API</text>
+  <text x="590" y="865" font-size="9" text-anchor="middle" fill="#991b1b">HTTP/REST</text>
+
+  <rect x="700" y="800" width="180" height="80" fill="white" stroke="#fca5a5" stroke-width="1" rx="4"/>
+  <text x="790" y="820" font-size="11" font-weight="600" text-anchor="middle" fill="#991b1b">Gemini API</text>
+  <text x="790" y="835" font-size="9" text-anchor="middle" fill="#991b1b">Google models</text>
+  <text x="790" y="850" font-size="9" text-anchor="middle" fill="#991b1b">Vertex AI</text>
+  <text x="790" y="865" font-size="9" text-anchor="middle" fill="#991b1b">HTTP/REST</text>
+
+  <rect x="900" y="800" width="180" height="80" fill="white" stroke="#fca5a5" stroke-width="1" rx="4"/>
+  <text x="990" y="820" font-size="11" font-weight="600" text-anchor="middle" fill="#991b1b">Ollama</text>
+  <text x="990" y="835" font-size="9" text-anchor="middle" fill="#991b1b">Local models</text>
+  <text x="990" y="850" font-size="9" text-anchor="middle" fill="#991b1b">Self-hosted</text>
+  <text x="990" y="865" font-size="9" text-anchor="middle" fill="#991b1b">HTTP/REST</text>
+
+  <!-- Legend -->
+  <rect x="50" y="940" width="1100" height="50" fill="white" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+  <text x="70" y="960" font-size="12" font-weight="600" fill="#1e293b">Component Types:</text>
+
+  <rect x="180" y="948" width="20" height="20" fill="#f3e8ff" stroke="#9333ea" stroke-width="1" rx="2"/>
+  <text x="205" y="962" font-size="10" fill="#1e293b">Configuration</text>
+
+  <rect x="290" y="948" width="20" height="20" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="2"/>
+  <text x="315" y="962" font-size="10" fill="#1e293b">Orchestration</text>
+
+  <rect x="410" y="948" width="20" height="20" fill="#fed7aa" stroke="#ea580c" stroke-width="1" rx="2"/>
+  <text x="435" y="962" font-size="10" fill="#1e293b">Core Tools</text>
+
+  <rect x="520" y="948" width="20" height="20" fill="#cffafe" stroke="#0891b2" stroke-width="1" rx="2"/>
+  <text x="545" y="962" font-size="10" fill="#1e293b">User Interface</text>
+
+  <rect x="630" y="948" width="20" height="20" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1" rx="2"/>
+  <text x="655" y="962" font-size="10" fill="#1e293b">ML/AI Components</text>
+
+  <rect x="760" y="948" width="20" height="20" fill="#fef9c3" stroke="#eab308" stroke-width="1" rx="2"/>
+  <text x="785" y="962" font-size="10" fill="#1e293b">File System</text>
+
+  <rect x="860" y="948" width="20" height="20" fill="#fef2f2" stroke="#f87171" stroke-width="1" rx="2"/>
+  <text x="885" y="962" font-size="10" fill="#1e293b">External APIs</text>
+</svg>

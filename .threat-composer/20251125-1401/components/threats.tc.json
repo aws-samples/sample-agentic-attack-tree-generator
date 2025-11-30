@@ -1,0 +1,632 @@
+{
+  "schema": 1,
+  "applicationInfo": {},
+  "architecture": {},
+  "dataflow": {},
+  "threats": [
+    {
+      "id": "1282bebb-0041-4d1c-84c3-74b819af835d",
+      "numericId": 1,
+      "threatSource": "malicious actor",
+      "prerequisites": "with access to configuration files",
+      "threatAction": "extract API keys and credentials from plaintext YAML configuration",
+      "threatImpact": "unauthorized access to external LLM services and potential data exfiltration",
+      "impactedGoal": ["confidentiality"],
+      "impactedAssets": ["configuration files", "API credentials", "LLM services"],
+      "statement": "A malicious actor with access to configuration files can extract API keys and credentials from plaintext YAML configuration, which leads to unauthorized access to external LLM services and potential data exfiltration, resulting in reduced confidentiality of configuration files, API credentials, LLM services",
+      "status": "threatIdentified",
+      "tags": ["Config Files", "API Keys", "AI Generated"],
+      "metadata": [
+        {
+          "key": "STRIDE",
+          "value": ["S", "I"]
+        },
+        {
+          "key": "Comments",
+          "value": "Configuration files store sensitive API keys in plaintext YAML format, making them vulnerable to credential theft if file system access is compromised."
+        },
+        {
+          "key": "Priority",
+          "value": "High"
+        },
+        {
+          "key": "custom:agent",
+          "value": "STRIDE Analysis Agent"
+        }
+      ]
+    },
+    {
+      "id": "57bae25d-6a02-4aac-b862-8e7cfcdc3428",
+      "numericId": 2,
+      "threatSource": "external attacker",
+      "prerequisites": "intercepting network traffic",
+      "threatAction": "capture sensitive project data transmitted to LLM APIs",
+      "threatImpact": "exposure of proprietary source code and threat intelligence",
+      "impactedGoal": ["confidentiality"],
+      "impactedAssets": ["project files", "threat models", "network communications"],
+      "statement": "An external attacker intercepting network traffic can capture sensitive project data transmitted to LLM APIs, which leads to exposure of proprietary source code and threat intelligence, resulting in reduced confidentiality of project files, threat models, network communications",
+      "status": "threatIdentified",
+      "tags": ["DF-04", "DF-07", "DF-09", "Network Traffic", "AI Generated"],
+      "metadata": [
+        {
+          "key": "STRIDE",
+          "value": ["T", "I"]
+        },
+        {
+          "key": "Comments",
+          "value": "Project context and threat model content is transmitted to external LLM providers without guaranteed encryption, potentially exposing sensitive information."
+        },
+        {
+          "key": "Priority",
+          "value": "High"
+        },
+        {
+          "key": "custom:agent",
+          "value": "STRIDE Analysis Agent"
+        }
+      ]
+    },
+    {
+      "id": "6f561126-4266-4639-821f-15de50e81cc8",
+      "numericId": 3,
+      "threatSource": "malicious insider",
+      "prerequisites": "with file system access",
+      "threatAction": "tamper with MITRE ATT&CK data files to inject false technique mappings",
+      "threatImpact": "generation of incorrect threat intelligence and attack trees",
+      "impactedGoal": ["integrity"],
+      "impactedAssets": ["MITRE ATT&CK data", "attack trees", "threat analysis"],
+      "statement": "A malicious insider with file system access can tamper with MITRE ATT&CK data files to inject false technique mappings, which leads to generation of incorrect threat intelligence and attack trees, resulting in reduced integrity of MITRE ATT&CK data, attack trees, threat analysis",
+      "status": "threatIdentified",
+      "tags": ["MITRE ATT&CK Data", "DF-11", "DF-12", "AI Generated"],
+      "metadata": [
+        {
+          "key": "STRIDE",
+          "value": ["T", "I"]
+        },
+        {
+          "key": "Comments",
+          "value": "The enterprise-attack-18.0.json file is loaded without integrity verification, allowing tampering that could corrupt threat analysis results."
+        },
+        {
+          "key": "Priority",
+          "value": "Medium"
+        },
+        {
+          "key": "custom:agent",
+          "value": "STRIDE Analysis Agent"
+        }
+      ]
+    },
+    {
+      "id": "e70ec065-9b66-462f-b80c-f38e9301265a",
+      "numericId": 4,
+      "threatSource": "compromised LLM provider",
+      "prerequisites": "",
+      "threatAction": "inject malicious content into generated attack trees and reports",
+      "threatImpact": "distribution of false security guidance and potential system compromise",
+      "impactedGoal": ["integrity", "availability"],
+      "impactedAssets": ["attack trees", "security reports", "threat analysis"],
+      "statement": "A compromised LLM provider can inject malicious content into generated attack trees and reports, which leads to distribution of false security guidance and potential system compromise, resulting in reduced integrity, availability of attack trees, security reports, threat analysis",
+      "status": "threatIdentified",
+      "tags": ["External LLM APIs", "DF-05", "DF-08", "DF-10", "AI Generated"],
+      "metadata": [
+        {
+          "key": "STRIDE",
+          "value": ["T", "I"]
+        },
+        {
+          "key": "Comments",
+          "value": "External LLM providers could be compromised and return malicious content that gets embedded in security analysis outputs."
+        },
+        {
+          "key": "Priority",
+          "value": "Medium"
+        },
+        {
+          "key": "custom:agent",
+          "value": "STRIDE Analysis Agent"
+        }
+      ]
+    },
+    {
+      "id": "da0c2bbb-ff48-4f76-95bf-886520bd7942",
+      "numericId": 5,
+      "threatSource": "attacker",
+      "prerequisites": "with access to generated HTML dashboards",
+      "threatAction": "inject malicious JavaScript into dashboard files",
+      "threatImpact": "execution of arbitrary code when dashboards are viewed",
+      "impactedGoal": ["integrity", "confidentiality"],
+      "impactedAssets": ["HTML dashboards", "user workstations"],
+      "statement": "An attacker with access to generated HTML dashboards can inject malicious JavaScript into dashboard files, which leads to execution of arbitrary code when dashboards are viewed, resulting in reduced integrity, confidentiality of HTML dashboards, user workstations",
+      "status": "threatIdentified",
+      "tags": ["Output Files", "DF-13", "HTML Dashboards", "AI Generated"],
+      "metadata": [
+        {
+          "key": "STRIDE",
+          "value": ["T", "I"]
+        },
+        {
+          "key": "Comments",
+          "value": "Self-contained HTML files with embedded JavaScript could be vulnerable to XSS attacks if tampered with after generation."
+        },
+        {
+          "key": "Priority",
+          "value": "Medium"
+        },
+        {
+          "key": "custom:agent",
+          "value": "STRIDE Analysis Agent"
+        }
+      ]
+    },
+    {
+      "id": "d249942d-fa44-49d6-a1c1-f8af4b7691ac",
+      "numericId": 6,
+      "threatSource": "malicious user",
+      "prerequisites": "",
+      "threatAction": "provide crafted input files to exploit parser vulnerabilities",
+      "threatImpact": "arbitrary code execution or denial of service",
+      "impactedGoal": ["integrity", "availability"],
+      "impactedAssets": ["parser chain", "application runtime"],
+      "statement": "A malicious user can provide crafted input files to exploit parser vulnerabilities, which leads to arbitrary code execution or denial of service, resulting in reduced integrity, availability of parser chain, application runtime",
+      "status": "threatIdentified",
+      "tags": ["DF-03", "Parser Chain", "Input Validation", "AI Generated"],
+      "metadata": [
+        {
+          "key": "STRIDE",
+          "value": ["T", "D"]
+        },
+        {
+          "key": "Comments",
+          "value": "JSON, YAML, Markdown, and ThreatComposer parsers process user-provided files without comprehensive input validation."
+        },
+        {
+          "key": "Priority",
+          "value": "High"
+        },
+        {
+          "key": "custom:agent",
+          "value": "STRIDE Analysis Agent"
+        }
+      ]
+    },
+    {
+      "id": "6d3690d4-3a58-49ce-a564-acac2da912c8",
+      "numericId": 7,
+      "threatSource": "unauthorized user",
+      "prerequisites": "with file system access",
+      "threatAction": "access state checkpoint files containing workflow context",
+      "threatImpact": "exposure of sensitive project information and analysis progress",
+      "impactedGoal": ["confidentiality"],
+      "impactedAssets": ["state storage", "workflow context", "project data"],
+      "statement": "An unauthorized user with file system access can access state checkpoint files containing workflow context, which leads to exposure of sensitive project information and analysis progress, resulting in reduced confidentiality of state storage, workflow context, project data",
+      "status": "threatIdentified",
+      "tags": ["State Storage", "DF-14", "AI Generated"],
+      "metadata": [
+        {
+          "key": "STRIDE",
+          "value": ["I"]
+        },
+        {
+          "key": "Comments",
+          "value": "Checkpoint files in ~/.threatforest/state/ contain workflow context and intermediate results that could expose sensitive information."
+        },
+        {
+          "key": "Priority",
+          "value": "Medium"
+        },
+        {
+          "key": "custom:agent",
+          "value": "STRIDE Analysis Agent"
+        }
+      ]
+    },
+    {
+      "id": "bbefed77-4996-4fbc-af84-c545a7fb0aeb",
+      "numericId": 8,
+      "threatSource": "attacker",
+      "prerequisites": "with network access",
+      "threatAction": "perform denial of service attacks against external LLM APIs",
+      "threatImpact": "disruption of threat analysis workflows and service unavailability",
+      "impactedGoal": ["availability"],
+      "impactedAssets": ["LLM services", "threat analysis workflow"],
+      "statement": "An attacker with network access can perform denial of service attacks against external LLM APIs, which leads to disruption of threat analysis workflows and service unavailability, resulting in reduced availability of LLM services, threat analysis workflow",
+      "status": "threatIdentified",
+      "tags": ["External LLM APIs", "DF-04", "DF-07", "DF-09", "AI Generated"],
+      "metadata": [
+        {
+          "key": "STRIDE",
+          "value": ["D"]
+        },
+        {
+          "key": "Comments",
+          "value": "Application depends on external LLM services which could be targeted for DoS attacks, disrupting threat modeling workflows."
+        },
+        {
+          "key": "Priority",
+          "value": "Medium"
+        },
+        {
+          "key": "custom:agent",
+          "value": "STRIDE Analysis Agent"
+        }
+      ]
+    },
+    {
+      "id": "3682e82a-30ca-45d2-9edf-d4a48295d269",
+      "numericId": 9,
+      "threatSource": "malicious actor",
+      "prerequisites": "with access to project directories",
+      "threatAction": "plant malicious files to be discovered and processed by file discovery",
+      "threatImpact": "injection of false threat data and compromise of analysis integrity",
+      "impactedGoal": ["integrity"],
+      "impactedAssets": ["project files", "threat analysis", "file discovery"],
+      "statement": "A malicious actor with access to project directories can plant malicious files to be discovered and processed by file discovery, which leads to injection of false threat data and compromise of analysis integrity, resulting in reduced integrity of project files, threat analysis, file discovery",
+      "status": "threatIdentified",
+      "tags": ["DF-02", "File Discovery", "Project Files", "AI Generated"],
+      "metadata": [
+        {
+          "key": "STRIDE",
+          "value": ["T", "I"]
+        },
+        {
+          "key": "Comments",
+          "value": "File discovery recursively scans project directories and could process malicious files planted by attackers."
+        },
+        {
+          "key": "Priority",
+          "value": "Medium"
+        },
+        {
+          "key": "custom:agent",
+          "value": "STRIDE Analysis Agent"
+        }
+      ]
+    },
+    {
+      "id": "9f6f788f-3eb9-47fb-88dc-b538fc06e1f3",
+      "numericId": 10,
+      "threatSource": "insider threat",
+      "prerequisites": "",
+      "threatAction": "deny legitimate access to threat analysis results by modifying file permissions",
+      "threatImpact": "prevention of security team access to critical threat intelligence",
+      "impactedGoal": ["availability"],
+      "impactedAssets": ["output files", "attack trees", "security reports"],
+      "statement": "An insider threat can deny legitimate access to threat analysis results by modifying file permissions, which leads to prevention of security team access to critical threat intelligence, resulting in reduced availability of output files, attack trees, security reports",
+      "status": "threatIdentified",
+      "tags": ["Output Files", "DF-13", "File Permissions", "AI Generated"],
+      "metadata": [
+        {
+          "key": "STRIDE",
+          "value": ["D"]
+        },
+        {
+          "key": "Comments",
+          "value": "Generated output files could have their permissions modified to prevent legitimate access by security teams."
+        },
+        {
+          "key": "Priority",
+          "value": "Medium"
+        },
+        {
+          "key": "custom:agent",
+          "value": "STRIDE Analysis Agent"
+        }
+      ]
+    },
+    {
+      "id": "5346340e-20b5-4033-a6a5-99b0571168c2",
+      "numericId": 11,
+      "threatSource": "external attacker",
+      "prerequisites": "compromising LLM provider accounts",
+      "threatAction": "impersonate the application to access victim's LLM services",
+      "threatImpact": "unauthorized usage charges and potential data access",
+      "impactedGoal": ["integrity", "confidentiality"],
+      "impactedAssets": ["LLM accounts", "API usage", "billing"],
+      "statement": "An external attacker compromising LLM provider accounts can impersonate the application to access victim's LLM services, which leads to unauthorized usage charges and potential data access, resulting in reduced integrity, confidentiality of LLM accounts, API usage, billing",
+      "status": "threatIdentified",
+      "tags": ["External LLM APIs", "API Keys", "AI Generated"],
+      "metadata": [
+        {
+          "key": "STRIDE",
+          "value": ["S", "R"]
+        },
+        {
+          "key": "Comments",
+          "value": "Compromised API credentials could allow attackers to impersonate the application and access LLM services fraudulently."
+        },
+        {
+          "key": "Priority",
+          "value": "High"
+        },
+        {
+          "key": "custom:agent",
+          "value": "STRIDE Analysis Agent"
+        }
+      ]
+    },
+    {
+      "id": "3c375356-ed63-40f0-9430-ff581434cdda",
+      "numericId": 12,
+      "threatSource": "malicious actor",
+      "prerequisites": "with access to output directories",
+      "threatAction": "replace legitimate attack trees with false security analysis",
+      "threatImpact": "misleading security teams with incorrect threat assessments",
+      "impactedGoal": ["integrity"],
+      "impactedAssets": ["attack trees", "security analysis", "threat intelligence"],
+      "statement": "A malicious actor with access to output directories can replace legitimate attack trees with false security analysis, which leads to misleading security teams with incorrect threat assessments, resulting in reduced integrity of attack trees, security analysis, threat intelligence",
+      "status": "threatIdentified",
+      "tags": ["Output Files", "Attack Trees", "DF-13", "AI Generated"],
+      "metadata": [
+        {
+          "key": "STRIDE",
+          "value": ["T", "I"]
+        },
+        {
+          "key": "Comments",
+          "value": "Generated attack trees and reports contain detailed security analysis that could be tampered with to provide false guidance."
+        },
+        {
+          "key": "Priority",
+          "value": "High"
+        },
+        {
+          "key": "custom:agent",
+          "value": "STRIDE Analysis Agent"
+        }
+      ]
+    },
+    {
+      "id": "553af21b-096a-4cb7-993b-9b43897b54a7",
+      "numericId": 13,
+      "threatSource": "unauthorized user",
+      "prerequisites": "",
+      "threatAction": "access generated threat intelligence to aid in attacking the analyzed system",
+      "threatImpact": "exposure of detailed attack paths and vulnerabilities",
+      "impactedGoal": ["confidentiality"],
+      "impactedAssets": ["attack trees", "threat analysis", "vulnerability data"],
+      "statement": "An unauthorized user can access generated threat intelligence to aid in attacking the analyzed system, which leads to exposure of detailed attack paths and vulnerabilities, resulting in reduced confidentiality of attack trees, threat analysis, vulnerability data",
+      "status": "threatIdentified",
+      "tags": ["Output Files", "Information Disclosure", "AI Generated"],
+      "metadata": [
+        {
+          "key": "STRIDE",
+          "value": ["I"]
+        },
+        {
+          "key": "Comments",
+          "value": "Output files contain comprehensive attack paths and vulnerabilities that could aid attackers if accessed by unauthorized parties."
+        },
+        {
+          "key": "Priority",
+          "value": "High"
+        },
+        {
+          "key": "custom:agent",
+          "value": "STRIDE Analysis Agent"
+        }
+      ]
+    },
+    {
+      "id": "5ada6492-4704-4596-8994-a87cfedb60c1",
+      "numericId": 14,
+      "threatSource": "attacker",
+      "prerequisites": "with man-in-the-middle capabilities",
+      "threatAction": "intercept and modify LLM API responses to inject malicious content",
+      "threatImpact": "corruption of threat analysis with false or harmful information",
+      "impactedGoal": ["integrity"],
+      "impactedAssets": ["LLM responses", "threat analysis", "network communications"],
+      "statement": "An attacker with man-in-the-middle capabilities can intercept and modify LLM API responses to inject malicious content, which leads to corruption of threat analysis with false or harmful information, resulting in reduced integrity of LLM responses, threat analysis, network communications",
+      "status": "threatIdentified",
+      "tags": ["DF-05", "DF-08", "DF-10", "Network Security", "AI Generated"],
+      "metadata": [
+        {
+          "key": "STRIDE",
+          "value": ["T", "I"]
+        },
+        {
+          "key": "Comments",
+          "value": "LLM API responses could be intercepted and modified in transit, corrupting the threat analysis results."
+        },
+        {
+          "key": "Priority",
+          "value": "Medium"
+        },
+        {
+          "key": "custom:agent",
+          "value": "STRIDE Analysis Agent"
+        }
+      ]
+    },
+    {
+      "id": "b06430b8-8caf-40ac-ba55-0bd600b3743d",
+      "numericId": 15,
+      "threatSource": "malicious user",
+      "prerequisites": "",
+      "threatAction": "exhaust API rate limits by triggering excessive LLM requests",
+      "threatImpact": "denial of service for legitimate threat analysis workflows",
+      "impactedGoal": ["availability"],
+      "impactedAssets": ["LLM services", "API quotas", "threat analysis"],
+      "statement": "A malicious user can exhaust API rate limits by triggering excessive LLM requests, which leads to denial of service for legitimate threat analysis workflows, resulting in reduced availability of LLM services, API quotas, threat analysis",
+      "status": "threatIdentified",
+      "tags": ["External LLM APIs", "Rate Limiting", "AI Generated"],
+      "metadata": [
+        {
+          "key": "STRIDE",
+          "value": ["D"]
+        },
+        {
+          "key": "Comments",
+          "value": "Excessive API requests could exhaust rate limits or quotas, preventing legitimate use of the threat modeling application."
+        },
+        {
+          "key": "Priority",
+          "value": "Medium"
+        },
+        {
+          "key": "custom:agent",
+          "value": "STRIDE Analysis Agent"
+        }
+      ]
+    },
+    {
+      "id": "ef5681b9-7649-443c-b78c-6cda6d55611c",
+      "numericId": 16,
+      "threatSource": "insider threat",
+      "prerequisites": "with administrative access",
+      "threatAction": "delete or corrupt state checkpoint files during active workflows",
+      "threatImpact": "loss of analysis progress and potential data corruption",
+      "impactedGoal": ["availability", "integrity"],
+      "impactedAssets": ["state storage", "workflow progress", "analysis data"],
+      "statement": "An insider threat with administrative access can delete or corrupt state checkpoint files during active workflows, which leads to loss of analysis progress and potential data corruption, resulting in reduced availability, integrity of state storage, workflow progress, analysis data",
+      "status": "threatIdentified",
+      "tags": ["State Storage", "DF-14", "Data Loss", "AI Generated"],
+      "metadata": [
+        {
+          "key": "STRIDE",
+          "value": ["T", "D"]
+        },
+        {
+          "key": "Comments",
+          "value": "State management files could be deleted or corrupted, causing loss of workflow progress and requiring restart of analysis."
+        },
+        {
+          "key": "Priority",
+          "value": "Medium"
+        },
+        {
+          "key": "custom:agent",
+          "value": "STRIDE Analysis Agent"
+        }
+      ]
+    },
+    {
+      "id": "9240e636-fe7b-4122-b566-826bafa505c6",
+      "numericId": 17,
+      "threatSource": "external attacker",
+      "prerequisites": "",
+      "threatAction": "spoof LLM API endpoints to capture sensitive project data",
+      "threatImpact": "interception of proprietary information and credentials",
+      "impactedGoal": ["confidentiality"],
+      "impactedAssets": ["project data", "API communications", "credentials"],
+      "statement": "An external attacker can spoof LLM API endpoints to capture sensitive project data, which leads to interception of proprietary information and credentials, resulting in reduced confidentiality of project data, API communications, credentials",
+      "status": "threatIdentified",
+      "tags": ["External LLM APIs", "DNS Spoofing", "AI Generated"],
+      "metadata": [
+        {
+          "key": "STRIDE",
+          "value": ["S", "I"]
+        },
+        {
+          "key": "Comments",
+          "value": "DNS spoofing or endpoint impersonation could redirect API calls to malicious servers, capturing sensitive data."
+        },
+        {
+          "key": "Priority",
+          "value": "High"
+        },
+        {
+          "key": "custom:agent",
+          "value": "STRIDE Analysis Agent"
+        }
+      ]
+    },
+    {
+      "id": "4e9fe4c6-84d8-4035-a9dc-d927cc14e9bb",
+      "numericId": 18,
+      "threatSource": "malicious actor",
+      "prerequisites": "with file system access",
+      "threatAction": "modify embeddings cache to corrupt MITRE technique mappings",
+      "threatImpact": "generation of incorrect attack tree mappings and false threat intelligence",
+      "impactedGoal": ["integrity"],
+      "impactedAssets": ["embeddings cache", "technique mappings", "attack trees"],
+      "statement": "A malicious actor with file system access can modify embeddings cache to corrupt MITRE technique mappings, which leads to generation of incorrect attack tree mappings and false threat intelligence, resulting in reduced integrity of embeddings cache, technique mappings, attack trees",
+      "status": "threatIdentified",
+      "tags": ["Embeddings Cache", "TTC Mapping", "AI Generated"],
+      "metadata": [
+        {
+          "key": "STRIDE",
+          "value": ["T", "I"]
+        },
+        {
+          "key": "Comments",
+          "value": "Cached embeddings used for MITRE technique mapping could be tampered with to produce incorrect mappings."
+        },
+        {
+          "key": "Priority",
+          "value": "Medium"
+        },
+        {
+          "key": "custom:agent",
+          "value": "STRIDE Analysis Agent"
+        }
+      ]
+    },
+    {
+      "id": "721ee238-de88-4cd9-99fb-fe4c9fdbab5d",
+      "numericId": 19,
+      "threatSource": "unauthorized user",
+      "prerequisites": "",
+      "threatAction": "repudiate actions by claiming false threat analysis results were not generated by them",
+      "threatImpact": "inability to establish accountability for security analysis decisions",
+      "impactedGoal": ["integrity"],
+      "impactedAssets": ["audit trails", "analysis attribution", "security decisions"],
+      "statement": "An unauthorized user can repudiate actions by claiming false threat analysis results were not generated by them, which leads to inability to establish accountability for security analysis decisions, resulting in reduced integrity of audit trails, analysis attribution, security decisions",
+      "status": "threatIdentified",
+      "tags": ["Audit Trails", "Non-repudiation", "AI Generated"],
+      "metadata": [
+        {
+          "key": "STRIDE",
+          "value": ["R"]
+        },
+        {
+          "key": "Comments",
+          "value": "Lack of audit trails and user attribution makes it difficult to establish accountability for threat analysis results."
+        },
+        {
+          "key": "Priority",
+          "value": "Medium"
+        },
+        {
+          "key": "custom:agent",
+          "value": "STRIDE Analysis Agent"
+        }
+      ]
+    },
+    {
+      "id": "57c313d9-74ed-4e8e-a4f9-b69fedf640dd",
+      "numericId": 20,
+      "threatSource": "attacker",
+      "prerequisites": "with access to project files",
+      "threatAction": "inject malicious content into threat model files to exploit parser vulnerabilities",
+      "threatImpact": "arbitrary code execution during file processing",
+      "impactedGoal": ["integrity", "confidentiality", "availability"],
+      "impactedAssets": ["threat model files", "parser chain", "application runtime"],
+      "statement": "An attacker with access to project files can inject malicious content into threat model files to exploit parser vulnerabilities, which leads to arbitrary code execution during file processing, resulting in reduced integrity, confidentiality, availability of threat model files, parser chain, application runtime",
+      "status": "threatIdentified",
+      "tags": ["Threat Model Files", "DF-03", "Code Injection", "AI Generated"],
+      "metadata": [
+        {
+          "key": "STRIDE",
+          "value": ["T", "E"]
+        },
+        {
+          "key": "Comments",
+          "value": "Malicious content in .tc.json, .yaml, or .md files could exploit parser vulnerabilities to achieve code execution."
+        },
+        {
+          "key": "Priority",
+          "value": "High"
+        },
+        {
+          "key": "custom:agent",
+          "value": "STRIDE Analysis Agent"
+        }
+      ]
+    }
+  ],
+  "assumptions": [],
+  "assumptionLinks": [],
+  "mitigations": [],
+  "mitigationLinks": []
+}

@@ -1,0 +1,53 @@
+<testsuites name="ASH Scan Report"><testsuite name="bandit" tests="8" errors="8" failures="0" skipped="0" time="0"><testcase name="Try, Except, Pass detected. [B110]" classname="B110"><error message="Try, Except, Pass detected." type="error" /><system-out>tags: ['bandit']
+issue_confidence: HIGH
+issue_severity: LOW
+scanner_name: bandit
+scanner_version: 3.1.2
+scanner_details: {'tool_name': 'bandit', 'tool_version': '3.1.2', 'tool_invocation': {'start_time': '2025-11-25T16:03:55.059178+00:00', 'end_time': '2025-11-25T16:04:08.341040+00:00'}}</system-out></testcase><testcase name="Try, Except, Pass detected. [B110]" classname="B110"><error message="Try, Except, Pass detected." type="error" /><system-out>tags: ['bandit']
+issue_confidence: HIGH
+issue_severity: LOW
+scanner_name: bandit
+scanner_version: 3.1.2
+scanner_details: {'tool_name': 'bandit', 'tool_version': '3.1.2', 'tool_invocation': {'start_time': '2025-11-25T16:03:55.059178+00:00', 'end_time': '2025-11-25T16:04:08.341040+00:00'}}</system-out></testcase><testcase name="Try, Except, Pass detected. [B110]" classname="B110"><error message="Try, Except, Pass detected." type="error" /><system-out>tags: ['bandit']
+issue_confidence: HIGH
+issue_severity: LOW
+scanner_name: bandit
+scanner_version: 3.1.2
+scanner_details: {'tool_name': 'bandit', 'tool_version': '3.1.2', 'tool_invocation': {'start_time': '2025-11-25T16:03:55.059178+00:00', 'end_time': '2025-11-25T16:04:08.341040+00:00'}}</system-out></testcase><testcase name="Try, Except, Pass detected. [B110]" classname="B110"><error message="Try, Except, Pass detected." type="error" /><system-out>tags: ['bandit']
+issue_confidence: HIGH
+issue_severity: LOW
+scanner_name: bandit
+scanner_version: 3.1.2
+scanner_details: {'tool_name': 'bandit', 'tool_version': '3.1.2', 'tool_invocation': {'start_time': '2025-11-25T16:03:55.059178+00:00', 'end_time': '2025-11-25T16:04:08.341040+00:00'}}</system-out></testcase><testcase name="Try, Except, Pass detected. [B110]" classname="B110"><error message="Try, Except, Pass detected." type="error" /><system-out>tags: ['bandit']
+issue_confidence: HIGH
+issue_severity: LOW
+scanner_name: bandit
+scanner_version: 3.1.2
+scanner_details: {'tool_name': 'bandit', 'tool_version': '3.1.2', 'tool_invocation': {'start_time': '2025-11-25T16:03:55.059178+00:00', 'end_time': '2025-11-25T16:04:08.341040+00:00'}}</system-out></testcase><testcase name="Try, Except, Pass detected. [B110]" classname="B110"><error message="Try, Except, Pass detected." type="error" /><system-out>tags: ['bandit']
+issue_confidence: HIGH
+issue_severity: LOW
+scanner_name: bandit
+scanner_version: 3.1.2
+scanner_details: {'tool_name': 'bandit', 'tool_version': '3.1.2', 'tool_invocation': {'start_time': '2025-11-25T16:03:55.059178+00:00', 'end_time': '2025-11-25T16:04:08.341040+00:00'}}</system-out></testcase><testcase name="Try, Except, Pass detected. [B110]" classname="B110"><error message="Try, Except, Pass detected." type="error" /><system-out>tags: ['bandit']
+issue_confidence: HIGH
+issue_severity: LOW
+scanner_name: bandit
+scanner_version: 3.1.2
+scanner_details: {'tool_name': 'bandit', 'tool_version': '3.1.2', 'tool_invocation': {'start_time': '2025-11-25T16:04:08.493376+00:00', 'end_time': '2025-11-25T16:04:13.863079+00:00'}}</system-out></testcase><testcase name="Try, Except, Pass detected. [B110]" classname="B110"><error message="Try, Except, Pass detected." type="error" /><system-out>tags: ['bandit']
+issue_confidence: HIGH
+issue_severity: LOW
+scanner_name: bandit
+scanner_version: 3.1.2
+scanner_details: {'tool_name': 'bandit', 'tool_version': '3.1.2', 'tool_invocation': {'start_time': '2025-11-25T16:04:08.493376+00:00', 'end_time': '2025-11-25T16:04:13.863079+00:00'}}</system-out></testcase></testsuite><testsuite name="detect-secrets" tests="4" errors="4" failures="0" skipped="0" time="0"><testcase name="Secret of type 'Artifactory Credentials' detected in file 'src/threatforest/data/threat-intelligence/enterprise-attack-18.0.json' at line 292911 [SECRET-ARTIFACTORY-CREDENTIALS]" classname="SECRET-ARTIFACTORY-CREDENTIALS"><error message="Secret of type 'Artifactory Credentials' detected in file 'src/threatforest/data/threat-intelligence/enterprise-attack-18.0.json' at line 292911" type="error" /><system-out>tags: ['detect-secrets', 'secret', 'security', 'tool_name::detect-secrets', 'tool_type::SECRETS']
+scanner_name: detect-secrets
+scanner_version: 3.1.2
+scanner_details: {'tool_name': 'detect-secrets', 'tool_version': '3.1.2', 'tool_invocation': {'start_time': '2025-11-25T16:03:55.087494+00:00', 'end_time': '2025-11-25T16:09:16.806048+00:00'}}</system-out></testcase><testcase name="Secret of type 'Artifactory Credentials' detected in file 'src/threatforest/data/threat-intelligence/enterprise-attack-18.0.json' at line 292901 [SECRET-ARTIFACTORY-CREDENTIALS]" classname="SECRET-ARTIFACTORY-CREDENTIALS"><error message="Secret of type 'Artifactory Credentials' detected in file 'src/threatforest/data/threat-intelligence/enterprise-attack-18.0.json' at line 292901" type="error" /><system-out>tags: ['detect-secrets', 'secret', 'security', 'tool_name::detect-secrets', 'tool_type::SECRETS']
+scanner_name: detect-secrets
+scanner_version: 3.1.2
+scanner_details: {'tool_name': 'detect-secrets', 'tool_version': '3.1.2', 'tool_invocation': {'start_time': '2025-11-25T16:03:55.087494+00:00', 'end_time': '2025-11-25T16:09:16.806048+00:00'}}</system-out></testcase><testcase name="Secret of type 'Artifactory Credentials' detected in file '.ash/ash_output/converted/archive/scan-holmes__zip/src/threatforest/data/threat-intelligence/enterprise-attack-18.0.json' at line 292901 [SECRET-ARTIFACTORY-CREDENTIALS]" classname="SECRET-ARTIFACTORY-CREDENTIALS"><error message="Secret of type 'Artifactory Credentials' detected in file '.ash/ash_output/converted/archive/scan-holmes__zip/src/threatforest/data/threat-intelligence/enterprise-attack-18.0.json' at line 292901" type="error" /><system-out>tags: ['detect-secrets', 'secret', 'security', 'tool_name::detect-secrets', 'tool_type::SECRETS']
+scanner_name: detect-secrets
+scanner_version: 3.1.2
+scanner_details: {'tool_name': 'detect-secrets', 'tool_version': '3.1.2', 'tool_invocation': {'start_time': '2025-11-25T16:09:16.849795+00:00', 'end_time': '2025-11-25T16:13:10.670926+00:00'}}</system-out></testcase><testcase name="Secret of type 'Artifactory Credentials' detected in file '.ash/ash_output/converted/archive/scan-holmes__zip/src/threatforest/data/threat-intelligence/enterprise-attack-18.0.json' at line 292911 [SECRET-ARTIFACTORY-CREDENTIALS]" classname="SECRET-ARTIFACTORY-CREDENTIALS"><error message="Secret of type 'Artifactory Credentials' detected in file '.ash/ash_output/converted/archive/scan-holmes__zip/src/threatforest/data/threat-intelligence/enterprise-attack-18.0.json' at line 292911" type="error" /><system-out>tags: ['detect-secrets', 'secret', 'security', 'tool_name::detect-secrets', 'tool_type::SECRETS']
+scanner_name: detect-secrets
+scanner_version: 3.1.2
+scanner_details: {'tool_name': 'detect-secrets', 'tool_version': '3.1.2', 'tool_invocation': {'start_time': '2025-11-25T16:09:16.849795+00:00', 'end_time': '2025-11-25T16:13:10.670926+00:00'}}</system-out></testcase></testsuite></testsuites>

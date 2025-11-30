@@ -43,6 +43,55 @@ document$.subscribe(function() {
   });
 });
 
+// Resize sidebar to be thinner
+function resizeSidebar() {
+  const sidebars = document.querySelectorAll('.wy-nav-side, nav[role="navigation"], .md-sidebar--primary, aside.md-sidebar, [data-md-component="navigation"]');
+  sidebars.forEach(sidebar => {
+    if (sidebar) {
+      sidebar.style.width = '180px';
+      sidebar.style.minWidth = '180px';
+      sidebar.style.maxWidth = '180px';
+      sidebar.style.flex = '0 0 180px';
+    }
+  });
+  
+  // Also resize search and menu containers
+  const sidebarContainers = document.querySelectorAll('.wy-side-nav-search, .wy-menu, .md-sidebar__scrollwrap');
+  sidebarContainers.forEach(container => {
+    if (container) {
+      container.style.width = '180px';
+    }
+  });
+}
+
+// Run on page load and after content updates
+document.addEventListener('DOMContentLoaded', resizeSidebar);
+if (typeof document$ !== 'undefined') {
+  document$.subscribe(resizeSidebar);
+}
+// Run immediately in case DOM is already loaded
+resizeSidebar();
+// Run again after a short delay to catch late-loading elements
+setTimeout(resizeSidebar, 100);
+setTimeout(resizeSidebar, 500);
+
+// Initialize Mermaid for diagram rendering
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof mermaid !== 'undefined') {
+    mermaid.initialize({ 
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose',
+      fontFamily: 'var(--font-family)',
+      flowchart: {
+        useMaxWidth: true,
+        htmlLabels: true,
+        curve: 'basis'
+      }
+    });
+  }
+});
+
 // Console output for documentation
 console.log('%c🌳 ThreatForest Documentation', 'color: #15803d; font-size: 20px; font-weight: bold;');
 console.log('%cVersion: 1.0.0', 'color: #6b7280; font-size: 12px;');
