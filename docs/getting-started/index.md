@@ -2,90 +2,6 @@
 
 Welcome to ThreatForest! This guide will help you get up and running with AI-powered threat modeling in minutes.
 
-## Prerequisites
-
-Before installing ThreatForest, ensure you have:
-
-### Required
-
-- [x] **Python 3.11 or higher** - Check with `python3 --version`
-- [x] **Git** - For cloning the repository
-- [x] **LLM Provider Access** - At least one of:
-    - AWS Account with Bedrock access (Recommended - fully tested and supported)
-        - Requires AWS Profile with IAM permissions for:
-            - `bedrock:Converse`
-            - `bedrock:ConverseStream`
-            - `bedrock:InvokeModel`
-    - Anthropic API key (Experimental - outputs not fully tested)
-    - OpenAI API key (Experimental - outputs not fully tested)
-    - Google Gemini API key (Experimental - outputs not fully tested)
-    - Local Ollama installation (Experimental - outputs not fully tested)
-
-### Recommended
-
-- [x] **Virtual Environment Tool** - `venv`, `pipx`, or `uv`
-- [x] **IDE** - VSCode, PyCharm, or Kiro IDE for best experience
-- [x] **Git Repository** - For version controlling your threat models
-
-!!! tip "Recommended Provider"
-    **AWS Bedrock is the recommended and fully supported provider.** ThreatForest has been extensively tested with Bedrock models. Other providers (Anthropic, OpenAI, Google Gemini, Ollama) are experimental and their outputs have not been fully tested or validated.
-
----
-
-## Quick Start Options
-
-Choose your preferred installation method:
-
-<div class="grid cards" markdown>
-
--   📦 __pipx (Recommended)__
-
-    ---
-
-    Install ThreatForest as a global command accessible from anywhere
-
-    ```bash
-    pipx install threatforest
-    threatforest
-    ```
-
--   ⚡ __uv (Modern & Fast)__
-
-    ---
-
-    Lightning-fast installation with modern Python tooling
-
-    ```bash
-    uv tool install threatforest
-    threatforest
-    ```
-
--   💻 __Development Mode__
-
-    ---
-
-    For contributors - editable install with instant code updates
-
-    ```bash
-    git clone <repo>
-    pip install -e ".[dev]"
-    threatforest
-    ```
-
--   🐳 __Docker (Coming Soon)__
-
-    ---
-
-    Containerized deployment for isolated environments
-
-    ```bash
-    docker run threatforest
-    ```
-
-</div>
-
----
-
 ## Installation Steps
 
 ### Step 1: Install ThreatForest
@@ -101,21 +17,6 @@ Choose your preferred installation method:
     git clone https://github.com/aws-samples/sample-agentic-attack-tree-generator.git
     cd ThreatForest
     pipx install .
-    
-    # Run ThreatForest
-    threatforest
-    ```
-
-=== "uv (Modern)"
-
-    ```bash
-    # Install uv
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-    
-    # Install ThreatForest
-    git clone https://github.com/aws-samples/sample-agentic-attack-tree-generator.git
-    cd ThreatForest
-    uv tool install .
     
     # Run ThreatForest
     threatforest
@@ -140,6 +41,17 @@ Choose your preferred installation method:
     ```
 
 ### Step 2: Configure AWS Bedrock
+
+!!! warning "Prerequisites"
+    **AWS Account with Bedrock access (Recommended - fully tested and supported)**
+    
+    Requires AWS Profile with IAM permissions for:
+    
+    - `bedrock:Converse`
+    - `bedrock:ConverseStream`
+    - `bedrock:InvokeModel`
+    
+    **Note:** Other providers (Anthropic, OpenAI, Google Gemini, Ollama) are experimental and their outputs have not been fully tested or validated.
 
 Configure your AWS credentials for Bedrock access:
 
@@ -254,11 +166,9 @@ Having issues? Check these common problems:
     
     **Problem:** Python prevents system-wide pip installs
     
-    **Solution:** Use pipx or uv instead:
+    **Solution:** Use pipx instead:
     ```bash
     pipx install threatforest
-    # or
-    uv tool install threatforest
     ```
 
 ??? question "Error: 'Bedrock access failed'"
