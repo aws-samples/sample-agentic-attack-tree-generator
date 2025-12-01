@@ -18,8 +18,7 @@ This launches a guided interface that walks you through the entire analysis proc
 
 When you launch ThreatForest for the first time, you'll see:
 
-![ThreatForest Welcome Screen](images/welcome-screen.png)
-*Screenshot: Initial welcome screen when launching ThreatForest*
+![ThreatForest Welcome Screen](../assets/images/InitialWelcomeScreenAndLaunchingThreatForest.gif)
 
 The wizard will guide you through the initial setup and then the analysis workflow.
 
@@ -40,8 +39,7 @@ This is what most users need and what this guide focuses on.
 
 Enter the path to your project directory:
 
-![Project Path Selection](images/project-path.png)
-*Screenshot: Entering project directory path and validation*
+![Project Path Selection](../assets/images/ProjectPathSelection.gif)
 
 **What ThreatForest Looks For:**
 - ThreatComposer files (`*.tc.json`)
@@ -53,8 +51,7 @@ Enter the path to your project directory:
 
 If using AWS Bedrock, you'll be prompted for AWS details:
 
-![AWS Configuration](images/aws-configuration.png)
-*Screenshot: AWS profile selection and Bedrock access validation*
+![AWS Configuration](../assets/images/AWSConfig.gif)
 
 **What's Happening:**
 - ThreatForest uses your AWS profile credentials
@@ -65,15 +62,13 @@ If using AWS Bedrock, you'll be prompted for AWS details:
 
 Choose your AI model:
 
-![Model Selection](images/model-selection.png)
-*Screenshot: Selecting AI model for analysis*
+![Model Selection](../assets/images/ModelSelection.gif)
 
 ### Step 5: Confirmation
 
 Review your settings before starting:
 
-![Analysis Summary](images/analysis-summary.png)
-*Screenshot: Pre-analysis summary and confirmation*
+![Analysis Summary](../assets/images/LaunchingWizardStartWorkflow.gif)
 
 ## During Analysis
 
@@ -81,8 +76,7 @@ Review your settings before starting:
 
 Once analysis begins, you'll see real-time progress:
 
-![Analysis Progress](images/analysis-progress.png)
-*Screenshot: Real-time analysis progress tracking*
+![Analysis Progress](../assets/images/AnalysisProgress.gif)
 
 **What Each Stage Does:**
 
@@ -129,8 +123,7 @@ Based on:
 
 ### Success Message
 
-![Analysis Complete](images/analysis-complete.png)
-*Screenshot: Analysis completion summary and generated files*
+![Analysis Complete](../assets/images/AnalysisComplete.gif)
 
 ### Next Steps
 
