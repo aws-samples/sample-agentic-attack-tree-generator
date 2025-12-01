@@ -41,11 +41,6 @@ bedrock:
 #   model_id: "llama3.1"
 #   # No API key needed (local server)
 
-# # AWS SageMaker
-# sagemaker:
-#   endpoint_name: "my-llm-endpoint"
-#   # Note: Set AWS_PROFILE or AWS credentials in .env
-
 # Embeddings settings
 embeddings:
   model: "basel/ATTACK-BERT"

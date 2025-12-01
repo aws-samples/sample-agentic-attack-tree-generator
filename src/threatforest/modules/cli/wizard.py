@@ -73,8 +73,7 @@ class CLIWizard:
                     "Google Gemini (Experimental)",
                     "Ollama (Experimental)",
                     "LiteLLM (Experimental)",
-                    "LlamaAPI (Experimental)",
-                    "AWS SageMaker (Experimental)"
+                    "LlamaAPI (Experimental)"
                 ]
             ).ask()
             
@@ -101,13 +100,6 @@ class CLIWizard:
                         "Enter Bedrock model ID:",
                         default=""
                     ).ask()
-            
-            elif provider == "AWS SageMaker":
-                # SageMaker: Ask for endpoint name
-                endpoint_name = questionary.text(
-                    "SageMaker endpoint name:",
-                    default=""
-                ).ask()
             
             elif provider == "Ollama":
                 # Ollama: Model ID + optional host
@@ -243,8 +235,6 @@ class CLIWizard:
                 config_data['litellm'] = {'model_id': model_id}
             elif provider == "LlamaAPI":
                 config_data['llamaapi'] = {'model_id': model_id}
-            elif provider == "AWS SageMaker":
-                config_data['sagemaker'] = {'endpoint_name': endpoint_name}
             
             # Save configuration
             manager.user_config_dir.mkdir(parents=True, exist_ok=True)
@@ -543,15 +533,6 @@ This will execute a complete security analysis:
             choices.append(questionary.Choice(f"✓ AWS Bedrock [Access Keys]", value="AWS Bedrock"))
         else:
             choices.append(questionary.Choice(f"○ AWS Bedrock [Not configured]", value="AWS Bedrock"))
-        
-        # AWS SageMaker (Experimental)
-        if env_manager.get_value('AWS_PROFILE'):
-            profile = env_manager.get_value('AWS_PROFILE')
-            choices.append(questionary.Choice(f"✓ AWS SageMaker (Experimental) [Profile: {profile}]", value="AWS SageMaker"))
-        elif env_manager.get_value('AWS_ACCESS_KEY_ID'):
-            choices.append(questionary.Choice(f"✓ AWS SageMaker (Experimental) [Access Keys]", value="AWS SageMaker"))
-        else:
-            choices.append(questionary.Choice(f"○ AWS SageMaker (Experimental) [Not configured]", value="AWS SageMaker"))
         
         # Anthropic (Experimental)
         if env_manager.get_value('ANTHROPIC_API_KEY'):
