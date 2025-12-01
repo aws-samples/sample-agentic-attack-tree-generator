@@ -1,11 +1,12 @@
 """Context Analysis Tool - Modular Implementation
 
 Clean modular implementation with:
-- file_categorizer: File type categorization and threat detection
-- threat_extractor: Threat extraction with JQ/Python fallback
-- context_extractor: Enhanced context extraction using Strands
+- file_categorizer: File type categorization and threat file detection
+- context_extractor: Enhanced context extraction using Strands for READMEs/diagrams
 - summary_generator: Human-readable summary generation
 - tool: Main orchestrator coordinating all modules
+
+Note: Threat file parsing is handled by ParserAgent in the extraction stage to avoid duplication.
 
 Already synchronous, already uses Strands, already uses FileDiscovery.
 Main benefits: Better organization, testability, and reusability.

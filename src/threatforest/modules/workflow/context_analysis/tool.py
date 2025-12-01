@@ -5,7 +5,6 @@ from threatforest.modules.utils.logger import ThreatForestLogger
 from ...core import FileDiscovery, BaseAgent
 from ...models.project_models import ContextFiles
 from .file_categorizer import FileCategorizer
-from .threat_extractor import ThreatExtractor
 from ...agents.context_extractor_agent import ContextExtractor
 from .summary_generator import SummaryGenerator
 
@@ -20,7 +19,6 @@ class ContextAnalysisTool(BaseAgent):
         
         # Initialize modules
         self.categorizer = FileCategorizer(self.logger)
-        self.threat_extractor = ThreatExtractor(self.logger)
         self.context_extractor = ContextExtractor(self.logger)
         self.summary_generator = SummaryGenerator()
     
@@ -43,9 +41,6 @@ class ContextAnalysisTool(BaseAgent):
         # Log discovered files
         self._log_discovered_files(context_files)
         
-        # Process threat models
-        threat_analysis = self.threat_extractor.process_threat_models(discovered.threat_models)
-        
         # Parse other files
         parsed_files = self._parse_files(context_files)
         
@@ -56,12 +51,11 @@ class ContextAnalysisTool(BaseAgent):
         context_files.enhanced_context = enhanced_context
         
         # Generate summary
-        summary = self.summary_generator.generate_summary(threat_analysis, parsed_files, context_files.to_dict())
+        summary = self.summary_generator.generate_summary(parsed_files, context_files.to_dict())
         
         return {
             "project_path": project_path,
             "discovered_files": context_files.to_dict(),
-            "threat_analysis": threat_analysis,
             "parsed_content": parsed_files,
             "summary": summary,
             "enhanced_context": enhanced_context

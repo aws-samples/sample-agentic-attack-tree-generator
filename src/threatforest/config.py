@@ -148,11 +148,6 @@ class Config:
         """Get Ollama configuration"""
         return self.get('ollama', {})
     
-    @property
-    def sagemaker(self) -> Dict[str, Any]:
-        """Get SageMaker configuration"""
-        return self.get('sagemaker', {})
-    
     # Legacy AWS settings (kept for backward compatibility)
     @property
     def default_aws_profile(self) -> str:
@@ -169,7 +164,7 @@ class Config:
     def default_bedrock_model(self) -> str:
         """Get active model ID (for display purposes)"""
         # Return model_id from whichever provider is configured
-        for provider in ['bedrock', 'anthropic', 'openai', 'gemini', 'ollama', 'litellm', 'llamaapi', 'sagemaker']:
+        for provider in ['bedrock', 'anthropic', 'openai', 'gemini', 'ollama', 'litellm', 'llamaapi']:
             provider_config = getattr(self, provider, {})
             if provider_config:
                 return provider_config.get('model_id', f'{provider} (configured)')

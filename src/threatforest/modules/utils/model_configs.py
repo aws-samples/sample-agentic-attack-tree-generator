@@ -46,6 +46,5 @@ PROVIDER_NAMES = {
     'gemini': 'Google Gemini',
     'ollama': 'Ollama (Local)',
     'litellm': 'LiteLLM',
-    'llamaapi': 'LlamaAPI',
-    'sagemaker': 'AWS SageMaker'
+    'llamaapi': 'LlamaAPI'
 }

@@ -66,9 +66,6 @@ class ConfigManager:
         elif config.ollama and config.ollama.get("model_id"):
             active_provider = "Ollama"
             model_id = config.ollama.get("model_id")
-        elif config.sagemaker and config.sagemaker.get("endpoint_name"):
-            active_provider = "AWS SageMaker"
-            model_id = config.sagemaker.get("endpoint_name")
         
         # Create table
         table = Table(title="ThreatForest Configuration", show_header=True)
@@ -123,7 +120,7 @@ class ConfigManager:
             if provider_choice == "AWS Bedrock":
                 from threatforest.modules.utils.model_configs import BEDROCK_MODELS, DEFAULT_MODELS
                 
-                bedrock_models = BEDROCK_MODELS + ["Keep current"]
+                bedrock_models = BEDROCK_MODELS + ["Other (enter custom model ID)", "Keep current"]
                 current_model = config_data.get('bedrock', {}).get('model_id', DEFAULT_MODELS['bedrock'])
                 model_choice = select(
                     f"Select Bedrock Model (current: {current_model}):",
@@ -131,6 +128,13 @@ class ConfigManager:
                 ).ask()
                 
                 if model_choice != "Keep current":
+                    # Check if user selected "Other" option
+                    if "Other" in model_choice:
+                        model_choice = text(
+                            "Enter custom Bedrock model ID:",
+                            default=""
+                        ).ask()
+                    
                     if 'bedrock' not in config_data:
                         config_data['bedrock'] = {}
                     config_data['bedrock']['model_id'] = model_choice
@@ -198,24 +202,6 @@ class ConfigManager:
                     config_data['ollama'] = {}
                 config_data['ollama']['model_id'] = model_id
                 self.console.print(f"[green]✓[/green] Model: {model_id}")
-        
-        # AWS Profile (if using AWS services) - write to .env instead of config.yaml
-        if provider_choice in ["AWS Bedrock", "Keep current"]:
-            from threatforest.modules.utils.env_manager import EnvManager
-            
-            env_manager = EnvManager()
-            env_manager.ensure_exists()
-            
-            # Get current profile from .env using EnvManager
-            current_profile = env_manager.get_value('AWS_PROFILE') or 'default'
-            new_profile = text(
-                f"AWS Profile (current: {current_profile}):",
-                default=current_profile
-            ).ask()
-            
-            # Write to .env file, not config.yaml
-            env_manager.set_value('AWS_PROFILE', new_profile)
-            self.console.print(f"[green]✓[/green] AWS Profile saved to .env: {new_profile}")
         
         # Save changes
         with open(self.user_config_file, 'w') as f:

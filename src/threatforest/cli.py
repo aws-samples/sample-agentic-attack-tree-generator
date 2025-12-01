@@ -90,9 +90,6 @@ def run(project_path, threat_model, mode, input_dir, output_dir):
         elif config.ollama and config.ollama.get("model_id"):
             active_provider = "Ollama"
             model_id = config.ollama.get("model_id")
-        elif config.sagemaker and config.sagemaker.get("endpoint_name"):
-            active_provider = "AWS SageMaker"
-            model_id = config.sagemaker.get("endpoint_name")
         else:
             active_provider = "Not configured"
             model_id = "None"
