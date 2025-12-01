@@ -189,3 +189,5 @@ scripts/
 .kiro
 **/site/
 **/.mkdocs_cache/
+.threat-composer/
+.ash/

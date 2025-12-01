@@ -36,39 +36,28 @@ graph TD
 
 This attack tree has been mapped to MITRE ATT&CK techniques:
 
-### Exploit Misconfigured Security Groups
+### Threat Actor with DynamoDB Access Capability
 
-- **Technique**: [T1068](https://attack.mitre.org/techniques/T1068/) - Exploitation for Privilege Escalation
-- **Tactic**: Privilege Escalation
-- **Similarity Score**: 69.73%
-- **Mitigations (5):**
-  - 🛡️ **Update Software**
-    Software updates ensure systems are protected against known vulnerabilities by applying patches and upgrades provided by...
-  - 🛡️ **Exploit Protection**
-    Deploy capabilities that detect, block, and mitigate conditions indicative of software exploits. These capabilities aim ...
-  - 🛡️ **Application Isolation and Sandboxing**
-    Application Isolation and Sandboxing refers to the technique of restricting the execution of code to a controlled and is...
-  - *2 more mitigation(s) available*
-
-### Query Vehicle Registration Table
-
-- **Technique**: [T1590.001](https://attack.mitre.org/techniques/T1590/001/) - Domain Properties
-- **Tactic**: Reconnaissance
-- **Similarity Score**: 46.57%
-- **Mitigations (1):**
-  - 🛡️ **Pre-compromise**
-    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
-
-### Query Registration Status Table
-
-- **Technique**: [T1087](https://attack.mitre.org/techniques/T1087/) - Account Discovery
-- **Tactic**: Discovery
-- **Similarity Score**: 55.85%
-- **Mitigations (2):**
-  - 🛡️ **Operating System Configuration**
-    Operating System Configuration involves adjusting system settings and hardening the default configurations of an operati...
+- **Technique**: [T1530](https://attack.mitre.org/techniques/T1530/) - Data from Cloud Storage
+- **Tactic**: Collection
+- **Similarity Score**: 50.79%
+- **Mitigations (6):**
   - 🛡️ **User Account Management**
     User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
+  - 🛡️ **Encrypt Sensitive Information**
+    Protect sensitive information at rest, in transit, and during processing by using strong encryption algorithms. Encrypti...
+  - 🛡️ **Restrict File and Directory Permissions**
+    Restricting file and directory permissions involves setting access controls at the file system level to limit which user...
+  - *3 more mitigation(s) available*
+
+### Confidentiality Breach of Vehicle Data
+
+- **Technique**: [T1565.002](https://attack.mitre.org/techniques/T1565/002/) - Transmitted Data Manipulation
+- **Tactic**: Impact
+- **Similarity Score**: 56.57%
+- **Mitigations (1):**
+  - 🛡️ **Encrypt Sensitive Information**
+    Protect sensitive information at rest, in transit, and during processing by using strong encryption algorithms. Encrypti...
 
 ### Exploit Weak IAM Credentials
 
@@ -84,17 +73,6 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
     Account Use Policies help mitigate unauthorized access by configuring and enforcing rules that govern how and when accou...
   - *4 more mitigation(s) available*
 
-### Gain Initial Access to AWS Environment
-
-- **Technique**: [T1021.008](https://attack.mitre.org/techniques/T1021/008/) - Direct Cloud VM Connections
-- **Tactic**: Lateral Movement
-- **Similarity Score**: 73.34%
-- **Mitigations (2):**
-  - 🛡️ **User Account Management**
-    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
-  - 🛡️ **Disable or Remove Feature or Program**
-    Disable or remove unnecessary and potentially vulnerable software, features, or services to reduce the attack surface an...
-
 ### Unauthorized Data Access Achieved
 
 - **Technique**: [T1530](https://attack.mitre.org/techniques/T1530/) - Data from Cloud Storage
@@ -109,11 +87,25 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
     Restricting file and directory permissions involves setting access controls at the file system level to limit which user...
   - *3 more mitigation(s) available*
 
-### Threat Actor with DynamoDB Access Capability
+### Exploit Misconfigured Security Groups
+
+- **Technique**: [T1068](https://attack.mitre.org/techniques/T1068/) - Exploitation for Privilege Escalation
+- **Tactic**: Privilege Escalation
+- **Similarity Score**: 69.73%
+- **Mitigations (5):**
+  - 🛡️ **Update Software**
+    Software updates ensure systems are protected against known vulnerabilities by applying patches and upgrades provided by...
+  - 🛡️ **Exploit Protection**
+    Deploy capabilities that detect, block, and mitigate conditions indicative of software exploits. These capabilities aim ...
+  - 🛡️ **Application Isolation and Sandboxing**
+    Application Isolation and Sandboxing refers to the technique of restricting the execution of code to a controlled and is...
+  - *2 more mitigation(s) available*
+
+### Access DynamoDB Tables
 
 - **Technique**: [T1530](https://attack.mitre.org/techniques/T1530/) - Data from Cloud Storage
 - **Tactic**: Collection
-- **Similarity Score**: 50.79%
+- **Similarity Score**: 53.80%
 - **Mitigations (6):**
   - 🛡️ **User Account Management**
     User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
@@ -122,19 +114,6 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
   - 🛡️ **Restrict File and Directory Permissions**
     Restricting file and directory permissions involves setting access controls at the file system level to limit which user...
   - *3 more mitigation(s) available*
-
-### Exploit Exposed AWS Keys
-
-- **Technique**: [T1098.004](https://attack.mitre.org/techniques/T1098/004/) - SSH Authorized Keys
-- **Tactic**: Persistence, Privilege Escalation
-- **Similarity Score**: 51.80%
-- **Mitigations (3):**
-  - 🛡️ **User Account Management**
-    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
-  - 🛡️ **Restrict File and Directory Permissions**
-    Restricting file and directory permissions involves setting access controls at the file system level to limit which user...
-  - 🛡️ **Disable or Remove Feature or Program**
-    Disable or remove unnecessary and potentially vulnerable software, features, or services to reduce the attack surface an...
 
 ### Extract Sensitive Registration Data
 
@@ -150,34 +129,55 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
     Operating System Configuration involves adjusting system settings and hardening the default configurations of an operati...
   - *1 more mitigation(s) available*
 
+### Query Registration Status Table
+
+- **Technique**: [T1087](https://attack.mitre.org/techniques/T1087/) - Account Discovery
+- **Tactic**: Discovery
+- **Similarity Score**: 55.85%
+- **Mitigations (2):**
+  - 🛡️ **Operating System Configuration**
+    Operating System Configuration involves adjusting system settings and hardening the default configurations of an operati...
+  - 🛡️ **User Account Management**
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
+
+### Query Vehicle Registration Table
+
+- **Technique**: [T1590.001](https://attack.mitre.org/techniques/T1590/001/) - Domain Properties
+- **Tactic**: Reconnaissance
+- **Similarity Score**: 46.57%
+- **Mitigations (1):**
+  - 🛡️ **Pre-compromise**
+    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
+
+### Gain Initial Access to AWS Environment
+
+- **Technique**: [T1021.008](https://attack.mitre.org/techniques/T1021/008/) - Direct Cloud VM Connections
+- **Tactic**: Lateral Movement
+- **Similarity Score**: 73.34%
+- **Mitigations (2):**
+  - 🛡️ **User Account Management**
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
+  - 🛡️ **Disable or Remove Feature or Program**
+    Disable or remove unnecessary and potentially vulnerable software, features, or services to reduce the attack surface an...
+
 ### Query Vehicle Listing Table
 
 - **Technique**: [T1039](https://attack.mitre.org/techniques/T1039/) - Data from Network Shared Drive
 - **Tactic**: Collection
 - **Similarity Score**: 46.32%
 
-### Confidentiality Breach of Vehicle Data
+### Exploit Exposed AWS Keys
 
-- **Technique**: [T1565.002](https://attack.mitre.org/techniques/T1565/002/) - Transmitted Data Manipulation
-- **Tactic**: Impact
-- **Similarity Score**: 56.57%
-- **Mitigations (1):**
-  - 🛡️ **Encrypt Sensitive Information**
-    Protect sensitive information at rest, in transit, and during processing by using strong encryption algorithms. Encrypti...
-
-### Access DynamoDB Tables
-
-- **Technique**: [T1530](https://attack.mitre.org/techniques/T1530/) - Data from Cloud Storage
-- **Tactic**: Collection
-- **Similarity Score**: 53.80%
-- **Mitigations (6):**
+- **Technique**: [T1098.004](https://attack.mitre.org/techniques/T1098/004/) - SSH Authorized Keys
+- **Tactic**: Persistence, Privilege Escalation
+- **Similarity Score**: 51.80%
+- **Mitigations (3):**
   - 🛡️ **User Account Management**
     User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
-  - 🛡️ **Encrypt Sensitive Information**
-    Protect sensitive information at rest, in transit, and during processing by using strong encryption algorithms. Encrypti...
   - 🛡️ **Restrict File and Directory Permissions**
     Restricting file and directory permissions involves setting access controls at the file system level to limit which user...
-  - *3 more mitigation(s) available*
+  - 🛡️ **Disable or Remove Feature or Program**
+    Disable or remove unnecessary and potentially vulnerable software, features, or services to reduce the attack surface an...
 
 
 *Total technique mappings: 12 | Mitigations found: 43*

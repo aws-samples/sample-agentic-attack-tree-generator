@@ -7,40 +7,32 @@
 
 ```mermaid
 graph TD
-    F1["Threat actor (externalinternal) with access to LLM agents"]
-    F2["LLM agents granted permissions to external systems"]
-    F3["Ambiguous instruction handling in agent logic"]
-    F4["Multi-agent collaborative environment deployed"]
-    F1 --> A1["Identify LLM agent capabilities and permissions"]
-    F2 --> A1
-    A1 --> A2["Map connected external systems"]
-    A2 --> A3["Analyze agent instruction interpretation"]
-    A3 --> PATH1["Path 1: Ambiguous Instruction Exploitation"]
-    A3 --> PATH2["Path 2: Multi-Agent Collaboration Abuse"]
-    F3 --> PATH1
-    PATH1 --> A4["Craft ambiguous prompts with hidden intent"]
-    A4 --> A5["Agent misinterprets instructions as legitimate"]
-    A5 --> A6["Agent executes unintended actions on external systems"]
-    F4 --> PATH2
-    PATH2 --> A7["Inject malicious instructions into agent communication"]
-    A7 --> A8["Exploit trust relationships between agents"]
-    A8 --> A9["Cascade unauthorized actions across agent network"]
-    A6 --> A10["Unauthorized data modification in connected systems"]
-    A9 --> A10
-    A6 --> A11["Resource exhaustion or service disruption"]
-    A9 --> A11
-    A10 --> A12["Propagate corruption to downstream systems"]
-    A11 --> A13["Denial of service to dependent applications"]
-    A12 --> G1["Compromised integrity of connected and downstream systemsdata"]
-    A13 --> G2["Reduced availability of connected and downstream systemsdata"]
-    G1 --> G3["GOAL: Damage connected systems via LLM agent permission abuse"]
-    G2 --> G3
+    A["Threat Actorbr>External or Internal"] --> B["Access to LLM Agentbr>with External Permissions"]
+    B --> C["Reconnaissance ofbr>Agent Capabilities"]
+    B --> D["Identify Connectedbr>External Systems"]
+    C --> E["Analyze Permissionbr>Scope and Boundaries"]
+    D --> F["Map Systembr>Dependencies"]
+    E --> G["Craft Ambiguousbr>or Misleading Instructions"]
+    F --> H["Identify High-Impactbr>Target Systems"]
+    G --> I["Exploit Multi-Agentbr>Collaboration Weaknesses"]
+    H --> I
+    I --> J["Abuse Delegatedbr>Permissions"]
+    J --> K["Execute Unauthorizedbr>Actions on External Systems"]
+    K --> L["Data Modificationbr>or Deletion"]
+    K --> M["Service Disruptionbr>or Unavailability"]
+    K --> N["Cascade Failures tobr>Downstream Systems"]
+    L --> O["Reduced Integrity ofbr>Connected Systems and Data"]
+    M --> P["Reduced Availability ofbr>Connected Systems and Data"]
+    N --> O
+    N --> P
+    O --> Q["Impact: Integrity andbr>Availability Compromise"]
+    P --> Q
+    classDef fact fill:#ccccff
     classDef attack fill:#ffcccc
     classDef goal fill:#ffcc99
-    classDef fact fill:#ccccff
-    class F1,F2,F3,F4 fact
-    class A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13,PATH1,PATH2 attack
-    class G1,G2,G3 goal
+    class A,B fact
+    class C,D,E,F,G,H,I,J,K,L,M,N attack
+    class O,P,Q goal
     classDef mitigation fill:#ccffcc
 ```
 
@@ -49,11 +41,155 @@ graph TD
 
 This attack tree has been mapped to MITRE ATT&CK techniques:
 
-### Path 2: Multi-Agent Collaboration Abuse
+### Identify High-Impactbr>Target Systems
+
+- **Technique**: [T1595.002](https://attack.mitre.org/techniques/T1595/002/) - Vulnerability Scanning
+- **Tactic**: Reconnaissance
+- **Similarity Score**: 54.38%
+- **Mitigations (1):**
+  - 🛡️ **Pre-compromise**
+    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
+
+### Reduced Integrity ofbr>Connected Systems and Data
+
+- **Technique**: [T1485](https://attack.mitre.org/techniques/T1485/) - Data Destruction
+- **Tactic**: Impact
+- **Similarity Score**: 65.96%
+- **Mitigations (3):**
+  - 🛡️ **Multi-factor Authentication**
+    Multi-Factor Authentication (MFA) enhances security by requiring users to provide at least two forms of verification to ...
+  - 🛡️ **Data Backup**
+    Data Backup involves taking and securely storing backups of data from end-user systems and critical servers. It ensures ...
+  - 🛡️ **User Account Management**
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
+
+### Data Modificationbr>or Deletion
+
+- **Technique**: [T1485](https://attack.mitre.org/techniques/T1485/) - Data Destruction
+- **Tactic**: Impact
+- **Similarity Score**: 84.07%
+- **Mitigations (3):**
+  - 🛡️ **Multi-factor Authentication**
+    Multi-Factor Authentication (MFA) enhances security by requiring users to provide at least two forms of verification to ...
+  - 🛡️ **Data Backup**
+    Data Backup involves taking and securely storing backups of data from end-user systems and critical servers. It ensures ...
+  - 🛡️ **User Account Management**
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
+
+### Impact: Integrity andbr>Availability Compromise
+
+- **Technique**: [T1499.004](https://attack.mitre.org/techniques/T1499/004/) - Application or System Exploitation
+- **Tactic**: Impact
+- **Similarity Score**: 50.88%
+- **Mitigations (1):**
+  - 🛡️ **Filter Network Traffic**
+    Employ network appliances and endpoint software to filter ingress, egress, and lateral network traffic. This includes pr...
+
+### Cascade Failures tobr>Downstream Systems
+
+- **Technique**: [T1568](https://attack.mitre.org/techniques/T1568/) - Dynamic Resolution
+- **Tactic**: Command And Control
+- **Similarity Score**: 47.14%
+- **Mitigations (2):**
+  - 🛡️ **Network Intrusion Prevention**
+    Use intrusion detection signatures to block traffic at network boundaries.
+  - 🛡️ **Restrict Web-Based Content**
+    Restricting web-based content involves enforcing policies and technologies that limit access to potentially malicious we...
+
+### Access to LLM Agentbr>with External Permissions
+
+- **Technique**: [T1574.005](https://attack.mitre.org/techniques/T1574/005/) - Executable Installer File Permissions Weakness
+- **Tactic**: Persistence, Privilege Escalation, Defense Evasion
+- **Similarity Score**: 59.03%
+- **Mitigations (3):**
+  - 🛡️ **Audit**
+    Auditing is the process of recording activity and systematically reviewing and analyzing the activity and system configu...
+  - 🛡️ **User Account Control**
+    User Account Control (UAC) is a security feature in Microsoft Windows that prevents unauthorized changes to the operatin...
+  - 🛡️ **User Account Management**
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
+
+### Abuse Delegatedbr>Permissions
+
+- **Technique**: [T1548.006](https://attack.mitre.org/techniques/T1548/006/) - TCC Manipulation
+- **Tactic**: Defense Evasion, Privilege Escalation
+- **Similarity Score**: 70.38%
+- **Mitigations (3):**
+  - 🛡️ **Privileged Account Management**
+    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...
+  - 🛡️ **Audit**
+    Auditing is the process of recording activity and systematically reviewing and analyzing the activity and system configu...
+  - 🛡️ **Restrict File and Directory Permissions**
+    Restricting file and directory permissions involves setting access controls at the file system level to limit which user...
+
+### Reconnaissance ofbr>Agent Capabilities
+
+- **Technique**: [T1505.002](https://attack.mitre.org/techniques/T1505/002/) - Transport Agent
+- **Tactic**: Persistence
+- **Similarity Score**: 37.63%
+- **Mitigations (3):**
+  - 🛡️ **Privileged Account Management**
+    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...
+  - 🛡️ **Audit**
+    Auditing is the process of recording activity and systematically reviewing and analyzing the activity and system configu...
+  - 🛡️ **Code Signing**
+    Code Signing is a security process that ensures the authenticity and integrity of software by digitally signing executab...
+
+### Service Disruptionbr>or Unavailability
+
+- **Technique**: [T1489](https://attack.mitre.org/techniques/T1489/) - Service Stop
+- **Tactic**: Impact
+- **Similarity Score**: 71.50%
+- **Mitigations (5):**
+  - 🛡️ **Network Segmentation**
+    Network segmentation involves dividing a network into smaller, isolated segments to control and limit the flow of traffi...
+  - 🛡️ **User Account Management**
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
+  - 🛡️ **Out-of-Band Communications Channel**
+    Establish secure out-of-band communication channels to ensure the continuity of critical communications during security ...
+  - *2 more mitigation(s) available*
+
+### Identify Connectedbr>External Systems
+
+- **Technique**: [T1049](https://attack.mitre.org/techniques/T1049/) - System Network Connections Discovery
+- **Tactic**: Discovery
+- **Similarity Score**: 66.94%
+
+### Threat Actorbr>External or Internal
+
+- **Technique**: [T1480](https://attack.mitre.org/techniques/T1480/) - Execution Guardrails
+- **Tactic**: Defense Evasion
+- **Similarity Score**: 46.39%
+- **Mitigations (1):**
+  - 🛡️ **Do Not Mitigate**
+    The Do Not Mitigate category highlights scenarios where attempting to mitigate a specific technique may inadvertently in...
+
+### Analyze Permissionbr>Scope and Boundaries
+
+- **Technique**: [T1069](https://attack.mitre.org/techniques/T1069/) - Permission Groups Discovery
+- **Tactic**: Discovery
+- **Similarity Score**: 69.63%
+
+### Map Systembr>Dependencies
+
+- **Technique**: [T1574.004](https://attack.mitre.org/techniques/T1574/004/) - Dylib Hijacking
+- **Tactic**: Persistence, Privilege Escalation, Defense Evasion
+- **Similarity Score**: 51.32%
+- **Mitigations (1):**
+  - 🛡️ **Restrict File and Directory Permissions**
+    Restricting file and directory permissions involves setting access controls at the file system level to limit which user...
+
+### Execute Unauthorizedbr>Actions on External Systems
+
+- **Technique**: [T1514](https://attack.mitre.org/techniques/T1514/) - Elevated Execution with Prompt
+- **Tactic**: Privilege Escalation
+- **Similarity Score**: 50.33%
+
+### Exploit Multi-Agentbr>Collaboration Weaknesses
 
 - **Technique**: [T1021.003](https://attack.mitre.org/techniques/T1021/003/) - Distributed Component Object Model
 - **Tactic**: Lateral Movement
-- **Similarity Score**: 45.52%
+- **Similarity Score**: 43.23%
 - **Mitigations (4):**
   - 🛡️ **Disable or Remove Feature or Program**
     Disable or remove unnecessary and potentially vulnerable software, features, or services to reduce the attack surface an...
@@ -63,224 +199,23 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
     Network segmentation involves dividing a network into smaller, isolated segments to control and limit the flow of traffi...
   - *1 more mitigation(s) available*
 
-### GOAL: Damage connected systems via LLM agent permission abuse
+### Craft Ambiguousbr>or Misleading Instructions
 
-- **Technique**: [T1548.006](https://attack.mitre.org/techniques/T1548/006/) - TCC Manipulation
-- **Tactic**: Defense Evasion, Privilege Escalation
-- **Similarity Score**: 67.45%
-- **Mitigations (3):**
-  - 🛡️ **Privileged Account Management**
-    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...
-  - 🛡️ **Audit**
-    Auditing is the process of recording activity and systematically reviewing and analyzing the activity and system configu...
-  - 🛡️ **Restrict File and Directory Permissions**
-    Restricting file and directory permissions involves setting access controls at the file system level to limit which user...
+- **Technique**: [T1036.002](https://attack.mitre.org/techniques/T1036/002/) - Right-to-Left Override
+- **Tactic**: Defense Evasion
+- **Similarity Score**: 47.40%
 
-### Reduced availability of connected and downstream systemsdata
+### Reduced Availability ofbr>Connected Systems and Data
 
 - **Technique**: [T1029](https://attack.mitre.org/techniques/T1029/) - Scheduled Transfer
 - **Tactic**: Exfiltration
-- **Similarity Score**: 60.00%
+- **Similarity Score**: 59.85%
 - **Mitigations (1):**
   - 🛡️ **Network Intrusion Prevention**
     Use intrusion detection signatures to block traffic at network boundaries.
 
-### Identify LLM agent capabilities and permissions
 
-- **Technique**: [T1069.001](https://attack.mitre.org/techniques/T1069/001/) - Local Groups
-- **Tactic**: Discovery
-- **Similarity Score**: 51.75%
-
-### Denial of service to dependent applications
-
-- **Technique**: [T1499.003](https://attack.mitre.org/techniques/T1499/003/) - Application Exhaustion Flood
-- **Tactic**: Impact
-- **Similarity Score**: 79.82%
-- **Mitigations (1):**
-  - 🛡️ **Filter Network Traffic**
-    Employ network appliances and endpoint software to filter ingress, egress, and lateral network traffic. This includes pr...
-
-### Unauthorized data modification in connected systems
-
-- **Technique**: [T1565.002](https://attack.mitre.org/techniques/T1565/002/) - Transmitted Data Manipulation
-- **Tactic**: Impact
-- **Similarity Score**: 67.08%
-- **Mitigations (1):**
-  - 🛡️ **Encrypt Sensitive Information**
-    Protect sensitive information at rest, in transit, and during processing by using strong encryption algorithms. Encrypti...
-
-### Craft ambiguous prompts with hidden intent
-
-- **Technique**: [T1141](https://attack.mitre.org/techniques/T1141/) - Input Prompt
-- **Tactic**: Credential Access
-- **Similarity Score**: 48.01%
-
-### Ambiguous instruction handling in agent logic
-
-- **Technique**: [T1059](https://attack.mitre.org/techniques/T1059/) - Command and Scripting Interpreter
-- **Tactic**: Execution
-- **Similarity Score**: 42.83%
-- **Mitigations (9):**
-  - 🛡️ **Limit Software Installation**
-    Prevent users or groups from installing unauthorized or unapproved software to reduce the risk of introducing malicious ...
-  - 🛡️ **Code Signing**
-    Code Signing is a security process that ensures the authenticity and integrity of software by digitally signing executab...
-  - 🛡️ **Disable or Remove Feature or Program**
-    Disable or remove unnecessary and potentially vulnerable software, features, or services to reduce the attack surface an...
-  - *6 more mitigation(s) available*
-
-### Multi-agent collaborative environment deployed
-
-- **Technique**: [T1072](https://attack.mitre.org/techniques/T1072/) - Software Deployment Tools
-- **Tactic**: Execution, Lateral Movement
-- **Similarity Score**: 51.88%
-- **Mitigations (10):**
-  - 🛡️ **User Account Management**
-    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
-  - 🛡️ **Active Directory Configuration**
-    Implement robust Active Directory (AD) configurations using group policies to secure user accounts, control access, and ...
-  - 🛡️ **Update Software**
-    Software updates ensure systems are protected against known vulnerabilities by applying patches and upgrades provided by...
-  - *7 more mitigation(s) available*
-
-### Cascade unauthorized actions across agent network
-
-- **Technique**: [T1072](https://attack.mitre.org/techniques/T1072/) - Software Deployment Tools
-- **Tactic**: Execution, Lateral Movement
-- **Similarity Score**: 61.95%
-- **Mitigations (10):**
-  - 🛡️ **User Account Management**
-    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
-  - 🛡️ **Active Directory Configuration**
-    Implement robust Active Directory (AD) configurations using group policies to secure user accounts, control access, and ...
-  - 🛡️ **Update Software**
-    Software updates ensure systems are protected against known vulnerabilities by applying patches and upgrades provided by...
-  - *7 more mitigation(s) available*
-
-### Compromised integrity of connected and downstream systemsdata
-
-- **Technique**: [T1074.001](https://attack.mitre.org/techniques/T1074/001/) - Local Data Staging
-- **Tactic**: Collection
-- **Similarity Score**: 64.46%
-
-### Resource exhaustion or service disruption
-
-- **Technique**: [T1496](https://attack.mitre.org/techniques/T1496/) - Resource Hijacking
-- **Tactic**: Impact
-- **Similarity Score**: 80.30%
-
-### Threat actor (externalinternal) with access to LLM agents
-
-- **Technique**: [T1072](https://attack.mitre.org/techniques/T1072/) - Software Deployment Tools
-- **Tactic**: Execution, Lateral Movement
-- **Similarity Score**: 37.98%
-- **Mitigations (10):**
-  - 🛡️ **User Account Management**
-    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
-  - 🛡️ **Active Directory Configuration**
-    Implement robust Active Directory (AD) configurations using group policies to secure user accounts, control access, and ...
-  - 🛡️ **Update Software**
-    Software updates ensure systems are protected against known vulnerabilities by applying patches and upgrades provided by...
-  - *7 more mitigation(s) available*
-
-### Agent executes unintended actions on external systems
-
-- **Technique**: [T1505.002](https://attack.mitre.org/techniques/T1505/002/) - Transport Agent
-- **Tactic**: Persistence
-- **Similarity Score**: 46.23%
-- **Mitigations (3):**
-  - 🛡️ **Privileged Account Management**
-    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...
-  - 🛡️ **Audit**
-    Auditing is the process of recording activity and systematically reviewing and analyzing the activity and system configu...
-  - 🛡️ **Code Signing**
-    Code Signing is a security process that ensures the authenticity and integrity of software by digitally signing executab...
-
-### Analyze agent instruction interpretation
-
-- **Technique**: [T1059](https://attack.mitre.org/techniques/T1059/) - Command and Scripting Interpreter
-- **Tactic**: Execution
-- **Similarity Score**: 33.84%
-- **Mitigations (9):**
-  - 🛡️ **Limit Software Installation**
-    Prevent users or groups from installing unauthorized or unapproved software to reduce the risk of introducing malicious ...
-  - 🛡️ **Code Signing**
-    Code Signing is a security process that ensures the authenticity and integrity of software by digitally signing executab...
-  - 🛡️ **Disable or Remove Feature or Program**
-    Disable or remove unnecessary and potentially vulnerable software, features, or services to reduce the attack surface an...
-  - *6 more mitigation(s) available*
-
-### Exploit trust relationships between agents
-
-- **Technique**: [T1484.002](https://attack.mitre.org/techniques/T1484/002/) - Trust Modification
-- **Tactic**: Defense Evasion, Privilege Escalation
-- **Similarity Score**: 59.64%
-- **Mitigations (2):**
-  - 🛡️ **Privileged Account Management**
-    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...
-  - 🛡️ **User Account Management**
-    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
-
-### LLM agents granted permissions to external systems
-
-- **Technique**: [T1199](https://attack.mitre.org/techniques/T1199/) - Trusted Relationship
-- **Tactic**: Initial Access
-- **Similarity Score**: 52.65%
-- **Mitigations (3):**
-  - 🛡️ **Multi-factor Authentication**
-    Multi-Factor Authentication (MFA) enhances security by requiring users to provide at least two forms of verification to ...
-  - 🛡️ **User Account Management**
-    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
-  - 🛡️ **Network Segmentation**
-    Network segmentation involves dividing a network into smaller, isolated segments to control and limit the flow of traffi...
-
-### Agent misinterprets instructions as legitimate
-
-- **Technique**: [T1505.002](https://attack.mitre.org/techniques/T1505/002/) - Transport Agent
-- **Tactic**: Persistence
-- **Similarity Score**: 44.30%
-- **Mitigations (3):**
-  - 🛡️ **Privileged Account Management**
-    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...
-  - 🛡️ **Audit**
-    Auditing is the process of recording activity and systematically reviewing and analyzing the activity and system configu...
-  - 🛡️ **Code Signing**
-    Code Signing is a security process that ensures the authenticity and integrity of software by digitally signing executab...
-
-### Inject malicious instructions into agent communication
-
-- **Technique**: [T1071.005](https://attack.mitre.org/techniques/T1071/005/) - Publish/Subscribe Protocols
-- **Tactic**: Command And Control
-- **Similarity Score**: 55.46%
-- **Mitigations (2):**
-  - 🛡️ **Filter Network Traffic**
-    Employ network appliances and endpoint software to filter ingress, egress, and lateral network traffic. This includes pr...
-  - 🛡️ **Network Intrusion Prevention**
-    Use intrusion detection signatures to block traffic at network boundaries.
-
-### Propagate corruption to downstream systems
-
-- **Technique**: [T1565.002](https://attack.mitre.org/techniques/T1565/002/) - Transmitted Data Manipulation
-- **Tactic**: Impact
-- **Similarity Score**: 44.64%
-- **Mitigations (1):**
-  - 🛡️ **Encrypt Sensitive Information**
-    Protect sensitive information at rest, in transit, and during processing by using strong encryption algorithms. Encrypti...
-
-### Path 1: Ambiguous Instruction Exploitation
-
-- **Technique**: [T1034](https://attack.mitre.org/techniques/T1034/) - Path Interception
-- **Tactic**: Persistence, Privilege Escalation
-- **Similarity Score**: 65.96%
-
-### Map connected external systems
-
-- **Technique**: [T1018](https://attack.mitre.org/techniques/T1018/) - Remote System Discovery
-- **Tactic**: Discovery
-- **Similarity Score**: 71.54%
-
-
-*Total technique mappings: 22 | Mitigations found: 72*
+*Total technique mappings: 17 | Mitigations found: 31*
 
 
 ## Attack Path Analysis

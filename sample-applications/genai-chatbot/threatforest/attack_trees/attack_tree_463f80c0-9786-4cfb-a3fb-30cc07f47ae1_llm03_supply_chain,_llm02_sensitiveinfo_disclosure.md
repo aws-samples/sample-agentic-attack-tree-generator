@@ -7,40 +7,36 @@
 
 ```mermaid
 graph TD
-    GOAL["Competitive misuse or training of shadow modelsbr>(IP Confidentiality  Integrity Loss)"]
-    FACT1["Malicious internal actor exists"]
-    FACT2["Actor has legitimate access to model artifact repositories"]
-    FACT3["Proprietary LLM data stored in repositoriesbr>(fine-tuning data, model stores)"]
-    FACT1 --> A1["Identify valuable proprietary assets"]
-    FACT2 --> A1
-    FACT3 --> A1
-    A1 --> PATH1["Direct Data Exfiltration Path"]
-    A1 --> PATH2["Covert Exfiltration Path"]
-    PATH1 --> A2["Download model weights from S3artifact store"]
-    PATH1 --> A3["Export fine-tuning datasets"]
-    PATH1 --> A4["Copy training configurations and hyperparameters"]
-    A2 --> A5["Transfer via authorized channelsbr>(email, cloud sync, USB)"]
-    A3 --> A5
-    A4 --> A5
-    PATH2 --> A6["Stage data in personal workspace"]
-    A6 --> A7["Obfuscate data through encodingcompression"]
-    A7 --> A8["Exfiltrate via covert channelsbr>(steganography, DNS tunneling)"]
-    PATH2 --> A9["Abuse CICD pipeline access"]
-    A9 --> A10["Inject exfiltration code into build process"]
-    A10 --> A11["Route data to external endpoint"]
-    A5 --> A12["Deliver stolen IP to competitorpersonal use"]
-    A8 --> A12
-    A11 --> A12
-    A12 --> A13["Train shadowreplica model"]
-    A12 --> A14["Sell proprietary data to competitors"]
-    A13 --> GOAL
-    A14 --> GOAL
+    A["Malicious Internal Actor with Repository Access"] --> B["Identify High-Value Artifacts"]
+    A --> C["Establish Exfiltration Channel"]
+    B --> B1["Locate fine-tuning datasets"]
+    B --> B2["Identify model weightscheckpoints"]
+    B --> B3["Discover training data stores"]
+    B1 --> D["Stage Data for Exfiltration"]
+    B2 --> D
+    B3 --> D
+    C --> C1["Use legitimate cloud storage"]
+    C --> C2["Leverage personal cloud accounts"]
+    C --> C3["Utilize external file sharing services"]
+    C1 --> E["Execute Data Transfer"]
+    C2 --> E
+    C3 --> E
+    D --> E
+    E --> F["Exfiltrate Proprietary LLM Data"]
+    F --> G["Competitive Misuse"]
+    F --> H["Train Shadow Models"]
+    G --> I["Reduced Confidentiality of IP"]
+    H --> I
+    G --> J["Reduced Integrity of IP"]
+    H --> J
+    I --> K["Intellectual Property Compromise"]
+    J --> K
+    classDef fact fill:#ccccff
     classDef attack fill:#ffcccc
     classDef goal fill:#ffcc99
-    classDef fact fill:#ccccff
-    class FACT1,FACT2,FACT3 fact
-    class A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13,A14,PATH1,PATH2 attack
-    class GOAL goal
+    class A fact
+    class B,B1,B2,B3,C,C1,C2,C3,D,E,F,G,H attack
+    class I,J,K goal
     classDef mitigation fill:#ccffcc
 ```
 
@@ -49,160 +45,55 @@ graph TD
 
 This attack tree has been mapped to MITRE ATT&CK techniques:
 
-### Route data to external endpoint
-
-- **Technique**: [T1090.002](https://attack.mitre.org/techniques/T1090/002/) - External Proxy
-- **Tactic**: Command And Control
-- **Similarity Score**: 56.18%
-- **Mitigations (1):**
-  - 🛡️ **Network Intrusion Prevention**
-    Use intrusion detection signatures to block traffic at network boundaries.
-
-### Inject exfiltration code into build process
-
-- **Technique**: [T1127.001](https://attack.mitre.org/techniques/T1127/001/) - MSBuild
-- **Tactic**: Defense Evasion
-- **Similarity Score**: 67.78%
-- **Mitigations (2):**
-  - 🛡️ **Disable or Remove Feature or Program**
-    Disable or remove unnecessary and potentially vulnerable software, features, or services to reduce the attack surface an...
-  - 🛡️ **Execution Prevention**
-    Prevent the execution of unauthorized or malicious code on systems by implementing application control, script blocking,...
-
-### Exfiltrate via covert channelsbr>(steganography, DNS tunneling)
-
-- **Technique**: [T1048.003](https://attack.mitre.org/techniques/T1048/003/) - Exfiltration Over Unencrypted Non-C2 Protocol
-- **Tactic**: Exfiltration
-- **Similarity Score**: 76.06%
-- **Mitigations (4):**
-  - 🛡️ **Network Intrusion Prevention**
-    Use intrusion detection signatures to block traffic at network boundaries.
-  - 🛡️ **Data Loss Prevention**
-    Data Loss Prevention (DLP) involves implementing strategies and technologies to identify, categorize, monitor, and contr...
-  - 🛡️ **Filter Network Traffic**
-    Employ network appliances and endpoint software to filter ingress, egress, and lateral network traffic. This includes pr...
-  - *1 more mitigation(s) available*
-
-### Obfuscate data through encodingcompression
-
-- **Technique**: [T1027.013](https://attack.mitre.org/techniques/T1027/013/) - Encrypted/Encoded File
-- **Tactic**: Defense Evasion
-- **Similarity Score**: 86.08%
-- **Mitigations (2):**
-  - 🛡️ **Antivirus/Antimalware**
-    Antivirus/Antimalware solutions utilize signatures, heuristics, and behavioral analysis to detect, block, and remediate ...
-  - 🛡️ **Behavior Prevention on Endpoint**
-    Behavior Prevention on Endpoint refers to the use of technologies and strategies to detect and block potentially malicio...
-
-### Actor has legitimate access to model artifact repositories
-
-- **Technique**: [T1213.003](https://attack.mitre.org/techniques/T1213/003/) - Code Repositories
-- **Tactic**: Collection
-- **Similarity Score**: 48.51%
-- **Mitigations (4):**
-  - 🛡️ **User Training**
-    User Training involves educating employees and contractors on recognizing, reporting, and preventing cyber threats that ...
-  - 🛡️ **Audit**
-    Auditing is the process of recording activity and systematically reviewing and analyzing the activity and system configu...
-  - 🛡️ **User Account Management**
-    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
-  - *1 more mitigation(s) available*
-
-### Sell proprietary data to competitors
-
-- **Technique**: [T1597.002](https://attack.mitre.org/techniques/T1597/002/) - Purchase Technical Data
-- **Tactic**: Reconnaissance
-- **Similarity Score**: 57.47%
-- **Mitigations (1):**
-  - 🛡️ **Pre-compromise**
-    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
-
-### Covert Exfiltration Path
-
-- **Technique**: [T1567.002](https://attack.mitre.org/techniques/T1567/002/) - Exfiltration to Cloud Storage
-- **Tactic**: Exfiltration
-- **Similarity Score**: 74.80%
-- **Mitigations (1):**
-  - 🛡️ **Restrict Web-Based Content**
-    Restricting web-based content involves enforcing policies and technologies that limit access to potentially malicious we...
-
-### Export fine-tuning datasets
-
-- **Technique**: [T1074.002](https://attack.mitre.org/techniques/T1074/002/) - Remote Data Staging
-- **Tactic**: Collection
-- **Similarity Score**: 55.66%
-
-### Deliver stolen IP to competitorpersonal use
-
-- **Technique**: [T1583](https://attack.mitre.org/techniques/T1583/) - Acquire Infrastructure
-- **Tactic**: Resource Development
-- **Similarity Score**: 65.34%
-- **Mitigations (1):**
-  - 🛡️ **Pre-compromise**
-    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
-
-### Malicious internal actor exists
-
-- **Technique**: [T1559.001](https://attack.mitre.org/techniques/T1559/001/) - Component Object Model
-- **Tactic**: Execution
-- **Similarity Score**: 39.50%
-- **Mitigations (2):**
-  - 🛡️ **Privileged Account Management**
-    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...
-  - 🛡️ **Application Isolation and Sandboxing**
-    Application Isolation and Sandboxing refers to the technique of restricting the execution of code to a controlled and is...
-
-### Stage data in personal workspace
-
-- **Technique**: [T1074.001](https://attack.mitre.org/techniques/T1074/001/) - Local Data Staging
-- **Tactic**: Collection
-- **Similarity Score**: 64.00%
-
-### Download model weights from S3artifact store
-
-- **Technique**: [T1048](https://attack.mitre.org/techniques/T1048/) - Exfiltration Over Alternative Protocol
-- **Tactic**: Exfiltration
-- **Similarity Score**: 44.73%
-- **Mitigations (6):**
-  - 🛡️ **Network Segmentation**
-    Network segmentation involves dividing a network into smaller, isolated segments to control and limit the flow of traffi...
-  - 🛡️ **Data Loss Prevention**
-    Data Loss Prevention (DLP) involves implementing strategies and technologies to identify, categorize, monitor, and contr...
-  - 🛡️ **Filter Network Traffic**
-    Employ network appliances and endpoint software to filter ingress, egress, and lateral network traffic. This includes pr...
-  - *3 more mitigation(s) available*
-
-### Competitive misuse or training of shadow modelsbr>(IP Confidentiality  Integrity Loss)
+### Reduced Confidentiality of IP
 
 - **Technique**: [T1665](https://attack.mitre.org/techniques/T1665/) - Hide Infrastructure
 - **Tactic**: Command And Control
-- **Similarity Score**: 62.57%
+- **Similarity Score**: 70.83%
 
-### Identify valuable proprietary assets
+### Leverage personal cloud accounts
 
-- **Technique**: [T1213](https://attack.mitre.org/techniques/T1213/) - Data from Information Repositories
+- **Technique**: [T1585.003](https://attack.mitre.org/techniques/T1585/003/) - Cloud Accounts
+- **Tactic**: Resource Development
+- **Similarity Score**: 85.25%
+- **Mitigations (1):**
+  - 🛡️ **Pre-compromise**
+    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
+
+### Exfiltrate Proprietary LLM Data
+
+- **Technique**: [T1560.001](https://attack.mitre.org/techniques/T1560/001/) - Archive via Utility
 - **Tactic**: Collection
-- **Similarity Score**: 50.86%
-- **Mitigations (7):**
-  - 🛡️ **Multi-factor Authentication**
-    Multi-Factor Authentication (MFA) enhances security by requiring users to provide at least two forms of verification to ...
-  - 🛡️ **Out-of-Band Communications Channel**
-    Establish secure out-of-band communication channels to ensure the continuity of critical communications during security ...
-  - 🛡️ **User Training**
-    User Training involves educating employees and contractors on recognizing, reporting, and preventing cyber threats that ...
-  - *4 more mitigation(s) available*
+- **Similarity Score**: 69.06%
+- **Mitigations (1):**
+  - 🛡️ **Audit**
+    Auditing is the process of recording activity and systematically reviewing and analyzing the activity and system configu...
 
-### Direct Data Exfiltration Path
+### Competitive Misuse
 
-- **Technique**: [T1020](https://attack.mitre.org/techniques/T1020/) - Automated Exfiltration
+- **Technique**: [T1650](https://attack.mitre.org/techniques/T1650/) - Acquire Access
+- **Tactic**: Resource Development
+- **Similarity Score**: 46.13%
+- **Mitigations (1):**
+  - 🛡️ **Pre-compromise**
+    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
+
+### Establish Exfiltration Channel
+
+- **Technique**: [T1041](https://attack.mitre.org/techniques/T1041/) - Exfiltration Over C2 Channel
 - **Tactic**: Exfiltration
-- **Similarity Score**: 84.23%
+- **Similarity Score**: 77.21%
+- **Mitigations (2):**
+  - 🛡️ **Network Intrusion Prevention**
+    Use intrusion detection signatures to block traffic at network boundaries.
+  - 🛡️ **Data Loss Prevention**
+    Data Loss Prevention (DLP) involves implementing strategies and technologies to identify, categorize, monitor, and contr...
 
-### Proprietary LLM data stored in repositoriesbr>(fine-tuning data, model stores)
+### Locate fine-tuning datasets
 
 - **Technique**: [T1602](https://attack.mitre.org/techniques/T1602/) - Data from Configuration Repository
 - **Tactic**: Collection
-- **Similarity Score**: 60.33%
+- **Similarity Score**: 51.35%
 - **Mitigations (6):**
   - 🛡️ **Update Software**
     Software updates ensure systems are protected against known vulnerabilities by applying patches and upgrades provided by...
@@ -212,42 +103,112 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
     Network segmentation involves dividing a network into smaller, isolated segments to control and limit the flow of traffi...
   - *3 more mitigation(s) available*
 
-### Transfer via authorized channelsbr>(email, cloud sync, USB)
+### Use legitimate cloud storage
+
+- **Technique**: [T1530](https://attack.mitre.org/techniques/T1530/) - Data from Cloud Storage
+- **Tactic**: Collection
+- **Similarity Score**: 75.56%
+- **Mitigations (6):**
+  - 🛡️ **User Account Management**
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
+  - 🛡️ **Encrypt Sensitive Information**
+    Protect sensitive information at rest, in transit, and during processing by using strong encryption algorithms. Encrypti...
+  - 🛡️ **Restrict File and Directory Permissions**
+    Restricting file and directory permissions involves setting access controls at the file system level to limit which user...
+  - *3 more mitigation(s) available*
+
+### Execute Data Transfer
 
 - **Technique**: [T1570](https://attack.mitre.org/techniques/T1570/) - Lateral Tool Transfer
 - **Tactic**: Lateral Movement
-- **Similarity Score**: 69.59%
+- **Similarity Score**: 69.63%
 - **Mitigations (2):**
   - 🛡️ **Filter Network Traffic**
     Employ network appliances and endpoint software to filter ingress, egress, and lateral network traffic. This includes pr...
   - 🛡️ **Network Intrusion Prevention**
     Use intrusion detection signatures to block traffic at network boundaries.
 
-### Abuse CICD pipeline access
+### Intellectual Property Compromise
+
+- **Technique**: [T1588](https://attack.mitre.org/techniques/T1588/) - Obtain Capabilities
+- **Tactic**: Resource Development
+- **Similarity Score**: 58.13%
+- **Mitigations (1):**
+  - 🛡️ **Pre-compromise**
+    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
+
+### Malicious Internal Actor with Repository Access
 
 - **Technique**: [T1677](https://attack.mitre.org/techniques/T1677/) - Poisoned Pipeline Execution
 - **Tactic**: Execution
-- **Similarity Score**: 48.30%
+- **Similarity Score**: 55.72%
 - **Mitigations (2):**
   - 🛡️ **User Account Management**
     User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
   - 🛡️ **Software Configuration**
     Software configuration refers to making security-focused adjustments to the settings of applications, middleware, databa...
 
-### Copy training configurations and hyperparameters
+### Utilize external file sharing services
 
-- **Technique**: [T1074.002](https://attack.mitre.org/techniques/T1074/002/) - Remote Data Staging
-- **Tactic**: Collection
-- **Similarity Score**: 40.71%
+- **Technique**: [T1570](https://attack.mitre.org/techniques/T1570/) - Lateral Tool Transfer
+- **Tactic**: Lateral Movement
+- **Similarity Score**: 66.71%
+- **Mitigations (2):**
+  - 🛡️ **Filter Network Traffic**
+    Employ network appliances and endpoint software to filter ingress, egress, and lateral network traffic. This includes pr...
+  - 🛡️ **Network Intrusion Prevention**
+    Use intrusion detection signatures to block traffic at network boundaries.
 
-### Train shadowreplica model
+### Identify High-Value Artifacts
 
-- **Technique**: [T1099](https://attack.mitre.org/techniques/T1099/) - Timestomp
+- **Technique**: [T1070](https://attack.mitre.org/techniques/T1070/) - Indicator Removal
 - **Tactic**: Defense Evasion
-- **Similarity Score**: 31.76%
+- **Similarity Score**: 48.51%
+- **Mitigations (3):**
+  - 🛡️ **Encrypt Sensitive Information**
+    Protect sensitive information at rest, in transit, and during processing by using strong encryption algorithms. Encrypti...
+  - 🛡️ **Remote Data Storage**
+    Remote Data Storage focuses on moving critical data, such as security logs and sensitive files, to secure, off-host loca...
+  - 🛡️ **Restrict File and Directory Permissions**
+    Restricting file and directory permissions involves setting access controls at the file system level to limit which user...
+
+### Stage Data for Exfiltration
+
+- **Technique**: [T1074](https://attack.mitre.org/techniques/T1074/) - Data Staged
+- **Tactic**: Collection
+- **Similarity Score**: 83.66%
+
+### Reduced Integrity of IP
+
+- **Technique**: [T1498](https://attack.mitre.org/techniques/T1498/) - Network Denial of Service
+- **Tactic**: Impact
+- **Similarity Score**: 65.72%
+- **Mitigations (1):**
+  - 🛡️ **Filter Network Traffic**
+    Employ network appliances and endpoint software to filter ingress, egress, and lateral network traffic. This includes pr...
+
+### Discover training data stores
+
+- **Technique**: [T1213.006](https://attack.mitre.org/techniques/T1213/006/) - Databases
+- **Tactic**: Collection
+- **Similarity Score**: 62.96%
+- **Mitigations (5):**
+  - 🛡️ **User Training**
+    User Training involves educating employees and contractors on recognizing, reporting, and preventing cyber threats that ...
+  - 🛡️ **Encrypt Sensitive Information**
+    Protect sensitive information at rest, in transit, and during processing by using strong encryption algorithms. Encrypti...
+  - 🛡️ **Software Configuration**
+    Software configuration refers to making security-focused adjustments to the settings of applications, middleware, databa...
+  - *2 more mitigation(s) available*
+
+### Identify model weightscheckpoints
+
+- **Technique**: [T1497.001](https://attack.mitre.org/techniques/T1497/001/) - System Checks
+- **Tactic**: Defense Evasion, Discovery
+- **Similarity Score**: 42.13%
 
 
-*Total technique mappings: 20 | Mitigations found: 41*
+*Total technique mappings: 16 | Mitigations found: 33*
 
 
 ## Attack Path Analysis

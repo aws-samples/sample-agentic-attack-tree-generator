@@ -11,10 +11,10 @@ Already synchronous, already uses Strands, already uses FileDiscovery.
 Main benefits: Better organization, testability, and reusability.
 
 Usage:
-    from threatforest.modules.tools.context_analysis_tool import ContextAnalysisTool
+    from threatforest.modules.workflow.context_analysis import ContextAnalysisTool
     
     tool = ContextAnalysisTool()
-    result = tool.execute(project_path, bedrock_model)
+    result = tool.run(project_path)
 """
 
 from .tool import ContextAnalysisTool

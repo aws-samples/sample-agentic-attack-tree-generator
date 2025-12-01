@@ -4,6 +4,7 @@ from typing import Dict, Any, Optional
 from pathlib import Path
 from threatforest.config import config
 from ..core import BaseAgent
+from ..models.project_models import ContextFiles
 from ..workflow.context_analysis.file_categorizer import FileCategorizer
 
 
@@ -14,15 +15,15 @@ class ContextExtractor(BaseAgent):
         self.logger = logger
         self.categorizer = FileCategorizer(logger)
     
-    def extract_enhanced_context(self, context_files: Dict[str, Any], bedrock_model: str,
-                                 aws_profile: Optional[str] = None) -> Dict[str, Any]:
+    def extract_enhanced_context(self, context_files: ContextFiles) -> Dict[str, Any]:
         """Extract enhanced application context using Strands"""
         try:
             # Collect files for analysis
             files_to_analyze = []
             
             for category in ['architecture_diagrams', 'readmes']:
-                for file_path in context_files.get(category, []):
+                files = getattr(context_files, category)
+                for file_path in files:
                     if self.categorizer.is_binary_file(file_path) or file_path.lower().endswith('.md'):
                         files_to_analyze.append(file_path)
             

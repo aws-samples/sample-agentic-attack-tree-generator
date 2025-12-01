@@ -39,51 +39,6 @@ graph TD
 
 This attack tree has been mapped to MITRE ATT&CK techniques:
 
-### Malicious Modification of Registration Documents
-
-- **Technique**: [T1098.005](https://attack.mitre.org/techniques/T1098/005/) - Device Registration
-- **Tactic**: Persistence, Privilege Escalation
-- **Similarity Score**: 53.95%
-- **Mitigations (1):**
-  - 🛡️ **Multi-factor Authentication**
-    Multi-Factor Authentication (MFA) enhances security by requiring users to provide at least two forms of verification to ...
-
-### Missing Certificate Pinning
-
-- **Technique**: [T1130](https://attack.mitre.org/techniques/T1130/) - Install Root Certificate
-- **Tactic**: Defense Evasion
-- **Similarity Score**: 66.32%
-
-### Unauthorized Access to Registration Documents
-
-- **Technique**: [T1098.005](https://attack.mitre.org/techniques/T1098/005/) - Device Registration
-- **Tactic**: Persistence, Privilege Escalation
-- **Similarity Score**: 52.72%
-- **Mitigations (1):**
-  - 🛡️ **Multi-factor Authentication**
-    Multi-Factor Authentication (MFA) enhances security by requiring users to provide at least two forms of verification to ...
-
-### Threat Actor with Network Access
-
-- **Technique**: [T1108](https://attack.mitre.org/techniques/T1108/) - Redundant Access
-- **Tactic**: Defense Evasion, Persistence
-- **Similarity Score**: 65.28%
-
-### Read Vehicle Registration Data
-
-- **Technique**: [T1096](https://attack.mitre.org/techniques/T1096/) - NTFS File Attributes
-- **Tactic**: Defense Evasion
-- **Similarity Score**: 43.02%
-
-### Exploit Weak TLS Implementation
-
-- **Technique**: [T1001.003](https://attack.mitre.org/techniques/T1001/003/) - Protocol or Service Impersonation
-- **Tactic**: Command And Control
-- **Similarity Score**: 63.58%
-- **Mitigations (1):**
-  - 🛡️ **Network Intrusion Prevention**
-    Use intrusion detection signatures to block traffic at network boundaries.
-
 ### Unvalidated SSLTLS Certificates
 
 - **Technique**: [T1553.004](https://attack.mitre.org/techniques/T1553/004/) - Install Root Certificate
@@ -94,41 +49,6 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
     Software configuration refers to making security-focused adjustments to the settings of applications, middleware, databa...
   - 🛡️ **Operating System Configuration**
     Operating System Configuration involves adjusting system settings and hardening the default configurations of an operati...
-
-### Intercept Data in Transit
-
-- **Technique**: [T1001.003](https://attack.mitre.org/techniques/T1001/003/) - Protocol or Service Impersonation
-- **Tactic**: Command And Control
-- **Similarity Score**: 64.08%
-- **Mitigations (1):**
-  - 🛡️ **Network Intrusion Prevention**
-    Use intrusion detection signatures to block traffic at network boundaries.
-
-### Lack of HTTPS Enforcement
-
-- **Technique**: [T1608.003](https://attack.mitre.org/techniques/T1608/003/) - Install Digital Certificate
-- **Tactic**: Resource Development
-- **Similarity Score**: 62.30%
-- **Mitigations (1):**
-  - 🛡️ **Pre-compromise**
-    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
-
-### Position in Network Path
-
-- **Technique**: [T1018](https://attack.mitre.org/techniques/T1018/) - Remote System Discovery
-- **Tactic**: Discovery
-- **Similarity Score**: 67.71%
-
-### Integrity Compromise
-
-- **Technique**: [T1565.003](https://attack.mitre.org/techniques/T1565/003/) - Runtime Data Manipulation
-- **Tactic**: Impact
-- **Similarity Score**: 59.74%
-- **Mitigations (2):**
-  - 🛡️ **Network Segmentation**
-    Network segmentation involves dividing a network into smaller, isolated segments to control and limit the flow of traffi...
-  - 🛡️ **Restrict File and Directory Permissions**
-    Restricting file and directory permissions involves setting access controls at the file system level to limit which user...
 
 ### Modify Vehicle Registration Data
 
@@ -141,16 +61,46 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
   - 🛡️ **Restrict File and Directory Permissions**
     Restricting file and directory permissions involves setting access controls at the file system level to limit which user...
 
-### Exploit Unencrypted Connection
+### Read Vehicle Registration Data
 
-- **Technique**: [T1572](https://attack.mitre.org/techniques/T1572/) - Protocol Tunneling
+- **Technique**: [T1096](https://attack.mitre.org/techniques/T1096/) - NTFS File Attributes
+- **Tactic**: Defense Evasion
+- **Similarity Score**: 43.02%
+
+### Lack of HTTPS Enforcement
+
+- **Technique**: [T1608.003](https://attack.mitre.org/techniques/T1608/003/) - Install Digital Certificate
+- **Tactic**: Resource Development
+- **Similarity Score**: 62.30%
+- **Mitigations (1):**
+  - 🛡️ **Pre-compromise**
+    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
+
+### Intercept Data in Transit
+
+- **Technique**: [T1001.003](https://attack.mitre.org/techniques/T1001/003/) - Protocol or Service Impersonation
 - **Tactic**: Command And Control
-- **Similarity Score**: 74.97%
-- **Mitigations (2):**
-  - 🛡️ **Filter Network Traffic**
-    Employ network appliances and endpoint software to filter ingress, egress, and lateral network traffic. This includes pr...
+- **Similarity Score**: 64.08%
+- **Mitigations (1):**
   - 🛡️ **Network Intrusion Prevention**
     Use intrusion detection signatures to block traffic at network boundaries.
+
+### Missing Certificate Pinning
+
+- **Technique**: [T1130](https://attack.mitre.org/techniques/T1130/) - Install Root Certificate
+- **Tactic**: Defense Evasion
+- **Similarity Score**: 66.32%
+
+### Integrity Compromise
+
+- **Technique**: [T1565.003](https://attack.mitre.org/techniques/T1565/003/) - Runtime Data Manipulation
+- **Tactic**: Impact
+- **Similarity Score**: 59.74%
+- **Mitigations (2):**
+  - 🛡️ **Network Segmentation**
+    Network segmentation involves dividing a network into smaller, isolated segments to control and limit the flow of traffi...
+  - 🛡️ **Restrict File and Directory Permissions**
+    Restricting file and directory permissions involves setting access controls at the file system level to limit which user...
 
 ### Confidentiality Breach
 
@@ -165,6 +115,56 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
   - 🛡️ **Network Segmentation**
     Network segmentation involves dividing a network into smaller, isolated segments to control and limit the flow of traffi...
   - *1 more mitigation(s) available*
+
+### Threat Actor with Network Access
+
+- **Technique**: [T1108](https://attack.mitre.org/techniques/T1108/) - Redundant Access
+- **Tactic**: Defense Evasion, Persistence
+- **Similarity Score**: 65.28%
+
+### Unauthorized Access to Registration Documents
+
+- **Technique**: [T1098.005](https://attack.mitre.org/techniques/T1098/005/) - Device Registration
+- **Tactic**: Persistence, Privilege Escalation
+- **Similarity Score**: 52.72%
+- **Mitigations (1):**
+  - 🛡️ **Multi-factor Authentication**
+    Multi-Factor Authentication (MFA) enhances security by requiring users to provide at least two forms of verification to ...
+
+### Exploit Unencrypted Connection
+
+- **Technique**: [T1572](https://attack.mitre.org/techniques/T1572/) - Protocol Tunneling
+- **Tactic**: Command And Control
+- **Similarity Score**: 74.97%
+- **Mitigations (2):**
+  - 🛡️ **Filter Network Traffic**
+    Employ network appliances and endpoint software to filter ingress, egress, and lateral network traffic. This includes pr...
+  - 🛡️ **Network Intrusion Prevention**
+    Use intrusion detection signatures to block traffic at network boundaries.
+
+### Malicious Modification of Registration Documents
+
+- **Technique**: [T1098.005](https://attack.mitre.org/techniques/T1098/005/) - Device Registration
+- **Tactic**: Persistence, Privilege Escalation
+- **Similarity Score**: 53.95%
+- **Mitigations (1):**
+  - 🛡️ **Multi-factor Authentication**
+    Multi-Factor Authentication (MFA) enhances security by requiring users to provide at least two forms of verification to ...
+
+### Exploit Weak TLS Implementation
+
+- **Technique**: [T1001.003](https://attack.mitre.org/techniques/T1001/003/) - Protocol or Service Impersonation
+- **Tactic**: Command And Control
+- **Similarity Score**: 63.58%
+- **Mitigations (1):**
+  - 🛡️ **Network Intrusion Prevention**
+    Use intrusion detection signatures to block traffic at network boundaries.
+
+### Position in Network Path
+
+- **Technique**: [T1018](https://attack.mitre.org/techniques/T1018/) - Remote System Discovery
+- **Tactic**: Discovery
+- **Similarity Score**: 67.71%
 
 
 *Total technique mappings: 14 | Mitigations found: 17*

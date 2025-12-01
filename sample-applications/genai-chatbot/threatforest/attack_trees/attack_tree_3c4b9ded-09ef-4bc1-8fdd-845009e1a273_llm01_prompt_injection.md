@@ -7,76 +7,34 @@
 
 ```mermaid
 graph TD
-    GOAL[" Force unintended actions from LLMbr>Compromise integrityavailability ofbr>LLM system and connected resources"]
-    %% Initial Facts/Conditions
-    F1["External threat actorbr>with LLM APIinterface access"]
-    F2["LLM system acceptsbr>user-provided input"]
-    F3["System prompt existsbr>defining LLM behavior"]
-    %% Attack Path 1: Direct Prompt Injection
-    A1["Analyze LLM response patternsbr>to infer system prompt structure"]
-    A2["Craft direct injection payloadbr>Ignore previous instructions..."]
-    A3["Submit malicious promptbr>via standard input channel"]
-    A4["Override system promptbr>constraints and guardrails"]
-    %% Attack Path 2: Adversarial Suffix Injection
-    A5["Research adversarial suffixbr>techniques for target LLM"]
-    A6["Generate adversarial tokenbr>sequences via optimization"]
-    A7["Append adversarial suffixbr>to seemingly benign query"]
-    A8["Bypass input filteringbr>and safety mechanisms"]
-    %% Attack Path 3: Obfuscated Text Injection
-    A9["Identify encodingobfuscationbr>methods LLM can interpret"]
-    A10["Encode malicious instructionsbr>using Base64UnicodeROT13"]
-    A11["Embed obfuscated payloadbr>within legitimate-looking request"]
-    A12["LLM decodes and executesbr>hidden malicious instructions"]
-    %% Convergence Points
-    A13["System prompt successfullybr>overwritten or bypassed"]
-    A14["LLM executes attacker-controlledbr>instructions"]
-    %% Impact Branches
-    I1["Exfiltrate sensitive databr>from connected resources"]
-    I2["Execute unauthorized actionsbr>on integrated systems"]
-    I3["Cause denial of servicebr>or resource exhaustion"]
-    I4["Manipulate LLM outputsbr>for downstream systems"]
-    %% Connections - Initial conditions
-    F1 --> A1
-    F2 --> A1
-    F3 --> A1
-    %% Attack Path 1 Flow
-    A1 --> A2
-    A2 --> A3
-    A3 --> A4
-    A4 --> A13
-    %% Attack Path 2 Flow
-    F1 --> A5
-    A5 --> A6
-    A6 --> A7
-    A7 --> A8
-    A8 --> A13
-    %% Attack Path 3 Flow
-    F1 --> A9
-    A9 --> A10
-    A10 --> A11
-    A11 --> A12
-    A12 --> A13
-    %% Convergence to execution
-    A13 --> A14
-    %% Impact branches
-    A14 --> I1
-    A14 --> I2
-    A14 --> I3
-    A14 --> I4
-    %% Final goal connections
-    I1 --> GOAL
-    I2 --> GOAL
-    I3 --> GOAL
-    I4 --> GOAL
-    %% Styling
-    classDef attack fill:#ffcccc,stroke:#cc0000,stroke-width:2px
-    classDef goal fill:#ffcc99,stroke:#cc6600,stroke-width:3px
-    classDef fact fill:#ccccff,stroke:#0000cc,stroke-width:2px
-    classDef impact fill:#ffcccc,stroke:#cc0000,stroke-width:2px
-    class F1,F2,F3 fact
-    class A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13,A14 attack
-    class I1,I2,I3,I4 attack
-    class GOAL goal
+    A["External Threat Actor with LLM System Access"] --> B["Identify LLM Input Vectors"]
+    B --> C["Direct User Input Channel"]
+    B --> D["Indirect Input Sources"]
+    C --> E["Craft Adversarial Prompts"]
+    D --> E
+    E --> F["Adversarial Suffix Injection"]
+    E --> G["Obfuscated Text Encoding"]
+    F --> H["Inject Malicious Instructions"]
+    G --> H
+    H --> I["Overwrite System Prompt"]
+    I --> J["Force Unintended LLM Actions"]
+    J --> K["Data Exfiltration"]
+    J --> L["Unauthorized Command Execution"]
+    J --> M["Resource Manipulation"]
+    K --> N["Reduced Integrity of LLM System"]
+    L --> N
+    M --> N
+    K --> O["Reduced Availability of Connected Resources"]
+    L --> O
+    M --> O
+    N --> P["Compromise of LLM System and Connected Resources"]
+    O --> P
+    classDef fact fill:#ccccff
+    classDef attack fill:#ffcccc
+    classDef goal fill:#ffcc99
+    class A fact
+    class B,C,D,E,F,G,H,I,J,K,L,M attack
+    class N,O,P goal
     classDef mitigation fill:#ccffcc
 ```
 
@@ -85,80 +43,128 @@ graph TD
 
 This attack tree has been mapped to MITRE ATT&CK techniques:
 
-### Override system promptbr>constraints and guardrails
+### Force Unintended LLM Actions
 
-- **Technique**: [T1141](https://attack.mitre.org/techniques/T1141/) - Input Prompt
-- **Tactic**: Credential Access
-- **Similarity Score**: 58.10%
-
-### LLM decodes and executesbr>hidden malicious instructions
-
-- **Technique**: [T1027.016](https://attack.mitre.org/techniques/T1027/016/) - Junk Code Insertion
+- **Technique**: [T1218.009](https://attack.mitre.org/techniques/T1218/009/) - Regsvcs/Regasm
 - **Tactic**: Defense Evasion
-- **Similarity Score**: 68.09%
-- **Mitigations (1):**
-  - 🛡️ **Antivirus/Antimalware**
-    Antivirus/Antimalware solutions utilize signatures, heuristics, and behavioral analysis to detect, block, and remediate ...
-
-### Embed obfuscated payloadbr>within legitimate-looking request
-
-- **Technique**: [T1132.002](https://attack.mitre.org/techniques/T1132/002/) - Non-Standard Encoding
-- **Tactic**: Command And Control
-- **Similarity Score**: 72.36%
-- **Mitigations (1):**
-  - 🛡️ **Network Intrusion Prevention**
-    Use intrusion detection signatures to block traffic at network boundaries.
-
-### Execute unauthorized actionsbr>on integrated systems
-
-- **Technique**: [T1514](https://attack.mitre.org/techniques/T1514/) - Elevated Execution with Prompt
-- **Tactic**: Privilege Escalation
-- **Similarity Score**: 58.86%
-
-### Exfiltrate sensitive databr>from connected resources
-
-- **Technique**: [T1567.002](https://attack.mitre.org/techniques/T1567/002/) - Exfiltration to Cloud Storage
-- **Tactic**: Exfiltration
-- **Similarity Score**: 81.28%
-- **Mitigations (1):**
-  - 🛡️ **Restrict Web-Based Content**
-    Restricting web-based content involves enforcing policies and technologies that limit access to potentially malicious we...
-
-### Append adversarial suffixbr>to seemingly benign query
-
-- **Technique**: [T1595.003](https://attack.mitre.org/techniques/T1595/003/) - Wordlist Scanning
-- **Tactic**: Reconnaissance
-- **Similarity Score**: 34.01%
+- **Similarity Score**: 55.73%
 - **Mitigations (2):**
+  - 🛡️ **Execution Prevention**
+    Prevent the execution of unauthorized or malicious code on systems by implementing application control, script blocking,...
   - 🛡️ **Disable or Remove Feature or Program**
     Disable or remove unnecessary and potentially vulnerable software, features, or services to reduce the attack surface an...
-  - 🛡️ **Pre-compromise**
-    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
 
-### System prompt existsbr>defining LLM behavior
+### Data Exfiltration
+
+- **Technique**: [T1020](https://attack.mitre.org/techniques/T1020/) - Automated Exfiltration
+- **Tactic**: Exfiltration
+- **Similarity Score**: 84.13%
+
+### Resource Manipulation
+
+- **Technique**: [T1564.009](https://attack.mitre.org/techniques/T1564/009/) - Resource Forking
+- **Tactic**: Defense Evasion
+- **Similarity Score**: 52.66%
+- **Mitigations (1):**
+  - 🛡️ **Application Developer Guidance**
+    Application Developer Guidance focuses on providing developers with the knowledge, tools, and best practices needed to w...
+
+### Reduced Integrity of LLM System
+
+- **Technique**: [T1490](https://attack.mitre.org/techniques/T1490/) - Inhibit System Recovery
+- **Tactic**: Impact
+- **Similarity Score**: 59.49%
+- **Mitigations (4):**
+  - 🛡️ **Execution Prevention**
+    Prevent the execution of unauthorized or malicious code on systems by implementing application control, script blocking,...
+  - 🛡️ **Operating System Configuration**
+    Operating System Configuration involves adjusting system settings and hardening the default configurations of an operati...
+  - 🛡️ **User Account Management**
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
+  - *1 more mitigation(s) available*
+
+### Unauthorized Command Execution
+
+- **Technique**: [T1202](https://attack.mitre.org/techniques/T1202/) - Indirect Command Execution
+- **Tactic**: Defense Evasion
+- **Similarity Score**: 71.59%
+
+### Compromise of LLM System and Connected Resources
+
+- **Technique**: [T1547.008](https://attack.mitre.org/techniques/T1547/008/) - LSASS Driver
+- **Tactic**: Persistence, Privilege Escalation
+- **Similarity Score**: 53.76%
+- **Mitigations (3):**
+  - 🛡️ **Privileged Process Integrity**
+    Privileged Process Integrity focuses on defending highly privileged processes (e.g., system services, antivirus, or auth...
+  - 🛡️ **Credential Access Protection**
+    Credential Access Protection focuses on implementing measures to prevent adversaries from obtaining credentials, such as...
+  - 🛡️ **Restrict Library Loading**
+    Restricting library loading involves implementing security controls to ensure that only trusted and verified libraries (...
+
+### Identify LLM Input Vectors
+
+- **Technique**: [T1652](https://attack.mitre.org/techniques/T1652/) - Device Driver Discovery
+- **Tactic**: Discovery
+- **Similarity Score**: 39.12%
+
+### Reduced Availability of Connected Resources
+
+- **Technique**: [T1499.003](https://attack.mitre.org/techniques/T1499/003/) - Application Exhaustion Flood
+- **Tactic**: Impact
+- **Similarity Score**: 64.39%
+- **Mitigations (1):**
+  - 🛡️ **Filter Network Traffic**
+    Employ network appliances and endpoint software to filter ingress, egress, and lateral network traffic. This includes pr...
+
+### External Threat Actor with LLM System Access
 
 - **Technique**: [T1177](https://attack.mitre.org/techniques/T1177/) - LSASS Driver
 - **Tactic**: Execution, Persistence
-- **Similarity Score**: 48.01%
+- **Similarity Score**: 53.50%
 
-### Manipulate LLM outputsbr>for downstream systems
+### Direct User Input Channel
 
-- **Technique**: [T1059.008](https://attack.mitre.org/techniques/T1059/008/) - Network Device CLI
+- **Technique**: [T1674](https://attack.mitre.org/techniques/T1674/) - Input Injection
 - **Tactic**: Execution
-- **Similarity Score**: 43.53%
-- **Mitigations (3):**
+- **Similarity Score**: 57.25%
+- **Mitigations (2):**
+  - 🛡️ **Limit Hardware Installation**
+    Prevent unauthorized users or groups from installing or using hardware, such as external drives, peripheral devices, or ...
   - 🛡️ **Execution Prevention**
     Prevent the execution of unauthorized or malicious code on systems by implementing application control, script blocking,...
-  - 🛡️ **Privileged Account Management**
-    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...
-  - 🛡️ **User Account Management**
-    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
 
-### System prompt successfullybr>overwritten or bypassed
+### Adversarial Suffix Injection
+
+- **Technique**: [T1036.002](https://attack.mitre.org/techniques/T1036/002/) - Right-to-Left Override
+- **Tactic**: Defense Evasion
+- **Similarity Score**: 47.92%
+
+### Craft Adversarial Prompts
+
+- **Technique**: [T1056.002](https://attack.mitre.org/techniques/T1056/002/) - GUI Input Capture
+- **Tactic**: Collection, Credential Access
+- **Similarity Score**: 56.50%
+- **Mitigations (1):**
+  - 🛡️ **User Training**
+    User Training involves educating employees and contractors on recognizing, reporting, and preventing cyber threats that ...
+
+### Indirect Input Sources
+
+- **Technique**: [T1674](https://attack.mitre.org/techniques/T1674/) - Input Injection
+- **Tactic**: Execution
+- **Similarity Score**: 42.28%
+- **Mitigations (2):**
+  - 🛡️ **Limit Hardware Installation**
+    Prevent unauthorized users or groups from installing or using hardware, such as external drives, peripheral devices, or ...
+  - 🛡️ **Execution Prevention**
+    Prevent the execution of unauthorized or malicious code on systems by implementing application control, script blocking,...
+
+### Overwrite System Prompt
 
 - **Technique**: [T1070.003](https://attack.mitre.org/techniques/T1070/003/) - Clear Command History
 - **Tactic**: Defense Evasion
-- **Similarity Score**: 60.68%
+- **Similarity Score**: 50.23%
 - **Mitigations (3):**
   - 🛡️ **Remote Data Storage**
     Remote Data Storage focuses on moving critical data, such as security logs and sensitive files, to secure, off-host loca...
@@ -167,124 +173,28 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
   - 🛡️ **Environment Variable Permissions**
     Restrict the modification of environment variables to authorized users and processes by enforcing strict permissions and...
 
-### Encode malicious instructionsbr>using Base64UnicodeROT13
+### Obfuscated Text Encoding
 
 - **Technique**: [T1132.001](https://attack.mitre.org/techniques/T1132/001/) - Standard Encoding
 - **Tactic**: Command And Control
-- **Similarity Score**: 75.21%
+- **Similarity Score**: 84.84%
 - **Mitigations (1):**
   - 🛡️ **Network Intrusion Prevention**
     Use intrusion detection signatures to block traffic at network boundaries.
 
-### Generate adversarial tokenbr>sequences via optimization
+### Inject Malicious Instructions
 
-- **Technique**: [T1111](https://attack.mitre.org/techniques/T1111/) - Multi-Factor Authentication Interception
-- **Tactic**: Credential Access
-- **Similarity Score**: 49.12%
-- **Mitigations (1):**
-  - 🛡️ **User Training**
-    User Training involves educating employees and contractors on recognizing, reporting, and preventing cyber threats that ...
-
-### Analyze LLM response patternsbr>to infer system prompt structure
-
-- **Technique**: [T1141](https://attack.mitre.org/techniques/T1141/) - Input Prompt
-- **Tactic**: Credential Access
-- **Similarity Score**: 41.87%
-
-### Craft direct injection payloadbr>Ignore previous instructions...
-
-- **Technique**: [T1027.009](https://attack.mitre.org/techniques/T1027/009/) - Embedded Payloads
+- **Technique**: [T1218.013](https://attack.mitre.org/techniques/T1218/013/) - Mavinject
 - **Tactic**: Defense Evasion
-- **Similarity Score**: 54.24%
+- **Similarity Score**: 64.74%
 - **Mitigations (2):**
-  - 🛡️ **Antivirus/Antimalware**
-    Antivirus/Antimalware solutions utilize signatures, heuristics, and behavioral analysis to detect, block, and remediate ...
-  - 🛡️ **Behavior Prevention on Endpoint**
-    Behavior Prevention on Endpoint refers to the use of technologies and strategies to detect and block potentially malicio...
-
-### LLM system acceptsbr>user-provided input
-
-- **Technique**: [T1015](https://attack.mitre.org/techniques/T1015/) - Accessibility Features
-- **Tactic**: Persistence, Privilege Escalation
-- **Similarity Score**: 40.73%
-
-### Identify encodingobfuscationbr>methods LLM can interpret
-
-- **Technique**: [T1132.001](https://attack.mitre.org/techniques/T1132/001/) - Standard Encoding
-- **Tactic**: Command And Control
-- **Similarity Score**: 74.72%
-- **Mitigations (1):**
-  - 🛡️ **Network Intrusion Prevention**
-    Use intrusion detection signatures to block traffic at network boundaries.
-
-### LLM executes attacker-controlledbr>instructions
-
-- **Technique**: [T1177](https://attack.mitre.org/techniques/T1177/) - LSASS Driver
-- **Tactic**: Execution, Persistence
-- **Similarity Score**: 50.03%
-
-### Bypass input filteringbr>and safety mechanisms
-
-- **Technique**: [T1674](https://attack.mitre.org/techniques/T1674/) - Input Injection
-- **Tactic**: Execution
-- **Similarity Score**: 46.18%
-- **Mitigations (2):**
-  - 🛡️ **Limit Hardware Installation**
-    Prevent unauthorized users or groups from installing or using hardware, such as external drives, peripheral devices, or ...
+  - 🛡️ **Disable or Remove Feature or Program**
+    Disable or remove unnecessary and potentially vulnerable software, features, or services to reduce the attack surface an...
   - 🛡️ **Execution Prevention**
     Prevent the execution of unauthorized or malicious code on systems by implementing application control, script blocking,...
 
-### Force unintended actions from LLMbr>Compromise integrityavailability ofbr>LLM system and connected resources
 
-- **Technique**: [T1542.003](https://attack.mitre.org/techniques/T1542/003/) - Bootkit
-- **Tactic**: Persistence, Defense Evasion
-- **Similarity Score**: 57.74%
-- **Mitigations (2):**
-  - 🛡️ **Boot Integrity**
-    Boot Integrity ensures that a system starts securely by verifying the integrity of its boot process, operating system, a...
-  - 🛡️ **Privileged Account Management**
-    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...
-
-### Research adversarial suffixbr>techniques for target LLM
-
-- **Technique**: [T1588.007](https://attack.mitre.org/techniques/T1588/007/) - Artificial Intelligence
-- **Tactic**: Resource Development
-- **Similarity Score**: 53.01%
-- **Mitigations (1):**
-  - 🛡️ **Pre-compromise**
-    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
-
-### Cause denial of servicebr>or resource exhaustion
-
-- **Technique**: [T1499.003](https://attack.mitre.org/techniques/T1499/003/) - Application Exhaustion Flood
-- **Tactic**: Impact
-- **Similarity Score**: 83.69%
-- **Mitigations (1):**
-  - 🛡️ **Filter Network Traffic**
-    Employ network appliances and endpoint software to filter ingress, egress, and lateral network traffic. This includes pr...
-
-### External threat actorbr>with LLM APIinterface access
-
-- **Technique**: [T1021.003](https://attack.mitre.org/techniques/T1021/003/) - Distributed Component Object Model
-- **Tactic**: Lateral Movement
-- **Similarity Score**: 51.30%
-- **Mitigations (4):**
-  - 🛡️ **Disable or Remove Feature or Program**
-    Disable or remove unnecessary and potentially vulnerable software, features, or services to reduce the attack surface an...
-  - 🛡️ **Application Isolation and Sandboxing**
-    Application Isolation and Sandboxing refers to the technique of restricting the execution of code to a controlled and is...
-  - 🛡️ **Network Segmentation**
-    Network segmentation involves dividing a network into smaller, isolated segments to control and limit the flow of traffi...
-  - *1 more mitigation(s) available*
-
-### Submit malicious promptbr>via standard input channel
-
-- **Technique**: [T1056](https://attack.mitre.org/techniques/T1056/) - Input Capture
-- **Tactic**: Collection, Credential Access
-- **Similarity Score**: 66.48%
-
-
-*Total technique mappings: 22 | Mitigations found: 26*
+*Total technique mappings: 16 | Mitigations found: 22*
 
 
 ## Attack Path Analysis

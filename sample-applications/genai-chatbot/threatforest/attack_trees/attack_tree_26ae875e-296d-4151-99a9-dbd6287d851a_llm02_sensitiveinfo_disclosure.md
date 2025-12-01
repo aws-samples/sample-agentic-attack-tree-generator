@@ -7,51 +7,30 @@
 
 ```mermaid
 graph TD
-    GOAL[" Unauthorized exposure of personal customer detailsbr>Reduced confidentiality of sensitive data"]
-    %% Initial Facts/Conditions
-    F1[" Malicious internal actorbr>with production log access"]
-    F2[" Chatbot conversation logsbr>contain sensitive customer PII"]
-    F3[" Insufficient log databr>maskingredaction controls"]
-    %% Attack Path 1: Direct Log Access
-    A1["Access production logging systembr>using legitimate credentials"]
-    A2["Navigate to chatbotbr>conversation log storage"]
-    A3["Queryfilter logs forbr>customer conversations"]
-    A4["Extract sensitive PII frombr>unredacted log entries"]
-    %% Attack Path 2: Log Export/Exfiltration
-    A5["Export bulk log filesbr>to local workstation"]
-    A6["Use log analysis toolsbr>to parse conversation data"]
-    A7["Aggregate customer PIIbr>from multiple sessions"]
-    %% Attack Path 3: Log Aggregation Platform Abuse
-    A8["Access centralized logbr>aggregation platform (e.g., CloudWatch, Splunk)"]
-    A9["Create custom queries targetingbr>sensitive data patterns"]
-    A10["Schedule automated reportsbr>containing customer data"]
-    A11["Download or forward reportsbr>to external destination"]
-    %% Connections - Path 1
-    F1 --> A1
-    F2 --> A1
-    F3 --> A1
-    A1 --> A2
-    A2 --> A3
-    A3 --> A4
-    A4 --> GOAL
-    %% Connections - Path 2
-    A2 --> A5
-    A5 --> A6
-    A6 --> A7
-    A7 --> GOAL
-    %% Connections - Path 3
-    F1 --> A8
-    A8 --> A9
-    A9 --> A10
-    A10 --> A11
-    A11 --> GOAL
-    %% Styling
-    classDef attack fill:#ffcccc,stroke:#cc0000,stroke-width:2px
-    classDef goal fill:#ffcc99,stroke:#cc6600,stroke-width:3px
-    classDef fact fill:#ccccff,stroke:#0000cc,stroke-width:2px
-    class A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11 attack
-    class GOAL goal
-    class F1,F2,F3 fact
+    A["Malicious Internal Actor with Production Log Access"] --> B["Locate Chatbot Conversation Logs"]
+    B --> C["Access Log Storage Systems"]
+    C --> D["QuerySearch Log Databases"]
+    D --> E["Extract Sensitive Customer Data"]
+    B --> F["Monitor Real-time Log Streams"]
+    F --> G["Capture Live Conversation Data"]
+    G --> E
+    E --> H["Identify PII in Logs"]
+    H --> I["Personal Information Exposure"]
+    I --> J["Unauthorized Access to Customer Details"]
+    E --> K["Identify FinancialPayment Data"]
+    K --> L["Financial Information Exposure"]
+    L --> J
+    E --> M["Identify Authentication Credentials"]
+    M --> N["Credential Exposure"]
+    N --> J
+    J --> O["Confidentiality Breach of Sensitive Data"]
+    classDef fact fill:#ccccff
+    classDef attack fill:#ffcccc
+    classDef goal fill:#ffcc99
+    class A fact
+    class B,C,D,F,G,H,K,M attack
+    class E,I,L,N,J attack
+    class O goal
     classDef mitigation fill:#ccffcc
 ```
 
@@ -60,98 +39,69 @@ graph TD
 
 This attack tree has been mapped to MITRE ATT&CK techniques:
 
-### Aggregate customer PIIbr>from multiple sessions
+### Malicious Internal Actor with Production Log Access
 
-- **Technique**: [T1033](https://attack.mitre.org/techniques/T1033/) - System Owner/User Discovery
+- **Technique**: [T1654](https://attack.mitre.org/techniques/T1654/) - Log Enumeration
 - **Tactic**: Discovery
-- **Similarity Score**: 54.38%
+- **Similarity Score**: 70.56%
+- **Mitigations (1):**
+  - 🛡️ **User Account Management**
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
 
-### Create custom queries targetingbr>sensitive data patterns
+### Locate Chatbot Conversation Logs
 
-- **Technique**: [T1593.002](https://attack.mitre.org/techniques/T1593/002/) - Search Engines
+- **Technique**: [T1213.005](https://attack.mitre.org/techniques/T1213/005/) - Messaging Applications
+- **Tactic**: Collection
+- **Similarity Score**: 60.54%
+- **Mitigations (3):**
+  - 🛡️ **User Training**
+    User Training involves educating employees and contractors on recognizing, reporting, and preventing cyber threats that ...
+  - 🛡️ **Audit**
+    Auditing is the process of recording activity and systematically reviewing and analyzing the activity and system configu...
+  - 🛡️ **Out-of-Band Communications Channel**
+    Establish secure out-of-band communication channels to ensure the continuity of critical communications during security ...
+
+### QuerySearch Log Databases
+
+- **Technique**: [T1654](https://attack.mitre.org/techniques/T1654/) - Log Enumeration
+- **Tactic**: Discovery
+- **Similarity Score**: 73.62%
+- **Mitigations (1):**
+  - 🛡️ **User Account Management**
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
+
+### Access Log Storage Systems
+
+- **Technique**: [T1654](https://attack.mitre.org/techniques/T1654/) - Log Enumeration
+- **Tactic**: Discovery
+- **Similarity Score**: 72.72%
+- **Mitigations (1):**
+  - 🛡️ **User Account Management**
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
+
+### Identify Authentication Credentials
+
+- **Technique**: [T1555.004](https://attack.mitre.org/techniques/T1555/004/) - Windows Credential Manager
+- **Tactic**: Credential Access
+- **Similarity Score**: 77.33%
+- **Mitigations (1):**
+  - 🛡️ **Disable or Remove Feature or Program**
+    Disable or remove unnecessary and potentially vulnerable software, features, or services to reduce the attack surface an...
+
+### Personal Information Exposure
+
+- **Technique**: [T1593.001](https://attack.mitre.org/techniques/T1593/001/) - Social Media
 - **Tactic**: Reconnaissance
-- **Similarity Score**: 62.28%
+- **Similarity Score**: 72.70%
 - **Mitigations (1):**
   - 🛡️ **Pre-compromise**
     Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
 
-### Access production logging systembr>using legitimate credentials
-
-- **Technique**: [T1056.003](https://attack.mitre.org/techniques/T1056/003/) - Web Portal Capture
-- **Tactic**: Collection, Credential Access
-- **Similarity Score**: 64.20%
-- **Mitigations (1):**
-  - 🛡️ **Privileged Account Management**
-    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...
-
-### Unauthorized exposure of personal customer detailsbr>Reduced confidentiality of sensitive data
-
-- **Technique**: [T1213.004](https://attack.mitre.org/techniques/T1213/004/) - Customer Relationship Management Software
-- **Tactic**: Collection
-- **Similarity Score**: 65.93%
-- **Mitigations (4):**
-  - 🛡️ **User Account Management**
-    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
-  - 🛡️ **User Training**
-    User Training involves educating employees and contractors on recognizing, reporting, and preventing cyber threats that ...
-  - 🛡️ **Software Configuration**
-    Software configuration refers to making security-focused adjustments to the settings of applications, middleware, databa...
-  - *1 more mitigation(s) available*
-
-### Malicious internal actorbr>with production log access
-
-- **Technique**: [T1654](https://attack.mitre.org/techniques/T1654/) - Log Enumeration
-- **Tactic**: Discovery
-- **Similarity Score**: 68.11%
-- **Mitigations (1):**
-  - 🛡️ **User Account Management**
-    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
-
-### Insufficient log databr>maskingredaction controls
-
-- **Technique**: [T1562.008](https://attack.mitre.org/techniques/T1562/008/) - Disable or Modify Cloud Logs
-- **Tactic**: Defense Evasion
-- **Similarity Score**: 69.70%
-- **Mitigations (1):**
-  - 🛡️ **User Account Management**
-    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
-
-### Chatbot conversation logsbr>contain sensitive customer PII
-
-- **Technique**: [T1552.008](https://attack.mitre.org/techniques/T1552/008/) - Chat Messages
-- **Tactic**: Credential Access
-- **Similarity Score**: 56.32%
-- **Mitigations (2):**
-  - 🛡️ **Audit**
-    Auditing is the process of recording activity and systematically reviewing and analyzing the activity and system configu...
-  - 🛡️ **User Training**
-    User Training involves educating employees and contractors on recognizing, reporting, and preventing cyber threats that ...
-
-### Navigate to chatbotbr>conversation log storage
-
-- **Technique**: [T1552.008](https://attack.mitre.org/techniques/T1552/008/) - Chat Messages
-- **Tactic**: Credential Access
-- **Similarity Score**: 58.55%
-- **Mitigations (2):**
-  - 🛡️ **Audit**
-    Auditing is the process of recording activity and systematically reviewing and analyzing the activity and system configu...
-  - 🛡️ **User Training**
-    User Training involves educating employees and contractors on recognizing, reporting, and preventing cyber threats that ...
-
-### Extract sensitive PII frombr>unredacted log entries
-
-- **Technique**: [T1654](https://attack.mitre.org/techniques/T1654/) - Log Enumeration
-- **Tactic**: Discovery
-- **Similarity Score**: 67.63%
-- **Mitigations (1):**
-  - 🛡️ **User Account Management**
-    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
-
-### Download or forward reportsbr>to external destination
+### Extract Sensitive Customer Data
 
 - **Technique**: [T1048](https://attack.mitre.org/techniques/T1048/) - Exfiltration Over Alternative Protocol
 - **Tactic**: Exfiltration
-- **Similarity Score**: 52.30%
+- **Similarity Score**: 62.88%
 - **Mitigations (6):**
   - 🛡️ **Network Segmentation**
     Network segmentation involves dividing a network into smaller, isolated segments to control and limit the flow of traffi...
@@ -161,54 +111,92 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
     Employ network appliances and endpoint software to filter ingress, egress, and lateral network traffic. This includes pr...
   - *3 more mitigation(s) available*
 
-### Queryfilter logs forbr>customer conversations
+### Credential Exposure
+
+- **Technique**: [T1556](https://attack.mitre.org/techniques/T1556/) - Modify Authentication Process
+- **Tactic**: Credential Access, Defense Evasion, Persistence
+- **Similarity Score**: 71.14%
+- **Mitigations (9):**
+  - 🛡️ **Restrict Registry Permissions**
+    Restricting registry permissions involves configuring access control settings for sensitive registry keys and hives to e...
+  - 🛡️ **Multi-factor Authentication**
+    Multi-Factor Authentication (MFA) enhances security by requiring users to provide at least two forms of verification to ...
+  - 🛡️ **Password Policies**
+    Set and enforce secure password policies for accounts to reduce the likelihood of unauthorized access. Strong password p...
+  - *6 more mitigation(s) available*
+
+### Identify PII in Logs
 
 - **Technique**: [T1654](https://attack.mitre.org/techniques/T1654/) - Log Enumeration
 - **Tactic**: Discovery
-- **Similarity Score**: 56.08%
+- **Similarity Score**: 55.88%
 - **Mitigations (1):**
   - 🛡️ **User Account Management**
     User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
 
-### Schedule automated reportsbr>containing customer data
+### Identify FinancialPayment Data
 
-- **Technique**: [T1591.003](https://attack.mitre.org/techniques/T1591/003/) - Identify Business Tempo
+- **Technique**: [T1213.006](https://attack.mitre.org/techniques/T1213/006/) - Databases
+- **Tactic**: Collection
+- **Similarity Score**: 44.95%
+- **Mitigations (5):**
+  - 🛡️ **User Training**
+    User Training involves educating employees and contractors on recognizing, reporting, and preventing cyber threats that ...
+  - 🛡️ **Encrypt Sensitive Information**
+    Protect sensitive information at rest, in transit, and during processing by using strong encryption algorithms. Encrypti...
+  - 🛡️ **Software Configuration**
+    Software configuration refers to making security-focused adjustments to the settings of applications, middleware, databa...
+  - *2 more mitigation(s) available*
+
+### Capture Live Conversation Data
+
+- **Technique**: [T1125](https://attack.mitre.org/techniques/T1125/) - Video Capture
+- **Tactic**: Collection
+- **Similarity Score**: 64.31%
+
+### Monitor Real-time Log Streams
+
+- **Technique**: [T1654](https://attack.mitre.org/techniques/T1654/) - Log Enumeration
+- **Tactic**: Discovery
+- **Similarity Score**: 65.49%
+- **Mitigations (1):**
+  - 🛡️ **User Account Management**
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
+
+### Confidentiality Breach of Sensitive Data
+
+- **Technique**: [T1565.002](https://attack.mitre.org/techniques/T1565/002/) - Transmitted Data Manipulation
+- **Tactic**: Impact
+- **Similarity Score**: 62.56%
+- **Mitigations (1):**
+  - 🛡️ **Encrypt Sensitive Information**
+    Protect sensitive information at rest, in transit, and during processing by using strong encryption algorithms. Encrypti...
+
+### Unauthorized Access to Customer Details
+
+- **Technique**: [T1213.004](https://attack.mitre.org/techniques/T1213/004/) - Customer Relationship Management Software
+- **Tactic**: Collection
+- **Similarity Score**: 74.77%
+- **Mitigations (4):**
+  - 🛡️ **User Account Management**
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
+  - 🛡️ **User Training**
+    User Training involves educating employees and contractors on recognizing, reporting, and preventing cyber threats that ...
+  - 🛡️ **Software Configuration**
+    Software configuration refers to making security-focused adjustments to the settings of applications, middleware, databa...
+  - *1 more mitigation(s) available*
+
+### Financial Information Exposure
+
+- **Technique**: [T1591.002](https://attack.mitre.org/techniques/T1591/002/) - Business Relationships
 - **Tactic**: Reconnaissance
-- **Similarity Score**: 41.23%
+- **Similarity Score**: 69.70%
 - **Mitigations (1):**
   - 🛡️ **Pre-compromise**
     Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
 
-### Access centralized logbr>aggregation platform (e.g., CloudWatch, Splunk)
 
-- **Technique**: [T1654](https://attack.mitre.org/techniques/T1654/) - Log Enumeration
-- **Tactic**: Discovery
-- **Similarity Score**: 74.11%
-- **Mitigations (1):**
-  - 🛡️ **User Account Management**
-    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
-
-### Export bulk log filesbr>to local workstation
-
-- **Technique**: [T1074.001](https://attack.mitre.org/techniques/T1074/001/) - Local Data Staging
-- **Tactic**: Collection
-- **Similarity Score**: 60.01%
-
-### Use log analysis toolsbr>to parse conversation data
-
-- **Technique**: [T1213.005](https://attack.mitre.org/techniques/T1213/005/) - Messaging Applications
-- **Tactic**: Collection
-- **Similarity Score**: 53.11%
-- **Mitigations (3):**
-  - 🛡️ **User Training**
-    User Training involves educating employees and contractors on recognizing, reporting, and preventing cyber threats that ...
-  - 🛡️ **Audit**
-    Auditing is the process of recording activity and systematically reviewing and analyzing the activity and system configu...
-  - 🛡️ **Out-of-Band Communications Channel**
-    Establish secure out-of-band communication channels to ensure the continuity of critical communications during security ...
-
-
-*Total technique mappings: 15 | Mitigations found: 25*
+*Total technique mappings: 15 | Mitigations found: 36*
 
 
 ## Attack Path Analysis

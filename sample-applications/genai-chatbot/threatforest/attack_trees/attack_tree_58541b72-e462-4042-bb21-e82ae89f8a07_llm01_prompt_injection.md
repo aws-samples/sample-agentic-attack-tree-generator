@@ -7,74 +7,34 @@
 
 ```mermaid
 graph TD
-    GOAL[" Bypass text-based security controlsbr>Compromise integrityconfidentialitybr>of LLM system and connected resources"]
-    %% Initial Facts/Conditions
-    F1["External threat actorbr>with multimodal submission access"]
-    F2["LLM system acceptsbr>images, audio, or video input"]
-    F3["Text-based security filtersbr>only scan text modality"]
-    %% Attack Path 1: Image-Based Injection
-    A1["Craft malicious imagebr>with embedded text instructions"]
-    A1a["Embed instructions viabr>steganography in pixel data"]
-    A1b["Embed instructions viabr>visible text in image regions"]
-    A1c["Embed instructions viabr>OCR-readable watermarks"]
-    A2["Submit image tobr>multimodal LLM endpoint"]
-    A3["LLM vision model extractsbr>and processes hidden instructions"]
-    %% Attack Path 2: Audio-Based Injection
-    A4["Craft malicious audiobr>with embedded instructions"]
-    A4a["Embed instructions viabr>speech-to-text exploitation"]
-    A4b["Embed instructions viabr>ultrasonicsubsonic frequencies"]
-    A4c["Embed instructions viabr>audio steganography"]
-    A5["Submit audio tobr>multimodal LLM endpoint"]
-    A6["LLM audio model transcribesbr>and processes hidden instructions"]
-    %% Convergence - Security Bypass
-    A7["Hidden instructions bypassbr>text-based input sanitization"]
-    A8["Malicious prompt executesbr>in LLM context"]
-    %% Impact Branches
-    A9["Exfiltrate sensitive databr>from system context"]
-    A10["Manipulate LLM outputsbr>and responses"]
-    A11["Access connected resourcesbr>via LLM integrations"]
-    A12["Execute unauthorized actionsbr>through toolAPI calls"]
-    %% Connections - Facts to Attack Initiation
-    F1 --> A1
-    F1 --> A4
-    F2 --> A1
-    F2 --> A4
-    F3 --> A7
-    %% Image Attack Path
-    A1 --> A1a
-    A1 --> A1b
-    A1 --> A1c
-    A1a --> A2
-    A1b --> A2
-    A1c --> A2
-    A2 --> A3
-    A3 --> A7
-    %% Audio Attack Path
-    A4 --> A4a
-    A4 --> A4b
-    A4 --> A4c
-    A4a --> A5
-    A4b --> A5
-    A4c --> A5
-    A5 --> A6
-    A6 --> A7
-    %% Convergence to Goal
-    A7 --> A8
-    A8 --> A9
-    A8 --> A10
-    A8 --> A11
-    A8 --> A12
-    A9 --> GOAL
-    A10 --> GOAL
-    A11 --> GOAL
-    A12 --> GOAL
-    %% Styling
-    classDef attack fill:#ffcccc,stroke:#cc0000,stroke-width:2px
-    classDef goal fill:#ffcc99,stroke:#cc6600,stroke-width:3px
-    classDef fact fill:#ccccff,stroke:#0000cc,stroke-width:2px
-    class F1,F2,F3 fact
-    class A1,A1a,A1b,A1c,A2,A3,A4,A4a,A4b,A4c,A5,A6,A7,A8,A9,A10,A11,A12 attack
-    class GOAL goal
+    A["External threat actor with multimodal submission capability"] --> B["Access to LLM system accepting multimodal input"]
+    B --> C["Embed hidden instructions in images"]
+    B --> D["Embed hidden instructions in audio"]
+    C --> C1["Steganographic image encoding"]
+    C --> C2["OCR-evasive text in images"]
+    C --> C3["Visual prompt injection via image metadata"]
+    D --> D1["Steganographic audio encoding"]
+    D --> D2["Speech-to-text evasion techniques"]
+    D --> D3["Audio prompt injection via metadata"]
+    C1 --> E["Bypass text-based security controls"]
+    C2 --> E
+    C3 --> E
+    D1 --> E
+    D2 --> E
+    D3 --> E
+    E --> F["Execute unauthorized instructions"]
+    F --> G["Compromise LLM system integrity"]
+    F --> H["Exfiltrate sensitive data"]
+    F --> I["Manipulate connected resources"]
+    G --> J["Reduced integrity and confidentiality of LLM system and connected resources"]
+    H --> J
+    I --> J
+    classDef fact fill:#ccccff
+    classDef attack fill:#ffcccc
+    classDef goal fill:#ffcc99
+    class A,B fact
+    class C,D,C1,C2,C3,D1,D2,D3,E,F,G,H,I attack
+    class J goal
     classDef mitigation fill:#ccffcc
 ```
 
@@ -83,161 +43,154 @@ graph TD
 
 This attack tree has been mapped to MITRE ATT&CK techniques:
 
-### Embed instructions viabr>ultrasonicsubsonic frequencies
+### Steganographic image encoding
 
-- **Technique**: [T1123](https://attack.mitre.org/techniques/T1123/) - Audio Capture
-- **Tactic**: Collection
-- **Similarity Score**: 37.08%
-
-### Hidden instructions bypassbr>text-based input sanitization
-
-- **Technique**: [T1027.010](https://attack.mitre.org/techniques/T1027/010/) - Command Obfuscation
+- **Technique**: [T1027.003](https://attack.mitre.org/techniques/T1027/003/) - Steganography
 - **Tactic**: Defense Evasion
-- **Similarity Score**: 56.39%
+- **Similarity Score**: 81.45%
+
+### Reduced integrity and confidentiality of LLM system and connected resources
+
+- **Technique**: [T1486](https://attack.mitre.org/techniques/T1486/) - Data Encrypted for Impact
+- **Tactic**: Impact
+- **Similarity Score**: 53.33%
 - **Mitigations (2):**
   - 🛡️ **Behavior Prevention on Endpoint**
     Behavior Prevention on Endpoint refers to the use of technologies and strategies to detect and block potentially malicio...
-  - 🛡️ **Antivirus/Antimalware**
-    Antivirus/Antimalware solutions utilize signatures, heuristics, and behavioral analysis to detect, block, and remediate ...
+  - 🛡️ **Data Backup**
+    Data Backup involves taking and securely storing backups of data from end-user systems and critical servers. It ensures ...
 
-### LLM audio model transcribesbr>and processes hidden instructions
+### Access to LLM system accepting multimodal input
+
+- **Technique**: [T1674](https://attack.mitre.org/techniques/T1674/) - Input Injection
+- **Tactic**: Execution
+- **Similarity Score**: 52.10%
+- **Mitigations (2):**
+  - 🛡️ **Limit Hardware Installation**
+    Prevent unauthorized users or groups from installing or using hardware, such as external drives, peripheral devices, or ...
+  - 🛡️ **Execution Prevention**
+    Prevent the execution of unauthorized or malicious code on systems by implementing application control, script blocking,...
+
+### Compromise LLM system integrity
+
+- **Technique**: [T1542.003](https://attack.mitre.org/techniques/T1542/003/) - Bootkit
+- **Tactic**: Persistence, Defense Evasion
+- **Similarity Score**: 58.58%
+- **Mitigations (2):**
+  - 🛡️ **Boot Integrity**
+    Boot Integrity ensures that a system starts securely by verifying the integrity of its boot process, operating system, a...
+  - 🛡️ **Privileged Account Management**
+    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...
+
+### Embed hidden instructions in audio
 
 - **Technique**: [T1123](https://attack.mitre.org/techniques/T1123/) - Audio Capture
 - **Tactic**: Collection
-- **Similarity Score**: 53.74%
+- **Similarity Score**: 55.50%
 
-### Exfiltrate sensitive databr>from system context
+### Bypass text-based security controls
 
-- **Technique**: [T1074.001](https://attack.mitre.org/techniques/T1074/001/) - Local Data Staging
-- **Tactic**: Collection
-- **Similarity Score**: 77.80%
+- **Technique**: [T1089](https://attack.mitre.org/techniques/T1089/) - Disabling Security Tools
+- **Tactic**: Defense Evasion
+- **Similarity Score**: 53.89%
 
-### Embed instructions viabr>speech-to-text exploitation
+### Visual prompt injection via image metadata
+
+- **Technique**: [T1612](https://attack.mitre.org/techniques/T1612/) - Build Image on Host
+- **Tactic**: Defense Evasion
+- **Similarity Score**: 49.45%
+- **Mitigations (4):**
+  - 🛡️ **Limit Access to Resource Over Network**
+    Restrict access to network resources, such as file shares, remote systems, and services, to only those users, accounts, ...
+  - 🛡️ **Privileged Account Management**
+    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...
+  - 🛡️ **Network Segmentation**
+    Network segmentation involves dividing a network into smaller, isolated segments to control and limit the flow of traffi...
+  - *1 more mitigation(s) available*
+
+### Speech-to-text evasion techniques
+
+- **Technique**: [T1001](https://attack.mitre.org/techniques/T1001/) - Data Obfuscation
+- **Tactic**: Command And Control
+- **Similarity Score**: 47.39%
+- **Mitigations (1):**
+  - 🛡️ **Network Intrusion Prevention**
+    Use intrusion detection signatures to block traffic at network boundaries.
+
+### Audio prompt injection via metadata
 
 - **Technique**: [T1123](https://attack.mitre.org/techniques/T1123/) - Audio Capture
 - **Tactic**: Collection
-- **Similarity Score**: 42.35%
+- **Similarity Score**: 51.38%
 
-### LLM vision model extractsbr>and processes hidden instructions
+### Manipulate connected resources
 
-- **Technique**: [T1622](https://attack.mitre.org/techniques/T1622/) - Debugger Evasion
-- **Tactic**: Defense Evasion, Discovery
-- **Similarity Score**: 44.54%
+- **Technique**: [T1133](https://attack.mitre.org/techniques/T1133/) - External Remote Services
+- **Tactic**: Persistence, Initial Access
+- **Similarity Score**: 49.04%
+- **Mitigations (5):**
+  - 🛡️ **Restrict Web-Based Content**
+    Restricting web-based content involves enforcing policies and technologies that limit access to potentially malicious we...
+  - 🛡️ **Network Segmentation**
+    Network segmentation involves dividing a network into smaller, isolated segments to control and limit the flow of traffi...
+  - 🛡️ **Disable or Remove Feature or Program**
+    Disable or remove unnecessary and potentially vulnerable software, features, or services to reduce the attack surface an...
+  - *2 more mitigation(s) available*
 
-### LLM system acceptsbr>images, audio, or video input
+### Exfiltrate sensitive data
 
-- **Technique**: [T1125](https://attack.mitre.org/techniques/T1125/) - Video Capture
+- **Technique**: [T1560.001](https://attack.mitre.org/techniques/T1560/001/) - Archive via Utility
 - **Tactic**: Collection
-- **Similarity Score**: 49.93%
+- **Similarity Score**: 78.47%
+- **Mitigations (1):**
+  - 🛡️ **Audit**
+    Auditing is the process of recording activity and systematically reviewing and analyzing the activity and system configu...
 
-### Malicious prompt executesbr>in LLM context
+### Embed hidden instructions in images
+
+- **Technique**: [T1027.003](https://attack.mitre.org/techniques/T1027/003/) - Steganography
+- **Tactic**: Defense Evasion
+- **Similarity Score**: 61.68%
+
+### Execute unauthorized instructions
 
 - **Technique**: [T1202](https://attack.mitre.org/techniques/T1202/) - Indirect Command Execution
 - **Tactic**: Defense Evasion
-- **Similarity Score**: 60.02%
+- **Similarity Score**: 66.08%
 
-### Embed instructions viabr>OCR-readable watermarks
+### Steganographic audio encoding
 
-- **Technique**: [T1027.003](https://attack.mitre.org/techniques/T1027/003/) - Steganography
+- **Technique**: [T1027.013](https://attack.mitre.org/techniques/T1027/013/) - Encrypted/Encoded File
 - **Tactic**: Defense Evasion
-- **Similarity Score**: 59.17%
-
-### Craft malicious imagebr>with embedded text instructions
-
-- **Technique**: [T1027.003](https://attack.mitre.org/techniques/T1027/003/) - Steganography
-- **Tactic**: Defense Evasion
-- **Similarity Score**: 50.48%
-
-### Embed instructions viabr>steganography in pixel data
-
-- **Technique**: [T1027.003](https://attack.mitre.org/techniques/T1027/003/) - Steganography
-- **Tactic**: Defense Evasion
-- **Similarity Score**: 78.92%
-
-### Embed instructions viabr>visible text in image regions
-
-- **Technique**: [T1027.003](https://attack.mitre.org/techniques/T1027/003/) - Steganography
-- **Tactic**: Defense Evasion
-- **Similarity Score**: 48.10%
-
-### Embed instructions viabr>audio steganography
-
-- **Technique**: [T1027.003](https://attack.mitre.org/techniques/T1027/003/) - Steganography
-- **Tactic**: Defense Evasion
-- **Similarity Score**: 59.19%
-
-### Craft malicious audiobr>with embedded instructions
-
-- **Technique**: [T1123](https://attack.mitre.org/techniques/T1123/) - Audio Capture
-- **Tactic**: Collection
-- **Similarity Score**: 58.78%
-
-### Manipulate LLM outputsbr>and responses
-
-- **Technique**: [T1036.002](https://attack.mitre.org/techniques/T1036/002/) - Right-to-Left Override
-- **Tactic**: Defense Evasion
-- **Similarity Score**: 40.79%
-
-### Access connected resourcesbr>via LLM integrations
-
-- **Technique**: [T1218.003](https://attack.mitre.org/techniques/T1218/003/) - CMSTP
-- **Tactic**: Defense Evasion
-- **Similarity Score**: 43.97%
+- **Similarity Score**: 60.36%
 - **Mitigations (2):**
-  - 🛡️ **Execution Prevention**
-    Prevent the execution of unauthorized or malicious code on systems by implementing application control, script blocking,...
-  - 🛡️ **Disable or Remove Feature or Program**
-    Disable or remove unnecessary and potentially vulnerable software, features, or services to reduce the attack surface an...
+  - 🛡️ **Antivirus/Antimalware**
+    Antivirus/Antimalware solutions utilize signatures, heuristics, and behavioral analysis to detect, block, and remediate ...
+  - 🛡️ **Behavior Prevention on Endpoint**
+    Behavior Prevention on Endpoint refers to the use of technologies and strategies to detect and block potentially malicio...
 
-### Execute unauthorized actionsbr>through toolAPI calls
+### External threat actor with multimodal submission capability
 
-- **Technique**: [T1514](https://attack.mitre.org/techniques/T1514/) - Elevated Execution with Prompt
-- **Tactic**: Privilege Escalation
-- **Similarity Score**: 54.89%
+- **Technique**: [T1566.001](https://attack.mitre.org/techniques/T1566/001/) - Spearphishing Attachment
+- **Tactic**: Initial Access
+- **Similarity Score**: 42.44%
+- **Mitigations (7):**
+  - 🛡️ **Antivirus/Antimalware**
+    Antivirus/Antimalware solutions utilize signatures, heuristics, and behavioral analysis to detect, block, and remediate ...
+  - 🛡️ **User Account Management**
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
+  - 🛡️ **Audit**
+    Auditing is the process of recording activity and systematically reviewing and analyzing the activity and system configu...
+  - *4 more mitigation(s) available*
 
-### Bypass text-based security controlsbr>Compromise integrityconfidentialitybr>of LLM system and connected resources
+### OCR-evasive text in images
 
-- **Technique**: [T1177](https://attack.mitre.org/techniques/T1177/) - LSASS Driver
-- **Tactic**: Execution, Persistence
-- **Similarity Score**: 66.88%
-
-### Text-based security filtersbr>only scan text modality
-
-- **Technique**: [T1174](https://attack.mitre.org/techniques/T1174/) - Password Filter DLL
-- **Tactic**: Credential Access
-- **Similarity Score**: 44.84%
-
-### Submit image tobr>multimodal LLM endpoint
-
-- **Technique**: [T1204.003](https://attack.mitre.org/techniques/T1204/003/) - Malicious Image
-- **Tactic**: Execution
-- **Similarity Score**: 40.17%
-- **Mitigations (4):**
-  - 🛡️ **Code Signing**
-    Code Signing is a security process that ensures the authenticity and integrity of software by digitally signing executab...
-  - 🛡️ **Network Intrusion Prevention**
-    Use intrusion detection signatures to block traffic at network boundaries.
-  - 🛡️ **User Training**
-    User Training involves educating employees and contractors on recognizing, reporting, and preventing cyber threats that ...
-  - *1 more mitigation(s) available*
-
-### Submit audio tobr>multimodal LLM endpoint
-
-- **Technique**: [T1123](https://attack.mitre.org/techniques/T1123/) - Audio Capture
-- **Tactic**: Collection
-- **Similarity Score**: 62.34%
-
-### External threat actorbr>with multimodal submission access
-
-- **Technique**: [T1608](https://attack.mitre.org/techniques/T1608/) - Stage Capabilities
-- **Tactic**: Resource Development
-- **Similarity Score**: 44.09%
-- **Mitigations (1):**
-  - 🛡️ **Pre-compromise**
-    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
+- **Technique**: [T1027.003](https://attack.mitre.org/techniques/T1027/003/) - Steganography
+- **Tactic**: Defense Evasion
+- **Similarity Score**: 50.33%
 
 
-*Total technique mappings: 22 | Mitigations found: 9*
+*Total technique mappings: 16 | Mitigations found: 26*
 
 
 ## Attack Path Analysis

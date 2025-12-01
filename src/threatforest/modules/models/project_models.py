@@ -3,6 +3,43 @@ from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Optional
 
 
+class ContextFiles(BaseModel):
+    """Categorized file paths discovered during context analysis"""
+    
+    threat_models: List[str] = Field(
+        description="Paths to threat model files",
+        default_factory=list
+    )
+    readmes: List[str] = Field(
+        description="Paths to README files",
+        default_factory=list
+    )
+    architecture_diagrams: List[str] = Field(
+        description="Paths to architecture diagram files",
+        default_factory=list
+    )
+    data_flow_diagrams: List[str] = Field(
+        description="Paths to data flow diagram files",
+        default_factory=list
+    )
+    other_docs: List[str] = Field(
+        description="Paths to other documentation files",
+        default_factory=list
+    )
+    project_path: Optional[str] = Field(
+        description="Path to the project root directory",
+        default=None
+    )
+    enhanced_context: Optional[Dict[str, Any]] = Field(
+        description="Enhanced context extracted from project files",
+        default=None
+    )
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dict for backward compatibility"""
+        return self.model_dump(exclude_none=False)
+
+
 class ProjectInfo(BaseModel):
     """Project metadata and analysis results"""
     
