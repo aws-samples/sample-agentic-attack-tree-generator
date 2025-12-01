@@ -56,9 +56,8 @@ Generate comprehensive attack trees in minutes:
 !!! tip "Prerequisites"
     Before starting, ensure you have [Python 3.11+ and AWS Bedrock access](getting-started/index.md#prerequisites).
 
-<div style="width: 100%; max-width: 800px; margin: 2rem auto; padding: 3rem; background: linear-gradient(135deg, rgba(21, 128, 61, 0.1) 0%, rgba(34, 197, 94, 0.1) 100%); border: 2px dashed var(--tf-green); border-radius: 1rem; text-align: center;">
-    <p style="font-size: 1.25rem; color: var(--tf-green); font-weight: 600; margin: 0;">📹 Demo GIF Coming Soon</p>
-    <p style="font-size: 0.875rem; color: var(--color-text-secondary); margin-top: 0.5rem;">Animated walkthrough of ThreatForest in action</p>
+<div style="text-align: center; margin: 2rem auto;">
+    <img src="assets/images/ThreatForestE2E.gif" alt="ThreatForest Demo" style="max-width: 100%; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
 </div>
 
 ---
