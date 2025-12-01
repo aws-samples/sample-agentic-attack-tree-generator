@@ -135,9 +135,7 @@ class ThreatForestOrchestrator:
             if not self.state.context_complete:
                 self.state.advance_to(WorkflowStage.CONTEXT_ANALYSIS)
                 context_result = self.context_tool.run(
-                    project_path=str(self.config.project_path),
-                    bedrock_model=self.config.bedrock_model,
-                    aws_profile=self.config.aws_profile
+                    project_path=str(self.config.project_path)
                 )
                 self.state.context_files = context_result
                 self.state.context_complete = True

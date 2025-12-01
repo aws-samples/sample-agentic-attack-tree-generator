@@ -35,68 +35,20 @@ graph TD
 
 This attack tree has been mapped to MITRE ATT&CK techniques:
 
-### Enumerate IAM Role Permissions
+### Locate Over-Privileged Execution Role
 
 - **Technique**: [T1069.001](https://attack.mitre.org/techniques/T1069/001/) - Local Groups
 - **Tactic**: Discovery
-- **Similarity Score**: 79.56%
+- **Similarity Score**: 70.03%
 
-### Create Malicious Lambda Function
+### Deploy Lambda with Existing Role
 
-- **Technique**: [T1059.011](https://attack.mitre.org/techniques/T1059/011/) - Lua
-- **Tactic**: Execution
-- **Similarity Score**: 33.15%
-- **Mitigations (3):**
-  - 🛡️ **Limit Software Installation**
-    Prevent users or groups from installing unauthorized or unapproved software to reduce the risk of introducing malicious ...
-  - 🛡️ **Audit**
-    Auditing is the process of recording activity and systematically reviewing and analyzing the activity and system configu...
-  - 🛡️ **Execution Prevention**
-    Prevent the execution of unauthorized or malicious code on systems by implementing application control, script blocking,...
-
-### Identify Existing Lambda Execution Roles
-
-- **Technique**: [T1069.003](https://attack.mitre.org/techniques/T1069/003/) - Cloud Groups
-- **Tactic**: Discovery
-- **Similarity Score**: 59.07%
-
-### Lambda Executes with Elevated Permissions
-
-- **Technique**: [T1548.002](https://attack.mitre.org/techniques/T1548/002/) - Bypass User Account Control
+- **Technique**: [T1548.005](https://attack.mitre.org/techniques/T1548/005/) - Temporary Elevated Cloud Access
 - **Tactic**: Privilege Escalation, Defense Evasion
-- **Similarity Score**: 62.55%
-- **Mitigations (4):**
-  - 🛡️ **Update Software**
-    Software updates ensure systems are protected against known vulnerabilities by applying patches and upgrades provided by...
-  - 🛡️ **Audit**
-    Auditing is the process of recording activity and systematically reviewing and analyzing the activity and system configu...
-  - 🛡️ **User Account Control**
-    User Account Control (UAC) is a security feature in Microsoft Windows that prevents unauthorized changes to the operatin...
-  - *1 more mitigation(s) available*
-
-### Gain Lambda Deployment Permissions
-
-- **Technique**: [T1648](https://attack.mitre.org/techniques/T1648/) - Serverless Execution
-- **Tactic**: Execution
-- **Similarity Score**: 62.13%
-- **Mitigations (2):**
-  - 🛡️ **Account Use Policies**
-    Account Use Policies help mitigate unauthorized access by configuring and enforcing rules that govern how and when accou...
+- **Similarity Score**: 63.17%
+- **Mitigations (1):**
   - 🛡️ **User Account Management**
     User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
-
-### Internal Actor with AWS Account Access
-
-- **Technique**: [T1136.003](https://attack.mitre.org/techniques/T1136/003/) - Cloud Account
-- **Tactic**: Persistence
-- **Similarity Score**: 86.87%
-- **Mitigations (3):**
-  - 🛡️ **Network Segmentation**
-    Network segmentation involves dividing a network into smaller, isolated segments to control and limit the flow of traffi...
-  - 🛡️ **Multi-factor Authentication**
-    Multi-Factor Authentication (MFA) enhances security by requiring users to provide at least two forms of verification to ...
-  - 🛡️ **Privileged Account Management**
-    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...
 
 ### Exfiltrate Sensitive Information
 
@@ -104,11 +56,11 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
 - **Tactic**: Exfiltration
 - **Similarity Score**: 80.79%
 
-### Locate Over-Privileged Execution Role
+### Identify Existing Lambda Execution Roles
 
-- **Technique**: [T1069.001](https://attack.mitre.org/techniques/T1069/001/) - Local Groups
+- **Technique**: [T1069.003](https://attack.mitre.org/techniques/T1069/003/) - Cloud Groups
 - **Tactic**: Discovery
-- **Similarity Score**: 70.03%
+- **Similarity Score**: 59.07%
 
 ### Access Registration Status Database
 
@@ -120,20 +72,6 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
     Operating System Configuration involves adjusting system settings and hardening the default configurations of an operati...
   - 🛡️ **User Account Management**
     User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
-
-### Extract Registration Status Data
-
-- **Technique**: [T1003.002](https://attack.mitre.org/techniques/T1003/002/) - Security Account Manager
-- **Tactic**: Credential Access
-- **Similarity Score**: 50.98%
-- **Mitigations (4):**
-  - 🛡️ **Password Policies**
-    Set and enforce secure password policies for accounts to reduce the likelihood of unauthorized access. Strong password p...
-  - 🛡️ **Privileged Account Management**
-    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...
-  - 🛡️ **Operating System Configuration**
-    Operating System Configuration involves adjusting system settings and hardening the default configurations of an operati...
-  - *1 more mitigation(s) available*
 
 ### Query Sensitive Data APIs
 
@@ -149,14 +87,18 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
     User Training involves educating employees and contractors on recognizing, reporting, and preventing cyber threats that ...
   - *4 more mitigation(s) available*
 
-### Deploy Lambda with Existing Role
+### Create Malicious Lambda Function
 
-- **Technique**: [T1548.005](https://attack.mitre.org/techniques/T1548/005/) - Temporary Elevated Cloud Access
-- **Tactic**: Privilege Escalation, Defense Evasion
-- **Similarity Score**: 63.17%
-- **Mitigations (1):**
-  - 🛡️ **User Account Management**
-    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
+- **Technique**: [T1059.011](https://attack.mitre.org/techniques/T1059/011/) - Lua
+- **Tactic**: Execution
+- **Similarity Score**: 33.15%
+- **Mitigations (3):**
+  - 🛡️ **Limit Software Installation**
+    Prevent users or groups from installing unauthorized or unapproved software to reduce the risk of introducing malicious ...
+  - 🛡️ **Audit**
+    Auditing is the process of recording activity and systematically reviewing and analyzing the activity and system configu...
+  - 🛡️ **Execution Prevention**
+    Prevent the execution of unauthorized or malicious code on systems by implementing application control, script blocking,...
 
 ### Confidentiality Breach - Registration Status Exposed
 
@@ -166,6 +108,64 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
 - **Mitigations (1):**
   - 🛡️ **Pre-compromise**
     Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
+
+### Extract Registration Status Data
+
+- **Technique**: [T1003.002](https://attack.mitre.org/techniques/T1003/002/) - Security Account Manager
+- **Tactic**: Credential Access
+- **Similarity Score**: 50.98%
+- **Mitigations (4):**
+  - 🛡️ **Password Policies**
+    Set and enforce secure password policies for accounts to reduce the likelihood of unauthorized access. Strong password p...
+  - 🛡️ **Privileged Account Management**
+    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...
+  - 🛡️ **Operating System Configuration**
+    Operating System Configuration involves adjusting system settings and hardening the default configurations of an operati...
+  - *1 more mitigation(s) available*
+
+### Gain Lambda Deployment Permissions
+
+- **Technique**: [T1648](https://attack.mitre.org/techniques/T1648/) - Serverless Execution
+- **Tactic**: Execution
+- **Similarity Score**: 62.13%
+- **Mitigations (2):**
+  - 🛡️ **Account Use Policies**
+    Account Use Policies help mitigate unauthorized access by configuring and enforcing rules that govern how and when accou...
+  - 🛡️ **User Account Management**
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
+
+### Lambda Executes with Elevated Permissions
+
+- **Technique**: [T1548.002](https://attack.mitre.org/techniques/T1548/002/) - Bypass User Account Control
+- **Tactic**: Privilege Escalation, Defense Evasion
+- **Similarity Score**: 62.55%
+- **Mitigations (4):**
+  - 🛡️ **Update Software**
+    Software updates ensure systems are protected against known vulnerabilities by applying patches and upgrades provided by...
+  - 🛡️ **Audit**
+    Auditing is the process of recording activity and systematically reviewing and analyzing the activity and system configu...
+  - 🛡️ **User Account Control**
+    User Account Control (UAC) is a security feature in Microsoft Windows that prevents unauthorized changes to the operatin...
+  - *1 more mitigation(s) available*
+
+### Enumerate IAM Role Permissions
+
+- **Technique**: [T1069.001](https://attack.mitre.org/techniques/T1069/001/) - Local Groups
+- **Tactic**: Discovery
+- **Similarity Score**: 79.56%
+
+### Internal Actor with AWS Account Access
+
+- **Technique**: [T1136.003](https://attack.mitre.org/techniques/T1136/003/) - Cloud Account
+- **Tactic**: Persistence
+- **Similarity Score**: 86.87%
+- **Mitigations (3):**
+  - 🛡️ **Network Segmentation**
+    Network segmentation involves dividing a network into smaller, isolated segments to control and limit the flow of traffi...
+  - 🛡️ **Multi-factor Authentication**
+    Multi-Factor Authentication (MFA) enhances security by requiring users to provide at least two forms of verification to ...
+  - 🛡️ **Privileged Account Management**
+    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...
 
 
 *Total technique mappings: 13 | Mitigations found: 27*

@@ -7,45 +7,37 @@
 
 ```mermaid
 graph TD
-    %% Initial Facts/Conditions
-    F1["Legitimate user with system access"] --> F2["Over-reliance on LLM recommendations"]
-    F2 --> F3["Lack of critical evaluation skills"]
-    F2 --> F4["Time pressure or cognitive overload"]
-    %% Attack Path 1: Biased Guidance Acceptance
-    F3 --> A1["User accepts biased recommendations without verification"]
-    A1 --> A2["Implements discriminatory decision criteria"]
-    A2 --> A3["Applies biased logic to business processes"]
-    A3 --> G1["Discriminatory outcomes affecting stakeholders"]
-    %% Attack Path 2: Unethical Advice Acceptance
-    F4 --> A4["User accepts unethical guidance as valid"]
-    A4 --> A5["Executes ethically questionable actions"]
-    A5 --> A6["Violates compliance or regulatory requirements"]
-    A6 --> G2["Legal liability and regulatory penalties"]
-    %% Attack Path 3: Incorrect Technical Guidance
-    F3 --> A7["User accepts incorrect security recommendations"]
-    A7 --> A8["Implements flawed security configurations"]
-    A8 --> A9["Creates exploitable vulnerabilities in connected resources"]
-    A9 --> G3["Cyber risks - unauthorized access to systems"]
-    %% Attack Path 4: Financial Decision Errors
-    F4 --> A10["User accepts incorrect financial or strategic advice"]
-    A10 --> A11["Makes uninformed business decisions"]
-    A11 --> A12["Commits resources based on faulty analysis"]
-    A12 --> G4["Financial loss and reputational damage"]
-    %% Convergence to Ultimate Impact
-    G1 --> G5["Reduced integrity of LLM system outputs"]
-    G2 --> G5
-    G3 --> G6["Reduced confidentiality of connected resources"]
-    G4 --> G5
-    A9 --> G6
-    G5 --> G7["Compromised LLM system and connected resources"]
-    G6 --> G7
-    %% Styling
+    A["Legitimate user with high LLM reliance"] --> B["User lacks critical evaluation skills"]
+    A --> C["LLM system contains biased training data"]
+    A --> D["LLM lacks transparency in reasoning"]
+    B --> E["Accept LLM recommendations without verification"]
+    C --> E
+    D --> E
+    E --> F["Act on biased or incorrect guidance"]
+    F --> G["Discriminatory outcomes"]
+    F --> H["Financial decisions based on flawed advice"]
+    F --> I["Security decisions based on incorrect recommendations"]
+    F --> J["Unethical actions recommended by LLM"]
+    G --> K["Reputational damage to organization"]
+    G --> L["Legal liability and compliance violations"]
+    H --> M["Financial loss"]
+    H --> L
+    I --> N["Cyber security risks and breaches"]
+    N --> L
+    J --> K
+    J --> L
+    K --> O["Reduced integrity of LLM system"]
+    L --> O
+    M --> O
+    N --> P["Reduced confidentiality of connected resources"]
+    O --> Q["Overall system compromise"]
+    P --> Q
+    classDef fact fill:#ccccff
     classDef attack fill:#ffcccc
     classDef goal fill:#ffcc99
-    classDef fact fill:#ccccff
-    class A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12 attack
-    class G1,G2,G3,G4,G5,G6,G7 goal
-    class F1,F2,F3,F4 fact
+    class A,B,C,D fact
+    class E,F,G,H,I,J,K,L,M,N attack
+    class O,P,Q goal
     classDef mitigation fill:#ccffcc
 ```
 
@@ -54,170 +46,37 @@ graph TD
 
 This attack tree has been mapped to MITRE ATT&CK techniques:
 
-### User accepts biased recommendations without verification
+### LLM system contains biased training data
 
-- **Technique**: [T1656](https://attack.mitre.org/techniques/T1656/) - Impersonation
-- **Tactic**: Defense Evasion
-- **Similarity Score**: 39.37%
-- **Mitigations (2):**
+- **Technique**: [T1588.007](https://attack.mitre.org/techniques/T1588/007/) - Artificial Intelligence
+- **Tactic**: Resource Development
+- **Similarity Score**: 31.55%
+- **Mitigations (1):**
+  - 🛡️ **Pre-compromise**
+    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
+
+### User lacks critical evaluation skills
+
+- **Technique**: [T1204](https://attack.mitre.org/techniques/T1204/) - User Execution
+- **Tactic**: Execution
+- **Similarity Score**: 43.05%
+- **Mitigations (6):**
   - 🛡️ **User Training**
     User Training involves educating employees and contractors on recognizing, reporting, and preventing cyber threats that ...
-  - 🛡️ **Threat Intelligence Program**
-    A Threat Intelligence Program enables organizations to proactively identify, analyze, and act on cyber threats by levera...
-
-### Implements flawed security configurations
-
-- **Technique**: [T1089](https://attack.mitre.org/techniques/T1089/) - Disabling Security Tools
-- **Tactic**: Defense Evasion
-- **Similarity Score**: 66.44%
-
-### User accepts incorrect security recommendations
-
-- **Technique**: [T1553](https://attack.mitre.org/techniques/T1553/) - Subvert Trust Controls
-- **Tactic**: Defense Evasion
-- **Similarity Score**: 54.97%
-- **Mitigations (5):**
   - 🛡️ **Execution Prevention**
     Prevent the execution of unauthorized or malicious code on systems by implementing application control, script blocking,...
-  - 🛡️ **Operating System Configuration**
-    Operating System Configuration involves adjusting system settings and hardening the default configurations of an operati...
-  - 🛡️ **Privileged Account Management**
-    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...
-  - *2 more mitigation(s) available*
+  - 🛡️ **Behavior Prevention on Endpoint**
+    Behavior Prevention on Endpoint refers to the use of technologies and strategies to detect and block potentially malicio...
+  - *3 more mitigation(s) available*
 
-### Time pressure or cognitive overload
+### Discriminatory outcomes
 
-- **Technique**: [T1678](https://attack.mitre.org/techniques/T1678/) - Delay Execution
-- **Tactic**: Defense Evasion
-- **Similarity Score**: 41.09%
-
-### Lack of critical evaluation skills
-
-- **Technique**: [T1595.002](https://attack.mitre.org/techniques/T1595/002/) - Vulnerability Scanning
-- **Tactic**: Reconnaissance
-- **Similarity Score**: 33.44%
+- **Technique**: [T1556.009](https://attack.mitre.org/techniques/T1556/009/) - Conditional Access Policies
+- **Tactic**: Credential Access, Defense Evasion, Persistence
+- **Similarity Score**: 32.45%
 - **Mitigations (1):**
-  - 🛡️ **Pre-compromise**
-    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
-
-### Compromised LLM system and connected resources
-
-- **Technique**: [T1215](https://attack.mitre.org/techniques/T1215/) - Kernel Modules and Extensions
-- **Tactic**: Persistence
-- **Similarity Score**: 49.70%
-
-### Executes ethically questionable actions
-
-- **Technique**: [T1656](https://attack.mitre.org/techniques/T1656/) - Impersonation
-- **Tactic**: Defense Evasion
-- **Similarity Score**: 37.62%
-- **Mitigations (2):**
-  - 🛡️ **User Training**
-    User Training involves educating employees and contractors on recognizing, reporting, and preventing cyber threats that ...
-  - 🛡️ **Threat Intelligence Program**
-    A Threat Intelligence Program enables organizations to proactively identify, analyze, and act on cyber threats by levera...
-
-### Applies biased logic to business processes
-
-- **Technique**: [T1502](https://attack.mitre.org/techniques/T1502/) - Parent PID Spoofing
-- **Tactic**: Defense Evasion, Privilege Escalation
-- **Similarity Score**: 36.28%
-
-### Commits resources based on faulty analysis
-
-- **Technique**: [T1070.010](https://attack.mitre.org/techniques/T1070/010/) - Relocate Malware
-- **Tactic**: Defense Evasion
-- **Similarity Score**: 40.93%
-
-### Legitimate user with system access
-
-- **Technique**: [T1136.001](https://attack.mitre.org/techniques/T1136/001/) - Local Account
-- **Tactic**: Persistence
-- **Similarity Score**: 65.92%
-- **Mitigations (2):**
-  - 🛡️ **Multi-factor Authentication**
-    Multi-Factor Authentication (MFA) enhances security by requiring users to provide at least two forms of verification to ...
-  - 🛡️ **Privileged Account Management**
-    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...
-
-### User accepts unethical guidance as valid
-
-- **Technique**: [T1553](https://attack.mitre.org/techniques/T1553/) - Subvert Trust Controls
-- **Tactic**: Defense Evasion
-- **Similarity Score**: 39.04%
-- **Mitigations (5):**
-  - 🛡️ **Execution Prevention**
-    Prevent the execution of unauthorized or malicious code on systems by implementing application control, script blocking,...
-  - 🛡️ **Operating System Configuration**
-    Operating System Configuration involves adjusting system settings and hardening the default configurations of an operati...
-  - 🛡️ **Privileged Account Management**
-    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...
-  - *2 more mitigation(s) available*
-
-### Legal liability and regulatory penalties
-
-- **Technique**: [T1588](https://attack.mitre.org/techniques/T1588/) - Obtain Capabilities
-- **Tactic**: Resource Development
-- **Similarity Score**: 43.19%
-- **Mitigations (1):**
-  - 🛡️ **Pre-compromise**
-    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
-
-### Cyber risks - unauthorized access to systems
-
-- **Technique**: [T1650](https://attack.mitre.org/techniques/T1650/) - Acquire Access
-- **Tactic**: Resource Development
-- **Similarity Score**: 58.83%
-- **Mitigations (1):**
-  - 🛡️ **Pre-compromise**
-    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
-
-### Makes uninformed business decisions
-
-- **Technique**: [T1591.002](https://attack.mitre.org/techniques/T1591/002/) - Business Relationships
-- **Tactic**: Reconnaissance
-- **Similarity Score**: 54.47%
-- **Mitigations (1):**
-  - 🛡️ **Pre-compromise**
-    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
-
-### Creates exploitable vulnerabilities in connected resources
-
-- **Technique**: [T1190](https://attack.mitre.org/techniques/T1190/) - Exploit Public-Facing Application
-- **Tactic**: Initial Access
-- **Similarity Score**: 68.01%
-- **Mitigations (8):**
-  - 🛡️ **Application Isolation and Sandboxing**
-    Application Isolation and Sandboxing refers to the technique of restricting the execution of code to a controlled and is...
-  - 🛡️ **Filter Network Traffic**
-    Employ network appliances and endpoint software to filter ingress, egress, and lateral network traffic. This includes pr...
-  - 🛡️ **Network Segmentation**
-    Network segmentation involves dividing a network into smaller, isolated segments to control and limit the flow of traffi...
-  - *5 more mitigation(s) available*
-
-### Financial loss and reputational damage
-
-- **Technique**: [T1491.002](https://attack.mitre.org/techniques/T1491/002/) - External Defacement
-- **Tactic**: Impact
-- **Similarity Score**: 54.75%
-- **Mitigations (1):**
-  - 🛡️ **Data Backup**
-    Data Backup involves taking and securely storing backups of data from end-user systems and critical servers. It ensures ...
-
-### Reduced integrity of LLM system outputs
-
-- **Technique**: [T1186](https://attack.mitre.org/techniques/T1186/) - Process Doppelgänging
-- **Tactic**: Defense Evasion
-- **Similarity Score**: 57.77%
-
-### Discriminatory outcomes affecting stakeholders
-
-- **Technique**: [T1591.004](https://attack.mitre.org/techniques/T1591/004/) - Identify Roles
-- **Tactic**: Reconnaissance
-- **Similarity Score**: 39.61%
-- **Mitigations (1):**
-  - 🛡️ **Pre-compromise**
-    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
+  - 🛡️ **User Account Management**
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
 
 ### Reduced confidentiality of connected resources
 
@@ -225,37 +84,150 @@ This attack tree has been mapped to MITRE ATT&CK techniques:
 - **Tactic**: Command And Control
 - **Similarity Score**: 49.16%
 
-### User accepts incorrect financial or strategic advice
+### Legal liability and compliance violations
+
+- **Technique**: [T1588](https://attack.mitre.org/techniques/T1588/) - Obtain Capabilities
+- **Tactic**: Resource Development
+- **Similarity Score**: 42.34%
+- **Mitigations (1):**
+  - 🛡️ **Pre-compromise**
+    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
+
+### LLM lacks transparency in reasoning
+
+- **Technique**: [T1027.014](https://attack.mitre.org/techniques/T1027/014/) - Polymorphic Code
+- **Tactic**: Defense Evasion
+- **Similarity Score**: 40.19%
+- **Mitigations (2):**
+  - 🛡️ **Behavior Prevention on Endpoint**
+    Behavior Prevention on Endpoint refers to the use of technologies and strategies to detect and block potentially malicio...
+  - 🛡️ **Antivirus/Antimalware**
+    Antivirus/Antimalware solutions utilize signatures, heuristics, and behavioral analysis to detect, block, and remediate ...
+
+### Financial loss
 
 - **Technique**: [T1657](https://attack.mitre.org/techniques/T1657/) - Financial Theft
 - **Tactic**: Impact
-- **Similarity Score**: 49.07%
+- **Similarity Score**: 50.03%
 - **Mitigations (2):**
   - 🛡️ **User Training**
     User Training involves educating employees and contractors on recognizing, reporting, and preventing cyber threats that ...
   - 🛡️ **User Account Management**
     User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
 
-### Implements discriminatory decision criteria
-
-- **Technique**: [T1556.009](https://attack.mitre.org/techniques/T1556/009/) - Conditional Access Policies
-- **Tactic**: Credential Access, Defense Evasion, Persistence
-- **Similarity Score**: 42.63%
-- **Mitigations (1):**
-  - 🛡️ **User Account Management**
-    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
-
-### Violates compliance or regulatory requirements
+### Unethical actions recommended by LLM
 
 - **Technique**: [T1587](https://attack.mitre.org/techniques/T1587/) - Develop Capabilities
 - **Tactic**: Resource Development
-- **Similarity Score**: 47.12%
+- **Similarity Score**: 37.79%
 - **Mitigations (1):**
   - 🛡️ **Pre-compromise**
     Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
 
+### Financial decisions based on flawed advice
 
-*Total technique mappings: 22 | Mitigations found: 34*
+- **Technique**: [T1657](https://attack.mitre.org/techniques/T1657/) - Financial Theft
+- **Tactic**: Impact
+- **Similarity Score**: 42.14%
+- **Mitigations (2):**
+  - 🛡️ **User Training**
+    User Training involves educating employees and contractors on recognizing, reporting, and preventing cyber threats that ...
+  - 🛡️ **User Account Management**
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
+
+### Overall system compromise
+
+- **Technique**: [T1195.003](https://attack.mitre.org/techniques/T1195/003/) - Compromise Hardware Supply Chain
+- **Tactic**: Initial Access
+- **Similarity Score**: 47.59%
+- **Mitigations (1):**
+  - 🛡️ **Boot Integrity**
+    Boot Integrity ensures that a system starts securely by verifying the integrity of its boot process, operating system, a...
+
+### Reduced integrity of LLM system
+
+- **Technique**: [T1490](https://attack.mitre.org/techniques/T1490/) - Inhibit System Recovery
+- **Tactic**: Impact
+- **Similarity Score**: 59.49%
+- **Mitigations (4):**
+  - 🛡️ **Execution Prevention**
+    Prevent the execution of unauthorized or malicious code on systems by implementing application control, script blocking,...
+  - 🛡️ **Operating System Configuration**
+    Operating System Configuration involves adjusting system settings and hardening the default configurations of an operati...
+  - 🛡️ **User Account Management**
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
+  - *1 more mitigation(s) available*
+
+### Cyber security risks and breaches
+
+- **Technique**: [T1588.006](https://attack.mitre.org/techniques/T1588/006/) - Vulnerabilities
+- **Tactic**: Resource Development
+- **Similarity Score**: 56.26%
+- **Mitigations (1):**
+  - 🛡️ **Pre-compromise**
+    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
+
+### Legitimate user with high LLM reliance
+
+- **Technique**: [T1199](https://attack.mitre.org/techniques/T1199/) - Trusted Relationship
+- **Tactic**: Initial Access
+- **Similarity Score**: 50.85%
+- **Mitigations (3):**
+  - 🛡️ **Multi-factor Authentication**
+    Multi-Factor Authentication (MFA) enhances security by requiring users to provide at least two forms of verification to ...
+  - 🛡️ **User Account Management**
+    User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, including creat...
+  - 🛡️ **Network Segmentation**
+    Network segmentation involves dividing a network into smaller, isolated segments to control and limit the flow of traffi...
+
+### Accept LLM recommendations without verification
+
+- **Technique**: [T1587.002](https://attack.mitre.org/techniques/T1587/002/) - Code Signing Certificates
+- **Tactic**: Resource Development
+- **Similarity Score**: 44.84%
+- **Mitigations (1):**
+  - 🛡️ **Pre-compromise**
+    Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from successfully ...
+
+### Reputational damage to organization
+
+- **Technique**: [T1491.002](https://attack.mitre.org/techniques/T1491/002/) - External Defacement
+- **Tactic**: Impact
+- **Similarity Score**: 60.41%
+- **Mitigations (1):**
+  - 🛡️ **Data Backup**
+    Data Backup involves taking and securely storing backups of data from end-user systems and critical servers. It ensures ...
+
+### Security decisions based on incorrect recommendations
+
+- **Technique**: [T1211](https://attack.mitre.org/techniques/T1211/) - Exploitation for Defense Evasion
+- **Tactic**: Defense Evasion
+- **Similarity Score**: 58.29%
+- **Mitigations (4):**
+  - 🛡️ **Exploit Protection**
+    Deploy capabilities that detect, block, and mitigate conditions indicative of software exploits. These capabilities aim ...
+  - 🛡️ **Update Software**
+    Software updates ensure systems are protected against known vulnerabilities by applying patches and upgrades provided by...
+  - 🛡️ **Threat Intelligence Program**
+    A Threat Intelligence Program enables organizations to proactively identify, analyze, and act on cyber threats by levera...
+  - *1 more mitigation(s) available*
+
+### Act on biased or incorrect guidance
+
+- **Technique**: [T1553](https://attack.mitre.org/techniques/T1553/) - Subvert Trust Controls
+- **Tactic**: Defense Evasion
+- **Similarity Score**: 40.87%
+- **Mitigations (5):**
+  - 🛡️ **Execution Prevention**
+    Prevent the execution of unauthorized or malicious code on systems by implementing application control, script blocking,...
+  - 🛡️ **Operating System Configuration**
+    Operating System Configuration involves adjusting system settings and hardening the default configurations of an operati...
+  - 🛡️ **Privileged Account Management**
+    Privileged Account Management focuses on implementing policies, controls, and tools to securely manage privileged accoun...
+  - *2 more mitigation(s) available*
+
+
+*Total technique mappings: 17 | Mitigations found: 36*
 
 
 ## Attack Path Analysis

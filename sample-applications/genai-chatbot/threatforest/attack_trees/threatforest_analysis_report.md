@@ -1,6 +1,6 @@
 # ThreatForest Analysis Report
 
-**Generated on:** 2025-11-25 15:17:51
+**Generated on:** 2025-12-01 13:09:23
 
 ## Executive Summary
 
@@ -9,26 +9,36 @@ This report presents a comprehensive threat analysis for **Sample Generative AI 
 ## Project Information
 
 - **Application Name**: Sample Generative AI Chatbot Application
-- **Architecture Type**: Serverless Microservices
-- **Deployment Environment**: Cloud (AWS)
-- **Industry Sector**: Enterprise/Knowledge Management
+- **Architecture Type**: microservices
+- **Deployment Environment**: AWS
+- **Industry Sector**: general
 
 ### Technology Stack
 - Amazon Bedrock
-- Amazon S3
+- LangChain
+- Large Language Models (LLMs)
+- Retrieval Augmented Generation (RAG)
+- Amazon OpenSearch
+- Vector Databases
 - AWS Lambda
-- Amazon Cognito
-- AWS WAF
-- API Gateway
-- Amazon Bedrock Titan Embedding Model
-- OpenSearch (Vector Database)
-- DynamoDB
+- Amazon DynamoDB
+- Amazon S3
+- AWS API Gateway
 - Bedrock Guardrails
+- NodeJS
+- Docker
+- Python
+- boto3
 
 ### Security Objectives
-- **Confidentiality**: ✅ Required
-- **Integrity**: ✅ Required
-- **Availability**: ✅ Required
+- Protect confidentiality of question-and-answer retrieval augmented generation (RAG) data
+- Ensure data integrity and quality of inference responses
+- Maintain availability of chatbot service
+- Prevent prompt injection attacks
+- Protect sensitive user and training data
+- Implement responsible AI and content moderation
+- Prevent unauthorized access to connected systems
+- Ensure proper output encoding and validation
 
 ## Threat Analysis Results
 
@@ -92,23 +102,23 @@ This report presents a comprehensive threat analysis for **Sample Generative AI 
 ## Attack Tree Analysis
 
 ### Generated Attack Trees
-- **04330dd9-b830-45ae-8dcb-6149919ea8f0**: LLM07 System Prompt Leakage (25 TTC mappings)
-- **58541b72-e462-4042-bb21-e82ae89f8a07**: LLM01 Prompt Injection (22 TTC mappings)
+- **04330dd9-b830-45ae-8dcb-6149919ea8f0**: LLM07 System Prompt Leakage (16 TTC mappings)
+- **58541b72-e462-4042-bb21-e82ae89f8a07**: LLM01 Prompt Injection (16 TTC mappings)
 - **26ae875e-296d-4151-99a9-dbd6287d851a**: LLM02 SensitiveInfo Disclosure (15 TTC mappings)
-- **12c09063-e456-445d-adee-5b84840fa213**: LLM08 VectorEmbedding Weakness (29 TTC mappings)
-- **ddb6a6d5-664e-4e34-bec0-09d4ff319f67**: LLM02 SensitiveInfo Disclosure (13 TTC mappings)
-- **463f80c0-9786-4cfb-a3fb-30cc07f47ae1**: LLM03 Supply Chain, LLM02 SensitiveInfo Disclosure (20 TTC mappings)
-- **e746ae8d-2840-4dd0-96a2-5d9656f7a62b**: LLM03 Supply Chain, LLM10 Unbounded Consumption (28 TTC mappings)
-- **b89e6369-cca5-43a1-a756-3587e52cf263**: LLM09 Misinformation (22 TTC mappings)
-- **8b755706-59d2-41c4-9075-0013b92af39a**: LLM06 Excessive Agency (16 TTC mappings)
-- **8c24eec4-40be-4f17-888d-f22d37b39724**: LLM09 Misinformation (24 TTC mappings)
-- **c5119071-e818-4e18-82da-b1f9670cd138**: LLM06 Excessive Agency (22 TTC mappings)
-- **f31ca02f-49a0-44df-8718-0e56d500ed4f**: LLM02 SensitiveInfo Disclosure (20 TTC mappings)
-- **7dc2a880-a3fa-4e34-ad0a-ae38e559e635**: LLM04 Data/Model Poisoning (26 TTC mappings)
+- **12c09063-e456-445d-adee-5b84840fa213**: LLM08 VectorEmbedding Weakness (18 TTC mappings)
+- **ddb6a6d5-664e-4e34-bec0-09d4ff319f67**: LLM02 SensitiveInfo Disclosure (11 TTC mappings)
+- **463f80c0-9786-4cfb-a3fb-30cc07f47ae1**: LLM03 Supply Chain, LLM02 SensitiveInfo Disclosure (16 TTC mappings)
+- **e746ae8d-2840-4dd0-96a2-5d9656f7a62b**: LLM03 Supply Chain, LLM10 Unbounded Consumption (14 TTC mappings)
+- **b89e6369-cca5-43a1-a756-3587e52cf263**: LLM09 Misinformation (17 TTC mappings)
+- **8b755706-59d2-41c4-9075-0013b92af39a**: LLM06 Excessive Agency (18 TTC mappings)
+- **8c24eec4-40be-4f17-888d-f22d37b39724**: LLM09 Misinformation (20 TTC mappings)
+- **c5119071-e818-4e18-82da-b1f9670cd138**: LLM06 Excessive Agency (17 TTC mappings)
+- **f31ca02f-49a0-44df-8718-0e56d500ed4f**: LLM02 SensitiveInfo Disclosure (15 TTC mappings)
+- **7dc2a880-a3fa-4e34-ad0a-ae38e559e635**: LLM04 Data/Model Poisoning (20 TTC mappings)
 - **c1ef6f15-be68-46ed-a724-1a8647f2439c**: LLM04 Data/Model Poisoning (19 TTC mappings)
-- **1696e6d2-1656-4f1f-8484-a4f0490e102e**: LLM04 Data/Model Poisoning (22 TTC mappings)
-- **0a054002-03d9-41cb-8b1d-1c9492c3fbb6**: LLM01 Prompt Injection, LLM06 Excessive Agency (27 TTC mappings)
-- **3c4b9ded-09ef-4bc1-8fdd-845009e1a273**: LLM01 Prompt Injection (22 TTC mappings)
+- **1696e6d2-1656-4f1f-8484-a4f0490e102e**: LLM04 Data/Model Poisoning (21 TTC mappings)
+- **0a054002-03d9-41cb-8b1d-1c9492c3fbb6**: LLM01 Prompt Injection, LLM06 Excessive Agency (26 TTC mappings)
+- **3c4b9ded-09ef-4bc1-8fdd-845009e1a273**: LLM01 Prompt Injection (16 TTC mappings)
 
 
 

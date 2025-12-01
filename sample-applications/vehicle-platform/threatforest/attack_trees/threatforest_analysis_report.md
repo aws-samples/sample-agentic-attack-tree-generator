@@ -1,6 +1,6 @@
 # ThreatForest Analysis Report
 
-**Generated on:** 2025-11-29 17:15:30
+**Generated on:** 2025-12-01 13:54:20
 
 ## Executive Summary
 
@@ -16,24 +16,24 @@ This report presents a comprehensive threat analysis for **AWS Connected Vehicle
 ### Technology Stack
 - AWS Lambda
 - Amazon API Gateway
-- Amazon Cognito
-- AWS Amplify
+- AWS Cognito
 - Amazon DynamoDB
 - Amazon S3
-- AWS IAM
-- TLS/HTTPS
+- AWS Amplify
 - REST APIs
-- HTML/CSS/JavaScript
+- HTTPS/TLS
+- AWS IAM
+- CloudWatch Logs
 
 ### Security Objectives
-- Protect user authentication credentials
-- Ensure data confidentiality for vehicle registration documents
-- Maintain integrity of vehicle registration data
+- Protect user authentication credentials via Cognito
+- Ensure data confidentiality through encryption at rest and in transit
+- Maintain data integrity of vehicle registration records
 - Ensure availability of vehicle registration services
 - Prevent unauthorized access to sensitive vehicle data
-- Protect data in transit and at rest
-- Implement proper authorization controls
-- Prevent non-repudiation of registration actions
+- Implement least-privilege access controls
+- Protect vehicle registration documents in S3
+- Prevent data exfiltration and unauthorized modifications
 
 ## Threat Analysis Results
 
