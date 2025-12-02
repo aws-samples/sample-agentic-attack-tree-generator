@@ -142,23 +142,7 @@ After completion, you can:
 
 ## Handling Errors
 
-### Network Issues
-
-<!-- TODO: Add network error screenshot -->
-![Network Error](../assets/images/error-network-placeholder.png)
-*Network connectivity error and retry options - Screenshot coming soon*
-
-### Validation Errors
-
-<!-- TODO: Add validation error screenshot -->
-![Validation Error](../assets/images/error-validation-placeholder.png)
-*Project validation error messages - Screenshot coming soon*
-
-### Model Errors
-
-<!-- TODO: Add model error screenshot -->
-![Model Error](../assets/images/error-model-placeholder.png)
-*AI model invocation error and recovery options - Screenshot coming soon*
+ThreatForest includes automatic error handling and recovery. Common errors are documented in the [FAQ Troubleshooting section](../faq.md#troubleshooting).
 
 ## Tips for Successful Analysis
 
