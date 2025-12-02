@@ -1,3 +1,0 @@
-# Iot
-
-Documentation coming soon.

@@ -2,6 +2,118 @@
 
 This page provides detailed information about each phase of the ThreatForest workflow.
 
+## Workflow Scenarios
+
+ThreatForest adapts its analysis workflow based on the input files available in your project. Below are the three main scenarios:
+
+### :dart: Scenario 1: ThreatComposer File Provided
+
+When a ThreatComposer file (`*.tc.json`) is present, ThreatForest uses it as the authoritative source for threat statements.
+
+```mermaid
+graph TD
+    A[CONTEXT STAGE] --> B[FileDiscovery: Scan project]
+    B --> C[Find: ThreatComposer.tc.json + READMEs + diagrams]
+    C --> D[ContextExtractor: Analyze READMEs/diagrams]
+    D --> E[Output: File paths + basic app context]
+    
+    E --> F[EXTRACTION STAGE]
+    F --> G[ParserAgent: Parse ThreatComposer.tc.json]
+    G --> H[Extract: Full threat details, metadata, priorities]
+    F --> I[RepositoryAnalysisAgent: Analyze project structure]
+    I --> J[Extract: Technologies, architecture, entry points]
+    H --> K[Output: Threat statements + project info]
+    J --> K
+    
+    K --> L[TREE GENERATION]
+    L --> M[TreeGeneratorAgent: Create attack trees]
+    
+    M --> N[TTP MAPPING]
+    N --> O[Map attack trees to MITRE ATT&CK]
+    
+    O --> P[SUMMARY GENERATION]
+    P --> Q[Generate reports and dashboards]
+```
+
+!!! success "Best Practice"
+    This scenario provides the most accurate results since threats are explicitly defined in the ThreatComposer format with full metadata.
+
+### :page_facing_up: Scenario 2: Threat Statement File Provided
+
+When threat statements are provided in Markdown (`.md`) or YAML (`.yaml`) format, ThreatForest parses them to extract threat information.
+
+```mermaid
+graph TD
+    A[CONTEXT STAGE] --> B[FileDiscovery: Scan project]
+    B --> C[Find: threats.md/yaml + READMEs + diagrams]
+    C --> D[ContextExtractor: Analyze READMEs/diagrams]
+    D --> E[Output: File paths + basic app context]
+    
+    E --> F[EXTRACTION STAGE]
+    F --> G[ParserAgent: Parse threats.md/yaml]
+    G --> H[Extract: Threat statements from markdown/YAML]
+    F --> I[RepositoryAnalysisAgent: Analyze project structure]
+    I --> J[Extract: Technologies, architecture, entry points]
+    H --> K[Output: Threat statements + project info]
+    J --> K
+    
+    K --> L[TREE GENERATION]
+    L --> M[TreeGeneratorAgent: Create attack trees]
+    
+    M --> N[TTP MAPPING]
+    N --> O[Map attack trees to MITRE ATT&CK]
+    
+    O --> P[SUMMARY GENERATION]
+    P --> Q[Generate reports and dashboards]
+```
+
+!!! tip "Supported Formats"
+    - **Markdown**: `threats.md`, `THREATS.md`
+    - **YAML**: `threats.yaml`, `threats.yml`
+
+### :robot: Scenario 3: No Threat Files Provided
+
+When no threat files exist, ThreatForest uses AI to analyze your project and generate contextual threat statements automatically.
+
+```mermaid
+graph TD
+    A[CONTEXT STAGE] --> B[FileDiscovery: Scan project]
+    B --> C[Find: READMEs + diagrams only]
+    C --> D[ContextExtractor: Analyze READMEs/diagrams]
+    D --> E[Output: File paths + basic app context]
+    
+    E --> F[EXTRACTION STAGE]
+    F --> G[RepositoryAnalysisAgent: Deep project analysis]
+    G --> H[Extract: App name, technologies, architecture,<br/>data assets, entry points, security objectives]
+    H --> I[ThreatGenerationAgent: AI-generates threats]
+    I --> J[Input: Project context from RepositoryAnalysisAgent]
+    J --> K[Generate: 8-12 contextual threat statements]
+    K --> L[Save: threats.md file in project]
+    L --> M[Output: Generated threat statements + project info]
+    
+    M --> N[TREE GENERATION]
+    N --> O[TreeGeneratorAgent: Create attack trees]
+    
+    O --> P[TTP MAPPING]
+    P --> Q[Map attack trees to MITRE ATT&CK]
+    
+    Q --> R[SUMMARY GENERATION]
+    R --> S[Generate reports and dashboards]
+```
+
+!!! info "AI-Generated Threats"
+    The ThreatGenerationAgent analyzes your project's:
+    
+    - Application architecture and components
+    - Technologies and frameworks used
+    - Data flows and storage mechanisms
+    - External dependencies and APIs
+    - Security-relevant configuration
+    
+    It generates **8-12 contextual threat statements** based on STRIDE methodology, automatically saved to `threats.md` in your project directory.
+
+---
+
 ## Phase 1: Attack Tree Generation (30-70%)
 
 This is the core phase where ThreatForest creates detailed attack trees for each identified threat.

@@ -1,3 +1,0 @@
-# Performance
-
-Documentation coming soon.

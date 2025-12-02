@@ -1,3 +1,0 @@
-# Customization
-
-Documentation coming soon.

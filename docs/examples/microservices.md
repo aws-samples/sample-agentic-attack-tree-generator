@@ -1,3 +1,0 @@
-# Microservices
-
-Documentation coming soon.
