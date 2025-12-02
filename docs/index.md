@@ -138,6 +138,7 @@ Generate comprehensive attack trees in minutes:
 *Interactive dashboard with network graph visualization*
 
 **Features:**
+
 - Visual network graph with pan/zoom
 - Interactive node exploration
 - Real-time filtering and search
