@@ -118,26 +118,34 @@ The threat modeling workflow follows a structured pipeline:
 ## Design Principles
 
 ### Modularity
+
 Each component is independently testable and replaceable, enabling:
+
 - Easy updates to individual modules
 - Flexible LLM provider selection
 - Custom workflow configurations
 
 ### Autonomy
+
 Agents operate independently using Strands tools, reducing manual intervention and enabling:
+
 - Automated repository exploration
 - Intelligent file parsing
 - Context-aware threat generation
 
 ### Extensibility
+
 The architecture supports custom extensions:
+
 - Custom agents for specialized analysis
 - Additional MITRE ATT&CK frameworks (ICS, Mobile)
 - Custom visualization templates
 - Integration with CI/CD pipelines
 
 ### Privacy-First
+
 Data handling prioritizes user privacy:
+
 - No data storage beyond local outputs
 - LLM provider choice for data governance
 - Support for fully local models (Ollama)

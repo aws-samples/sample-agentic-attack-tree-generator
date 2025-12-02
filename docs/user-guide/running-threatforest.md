@@ -18,7 +18,9 @@ This launches a guided interface that walks you through the entire analysis proc
 
 When you launch ThreatForest for the first time, you'll see:
 
+<!-- TODO: Add welcome screen GIF -->
 ![ThreatForest Welcome Screen](../assets/images/InitialWelcomeScreenAndLaunchingThreatForest.gif)
+*Initial welcome screen and wizard launch*
 
 The wizard will guide you through the initial setup and then the analysis workflow.
 
@@ -142,30 +144,35 @@ After completion, you can:
 
 ### Network Issues
 
-![Network Error](images/error-network.png)
-*Screenshot: Network connectivity error and retry options*
+<!-- TODO: Add network error screenshot -->
+![Network Error](../assets/images/error-network-placeholder.png)
+*Network connectivity error and retry options - Screenshot coming soon*
 
 ### Validation Errors
 
-![Validation Error](images/error-validation.png)
-*Screenshot: Project validation error messages*
+<!-- TODO: Add validation error screenshot -->
+![Validation Error](../assets/images/error-validation-placeholder.png)
+*Project validation error messages - Screenshot coming soon*
 
 ### Model Errors
 
-![Model Error](images/error-model.png)
-*Screenshot: AI model invocation error and recovery options*
+<!-- TODO: Add model error screenshot -->
+![Model Error](../assets/images/error-model-placeholder.png)
+*AI model invocation error and recovery options - Screenshot coming soon*
 
 ## Tips for Successful Analysis
 
 ### Before Running
 
 **✅ Do:**
+
 - Ensure AWS credentials are configured
 - Have ThreatComposer file or good documentation
 - Check network connectivity
 - Review prerequisites
 
 **❌ Don't:**
+
 - Run on empty project directories
 - Skip AWS profile configuration
 - Interrupt during critical stages
@@ -173,11 +180,13 @@ After completion, you can:
 ### During Analysis
 
 **✅ Do:**
+
 - Let it run to completion
 - Monitor progress indicators
 - Note any error messages
 
 **❌ Don't:**
+
 - Close terminal/IDE abruptly
 - Modify project files during analysis
 - Run multiple analyses simultaneously
@@ -185,12 +194,14 @@ After completion, you can:
 ### After Analysis
 
 **✅ Do:**
+
 - Review the dashboard first
 - Check high-severity threats
 - Verify attack trees are accurate
 - Commit results to version control
 
 **❌ Don't:**
+
 - Delete state files prematurely
 - Ignore error messages in logs
 - Modify generated files manually
@@ -200,11 +211,13 @@ After completion, you can:
 ### Analysis Duration
 
 **Typical Times:**
+
 - Small projects (1-3 threats): 5-10 minutes
 - Medium projects (4-8 threats): 10-20 minutes
 - Large projects (9+ threats): 20-40 minutes
 
 **Factors Affecting Speed:**
+
 - Number of threats
 - Complexity of threats
 - AI model selected (Haiku faster than Sonnet)
@@ -213,11 +226,13 @@ After completion, you can:
 ### First Run vs Subsequent Runs
 
 **First Run:**
+
 - Downloads AI model dependencies (~500MB)
 - Initializes MITRE ATT&CK database
 - Takes 2-3 minutes longer
 
 **Subsequent Runs:**
+
 - Uses cached dependencies
 - Faster startup
 - Only analysis time

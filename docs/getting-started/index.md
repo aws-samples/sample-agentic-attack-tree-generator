@@ -51,7 +51,7 @@ Welcome to ThreatForest! This guide will help you get up and running with AI-pow
     - `bedrock:ConverseStream`
     - `bedrock:InvokeModel`
     
-    **Note:** Other providers (Anthropic, OpenAI, Google Gemini, Ollama) are experimental and their outputs have not been fully tested or validated.
+    **Note:** Other providers (Anthropic, OpenAI, Google Gemini, Ollama) are experimental and not fully validated.
 
 Configure your AWS credentials for Bedrock access:
 
@@ -162,7 +162,7 @@ Now that you have ThreatForest installed, explore these guides:
 
 Having issues? Check these common problems:
 
-??? question "Error: 'externally-managed-environment'"
+!!! question "Error: 'externally-managed-environment'"
     
     **Problem:** Python prevents system-wide pip installs
     
@@ -171,7 +171,7 @@ Having issues? Check these common problems:
     pipx install threatforest
     ```
 
-??? question "Error: 'Bedrock access failed'"
+!!! question "Error: 'Bedrock access failed'"
     
     **Problem:** AWS credentials not configured or insufficient permissions
     
@@ -188,15 +188,13 @@ Having issues? Check these common problems:
     # - bedrock:InvokeModelWithResponseStream
     ```
 
-??? question "Very slow first run"
+!!! info "Very slow first run"
     
-    **Problem:** Downloading large AI models
-    
-    **Solution:** This is normal! First run downloads:
+    **This is normal!** First run downloads:
     - sentence-transformers models (~500MB)
     - torch library
     - MITRE ATT&CK data
     
     Subsequent runs are much faster (seconds instead of minutes).
 
-[→ FAQ](../faq.md)
+[→ More Troubleshooting](../faq.md)

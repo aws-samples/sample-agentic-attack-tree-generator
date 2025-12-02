@@ -1,6 +1,34 @@
 # Frequently Asked Questions (FAQ)
 
-Get answers to common questions about ThreatForest, threat modeling, and attack tree generation.
+!!! tip "Quick Navigation"
+    Use the tabs below to jump to specific topics, or scroll through all questions.
+
+=== "General"
+    - [What is ThreatForest?](#what-is-threatforest)
+    - [What is an attack tree?](#what-is-an-attack-tree)
+    - [Who should use ThreatForest?](#who-should-use-threatforest)
+    - [Is ThreatForest free?](#is-threatforest-free)
+
+=== "Getting Started"
+    - [What are the prerequisites?](#what-are-the-prerequisites)
+    - [How do I install?](#how-do-i-install-threatforest)
+    - [Can I try without AWS?](#can-i-try-threatforest-without-aws)
+
+=== "Features"
+    - [What file formats?](#what-file-formats-does-threatforest-support)
+    - [Analyze existing threats?](#can-threatforest-analyze-my-existing-threat-model)
+    - [What is MITRE mapping?](#what-is-mitre-attck-mapping)
+    - [How accurate is AI?](#how-accurate-is-the-ai-generated-content)
+
+=== "Privacy"
+    - [Is code sent to LLMs?](#is-my-code-sent-to-the-llm-provider)
+    - [Protect sensitive info?](#how-do-i-protect-sensitive-information)
+    - [Air-gapped use?](#can-i-use-threatforest-in-an-air-gapped-environment)
+
+=== "Troubleshooting"
+    - [Why slow?](#why-is-threatforest-slow)
+    - [Rate limits?](#threatforest-fails-with-api-rate-limit-exceeded)
+    - [Trees don't match?](#the-attack-trees-dont-match-my-application)
 
 ---
 
@@ -8,57 +36,44 @@ Get answers to common questions about ThreatForest, threat modeling, and attack 
 
 ### What is ThreatForest?
 
-ThreatForest is an AI-driven threat modeling platform that automates the process of analyzing applications for security threats, generating attack trees, and mapping them to MITRE ATT&CK techniques. It uses autonomous AI agents powered by AWS Labs' Strands framework to explore your project, understand its architecture, and identify potential security vulnerabilities.
+!!! info "TL;DR"
+    AI-powered threat modeling platform that generates attack trees mapped to MITRE ATT&CK using autonomous agents.
+
+ThreatForest automates threat modeling by analyzing your project and generating comprehensive attack trees with MITRE ATT&CK mappings and mitigation strategies.
+
+[→ Learn More](index.md)
 
 ### What is an attack tree?
 
-An **attack tree** is a hierarchical diagram that represents the various ways a system can be attacked. It starts with a root goal (the threat or security objective an attacker wants to achieve) and branches out into multiple attack paths showing the steps an attacker might take to reach that goal.
+!!! info "TL;DR"
+    Hierarchical diagram showing all ways to attack a system, with step-by-step paths mapped to MITRE techniques.
 
-Each attack tree includes:
+An attack tree visualizes attack scenarios:
 
-- **Root Node**: The high-level threat or attack goal (e.g., "Unauthorized access to customer data")
-- **Attack Paths**: Different routes an attacker could take to achieve the goal
-- **Attack Steps**: Specific actions within each path (e.g., "1. Reconnaissance", "2. Initial Access", "3. Privilege Escalation")
-- **MITRE ATT&CK Mapping**: Links to known tactics and techniques (e.g., T1190: Exploit Public-Facing Application)
-- **Mitigations**: Defensive measures to prevent or detect each attack step
+- **Root**: High-level threat (e.g., "Data breach")
+- **Paths**: Different attack routes
+- **Steps**: Specific actions per path
+- **MITRE**: Technique IDs (e.g., T1190)
+- **Mitigations**: Defensive controls
 
-**Example visualization:**
-```
-Root: SQL Injection Attack
-├── Path 1: Direct Database Access
-│   ├── Step 1: Identify input fields
-│   ├── Step 2: Test for SQL injection
-│   └── Step 3: Extract sensitive data
-└── Path 2: Bypass Authentication
-    ├── Step 1: Find login endpoint
-    ├── Step 2: Craft malicious payload
-    └── Step 3: Gain admin access
-```
-
-Attack trees help security teams:
-- Visualize all possible attack scenarios
-- Prioritize security controls
-- Communicate risks to stakeholders
-- Identify gaps in defenses
-- Plan security testing strategies
+[→ See Examples](examples/index.md)
 
 ### Who should use ThreatForest?
 
-ThreatForest is designed for:
+ThreatForest is designed for security professionals, developers, and compliance teams:
 
-- **Security Teams**: Automating threat modeling for applications and systems
-- **DevSecOps Engineers**: Integrating security analysis into CI/CD pipelines
-- **Software Architects**: Understanding security implications of design decisions
-- **Compliance Officers**: Documenting threat landscapes for regulatory requirements
-- **Security Researchers**: Analyzing attack patterns and vulnerabilities
+- **Security Teams** - Automate threat modeling
+- **DevSecOps** - Integrate into CI/CD
+- **Architects** - Understand security implications
+- **Compliance** - Document threat landscapes
 
 ### Is ThreatForest free?
 
-Yes, ThreatForest is an open-source project released under the MIT License. However, you'll need access to an LLM provider:
+Yes, open-source under MIT License. You need LLM provider access:
 
-- **AWS Bedrock**: Requires an AWS account with Bedrock access
-- **Anthropic/OpenAI/Gemini**: Requires API keys (paid services)
-- **Ollama**: Free for local use (no API costs)
+- **AWS Bedrock** - Requires AWS account
+- **Anthropic/OpenAI** - Requires API keys (paid)
+- **Ollama** - Free local use
 
 ---
 
@@ -66,35 +81,49 @@ Yes, ThreatForest is an open-source project released under the MIT License. Howe
 
 ### What are the prerequisites?
 
-To use ThreatForest, you need:
+!!! info "TL;DR"
+    Python 3.11+, LLM provider access (AWS Bedrock recommended), project to analyze.
 
-- **Python 3.11+**: Modern Python runtime
-- **LLM Provider Access**: One of:
-  - AWS account with Bedrock access
-  - Anthropic/OpenAI/Gemini API keys
-  - Local Ollama installation
-- **Project to Analyze**: Your application code, architecture docs, or threat model files
+**Required:**
+
+- Python 3.11 or higher
+- LLM provider (AWS Bedrock, Anthropic, OpenAI, or Ollama)
+
+**Recommended:**
+
+- ThreatComposer file or documentation
+- Architecture diagrams
+
+[→ Installation Guide](getting-started/index.md)
 
 ### How do I install ThreatForest?
 
-The recommended installation method is using `pipx`:
+!!! info "TL;DR"
+    `pipx install threatforest` then run `threatforest`
 
 ```bash
+# Recommended: pipx
 pipx install threatforest
+threatforest
+
+# Alternative: pip with venv
+python3 -m venv venv
+source venv/bin/activate
+pip install threatforest
 ```
 
-See the [Getting Started Guide](getting-started/index.md) for detailed instructions.
+[→ Complete Installation](getting-started/index.md)
 
 ### Can I try ThreatForest without AWS?
 
-Yes! ThreatForest supports multiple LLM providers:
+Yes! ThreatForest supports multiple providers:
 
-- **Ollama**: Completely local, no cloud services required
-- **Anthropic Claude**: Direct API access
-- **OpenAI GPT**: Direct API access
-- **Google Gemini**: Direct API access
+- **Ollama** - Completely local, no cloud
+- **Anthropic** - Direct API access
+- **OpenAI** - Direct API access
+- **Google Gemini** - Direct API access
 
-Configure your preferred provider in the interactive wizard or `config.yaml`.
+Configure in the wizard or `config.yaml`.
 
 ---
 
@@ -102,52 +131,70 @@ Configure your preferred provider in the interactive wizard or `config.yaml`.
 
 ### What file formats does ThreatForest support?
 
-ThreatForest can parse threats from:
+!!! info "TL;DR"
+    ThreatComposer (.tc), JSON, YAML, Markdown for threats. PNG, PDF, Mermaid for diagrams.
 
-- **ThreatComposer**: `.tc.json` workspace files
-- **JSON**: Structured threat definitions
-- **YAML**: Human-readable threat configurations
-- **Markdown**: Documentation with threat descriptions
+**Threat Models:**
 
-If no threats exist, ThreatForest can generate them by analyzing your project files.
+- ThreatComposer (`.tc`, `.tc.json`) ⭐ Recommended
+- JSON, YAML, Markdown
+
+**Diagrams:**
+
+- PNG, JPG, PDF, Mermaid, Draw.io, PlantUML
+
+**Documentation:**
+
+- Markdown, PDF, text files
+
+[→ Preparing Your Project](user-guide/preparing-your-project.md)
 
 ### Can ThreatForest analyze my existing threat model?
 
 Yes! ThreatForest can:
 
-- Import threats from ThreatComposer workspaces
-- Parse existing threat documentation
-- Enrich threats with MITRE ATT&CK mappings
-- Generate attack trees for identified threats
+- Import ThreatComposer workspaces
+- Parse JSON/YAML/Markdown threats
+- Enrich with MITRE ATT&CK mappings
+- Generate attack trees
 - Add mitigation recommendations
+
+[→ Input Files Guide](user-guide/preparing-your-project.md#threat-models)
 
 ### What is MITRE ATT&CK mapping?
 
-MITRE ATT&CK is a globally recognized framework of adversary tactics and techniques. ThreatForest automatically maps each attack step to relevant MITRE ATT&CK techniques using:
+!!! info "TL;DR"
+    Automatic mapping of attack steps to industry-standard MITRE techniques using AI-powered semantic matching.
 
-- **Semantic Similarity**: AI-powered matching of attack descriptions to techniques
-- **Vector Embeddings**: Understanding context and meaning beyond keywords
-- **Confidence Scoring**: Multi-factor assessment of mapping accuracy
+MITRE ATT&CK is a framework of adversary tactics and techniques. ThreatForest maps each attack step to relevant techniques using:
 
-This helps you:
-- Understand attacks in standardized terminology
-- Compare threats across different systems
-- Plan defenses using industry best practices
-- Meet compliance requirements
+- Semantic similarity matching
+- Vector embeddings
+- Confidence scoring (0.0-1.0)
+
+This helps you understand attacks in standardized terminology and plan defenses using industry best practices.
+
+[→ How It Works](how-it-works/index.md#phase-2-ttp-enrichment)
 
 ### How accurate is the AI-generated content?
 
-ThreatForest uses state-of-the-art LLMs (Claude 3 Sonnet, GPT-4, etc.) which are highly capable but not perfect. We recommend:
+!!! warning "Review Required"
+    AI content is a starting point. Always review and validate outputs for your specific context.
 
-- **Review All Output**: Treat AI-generated content as a starting point
-- **Validate Threats**: Ensure threats are relevant to your specific context
-- **Verify Mappings**: Check MITRE ATT&CK mappings for accuracy
-- **Customize Mitigations**: Adapt recommendations to your environment
+**Quality depends on:**
 
-The quality depends on:
-- LLM model selection (Claude 3 Sonnet generally performs best)
-- Quality of project documentation
-- Completeness of threat descriptions
+- LLM model (Claude 3.5 Sonnet recommended)
+- Documentation quality
+- Threat description completeness
+
+**Best practices:**
+
+- Review all outputs
+- Validate MITRE mappings
+- Customize mitigations
+- Iterate and refine
+
+[→ Best Practices](how-it-works/index.md#best-practices-for-optimal-results)
 
 ---
 
@@ -155,43 +202,57 @@ The quality depends on:
 
 ### Is my code sent to the LLM provider?
 
-Yes, ThreatForest sends relevant project context to your chosen LLM provider for analysis. This may include:
+!!! warning "Data Sent to LLM"
+    Yes, relevant project context is sent for analysis. Choose your provider carefully.
 
-- Architecture diagrams and documentation
-- Code snippets relevant to security
-- Threat descriptions and configurations
+**Data sent:**
 
-**Privacy Options:**
+- Application details and architecture
+- Threat descriptions
+- Documentation content
+- Diagram descriptions
 
-- ✅ **Local Models (Ollama)**: Complete privacy, all processing on your machine
-- ✅ **AWS Bedrock**: Enterprise data handling with AWS policies
-- ✅ **Read Provider Policies**: Review data handling for Anthropic, OpenAI, Gemini
+**Privacy options:**
 
-**Best Practices:**
+- ✅ **Ollama** - Complete privacy (local)
+- ✅ **AWS Bedrock** - Enterprise data handling
+- ⚠️ **Others** - Review provider policies
 
-- Use Ollama for sensitive projects
-- Remove secrets before analysis
-- Review provider data retention policies
-- Consider on-premises deployment for highly sensitive systems
+[→ Data Privacy Guide](index.md#data-privacy-considerations)
 
 ### How do I protect sensitive information?
 
-1. **Use Local Models**: Run Ollama for complete data privacy
-2. **Sanitize Input**: Remove secrets, credentials, PII before analysis
-3. **Review Output**: Check generated files for leaked information
-4. **Access Controls**: Restrict who can view threat models and attack trees
-5. **Secure Storage**: Store outputs in protected directories with appropriate permissions
+!!! tip "Protection Strategies"
+    1. Use Ollama for sensitive projects
+    2. Sanitize input (remove secrets/PII)
+    3. Review outputs for leaks
+    4. Use access controls
+
+**Best practices:**
+
+- Remove credentials before analysis
+- Use generic descriptions for demos
+- Check provider data retention policies
+- Store outputs securely
 
 ### Can I use ThreatForest in an air-gapped environment?
 
-With Ollama, yes! Set up:
+Yes, with Ollama:
 
-1. Install Ollama on an air-gapped machine
-2. Download required models (qwen2.5 recommended)
-3. Configure ThreatForest to use local Ollama endpoint
+```yaml
+# config.yaml
+ollama:
+  enabled: true
+  base_url: "http://localhost:11434"
+  model_id: "qwen2.5:14b"
+```
+
+1. Install Ollama on air-gapped machine
+2. Download models offline
+3. Configure ThreatForest
 4. Run completely offline
 
-See [Multi-Provider Setup](advanced/multi-provider.md) for details.
+[→ Ollama Setup Guide](advanced/multi-provider.md)
 
 ---
 
@@ -199,153 +260,126 @@ See [Multi-Provider Setup](advanced/multi-provider.md) for details.
 
 ### Why is ThreatForest slow?
 
-Performance depends on several factors:
+!!! info "Typical Duration"
+    5-30 minutes depending on project size and model selection.
 
-- **LLM Provider**: Bedrock/Claude typically fastest; Ollama slower on CPU
-- **Model Size**: Larger models (70B+) take longer than smaller ones (7B-14B)
-- **Project Complexity**: More threats = longer processing time
-- **Hardware**: Local models require sufficient CPU/GPU resources
+**Performance factors:**
 
-**Speed Optimization:**
+- **Model** - Haiku (fast), Sonnet (balanced), Opus (slow)
+- **Project size** - More threats = longer time
+- **Network** - Latency to LLM provider
+- **Hardware** - Local models need CPU/GPU
 
-- Use AWS Bedrock or Anthropic for fastest processing
-- Select smaller models for quicker results
+**Speed optimization:**
+
+- Use AWS Bedrock or Anthropic
+- Select Claude 3 Haiku for faster results
 - Process threats incrementally
-- Use the resume feature to avoid reprocessing
+
+[→ Performance Guide](how-it-works/performance.md)
 
 ### ThreatForest fails with "API rate limit exceeded"
 
-LLM providers have rate limits. Solutions:
+**Solutions:**
 
-- **Wait and Retry**: ThreatForest has built-in retry logic
-- **Reduce Concurrency**: Process fewer threats simultaneously
-- **Upgrade Plan**: Increase rate limits with your provider
-- **Switch Providers**: Try a different LLM service
+- Wait and retry (automatic retry logic)
+- Reduce concurrency
+- Upgrade provider plan
+- Switch providers
 
 ### The attack trees don't match my application
 
-This can happen if:
+**Common causes:**
 
-- Project documentation is incomplete
-- LLM lacks context about your tech stack
-- Threat descriptions are too generic
+- Incomplete documentation
+- Generic threat descriptions
+- Missing architecture context
 
 **Improvements:**
 
 - Add detailed architecture diagrams
-- Include technology stack documentation
-- Write specific, contextual threat descriptions
-- Use the [Preparing Your Project](user-guide/preparing-your-project.md) guide
+- Include technology stack docs
+- Write specific threat descriptions
+- Use ThreatComposer format
+
+[→ Preparing Your Project](user-guide/preparing-your-project.md)
 
 ### Can I customize the output format?
 
 Yes! ThreatForest generates:
 
-- **Markdown Files**: Individual attack trees (easily customizable)
-- **JSON Data**: Structured export for integration
-- **HTML Dashboard**: Interactive visualization
+- **Markdown** - Easily customizable
+- **JSON** - For programmatic access
+- **HTML** - Interactive dashboard
 
-You can:
-- Modify markdown templates
-- Parse JSON for custom reporting
-- Extend visualization with custom HTML/CSS
+You can modify templates and parse JSON for custom reporting.
 
-See [Customization Guide](advanced/customization.md) for details.
+[→ Customization Guide](advanced/customization.md)
 
 ---
 
-## Integration & Advanced Usage
+## Integration & Advanced
 
-### Can I integrate ThreatForest into CI/CD?
+### Can I integrate into CI/CD?
 
-ThreatForest is designed for interactive use via the wizard interface. For CI/CD integration, consider:
+ThreatForest is designed for interactive use. For CI/CD:
 
-- Running the wizard in a containerized environment
-- Using the JSON output for automated processing
-- Reviewing generated attack trees as part of security gates
+- Run wizard in containerized environment
+- Use JSON output for automation
+- Review attack trees as security gates
 
-See [CI/CD Best Practices](advanced/customization.md) for integration patterns.
+[→ CI/CD Patterns](advanced/customization.md)
 
 ### Does ThreatForest support multiple languages?
 
-The analysis is language-agnostic - ThreatForest works with any programming language because it analyzes:
+Analysis is language-agnostic. ThreatForest analyzes:
 
-- Architecture and design documents
-- Threat descriptions (not code directly)
+- Architecture and design (not code directly)
+- Threat descriptions (any language supported by LLM)
 - Configuration files
 - Data flow diagrams
 
-LLM responses are in English, but threat descriptions can be in any language supported by the LLM.
+LLM responses are in English.
 
 ### Can I contribute to ThreatForest?
 
-Absolutely! ThreatForest is open source and welcomes contributions:
+Absolutely! Contributions welcome:
 
-- **Bug Reports**: Submit issues on GitHub
-- **Feature Requests**: Propose enhancements
-- **Code Contributions**: Submit pull requests
-- **Documentation**: Improve guides and examples
+- Bug reports on GitHub
+- Feature requests
+- Code contributions (pull requests)
+- Documentation improvements
 
-See the [Contributing Guide](contributing/index.md) to get started.
-
----
-
-## Running ThreatForest
-
-### Can I run ThreatForest without the wizard?
-
-The wizard is the recommended way to run ThreatForest. Command-line options are not supported in the current version.
-
-### How do I analyze multiple projects?
-
-Run the wizard once for each project. ThreatForest will analyze them sequentially.
-
-### Can I cancel during analysis?
-
-Yes, press `Ctrl+C` to cancel. Progress is saved automatically, so you can resume later.
-
-### What if I don't have a ThreatComposer file?
-
-ThreatForest can work with just documentation and diagrams. It will analyze your architecture and identify potential threats automatically.
-
-### How do I update existing analysis?
-
-Run the wizard again on the same project. You can choose to resume or start fresh.
-
----
-
-## Support
-
-### Where can I get help?
-
-- 📖 **Documentation**: Browse this site for comprehensive guides
-- 🐛 **GitHub Issues**: Report bugs or request features
-- 💬 **Discussions**: Ask questions in GitHub Discussions
-- 🔍 **Examples**: Check [example projects](examples/index.md) for reference
-
-### How do I report a security vulnerability?
-
-Please report security issues responsibly:
-
-1. **Do NOT** open a public GitHub issue
-2. Email the maintainers directly (see [SECURITY.md](about/security.md))
-3. Provide detailed information about the vulnerability
-4. Allow time for assessment and patching
-
-See [Security Policy](about/security.md) for full details.
-
-### Is commercial support available?
-
-ThreatForest is an open-source project. For enterprise support options, consulting, or custom development, contact the maintainers through the GitHub repository.
+[→ Contributing Guide](about/contributing.md)
 
 ---
 
 ## Still Have Questions?
 
-If you didn't find your answer here:
+<div class="grid cards" markdown>
 
-1. Browse [GitHub Discussions](https://github.com/aws-samples/sample-agentic-attack-tree-generator/discussions)
-2. Review [example projects](examples/index.md)
-3. Open a [GitHub Issue](https://github.com/aws-samples/sample-agentic-attack-tree-generator/issues)
+-   📖 __Documentation__
 
-We're here to help! 🌳
+    ---
+
+    Browse comprehensive guides
+
+    [→ Read the docs](getting-started/index.md)
+
+-   🐛 __GitHub Issues__
+
+    ---
+
+    Report bugs or request features
+
+    [→ Open Issue](https://github.com/aws-samples/sample-agentic-attack-tree-generator/issues)
+
+-   💬 __Discussions__
+
+    ---
+
+    Ask questions and share ideas
+
+    [→ GitHub Discussions](https://github.com/aws-samples/sample-agentic-attack-tree-generator/discussions)
+
+</div>

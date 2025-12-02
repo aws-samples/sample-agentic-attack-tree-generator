@@ -1,0 +1,2216 @@
+{
+  "metadata": {
+    "generated_at": "2025-12-02T15:50:26.522313",
+    "generator": "ThreatForest",
+    "version": "1.0"
+  },
+  "project_info": {
+    "application_name": "AWS Connected Vehicle Solution - Vehicle Registration Feature",
+    "technologies": [
+      "AWS Lambda",
+      "Amazon API Gateway",
+      "Amazon DynamoDB",
+      "Amazon S3",
+      "Amazon Cognito",
+      "AWS Amplify"
+    ],
+    "architecture_type": "serverless",
+    "deployment_environment": "AWS",
+    "sector": "automotive/fleet management",
+    "security_objectives": [
+      "Protect vehicle registration data stored in DynamoDB and S3",
+      "Ensure proper authentication and authorization for API access",
+      "Maintain confidentiality and integrity of vehicle registration PDFs",
+      "Implement encryption at rest for DynamoDB and S3",
+      "Secure API endpoints through Amazon Cognito authentication",
+      "Prevent unauthorized access to vehicle data",
+      "Ensure secure communication between components",
+      "Protect against injection attacks and data tampering",
+      "Implement proper access controls for AWS resources"
+    ],
+    "data_assets": [
+      "Vehicle registration information (registration number, expiry date)",
+      "Vehicle registration PDF documents",
+      "IoT connected vehicle data",
+      "User authentication tokens",
+      "API method data",
+      "GUIDs (Globally Unique IDs)",
+      "Vehicle metadata stored in DynamoDB",
+      "Pre-signed URLs for S3 access"
+    ],
+    "entry_points": [
+      "Web browser (AWS Amplify front-end)",
+      "Amazon API Gateway endpoints (ListVehicles, RegisterVehicle, DeregisterVehicle, DescribeVehicle)",
+      "User authentication via Amazon Cognito",
+      "HTTP/HTTPS requests from users"
+    ],
+    "trust_boundaries": [
+      "Between Users and AWS Amplify front-end",
+      "Between AWS Amplify and Amazon Cognito (Authentication & Authorization)",
+      "Between Amazon Cognito and API Gateway",
+      "Between API Gateway and Lambda function",
+      "Between Lambda function and DynamoDB",
+      "Between Lambda function and S3",
+      "Between Users and S3 (via pre-signed URLs)"
+    ],
+    "summary": "This is a serverless vehicle registration feature for an AWS Connected Vehicle Solution designed for fleet management. The architecture uses AWS Amplify for the front-end, Amazon Cognito for authentication and authorization, API Gateway for API management, Lambda for business logic, DynamoDB for metadata storage, and S3 for PDF document storage. The system provides four main APIs: ListVehicles (returns all available IoT vehicles), RegisterVehicle (registers vehicles with PDF upload), DeregisterVehicle (removes registration and deletes PDFs), and DescribeVehicle (returns vehicle info with pre-signed S3 URLs). Key security features include encryption at rest for both DynamoDB and S3, authentication through Cognito, and the use of pre-signed URLs for secure S3 access. The system assumes a single authorization scope for all APIs and trusts that API Gateway handles authentication before Lambda execution. A critical assumption is that uploaded PDFs are not parsed by custom code, reducing injection attack surface. The architecture follows AWS Well-Architected Security Pillar principles."
+  },
+  "extraction_summary": {
+    "total_threats": 11,
+    "high_severity_count": 6,
+    "technologies_identified": 6,
+    "has_security_objectives": true,
+    "agent_based": true,
+    "threat_source": "user_provided"
+  },
+  "threats": {
+    "all_threats": [
+      {
+        "id": "9b4dbea5-ccaa-41ea-a057-c6dd47f99523",
+        "description": "An internal actor with access to the AWS account can deploy a lambda function that will use existing execution role, which leads to unauthorised access to sensitive data, resulting in reduced confidentiality of registration status",
+        "severity": "High",
+        "category": "Authorization",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/sample-applications/vehicle-platform/ThreatComposer_Workspace_Vehicle-Connected Platform.tc.json",
+        "threatSource": "internal actor",
+        "prerequisites": "with access to the AWS account",
+        "threatAction": "deploy a lambda function that will use existing execution role",
+        "threatImpact": "unauthorised access to sensitive data",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": [
+          "registration status"
+        ]
+      },
+      {
+        "id": "2df06a4e-b1eb-4303-bb48-46cf05182f58",
+        "description": "An external threat actor with knowledge of employee email addresses can password spray Cognito, which leads to unauthorized access to Vehicle Registration System, resulting in reduced confidentiality of vehicle registration documents",
+        "severity": "High",
+        "category": "Authentication",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/sample-applications/vehicle-platform/ThreatComposer_Workspace_Vehicle-Connected Platform.tc.json",
+        "threatSource": "external threat actor",
+        "prerequisites": "with knowledge of employee email addresses",
+        "threatAction": "password spray Cognito",
+        "threatImpact": "unauthorized access to Vehicle Registration System",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": [
+          "vehicle registration documents"
+        ]
+      },
+      {
+        "id": "c5ac485c-a985-4004-be21-1fb26173a2d3",
+        "description": "A threat actor with access to modify network traffic can manipulate API parameter input which leads to the API Gateway performing actions on another user's resources, resulting in reduced integrity and confidentiality of vehicle registration, vehicle listing, registration status, and vehicle registration documents.",
+        "severity": "High",
+        "category": "Authorization",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/sample-applications/vehicle-platform/ThreatComposer_Workspace_Vehicle-Connected Platform.tc.json",
+        "threatSource": "threat actor",
+        "prerequisites": "with access to modify network traffic",
+        "threatAction": "manipulate API parameter input",
+        "threatImpact": "the API Gateway performing actions on another user's resources",
+        "impactedGoal": "confidentiality, integrity",
+        "impactedAssets": [
+          "vehicle registration",
+          "vehicle listing",
+          "registration status",
+          "vehicle registration documents"
+        ]
+      },
+      {
+        "id": "68fa5393-4f94-4c19-96eb-3438498ce3fd",
+        "description": "A threat actor with access to an IAM Principal with modify access to the S3 bucket can cause data in the Amazon S3 bucket to be deleted, resulting in reduced availability of vehicle registration documents.",
+        "severity": "Low",
+        "category": "Data Breach",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/sample-applications/vehicle-platform/ThreatComposer_Workspace_Vehicle-Connected Platform.tc.json",
+        "threatSource": "threat actor",
+        "prerequisites": "with access to an IAM Principal with modify access to the S3 bucket",
+        "threatAction": "cause data in the Amazon S3 bucket to be deleted",
+        "threatImpact": "cause data in the Amazon S3 bucket to be deleted",
+        "impactedGoal": "availability",
+        "impactedAssets": [
+          "vehicle registration",
+          "vehicle registration documents"
+        ]
+      },
+      {
+        "id": "d38a0bd2-35cc-4c35-a48b-f73db6794a6e",
+        "description": "A threat actor with access to an IAM Principal with modify access to the DynamoDB tables can delete the data, resulting in reduced availability of vehicle registration, vehicle listing, and registration status.",
+        "severity": "High",
+        "category": "Data Breach",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/sample-applications/vehicle-platform/ThreatComposer_Workspace_Vehicle-Connected Platform.tc.json",
+        "threatSource": "threat actor",
+        "prerequisites": "with access to an IAM Principal with modify access to the DynamoDB tables",
+        "threatAction": "delete the data",
+        "threatImpact": "delete the data",
+        "impactedGoal": "availability",
+        "impactedAssets": [
+          "vehicle registration",
+          "vehicle listing",
+          "registration status"
+        ]
+      },
+      {
+        "id": "21abf821-0205-46a7-bc90-f3c32e6118f7",
+        "description": "A threat actor who is able to access the AWS Lambda function logs can find sensitive data captured within the logs, resulting in reduced confidentiality of vehicle registration, vehicle listing, registration status, and vehicle registration documents.",
+        "severity": "Low",
+        "category": "Information Disclosure",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/sample-applications/vehicle-platform/ThreatComposer_Workspace_Vehicle-Connected Platform.tc.json",
+        "threatSource": "threat actor",
+        "prerequisites": "who is able to access the AWS Lambda function logs",
+        "threatAction": "find sensitive data captured within the logs",
+        "threatImpact": "find sensitive data captured within the logs",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": [
+          "vehicle registration",
+          "vehicle listing",
+          "registration status",
+          "vehicle registration documents"
+        ]
+      },
+      {
+        "id": "c61677a4-9bae-416f-b903-f434c6160787",
+        "description": "A threat actor who is authenticated and can make API requests can read information they should not be authorized to read, resulting in reduced confidentiality of vehicle registration, vehicle listing, registration status, and vehicle registration documents.",
+        "severity": "Low",
+        "category": "Authorization",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/sample-applications/vehicle-platform/ThreatComposer_Workspace_Vehicle-Connected Platform.tc.json",
+        "threatSource": "threat actor",
+        "prerequisites": "who is authenticated and",
+        "threatAction": "make API requests can read information they should not be authorized to read",
+        "threatImpact": "make API requests can read information they should not be authorized to read",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": [
+          "vehicle registration",
+          "vehicle listing",
+          "registration status",
+          "vehicle registration documents"
+        ]
+      },
+      {
+        "id": "411207a4-2344-470d-9e4d-74ca592129c4",
+        "description": "A threat actor who can register a vehicle can claim they did not do so which leads to the actor disputing financial charges related to the registration of a vehicle, resulting in reduced integrity of billing.",
+        "severity": "Medium",
+        "category": "Repudiation",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/sample-applications/vehicle-platform/ThreatComposer_Workspace_Vehicle-Connected Platform.tc.json",
+        "threatSource": "threat actor",
+        "prerequisites": "who",
+        "threatAction": "register a vehicle can claim they did not do so",
+        "threatImpact": "the actor disputing financial charges related to the registration of a vehicle",
+        "impactedGoal": "integrity",
+        "impactedAssets": [
+          "billing"
+        ]
+      },
+      {
+        "id": "0d244afc-8cbf-42c6-ac44-6408d41d290c",
+        "description": "A threat actor with access to data in transit between the user and the Amazon S3 bucket can read or modify that data, resulting in reduced confidentiality and/or integrity of vehicle registration documents.",
+        "severity": "Medium",
+        "category": "Data Breach",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/sample-applications/vehicle-platform/ThreatComposer_Workspace_Vehicle-Connected Platform.tc.json",
+        "threatSource": "threat actor",
+        "prerequisites": "with access to data in transit between the user and the Amazon S3 bucket",
+        "threatAction": "read or modify that data",
+        "threatImpact": "read or modify that data",
+        "impactedGoal": "confidentiality, integrity",
+        "impactedAssets": [
+          "vehicle registration",
+          "vehicle registration documents"
+        ]
+      },
+      {
+        "id": "9c19d403-f595-45f8-ba66-df2e60744f67",
+        "description": "A threat actor who is able to access the DynamoDB tables can access sensitive data, which leads to unauthorized access, resulting in reduced confidentiality of vehicle registration, vehicle listing and registration status",
+        "severity": "High",
+        "category": "Data Breach",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/sample-applications/vehicle-platform/ThreatComposer_Workspace_Vehicle-Connected Platform.tc.json",
+        "threatSource": "threat actor",
+        "prerequisites": "who is able to access the DynamoDB tables",
+        "threatAction": "access sensitive data",
+        "threatImpact": "unauthorized access",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": [
+          "vehicle registration",
+          "vehicle listing",
+          "registration status"
+        ]
+      },
+      {
+        "id": "e0e6089f-66d2-49ca-8be0-f9346ab85a14",
+        "description": "A threat actor with possession of a similar domain name can trick our users into interacting with a fake endpoint, which leads to interception of valid API requests, negatively impacting vehicle registration, vehicle listing, registration status and vehicle registration documents",
+        "severity": "High",
+        "category": "Spoofing",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/sample-applications/vehicle-platform/ThreatComposer_Workspace_Vehicle-Connected Platform.tc.json",
+        "threatSource": "threat actor",
+        "prerequisites": "with possession of a similar domain name",
+        "threatAction": "trick our users into interacting with a fake endpoint",
+        "threatImpact": "interception of valid API requests",
+        "impactedGoal": "confidentiality, integrity",
+        "impactedAssets": [
+          "vehicle registration",
+          "vehicle listing",
+          "registration status",
+          "vehicle registration documents"
+        ]
+      }
+    ],
+    "high_severity": [
+      {
+        "id": "9b4dbea5-ccaa-41ea-a057-c6dd47f99523",
+        "description": "An internal actor with access to the AWS account can deploy a lambda function that will use existing execution role, which leads to unauthorised access to sensitive data, resulting in reduced confidentiality of registration status",
+        "severity": "High",
+        "category": "Authorization",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/sample-applications/vehicle-platform/ThreatComposer_Workspace_Vehicle-Connected Platform.tc.json",
+        "threatSource": "internal actor",
+        "prerequisites": "with access to the AWS account",
+        "threatAction": "deploy a lambda function that will use existing execution role",
+        "threatImpact": "unauthorised access to sensitive data",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": [
+          "registration status"
+        ]
+      },
+      {
+        "id": "2df06a4e-b1eb-4303-bb48-46cf05182f58",
+        "description": "An external threat actor with knowledge of employee email addresses can password spray Cognito, which leads to unauthorized access to Vehicle Registration System, resulting in reduced confidentiality of vehicle registration documents",
+        "severity": "High",
+        "category": "Authentication",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/sample-applications/vehicle-platform/ThreatComposer_Workspace_Vehicle-Connected Platform.tc.json",
+        "threatSource": "external threat actor",
+        "prerequisites": "with knowledge of employee email addresses",
+        "threatAction": "password spray Cognito",
+        "threatImpact": "unauthorized access to Vehicle Registration System",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": [
+          "vehicle registration documents"
+        ]
+      },
+      {
+        "id": "c5ac485c-a985-4004-be21-1fb26173a2d3",
+        "description": "A threat actor with access to modify network traffic can manipulate API parameter input which leads to the API Gateway performing actions on another user's resources, resulting in reduced integrity and confidentiality of vehicle registration, vehicle listing, registration status, and vehicle registration documents.",
+        "severity": "High",
+        "category": "Authorization",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/sample-applications/vehicle-platform/ThreatComposer_Workspace_Vehicle-Connected Platform.tc.json",
+        "threatSource": "threat actor",
+        "prerequisites": "with access to modify network traffic",
+        "threatAction": "manipulate API parameter input",
+        "threatImpact": "the API Gateway performing actions on another user's resources",
+        "impactedGoal": "confidentiality, integrity",
+        "impactedAssets": [
+          "vehicle registration",
+          "vehicle listing",
+          "registration status",
+          "vehicle registration documents"
+        ]
+      },
+      {
+        "id": "d38a0bd2-35cc-4c35-a48b-f73db6794a6e",
+        "description": "A threat actor with access to an IAM Principal with modify access to the DynamoDB tables can delete the data, resulting in reduced availability of vehicle registration, vehicle listing, and registration status.",
+        "severity": "High",
+        "category": "Data Breach",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/sample-applications/vehicle-platform/ThreatComposer_Workspace_Vehicle-Connected Platform.tc.json",
+        "threatSource": "threat actor",
+        "prerequisites": "with access to an IAM Principal with modify access to the DynamoDB tables",
+        "threatAction": "delete the data",
+        "threatImpact": "delete the data",
+        "impactedGoal": "availability",
+        "impactedAssets": [
+          "vehicle registration",
+          "vehicle listing",
+          "registration status"
+        ]
+      },
+      {
+        "id": "9c19d403-f595-45f8-ba66-df2e60744f67",
+        "description": "A threat actor who is able to access the DynamoDB tables can access sensitive data, which leads to unauthorized access, resulting in reduced confidentiality of vehicle registration, vehicle listing and registration status",
+        "severity": "High",
+        "category": "Data Breach",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/sample-applications/vehicle-platform/ThreatComposer_Workspace_Vehicle-Connected Platform.tc.json",
+        "threatSource": "threat actor",
+        "prerequisites": "who is able to access the DynamoDB tables",
+        "threatAction": "access sensitive data",
+        "threatImpact": "unauthorized access",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": [
+          "vehicle registration",
+          "vehicle listing",
+          "registration status"
+        ]
+      },
+      {
+        "id": "e0e6089f-66d2-49ca-8be0-f9346ab85a14",
+        "description": "A threat actor with possession of a similar domain name can trick our users into interacting with a fake endpoint, which leads to interception of valid API requests, negatively impacting vehicle registration, vehicle listing, registration status and vehicle registration documents",
+        "severity": "High",
+        "category": "Spoofing",
+        "source_file": "/Users/antondk/talks/riv/ThreatForest-internal/sample-applications/vehicle-platform/ThreatComposer_Workspace_Vehicle-Connected Platform.tc.json",
+        "threatSource": "threat actor",
+        "prerequisites": "with possession of a similar domain name",
+        "threatAction": "trick our users into interacting with a fake endpoint",
+        "threatImpact": "interception of valid API requests",
+        "impactedGoal": "confidentiality, integrity",
+        "impactedAssets": [
+          "vehicle registration",
+          "vehicle listing",
+          "registration status",
+          "vehicle registration documents"
+        ]
+      }
+    ]
+  },
+  "attack_trees": [
+    {
+      "threat_id": "9b4dbea5-ccaa-41ea-a057-c6dd47f99523",
+      "threat_category": "Authorization",
+      "threat_description": "An internal actor with access to the AWS account can deploy a lambda function that will use existing execution role, which leads to unauthorised access to sensitive data, resulting in reduced confidentiality of registration status",
+      "threat_statement": "An internal actor with access to the AWS account can deploy a lambda function that will use existing execution role, which leads to unauthorised access to sensitive data, resulting in reduced confidentiality of registration status",
+      "threat_action": "deploy a lambda function that will use existing execution role",
+      "threatSource": "internal actor",
+      "prerequisites": "with access to the AWS account",
+      "threatAction": "deploy a lambda function that will use existing execution role",
+      "threatImpact": "unauthorised access to sensitive data",
+      "impactedGoal": "confidentiality",
+      "impactedAssets": [
+        "registration status"
+      ],
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"Internal actor with AWS account access\"] --> B[\"Reconnaissance: Identify existing Lambda execution roles\"]\n    A --> C[\"Reconnaissance: Identify sensitive data locations\"]\n    B --> D[\"Enumerate IAM roles with excessive permissions\"]\n    C --> E[\"Discover registration status data stores\"]\n    D --> F[\"Identify Lambda execution role with access to registration data\"]\n    E --> F\n    F --> G[\"Attack Path 1: Deploy malicious Lambda function\"]\n    F --> H[\"Attack Path 2: Modify existing Lambda function\"]\n    G --> I[\"Create Lambda function with identified execution role\"]\n    I --> J[\"Configure function to access registration status data\"]\n    J --> K[\"Execute Lambda to exfiltrate data\"]\n    H --> L[\"Update existing Lambda code with malicious payload\"]\n    L --> M[\"Trigger Lambda execution\"]\n    M --> N[\"Access registration status data via inherited permissions\"]\n    K --> O[\"Unauthorized access to sensitive registration data\"]\n    N --> O\n    O --> P[\"Confidentiality breach of registration status\"]\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O attack\n    class P goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "Internal actor with AWS account access"
+        },
+        {
+          "node_id": "B",
+          "description": "Reconnaissance: Identify existing Lambda execution roles"
+        },
+        {
+          "node_id": "C",
+          "description": "Reconnaissance: Identify sensitive data locations"
+        },
+        {
+          "node_id": "D",
+          "description": "Enumerate IAM roles with excessive permissions"
+        },
+        {
+          "node_id": "E",
+          "description": "Discover registration status data stores"
+        },
+        {
+          "node_id": "F",
+          "description": "Identify Lambda execution role with access to registration data"
+        },
+        {
+          "node_id": "G",
+          "description": "Attack Path 1: Deploy malicious Lambda function"
+        },
+        {
+          "node_id": "H",
+          "description": "Attack Path 2: Modify existing Lambda function"
+        },
+        {
+          "node_id": "I",
+          "description": "Create Lambda function with identified execution role"
+        },
+        {
+          "node_id": "J",
+          "description": "Configure function to access registration status data"
+        },
+        {
+          "node_id": "K",
+          "description": "Execute Lambda to exfiltrate data"
+        },
+        {
+          "node_id": "L",
+          "description": "Update existing Lambda code with malicious payload"
+        },
+        {
+          "node_id": "M",
+          "description": "Trigger Lambda execution"
+        },
+        {
+          "node_id": "N",
+          "description": "Access registration status data via inherited permissions"
+        },
+        {
+          "node_id": "O",
+          "description": "Unauthorized access to sensitive registration data"
+        },
+        {
+          "node_id": "P",
+          "description": "Confidentiality breach of registration status"
+        }
+      ],
+      "generated_content": "# Attack Tree: T-9b4dbea5 - Lambda Execution Role Privilege Escalation\n\n```mermaid\ngraph TD\n    A[\"Internal actor with AWS account access\"] --> B[\"Reconnaissance: Identify existing Lambda execution roles\"]\n    A --> C[\"Reconnaissance: Identify sensitive data locations\"]\n    \n    B --> D[\"Enumerate IAM roles with excessive permissions\"]\n    C --> E[\"Discover registration status data stores\"]\n    \n    D --> F[\"Identify Lambda execution role with access to registration data\"]\n    E --> F\n    \n    F --> G[\"Attack Path 1: Deploy malicious Lambda function\"]\n    F --> H[\"Attack Path 2: Modify existing Lambda function\"]\n    \n    G --> I[\"Create Lambda function with identified execution role\"]\n    I --> J[\"Configure function to access registration status data\"]\n    J --> K[\"Execute Lambda to exfiltrate data\"]\n    \n    H --> L[\"Update existing Lambda code with malicious payload\"]\n    L --> M[\"Trigger Lambda execution\"]\n    M --> N[\"Access registration status data via inherited permissions\"]\n    \n    K --> O[\"Unauthorized access to sensitive registration data\"]\n    N --> O\n    \n    O --> P[\"Confidentiality breach of registration status\"]\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O attack\n    class P goal\n    class A fact\n```\n",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1,
+          "mitigation": 0
+        },
+        "connection_count": 17,
+        "tech_mentions": 0
+      },
+      "ttc_mappings": [
+        {
+          "attack_step": "Enumerate IAM roles with excessive permissions",
+          "technique_id": "T1069.002",
+          "technique_name": "Domain Groups",
+          "confidence": 0.7573393669167822,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.757"
+        },
+        {
+          "attack_step": "Update existing Lambda code with malicious payload",
+          "technique_id": "T1648",
+          "technique_name": "Serverless Execution",
+          "confidence": 0.40794162916402915,
+          "tactics": [
+            "execution"
+          ],
+          "reasoning": "Embedding similarity: 0.408"
+        },
+        {
+          "attack_step": "Reconnaissance: Identify sensitive data locations",
+          "technique_id": "T1005",
+          "technique_name": "Data from Local System",
+          "confidence": 0.7572616211724635,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.757"
+        },
+        {
+          "attack_step": "Trigger Lambda execution",
+          "technique_id": "T1055.004",
+          "technique_name": "Asynchronous Procedure Call",
+          "confidence": 0.32783487378671744,
+          "tactics": [
+            "defense-evasion",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.328"
+        },
+        {
+          "attack_step": "Identify Lambda execution role with access to registration data",
+          "technique_id": "T1069.003",
+          "technique_name": "Cloud Groups",
+          "confidence": 0.6209861233891308,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.621"
+        },
+        {
+          "attack_step": "Discover registration status data stores",
+          "technique_id": "T1087",
+          "technique_name": "Account Discovery",
+          "confidence": 0.5383274133967741,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.538"
+        },
+        {
+          "attack_step": "Attack Path 1: Deploy malicious Lambda function",
+          "technique_id": "T1608",
+          "technique_name": "Stage Capabilities",
+          "confidence": 0.41737774004105954,
+          "tactics": [
+            "resource-development"
+          ],
+          "reasoning": "Embedding similarity: 0.417"
+        },
+        {
+          "attack_step": "Unauthorized access to sensitive registration data",
+          "technique_id": "T1586",
+          "technique_name": "Compromise Accounts",
+          "confidence": 0.5368548000942152,
+          "tactics": [
+            "resource-development"
+          ],
+          "reasoning": "Embedding similarity: 0.537"
+        },
+        {
+          "attack_step": "Configure function to access registration status data",
+          "technique_id": "T1087",
+          "technique_name": "Account Discovery",
+          "confidence": 0.45366552608507577,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.454"
+        },
+        {
+          "attack_step": "Access registration status data via inherited permissions",
+          "technique_id": "T1178",
+          "technique_name": "SID-History Injection",
+          "confidence": 0.6324901043491985,
+          "tactics": [
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.632"
+        },
+        {
+          "attack_step": "Confidentiality breach of registration status",
+          "technique_id": "T1098.005",
+          "technique_name": "Device Registration",
+          "confidence": 0.5109503829706313,
+          "tactics": [
+            "persistence",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.511"
+        },
+        {
+          "attack_step": "Internal actor with AWS account access",
+          "technique_id": "T1136.003",
+          "technique_name": "Cloud Account",
+          "confidence": 0.8687340378980624,
+          "tactics": [
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.869"
+        },
+        {
+          "attack_step": "Attack Path 2: Modify existing Lambda function",
+          "technique_id": "T1562",
+          "technique_name": "Impair Defenses",
+          "confidence": 0.3628814762081991,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.363"
+        },
+        {
+          "attack_step": "Create Lambda function with identified execution role",
+          "technique_id": "T1648",
+          "technique_name": "Serverless Execution",
+          "confidence": 0.5448901489284921,
+          "tactics": [
+            "execution"
+          ],
+          "reasoning": "Embedding similarity: 0.545"
+        },
+        {
+          "attack_step": "Execute Lambda to exfiltrate data",
+          "technique_id": "T1567.002",
+          "technique_name": "Exfiltration to Cloud Storage",
+          "confidence": 0.7146067535781461,
+          "tactics": [
+            "exfiltration"
+          ],
+          "reasoning": "Embedding similarity: 0.715"
+        },
+        {
+          "attack_step": "Reconnaissance: Identify existing Lambda execution roles",
+          "technique_id": "T1069.003",
+          "technique_name": "Cloud Groups",
+          "confidence": 0.6057312823380464,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.606"
+        }
+      ],
+      "mapping_count": 16
+    },
+    {
+      "threat_id": "2df06a4e-b1eb-4303-bb48-46cf05182f58",
+      "threat_category": "Authentication",
+      "threat_description": "An external threat actor with knowledge of employee email addresses can password spray Cognito, which leads to unauthorized access to Vehicle Registration System, resulting in reduced confidentiality of vehicle registration documents",
+      "threat_statement": "An external threat actor with knowledge of employee email addresses can password spray Cognito, which leads to unauthorized access to Vehicle Registration System, resulting in reduced confidentiality of vehicle registration documents",
+      "threat_action": "password spray Cognito",
+      "threatSource": "external threat actor",
+      "prerequisites": "with knowledge of employee email addresses",
+      "threatAction": "password spray Cognito",
+      "threatImpact": "unauthorized access to Vehicle Registration System",
+      "impactedGoal": "confidentiality",
+      "impactedAssets": [
+        "vehicle registration documents"
+      ],
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"External threat actor with employee email knowledge\"] --> B[\"Reconnaissance Phase\"]\n    A --> C[\"Credential Preparation\"]\n    B --> D[\"Enumerate valid email addresses\"]\n    B --> E[\"Identify Cognito authentication endpoint\"]\n    C --> F[\"Compile common password list\"]\n    C --> G[\"Generate password variations\"]\n    D --> H[\"Password Spray Attack Execution\"]\n    E --> H\n    F --> H\n    G --> H\n    H --> I[\"Bypass rate limiting through distributed attempts\"]\n    H --> J[\"Test passwords across multiple accounts\"]\n    I --> K[\"Successful credential compromise\"]\n    J --> K\n    K --> L[\"Authenticate to Cognito\"]\n    L --> M[\"Obtain valid session tokens\"]\n    M --> N[\"Access Vehicle Registration System\"]\n    N --> O[\"Navigate to document repositories\"]\n    O --> P[\"Exfiltrate vehicle registration documents\"]\n    P --> Q[\"Confidentiality breach of vehicle registration data\"]\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P attack\n    class Q goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "External threat actor with employee email knowledge"
+        },
+        {
+          "node_id": "B",
+          "description": "Reconnaissance Phase"
+        },
+        {
+          "node_id": "C",
+          "description": "Credential Preparation"
+        },
+        {
+          "node_id": "D",
+          "description": "Enumerate valid email addresses"
+        },
+        {
+          "node_id": "E",
+          "description": "Identify Cognito authentication endpoint"
+        },
+        {
+          "node_id": "F",
+          "description": "Compile common password list"
+        },
+        {
+          "node_id": "G",
+          "description": "Generate password variations"
+        },
+        {
+          "node_id": "H",
+          "description": "Password Spray Attack Execution"
+        },
+        {
+          "node_id": "I",
+          "description": "Bypass rate limiting through distributed attempts"
+        },
+        {
+          "node_id": "J",
+          "description": "Test passwords across multiple accounts"
+        },
+        {
+          "node_id": "K",
+          "description": "Successful credential compromise"
+        },
+        {
+          "node_id": "L",
+          "description": "Authenticate to Cognito"
+        },
+        {
+          "node_id": "M",
+          "description": "Obtain valid session tokens"
+        },
+        {
+          "node_id": "N",
+          "description": "Access Vehicle Registration System"
+        },
+        {
+          "node_id": "O",
+          "description": "Navigate to document repositories"
+        },
+        {
+          "node_id": "P",
+          "description": "Exfiltrate vehicle registration documents"
+        },
+        {
+          "node_id": "Q",
+          "description": "Confidentiality breach of vehicle registration data"
+        }
+      ],
+      "generated_content": "# Attack Tree: T-2df06a4e - Password Spray Attack on Cognito\n\n```mermaid\ngraph TD\n    A[\"External threat actor with employee email knowledge\"] --> B[\"Reconnaissance Phase\"]\n    A --> C[\"Credential Preparation\"]\n    \n    B --> D[\"Enumerate valid email addresses\"]\n    B --> E[\"Identify Cognito authentication endpoint\"]\n    \n    C --> F[\"Compile common password list\"]\n    C --> G[\"Generate password variations\"]\n    \n    D --> H[\"Password Spray Attack Execution\"]\n    E --> H\n    F --> H\n    G --> H\n    \n    H --> I[\"Bypass rate limiting through distributed attempts\"]\n    H --> J[\"Test passwords across multiple accounts\"]\n    \n    I --> K[\"Successful credential compromise\"]\n    J --> K\n    \n    K --> L[\"Authenticate to Cognito\"]\n    \n    L --> M[\"Obtain valid session tokens\"]\n    \n    M --> N[\"Access Vehicle Registration System\"]\n    \n    N --> O[\"Navigate to document repositories\"]\n    \n    O --> P[\"Exfiltrate vehicle registration documents\"]\n    \n    P --> Q[\"Confidentiality breach of vehicle registration data\"]\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P attack\n    class Q goal\n    class A fact\n```\n",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1,
+          "mitigation": 0
+        },
+        "connection_count": 20,
+        "tech_mentions": 0
+      },
+      "ttc_mappings": [
+        {
+          "attack_step": "Authenticate to Cognito",
+          "technique_id": "T1550",
+          "technique_name": "Use Alternate Authentication Material",
+          "confidence": 0.7151650770523179,
+          "tactics": [
+            "defense-evasion",
+            "lateral-movement"
+          ],
+          "reasoning": "Embedding similarity: 0.715"
+        },
+        {
+          "attack_step": "Enumerate valid email addresses",
+          "technique_id": "T1589.002",
+          "technique_name": "Email Addresses",
+          "confidence": 0.8329959965868409,
+          "tactics": [
+            "reconnaissance"
+          ],
+          "reasoning": "Embedding similarity: 0.833"
+        },
+        {
+          "attack_step": "Obtain valid session tokens",
+          "technique_id": "T1134.003",
+          "technique_name": "Make and Impersonate Token",
+          "confidence": 0.6581500206865487,
+          "tactics": [
+            "defense-evasion",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.658"
+        },
+        {
+          "attack_step": "Identify Cognito authentication endpoint",
+          "technique_id": "T1550",
+          "technique_name": "Use Alternate Authentication Material",
+          "confidence": 0.6778974744804818,
+          "tactics": [
+            "defense-evasion",
+            "lateral-movement"
+          ],
+          "reasoning": "Embedding similarity: 0.678"
+        },
+        {
+          "attack_step": "Exfiltrate vehicle registration documents",
+          "technique_id": "T1074.001",
+          "technique_name": "Local Data Staging",
+          "confidence": 0.5628411716972264,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.563"
+        },
+        {
+          "attack_step": "Test passwords across multiple accounts",
+          "technique_id": "T1556.002",
+          "technique_name": "Password Filter DLL",
+          "confidence": 0.8564002850577246,
+          "tactics": [
+            "credential-access",
+            "defense-evasion",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.856"
+        },
+        {
+          "attack_step": "Bypass rate limiting through distributed attempts",
+          "technique_id": "T1499.001",
+          "technique_name": "OS Exhaustion Flood",
+          "confidence": 0.5466364838855676,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.547"
+        },
+        {
+          "attack_step": "Compile common password list",
+          "technique_id": "T1556.002",
+          "technique_name": "Password Filter DLL",
+          "confidence": 0.8270433951204132,
+          "tactics": [
+            "credential-access",
+            "defense-evasion",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.827"
+        },
+        {
+          "attack_step": "Password Spray Attack Execution",
+          "technique_id": "T1110.003",
+          "technique_name": "Password Spraying",
+          "confidence": 0.8352544651355163,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.835"
+        },
+        {
+          "attack_step": "Reconnaissance Phase",
+          "technique_id": "T1595",
+          "technique_name": "Active Scanning",
+          "confidence": 0.5158920415671885,
+          "tactics": [
+            "reconnaissance"
+          ],
+          "reasoning": "Embedding similarity: 0.516"
+        },
+        {
+          "attack_step": "External threat actor with employee email knowledge",
+          "technique_id": "T1589.002",
+          "technique_name": "Email Addresses",
+          "confidence": 0.7657641852776822,
+          "tactics": [
+            "reconnaissance"
+          ],
+          "reasoning": "Embedding similarity: 0.766"
+        },
+        {
+          "attack_step": "Credential Preparation",
+          "technique_id": "T1556",
+          "technique_name": "Modify Authentication Process",
+          "confidence": 0.6988408433338167,
+          "tactics": [
+            "credential-access",
+            "defense-evasion",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.699"
+        },
+        {
+          "attack_step": "Generate password variations",
+          "technique_id": "T1556.002",
+          "technique_name": "Password Filter DLL",
+          "confidence": 0.783063341228847,
+          "tactics": [
+            "credential-access",
+            "defense-evasion",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.783"
+        },
+        {
+          "attack_step": "Access Vehicle Registration System",
+          "technique_id": "T1098.005",
+          "technique_name": "Device Registration",
+          "confidence": 0.43261661568617077,
+          "tactics": [
+            "persistence",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.433"
+        },
+        {
+          "attack_step": "Successful credential compromise",
+          "technique_id": "T1556",
+          "technique_name": "Modify Authentication Process",
+          "confidence": 0.7791876726940241,
+          "tactics": [
+            "credential-access",
+            "defense-evasion",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.779"
+        },
+        {
+          "attack_step": "Navigate to document repositories",
+          "technique_id": "T1213.001",
+          "technique_name": "Confluence",
+          "confidence": 0.7041935328129252,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.704"
+        },
+        {
+          "attack_step": "Confidentiality breach of vehicle registration data",
+          "technique_id": "T1213.006",
+          "technique_name": "Databases",
+          "confidence": 0.4719494023646344,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.472"
+        }
+      ],
+      "mapping_count": 17
+    },
+    {
+      "threat_id": "c5ac485c-a985-4004-be21-1fb26173a2d3",
+      "threat_category": "Authorization",
+      "threat_description": "A threat actor with access to modify network traffic can manipulate API parameter input which leads to the API Gateway performing actions on another user's resources, resulting in reduced integrity and confidentiality of vehicle registration, vehicle listing, registration status, and vehicle registration documents.",
+      "threat_statement": "A threat actor with access to modify network traffic can manipulate API parameter input which leads to the API Gateway performing actions on another user's resources, resulting in reduced integrity and confidentiality of vehicle registration, vehicle listing, registration status, and vehicle registration documents.",
+      "threat_action": "manipulate API parameter input",
+      "threatSource": "threat actor",
+      "prerequisites": "with access to modify network traffic",
+      "threatAction": "manipulate API parameter input",
+      "threatImpact": "the API Gateway performing actions on another user's resources",
+      "impactedGoal": "confidentiality, integrity",
+      "impactedAssets": [
+        "vehicle registration",
+        "vehicle listing",
+        "registration status",
+        "vehicle registration documents"
+      ],
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"Threat actor with network traffic modification capability\"] --> B[\"Intercept API requests to Gateway\"]\n    B --> C[\"Identify API parameter structure\"]\n    C --> D[\"Locate userresource identifiers in parameters\"]\n    D --> E[\"Path 1: Direct Parameter Tampering\"]\n    D --> F[\"Path 2: SessionToken Manipulation\"]\n    E --> G[\"Modify user ID in API parameters\"]\n    E --> H[\"Modify resource ID in API parameters\"]\n    E --> I[\"Inject additional parameters\"]\n    F --> J[\"Capture legitimate user tokens\"]\n    F --> K[\"Replay requests with modified parameters\"]\n    G --> L[\"Submit tampered request to API Gateway\"]\n    H --> L\n    I --> L\n    J --> L\n    K --> L\n    L --> M[\"API Gateway processes request without proper authorization check\"]\n    M --> N[\"Access another users vehicle registration\"]\n    M --> O[\"Modify another users vehicle listing\"]\n    M --> P[\"Alter registration status\"]\n    M --> Q[\"Accessmodify vehicle registration documents\"]\n    N --> R[\"Goal: Compromise confidentiality and integrity of vehicle data\"]\n    O --> R\n    P --> R\n    Q --> R\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q attack\n    class R goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "Threat actor with network traffic modification capability"
+        },
+        {
+          "node_id": "B",
+          "description": "Intercept API requests to Gateway"
+        },
+        {
+          "node_id": "C",
+          "description": "Identify API parameter structure"
+        },
+        {
+          "node_id": "D",
+          "description": "Locate userresource identifiers in parameters"
+        },
+        {
+          "node_id": "E",
+          "description": "Path 1: Direct Parameter Tampering"
+        },
+        {
+          "node_id": "F",
+          "description": "Path 2: SessionToken Manipulation"
+        },
+        {
+          "node_id": "G",
+          "description": "Modify user ID in API parameters"
+        },
+        {
+          "node_id": "H",
+          "description": "Modify resource ID in API parameters"
+        },
+        {
+          "node_id": "I",
+          "description": "Inject additional parameters"
+        },
+        {
+          "node_id": "J",
+          "description": "Capture legitimate user tokens"
+        },
+        {
+          "node_id": "K",
+          "description": "Replay requests with modified parameters"
+        },
+        {
+          "node_id": "L",
+          "description": "Submit tampered request to API Gateway"
+        },
+        {
+          "node_id": "M",
+          "description": "API Gateway processes request without proper authorization check"
+        },
+        {
+          "node_id": "N",
+          "description": "Access another users vehicle registration"
+        },
+        {
+          "node_id": "O",
+          "description": "Modify another users vehicle listing"
+        },
+        {
+          "node_id": "P",
+          "description": "Alter registration status"
+        },
+        {
+          "node_id": "Q",
+          "description": "Accessmodify vehicle registration documents"
+        },
+        {
+          "node_id": "R",
+          "description": "Goal: Compromise confidentiality and integrity of vehicle data"
+        }
+      ],
+      "generated_content": "# Attack Tree: c5ac485c-a985-4004-be21-1fb26173a2d3\n\n## Threat: API Parameter Manipulation Leading to Unauthorized Resource Access\n\n```mermaid\ngraph TD\n    A[\"Threat actor with network traffic modification capability\"] --> B[\"Intercept API requests to Gateway\"]\n    \n    B --> C[\"Identify API parameter structure\"]\n    C --> D[\"Locate user/resource identifiers in parameters\"]\n    \n    D --> E[\"Path 1: Direct Parameter Tampering\"]\n    D --> F[\"Path 2: Session/Token Manipulation\"]\n    \n    E --> G[\"Modify user ID in API parameters\"]\n    E --> H[\"Modify resource ID in API parameters\"]\n    E --> I[\"Inject additional parameters\"]\n    \n    F --> J[\"Capture legitimate user tokens\"]\n    F --> K[\"Replay requests with modified parameters\"]\n    \n    G --> L[\"Submit tampered request to API Gateway\"]\n    H --> L\n    I --> L\n    J --> L\n    K --> L\n    \n    L --> M[\"API Gateway processes request without proper authorization check\"]\n    \n    M --> N[\"Access another user's vehicle registration\"]\n    M --> O[\"Modify another user's vehicle listing\"]\n    M --> P[\"Alter registration status\"]\n    M --> Q[\"Access/modify vehicle registration documents\"]\n    \n    N --> R[\"Goal: Compromise confidentiality and integrity of vehicle data\"]\n    O --> R\n    P --> R\n    Q --> R\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q attack\n    class R goal\n    class A fact\n```\n",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1,
+          "mitigation": 0
+        },
+        "connection_count": 24,
+        "tech_mentions": 0
+      },
+      "ttc_mappings": [
+        {
+          "attack_step": "Inject additional parameters",
+          "technique_id": "T1218.013",
+          "technique_name": "Mavinject",
+          "confidence": 0.5335587618620293,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.534"
+        },
+        {
+          "attack_step": "Modify another users vehicle listing",
+          "technique_id": "T1494",
+          "technique_name": "Runtime Data Manipulation",
+          "confidence": 0.39457242661592007,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.395"
+        },
+        {
+          "attack_step": "Accessmodify vehicle registration documents",
+          "technique_id": "T1565.001",
+          "technique_name": "Stored Data Manipulation",
+          "confidence": 0.4750687607359504,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.475"
+        },
+        {
+          "attack_step": "Modify user ID in API parameters",
+          "technique_id": "T1036.010",
+          "technique_name": "Masquerade Account Name",
+          "confidence": 0.5798105862252021,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.580"
+        },
+        {
+          "attack_step": "Access another users vehicle registration",
+          "technique_id": "T1098.005",
+          "technique_name": "Device Registration",
+          "confidence": 0.39829118399643143,
+          "tactics": [
+            "persistence",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.398"
+        },
+        {
+          "attack_step": "Intercept API requests to Gateway",
+          "technique_id": "T1188",
+          "technique_name": "Multi-hop Proxy",
+          "confidence": 0.5803894079859989,
+          "tactics": [
+            "command-and-control"
+          ],
+          "reasoning": "Embedding similarity: 0.580"
+        },
+        {
+          "attack_step": "Path 2: SessionToken Manipulation",
+          "technique_id": "T1134.003",
+          "technique_name": "Make and Impersonate Token",
+          "confidence": 0.6210350743550285,
+          "tactics": [
+            "defense-evasion",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.621"
+        },
+        {
+          "attack_step": "API Gateway processes request without proper authorization check",
+          "technique_id": "T1528",
+          "technique_name": "Steal Application Access Token",
+          "confidence": 0.5163478489476444,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.516"
+        },
+        {
+          "attack_step": "Submit tampered request to API Gateway",
+          "technique_id": "T1001.003",
+          "technique_name": "Protocol or Service Impersonation",
+          "confidence": 0.4004140156659767,
+          "tactics": [
+            "command-and-control"
+          ],
+          "reasoning": "Embedding similarity: 0.400"
+        },
+        {
+          "attack_step": "Alter registration status",
+          "technique_id": "T1098",
+          "technique_name": "Account Manipulation",
+          "confidence": 0.5606356071994473,
+          "tactics": [
+            "persistence",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.561"
+        },
+        {
+          "attack_step": "Identify API parameter structure",
+          "technique_id": "T1027.007",
+          "technique_name": "Dynamic API Resolution",
+          "confidence": 0.4695010993586115,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.470"
+        },
+        {
+          "attack_step": "Path 1: Direct Parameter Tampering",
+          "technique_id": "T1036",
+          "technique_name": "Masquerading",
+          "confidence": 0.5643279075503084,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.564"
+        },
+        {
+          "attack_step": "Replay requests with modified parameters",
+          "technique_id": "T1020.001",
+          "technique_name": "Traffic Duplication",
+          "confidence": 0.4075471861048088,
+          "tactics": [
+            "exfiltration"
+          ],
+          "reasoning": "Embedding similarity: 0.408"
+        },
+        {
+          "attack_step": "Modify resource ID in API parameters",
+          "technique_id": "T1564.009",
+          "technique_name": "Resource Forking",
+          "confidence": 0.42023653154487184,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.420"
+        },
+        {
+          "attack_step": "Goal: Compromise confidentiality and integrity of vehicle data",
+          "technique_id": "T1565.002",
+          "technique_name": "Transmitted Data Manipulation",
+          "confidence": 0.6249337137445817,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.625"
+        },
+        {
+          "attack_step": "Locate userresource identifiers in parameters",
+          "technique_id": "T1033",
+          "technique_name": "System Owner/User Discovery",
+          "confidence": 0.4924797960700582,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.492"
+        },
+        {
+          "attack_step": "Threat actor with network traffic modification capability",
+          "technique_id": "T1090",
+          "technique_name": "Proxy",
+          "confidence": 0.7244241575843201,
+          "tactics": [
+            "command-and-control"
+          ],
+          "reasoning": "Embedding similarity: 0.724"
+        },
+        {
+          "attack_step": "Capture legitimate user tokens",
+          "technique_id": "T1134.003",
+          "technique_name": "Make and Impersonate Token",
+          "confidence": 0.6689911430976907,
+          "tactics": [
+            "defense-evasion",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.669"
+        }
+      ],
+      "mapping_count": 18
+    },
+    {
+      "threat_id": "d38a0bd2-35cc-4c35-a48b-f73db6794a6e",
+      "threat_category": "Data Breach",
+      "threat_description": "A threat actor with access to an IAM Principal with modify access to the DynamoDB tables can delete the data, resulting in reduced availability of vehicle registration, vehicle listing, and registration status.",
+      "threat_statement": "A threat actor with access to an IAM Principal with modify access to the DynamoDB tables can delete the data, resulting in reduced availability of vehicle registration, vehicle listing, and registration status.",
+      "threat_action": "delete the data",
+      "threatSource": "threat actor",
+      "prerequisites": "with access to an IAM Principal with modify access to the DynamoDB tables",
+      "threatAction": "delete the data",
+      "threatImpact": "delete the data",
+      "impactedGoal": "availability",
+      "impactedAssets": [
+        "vehicle registration",
+        "vehicle listing",
+        "registration status"
+      ],
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"Threat actor obtains access to IAM Principal with modify permissions on DynamoDB tables\"] --> B[\"Reconnaissance: Identify DynamoDB tables\"]\n    A --> C[\"Reconnaissance: Enumerate IAM permissions\"]\n    B --> D[\"Locate vehicle registration table\"]\n    B --> E[\"Locate vehicle listing table\"]\n    B --> F[\"Locate registration status table\"]\n    C --> G[\"Confirm DeleteItem permissions\"]\n    C --> H[\"Confirm BatchWriteItem permissions\"]\n    C --> I[\"Confirm DeleteTable permissions\"]\n    D --> J[\"Execute DeleteItem API calls on vehicle registration records\"]\n    E --> K[\"Execute DeleteItem API calls on vehicle listing records\"]\n    F --> L[\"Execute DeleteItem API calls on registration status records\"]\n    G --> M[\"Perform bulk deletion via BatchWriteItem\"]\n    H --> M\n    I --> N[\"Execute DeleteTable operation\"]\n    J --> O[\"Vehicle registration data unavailable\"]\n    K --> P[\"Vehicle listing data unavailable\"]\n    L --> Q[\"Registration status data unavailable\"]\n    M --> O\n    M --> P\n    M --> Q\n    N --> O\n    N --> P\n    N --> Q\n    O --> R[\"Complete loss of availability for vehicle registration system\"]\n    P --> R\n    Q --> R\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q attack\n    class R goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "Threat actor obtains access to IAM Principal with modify permissions on DynamoDB tables"
+        },
+        {
+          "node_id": "B",
+          "description": "Reconnaissance: Identify DynamoDB tables"
+        },
+        {
+          "node_id": "C",
+          "description": "Reconnaissance: Enumerate IAM permissions"
+        },
+        {
+          "node_id": "D",
+          "description": "Locate vehicle registration table"
+        },
+        {
+          "node_id": "E",
+          "description": "Locate vehicle listing table"
+        },
+        {
+          "node_id": "F",
+          "description": "Locate registration status table"
+        },
+        {
+          "node_id": "G",
+          "description": "Confirm DeleteItem permissions"
+        },
+        {
+          "node_id": "H",
+          "description": "Confirm BatchWriteItem permissions"
+        },
+        {
+          "node_id": "I",
+          "description": "Confirm DeleteTable permissions"
+        },
+        {
+          "node_id": "J",
+          "description": "Execute DeleteItem API calls on vehicle registration records"
+        },
+        {
+          "node_id": "K",
+          "description": "Execute DeleteItem API calls on vehicle listing records"
+        },
+        {
+          "node_id": "L",
+          "description": "Execute DeleteItem API calls on registration status records"
+        },
+        {
+          "node_id": "M",
+          "description": "Perform bulk deletion via BatchWriteItem"
+        },
+        {
+          "node_id": "N",
+          "description": "Execute DeleteTable operation"
+        },
+        {
+          "node_id": "O",
+          "description": "Vehicle registration data unavailable"
+        },
+        {
+          "node_id": "P",
+          "description": "Vehicle listing data unavailable"
+        },
+        {
+          "node_id": "Q",
+          "description": "Registration status data unavailable"
+        },
+        {
+          "node_id": "R",
+          "description": "Complete loss of availability for vehicle registration system"
+        }
+      ],
+      "generated_content": "# Attack Tree: T-d38a0bd2 - DynamoDB Data Deletion Attack\n\n```mermaid\ngraph TD\n    A[\"Threat actor obtains access to IAM Principal with modify permissions on DynamoDB tables\"] --> B[\"Reconnaissance: Identify DynamoDB tables\"]\n    A --> C[\"Reconnaissance: Enumerate IAM permissions\"]\n    \n    B --> D[\"Locate vehicle registration table\"]\n    B --> E[\"Locate vehicle listing table\"]\n    B --> F[\"Locate registration status table\"]\n    \n    C --> G[\"Confirm DeleteItem permissions\"]\n    C --> H[\"Confirm BatchWriteItem permissions\"]\n    C --> I[\"Confirm DeleteTable permissions\"]\n    \n    D --> J[\"Execute DeleteItem API calls on vehicle registration records\"]\n    E --> K[\"Execute DeleteItem API calls on vehicle listing records\"]\n    F --> L[\"Execute DeleteItem API calls on registration status records\"]\n    \n    G --> M[\"Perform bulk deletion via BatchWriteItem\"]\n    H --> M\n    \n    I --> N[\"Execute DeleteTable operation\"]\n    \n    J --> O[\"Vehicle registration data unavailable\"]\n    K --> P[\"Vehicle listing data unavailable\"]\n    L --> Q[\"Registration status data unavailable\"]\n    M --> O\n    M --> P\n    M --> Q\n    N --> O\n    N --> P\n    N --> Q\n    \n    O --> R[\"Complete loss of availability for vehicle registration system\"]\n    P --> R\n    Q --> R\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q attack\n    class R goal\n    class A fact\n```\n",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1,
+          "mitigation": 0
+        },
+        "connection_count": 26,
+        "tech_mentions": 0
+      },
+      "ttc_mappings": [
+        {
+          "attack_step": "Reconnaissance: Enumerate IAM permissions",
+          "technique_id": "T1069.001",
+          "technique_name": "Local Groups",
+          "confidence": 0.7769237599477337,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.777"
+        },
+        {
+          "attack_step": "Locate vehicle registration table",
+          "technique_id": "T1590.001",
+          "technique_name": "Domain Properties",
+          "confidence": 0.4697400999007707,
+          "tactics": [
+            "reconnaissance"
+          ],
+          "reasoning": "Embedding similarity: 0.470"
+        },
+        {
+          "attack_step": "Threat actor obtains access to IAM Principal with modify permissions on DynamoDB tables",
+          "technique_id": "T1098.003",
+          "technique_name": "Additional Cloud Roles",
+          "confidence": 0.7113488714542442,
+          "tactics": [
+            "persistence",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.711"
+        },
+        {
+          "attack_step": "Reconnaissance: Identify DynamoDB tables",
+          "technique_id": "T1119",
+          "technique_name": "Automated Collection",
+          "confidence": 0.6246420986755883,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.625"
+        },
+        {
+          "attack_step": "Confirm DeleteTable permissions",
+          "technique_id": "T1070.004",
+          "technique_name": "File Deletion",
+          "confidence": 0.7158413758722022,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.716"
+        },
+        {
+          "attack_step": "Execute DeleteItem API calls on vehicle listing records",
+          "technique_id": "T1107",
+          "technique_name": "File Deletion",
+          "confidence": 0.6530143148777479,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.653"
+        },
+        {
+          "attack_step": "Execute DeleteTable operation",
+          "technique_id": "T1107",
+          "technique_name": "File Deletion",
+          "confidence": 0.781205498172399,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.781"
+        },
+        {
+          "attack_step": "Vehicle registration data unavailable",
+          "technique_id": "T1602",
+          "technique_name": "Data from Configuration Repository",
+          "confidence": 0.5015149986285494,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.502"
+        },
+        {
+          "attack_step": "Registration status data unavailable",
+          "technique_id": "T1087",
+          "technique_name": "Account Discovery",
+          "confidence": 0.4861928663040241,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.486"
+        },
+        {
+          "attack_step": "Complete loss of availability for vehicle registration system",
+          "technique_id": "T1098.005",
+          "technique_name": "Device Registration",
+          "confidence": 0.44738299726168823,
+          "tactics": [
+            "persistence",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.447"
+        },
+        {
+          "attack_step": "Confirm BatchWriteItem permissions",
+          "technique_id": "T1222.001",
+          "technique_name": "Windows File and Directory Permissions Modification",
+          "confidence": 0.808000746601901,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.808"
+        },
+        {
+          "attack_step": "Locate registration status table",
+          "technique_id": "T1087",
+          "technique_name": "Account Discovery",
+          "confidence": 0.5547895338957219,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.555"
+        },
+        {
+          "attack_step": "Locate vehicle listing table",
+          "technique_id": "T1039",
+          "technique_name": "Data from Network Shared Drive",
+          "confidence": 0.4920232116413382,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.492"
+        },
+        {
+          "attack_step": "Confirm DeleteItem permissions",
+          "technique_id": "T1070.004",
+          "technique_name": "File Deletion",
+          "confidence": 0.7255822371344104,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.726"
+        },
+        {
+          "attack_step": "Vehicle listing data unavailable",
+          "technique_id": "T1005",
+          "technique_name": "Data from Local System",
+          "confidence": 0.574019654106564,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.574"
+        },
+        {
+          "attack_step": "Execute DeleteItem API calls on vehicle registration records",
+          "technique_id": "T1107",
+          "technique_name": "File Deletion",
+          "confidence": 0.620754524374234,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.621"
+        },
+        {
+          "attack_step": "Execute DeleteItem API calls on registration status records",
+          "technique_id": "T1070.009",
+          "technique_name": "Clear Persistence",
+          "confidence": 0.6648960246552877,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.665"
+        },
+        {
+          "attack_step": "Perform bulk deletion via BatchWriteItem",
+          "technique_id": "T1107",
+          "technique_name": "File Deletion",
+          "confidence": 0.8228342288978863,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.823"
+        }
+      ],
+      "mapping_count": 18
+    },
+    {
+      "threat_id": "9c19d403-f595-45f8-ba66-df2e60744f67",
+      "threat_category": "Data Breach",
+      "threat_description": "A threat actor who is able to access the DynamoDB tables can access sensitive data, which leads to unauthorized access, resulting in reduced confidentiality of vehicle registration, vehicle listing and registration status",
+      "threat_statement": "A threat actor who is able to access the DynamoDB tables can access sensitive data, which leads to unauthorized access, resulting in reduced confidentiality of vehicle registration, vehicle listing and registration status",
+      "threat_action": "access sensitive data",
+      "threatSource": "threat actor",
+      "prerequisites": "who is able to access the DynamoDB tables",
+      "threatAction": "access sensitive data",
+      "threatImpact": "unauthorized access",
+      "impactedGoal": "confidentiality",
+      "impactedAssets": [
+        "vehicle registration",
+        "vehicle listing",
+        "registration status"
+      ],
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"Threat actor with potential DynamoDB access vectors\"] --> B[\"Exploit IAM misconfigurations\"]\n    A --> C[\"Compromise AWS credentials\"]\n    A --> D[\"Exploit application vulnerabilities\"]\n    B --> B1[\"Overly permissive IAM policies\"]\n    B --> B2[\"Misconfigured resource-based policies\"]\n    B1 --> E[\"Gain DynamoDB read permissions\"]\n    B2 --> E\n    C --> C1[\"Phishing AWS credentials\"]\n    C --> C2[\"Steal access keys from code repositories\"]\n    C --> C3[\"Exploit leaked credentials in logs\"]\n    C1 --> E\n    C2 --> E\n    C3 --> E\n    D --> D1[\"SQLNoSQL injection in application\"]\n    D --> D2[\"Insecure API endpoints\"]\n    D --> D3[\"Server-Side Request Forgery SSRF\"]\n    D1 --> E\n    D2 --> E\n    D3 --> E\n    E --> F[\"Query DynamoDB tables\"]\n    F --> F1[\"Scan vehicle registration table\"]\n    F --> F2[\"Scan vehicle listing table\"]\n    F --> F3[\"Scan registration status table\"]\n    F1 --> G[\"Extract sensitive vehicle data\"]\n    F2 --> G\n    F3 --> G\n    G --> H[\"Exfiltrate data to external location\"]\n    H --> I[\"Unauthorized access to confidential vehicle information\"]\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,B1,B2,C,C1,C2,C3,D,D1,D2,D3,E,F,F1,F2,F3,G,H attack\n    class I goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "Threat actor with potential DynamoDB access vectors"
+        },
+        {
+          "node_id": "B",
+          "description": "Exploit IAM misconfigurations"
+        },
+        {
+          "node_id": "C",
+          "description": "Compromise AWS credentials"
+        },
+        {
+          "node_id": "D",
+          "description": "Exploit application vulnerabilities"
+        },
+        {
+          "node_id": "B1",
+          "description": "Overly permissive IAM policies"
+        },
+        {
+          "node_id": "B2",
+          "description": "Misconfigured resource-based policies"
+        },
+        {
+          "node_id": "E",
+          "description": "Gain DynamoDB read permissions"
+        },
+        {
+          "node_id": "C1",
+          "description": "Phishing AWS credentials"
+        },
+        {
+          "node_id": "C2",
+          "description": "Steal access keys from code repositories"
+        },
+        {
+          "node_id": "C3",
+          "description": "Exploit leaked credentials in logs"
+        },
+        {
+          "node_id": "D1",
+          "description": "SQLNoSQL injection in application"
+        },
+        {
+          "node_id": "D2",
+          "description": "Insecure API endpoints"
+        },
+        {
+          "node_id": "D3",
+          "description": "Server-Side Request Forgery SSRF"
+        },
+        {
+          "node_id": "F",
+          "description": "Query DynamoDB tables"
+        },
+        {
+          "node_id": "F1",
+          "description": "Scan vehicle registration table"
+        },
+        {
+          "node_id": "F2",
+          "description": "Scan vehicle listing table"
+        },
+        {
+          "node_id": "F3",
+          "description": "Scan registration status table"
+        },
+        {
+          "node_id": "G",
+          "description": "Extract sensitive vehicle data"
+        },
+        {
+          "node_id": "H",
+          "description": "Exfiltrate data to external location"
+        },
+        {
+          "node_id": "I",
+          "description": "Unauthorized access to confidential vehicle information"
+        }
+      ],
+      "generated_content": "# Attack Tree: T-9c19d403 - DynamoDB Data Breach\n\n```mermaid\ngraph TD\n    A[\"Threat actor with potential DynamoDB access vectors\"] --> B[\"Exploit IAM misconfigurations\"]\n    A --> C[\"Compromise AWS credentials\"]\n    A --> D[\"Exploit application vulnerabilities\"]\n    \n    B --> B1[\"Overly permissive IAM policies\"]\n    B --> B2[\"Misconfigured resource-based policies\"]\n    B1 --> E[\"Gain DynamoDB read permissions\"]\n    B2 --> E\n    \n    C --> C1[\"Phishing AWS credentials\"]\n    C --> C2[\"Steal access keys from code repositories\"]\n    C --> C3[\"Exploit leaked credentials in logs\"]\n    C1 --> E\n    C2 --> E\n    C3 --> E\n    \n    D --> D1[\"SQL/NoSQL injection in application\"]\n    D --> D2[\"Insecure API endpoints\"]\n    D --> D3[\"Server-Side Request Forgery SSRF\"]\n    D1 --> E\n    D2 --> E\n    D3 --> E\n    \n    E --> F[\"Query DynamoDB tables\"]\n    F --> F1[\"Scan vehicle registration table\"]\n    F --> F2[\"Scan vehicle listing table\"]\n    F --> F3[\"Scan registration status table\"]\n    \n    F1 --> G[\"Extract sensitive vehicle data\"]\n    F2 --> G\n    F3 --> G\n    \n    G --> H[\"Exfiltrate data to external location\"]\n    H --> I[\"Unauthorized access to confidential vehicle information\"]\n    \n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,B1,B2,C,C1,C2,C3,D,D1,D2,D3,E,F,F1,F2,F3,G,H attack\n    class I goal\n    class A fact\n```\n",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1,
+          "mitigation": 0
+        },
+        "connection_count": 28,
+        "tech_mentions": 0
+      },
+      "ttc_mappings": [
+        {
+          "attack_step": "Insecure API endpoints",
+          "technique_id": "T1001.003",
+          "technique_name": "Protocol or Service Impersonation",
+          "confidence": 0.5218470786746201,
+          "tactics": [
+            "command-and-control"
+          ],
+          "reasoning": "Embedding similarity: 0.522"
+        },
+        {
+          "attack_step": "Exfiltrate data to external location",
+          "technique_id": "T1052",
+          "technique_name": "Exfiltration Over Physical Medium",
+          "confidence": 0.7625821231481198,
+          "tactics": [
+            "exfiltration"
+          ],
+          "reasoning": "Embedding similarity: 0.763"
+        },
+        {
+          "attack_step": "Threat actor with potential DynamoDB access vectors",
+          "technique_id": "T1530",
+          "technique_name": "Data from Cloud Storage",
+          "confidence": 0.5267536561271072,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.527"
+        },
+        {
+          "attack_step": "Exploit leaked credentials in logs",
+          "technique_id": "T1552.008",
+          "technique_name": "Chat Messages",
+          "confidence": 0.7744619427963053,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.774"
+        },
+        {
+          "attack_step": "Server-Side Request Forgery SSRF",
+          "technique_id": "T1672",
+          "technique_name": "Email Spoofing",
+          "confidence": 0.49627004804586067,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.496"
+        },
+        {
+          "attack_step": "Steal access keys from code repositories",
+          "technique_id": "T1213.003",
+          "technique_name": "Code Repositories",
+          "confidence": 0.5152682571467571,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.515"
+        },
+        {
+          "attack_step": "Exploit application vulnerabilities",
+          "technique_id": "T1211",
+          "technique_name": "Exploitation for Defense Evasion",
+          "confidence": 0.6809344163628241,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.681"
+        },
+        {
+          "attack_step": "Exploit IAM misconfigurations",
+          "technique_id": "T1059.008",
+          "technique_name": "Network Device CLI",
+          "confidence": 0.4362987699074409,
+          "tactics": [
+            "execution"
+          ],
+          "reasoning": "Embedding similarity: 0.436"
+        },
+        {
+          "attack_step": "Gain DynamoDB read permissions",
+          "technique_id": "T1530",
+          "technique_name": "Data from Cloud Storage",
+          "confidence": 0.5141129427665403,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.514"
+        },
+        {
+          "attack_step": "Scan vehicle registration table",
+          "technique_id": "T1590.001",
+          "technique_name": "Domain Properties",
+          "confidence": 0.45896811597084497,
+          "tactics": [
+            "reconnaissance"
+          ],
+          "reasoning": "Embedding similarity: 0.459"
+        },
+        {
+          "attack_step": "Query DynamoDB tables",
+          "technique_id": "T1119",
+          "technique_name": "Automated Collection",
+          "confidence": 0.533216866777125,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.533"
+        },
+        {
+          "attack_step": "Overly permissive IAM policies",
+          "technique_id": "T1556.009",
+          "technique_name": "Conditional Access Policies",
+          "confidence": 0.7427873569587035,
+          "tactics": [
+            "credential-access",
+            "defense-evasion",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.743"
+        },
+        {
+          "attack_step": "Scan vehicle listing table",
+          "technique_id": "T1083",
+          "technique_name": "File and Directory Discovery",
+          "confidence": 0.47978638408631535,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.480"
+        },
+        {
+          "attack_step": "Unauthorized access to confidential vehicle information",
+          "technique_id": "T1213",
+          "technique_name": "Data from Information Repositories",
+          "confidence": 0.47228780534051806,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.472"
+        },
+        {
+          "attack_step": "Extract sensitive vehicle data",
+          "technique_id": "T1025",
+          "technique_name": "Data from Removable Media",
+          "confidence": 0.634518686819542,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.635"
+        },
+        {
+          "attack_step": "Misconfigured resource-based policies",
+          "technique_id": "T1484.001",
+          "technique_name": "Group Policy Modification",
+          "confidence": 0.5797015492996564,
+          "tactics": [
+            "defense-evasion",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.580"
+        },
+        {
+          "attack_step": "Phishing AWS credentials",
+          "technique_id": "T1589.001",
+          "technique_name": "Credentials",
+          "confidence": 0.7442220853178267,
+          "tactics": [
+            "reconnaissance"
+          ],
+          "reasoning": "Embedding similarity: 0.744"
+        },
+        {
+          "attack_step": "Compromise AWS credentials",
+          "technique_id": "T1021.007",
+          "technique_name": "Cloud Services",
+          "confidence": 0.7439799573921873,
+          "tactics": [
+            "lateral-movement"
+          ],
+          "reasoning": "Embedding similarity: 0.744"
+        },
+        {
+          "attack_step": "Scan registration status table",
+          "technique_id": "T1087",
+          "technique_name": "Account Discovery",
+          "confidence": 0.5705657322103623,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.571"
+        },
+        {
+          "attack_step": "SQLNoSQL injection in application",
+          "technique_id": "T1505.001",
+          "technique_name": "SQL Stored Procedures",
+          "confidence": 0.41255410438875845,
+          "tactics": [
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.413"
+        }
+      ],
+      "mapping_count": 20
+    },
+    {
+      "threat_id": "e0e6089f-66d2-49ca-8be0-f9346ab85a14",
+      "threat_category": "Spoofing",
+      "threat_description": "A threat actor with possession of a similar domain name can trick our users into interacting with a fake endpoint, which leads to interception of valid API requests, negatively impacting vehicle registration, vehicle listing, registration status and vehicle registration documents",
+      "threat_statement": "A threat actor with possession of a similar domain name can trick our users into interacting with a fake endpoint, which leads to interception of valid API requests, negatively impacting vehicle registration, vehicle listing, registration status and vehicle registration documents",
+      "threat_action": "trick our users into interacting with a fake endpoint",
+      "threatSource": "threat actor",
+      "prerequisites": "with possession of a similar domain name",
+      "threatAction": "trick our users into interacting with a fake endpoint",
+      "threatImpact": "interception of valid API requests",
+      "impactedGoal": "confidentiality, integrity",
+      "impactedAssets": [
+        "vehicle registration",
+        "vehicle listing",
+        "registration status",
+        "vehicle registration documents"
+      ],
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"Threat actor with similar domain name\"] --> B[\"Domain reconnaissance\"]\n    A --> C[\"Infrastructure setup\"]\n    B --> D[\"Identify target domain patterns\"]\n    B --> E[\"Research user interaction flows\"]\n    C --> F[\"Register lookalike domain\"]\n    C --> G[\"Deploy fake API endpoint\"]\n    D --> H[\"Craft convincing phishing campaign\"]\n    E --> H\n    F --> G\n    G --> I[\"Clone legitimate API interface\"]\n    I --> J[\"Implement request interception\"]\n    H --> K[\"Distribute malicious links\"]\n    K --> L[\"Email phishing to users\"]\n    K --> M[\"Social media manipulation\"]\n    K --> N[\"Search engine poisoning\"]\n    L --> O[\"User clicks malicious link\"]\n    M --> O\n    N --> O\n    O --> P[\"User submits API request to fake endpoint\"]\n    J --> P\n    P --> Q[\"Intercept vehicle registration data\"]\n    P --> R[\"Intercept vehicle listing data\"]\n    P --> S[\"Intercept registration status queries\"]\n    P --> T[\"Intercept registration documents\"]\n    Q --> U[\"Compromise confidentiality and integrity\"]\n    R --> U\n    S --> U\n    T --> U\n    U --> V[\"Unauthorized access to sensitive vehicle data\"]\n    U --> W[\"Manipulation of registration records\"]\n    V --> X[\"Complete system compromise\"]\n    W --> X\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W attack\n    class X goal\n    class A fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "Threat actor with similar domain name"
+        },
+        {
+          "node_id": "B",
+          "description": "Domain reconnaissance"
+        },
+        {
+          "node_id": "C",
+          "description": "Infrastructure setup"
+        },
+        {
+          "node_id": "D",
+          "description": "Identify target domain patterns"
+        },
+        {
+          "node_id": "E",
+          "description": "Research user interaction flows"
+        },
+        {
+          "node_id": "F",
+          "description": "Register lookalike domain"
+        },
+        {
+          "node_id": "G",
+          "description": "Deploy fake API endpoint"
+        },
+        {
+          "node_id": "H",
+          "description": "Craft convincing phishing campaign"
+        },
+        {
+          "node_id": "I",
+          "description": "Clone legitimate API interface"
+        },
+        {
+          "node_id": "J",
+          "description": "Implement request interception"
+        },
+        {
+          "node_id": "K",
+          "description": "Distribute malicious links"
+        },
+        {
+          "node_id": "L",
+          "description": "Email phishing to users"
+        },
+        {
+          "node_id": "M",
+          "description": "Social media manipulation"
+        },
+        {
+          "node_id": "N",
+          "description": "Search engine poisoning"
+        },
+        {
+          "node_id": "O",
+          "description": "User clicks malicious link"
+        },
+        {
+          "node_id": "P",
+          "description": "User submits API request to fake endpoint"
+        },
+        {
+          "node_id": "Q",
+          "description": "Intercept vehicle registration data"
+        },
+        {
+          "node_id": "R",
+          "description": "Intercept vehicle listing data"
+        },
+        {
+          "node_id": "S",
+          "description": "Intercept registration status queries"
+        },
+        {
+          "node_id": "T",
+          "description": "Intercept registration documents"
+        },
+        {
+          "node_id": "U",
+          "description": "Compromise confidentiality and integrity"
+        },
+        {
+          "node_id": "V",
+          "description": "Unauthorized access to sensitive vehicle data"
+        },
+        {
+          "node_id": "W",
+          "description": "Manipulation of registration records"
+        },
+        {
+          "node_id": "X",
+          "description": "Complete system compromise"
+        }
+      ],
+      "generated_content": "# Attack Tree: T-e0e6089f - Domain Spoofing Attack on Vehicle Registration System\n\n```mermaid\ngraph TD\n    A[\"Threat actor with similar domain name\"] --> B[\"Domain reconnaissance\"]\n    A --> C[\"Infrastructure setup\"]\n    \n    B --> D[\"Identify target domain patterns\"]\n    B --> E[\"Research user interaction flows\"]\n    \n    C --> F[\"Register lookalike domain\"]\n    C --> G[\"Deploy fake API endpoint\"]\n    \n    D --> H[\"Craft convincing phishing campaign\"]\n    E --> H\n    F --> G\n    \n    G --> I[\"Clone legitimate API interface\"]\n    I --> J[\"Implement request interception\"]\n    \n    H --> K[\"Distribute malicious links\"]\n    K --> L[\"Email phishing to users\"]\n    K --> M[\"Social media manipulation\"]\n    K --> N[\"Search engine poisoning\"]\n    \n    L --> O[\"User clicks malicious link\"]\n    M --> O\n    N --> O\n    \n    O --> P[\"User submits API request to fake endpoint\"]\n    J --> P\n    \n    P --> Q[\"Intercept vehicle registration data\"]\n    P --> R[\"Intercept vehicle listing data\"]\n    P --> S[\"Intercept registration status queries\"]\n    P --> T[\"Intercept registration documents\"]\n    \n    Q --> U[\"Compromise confidentiality and integrity\"]\n    R --> U\n    S --> U\n    T --> U\n    \n    U --> V[\"Unauthorized access to sensitive vehicle data\"]\n    U --> W[\"Manipulation of registration records\"]\n    \n    V --> X[\"Complete system compromise\"]\n    W --> X\n\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    \n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W attack\n    class X goal\n    class A fact\n```\n",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1,
+          "mitigation": 0
+        },
+        "connection_count": 32,
+        "tech_mentions": 0
+      },
+      "ttc_mappings": [
+        {
+          "attack_step": "Complete system compromise",
+          "technique_id": "T1601.001",
+          "technique_name": "Patch System Image",
+          "confidence": 0.49681993937931024,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.497"
+        },
+        {
+          "attack_step": "Domain reconnaissance",
+          "technique_id": "T1590.001",
+          "technique_name": "Domain Properties",
+          "confidence": 0.7291100677357468,
+          "tactics": [
+            "reconnaissance"
+          ],
+          "reasoning": "Embedding similarity: 0.729"
+        },
+        {
+          "attack_step": "Intercept vehicle listing data",
+          "technique_id": "T1005",
+          "technique_name": "Data from Local System",
+          "confidence": 0.4397482178585009,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.440"
+        },
+        {
+          "attack_step": "Infrastructure setup",
+          "technique_id": "T1583",
+          "technique_name": "Acquire Infrastructure",
+          "confidence": 0.673730466518613,
+          "tactics": [
+            "resource-development"
+          ],
+          "reasoning": "Embedding similarity: 0.674"
+        },
+        {
+          "attack_step": "Compromise confidentiality and integrity",
+          "technique_id": "T1565.002",
+          "technique_name": "Transmitted Data Manipulation",
+          "confidence": 0.6534553395272923,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.653"
+        },
+        {
+          "attack_step": "Research user interaction flows",
+          "technique_id": "T1204",
+          "technique_name": "User Execution",
+          "confidence": 0.3586173740735764,
+          "tactics": [
+            "execution"
+          ],
+          "reasoning": "Embedding similarity: 0.359"
+        },
+        {
+          "attack_step": "Manipulation of registration records",
+          "technique_id": "T1098.005",
+          "technique_name": "Device Registration",
+          "confidence": 0.5575180927104104,
+          "tactics": [
+            "persistence",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.558"
+        },
+        {
+          "attack_step": "User clicks malicious link",
+          "technique_id": "T1204.001",
+          "technique_name": "Malicious Link",
+          "confidence": 0.7422115435453371,
+          "tactics": [
+            "execution"
+          ],
+          "reasoning": "Embedding similarity: 0.742"
+        },
+        {
+          "attack_step": "Search engine poisoning",
+          "technique_id": "T1608.006",
+          "technique_name": "SEO Poisoning",
+          "confidence": 0.7807257349995517,
+          "tactics": [
+            "resource-development"
+          ],
+          "reasoning": "Embedding similarity: 0.781"
+        },
+        {
+          "attack_step": "User submits API request to fake endpoint",
+          "technique_id": "T1583.006",
+          "technique_name": "Web Services",
+          "confidence": 0.4297151502429275,
+          "tactics": [
+            "resource-development"
+          ],
+          "reasoning": "Embedding similarity: 0.430"
+        },
+        {
+          "attack_step": "Social media manipulation",
+          "technique_id": "T1586.001",
+          "technique_name": "Social Media Accounts",
+          "confidence": 0.6716971986711895,
+          "tactics": [
+            "resource-development"
+          ],
+          "reasoning": "Embedding similarity: 0.672"
+        },
+        {
+          "attack_step": "Unauthorized access to sensitive vehicle data",
+          "technique_id": "T1530",
+          "technique_name": "Data from Cloud Storage",
+          "confidence": 0.563962029130078,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.564"
+        },
+        {
+          "attack_step": "Intercept vehicle registration data",
+          "technique_id": "T1602",
+          "technique_name": "Data from Configuration Repository",
+          "confidence": 0.3558436562764863,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.356"
+        },
+        {
+          "attack_step": "Intercept registration documents",
+          "technique_id": "T1098.005",
+          "technique_name": "Device Registration",
+          "confidence": 0.5377422302312048,
+          "tactics": [
+            "persistence",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.538"
+        },
+        {
+          "attack_step": "Intercept registration status queries",
+          "technique_id": "T1087",
+          "technique_name": "Account Discovery",
+          "confidence": 0.5345447947884938,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.535"
+        },
+        {
+          "attack_step": "Distribute malicious links",
+          "technique_id": "T1204.001",
+          "technique_name": "Malicious Link",
+          "confidence": 0.710291128396594,
+          "tactics": [
+            "execution"
+          ],
+          "reasoning": "Embedding similarity: 0.710"
+        },
+        {
+          "attack_step": "Email phishing to users",
+          "technique_id": "T1566",
+          "technique_name": "Phishing",
+          "confidence": 0.8829184982992693,
+          "tactics": [
+            "initial-access"
+          ],
+          "reasoning": "Embedding similarity: 0.883"
+        },
+        {
+          "attack_step": "Threat actor with similar domain name",
+          "technique_id": "T1583.001",
+          "technique_name": "Domains",
+          "confidence": 0.6835940072301974,
+          "tactics": [
+            "resource-development"
+          ],
+          "reasoning": "Embedding similarity: 0.684"
+        },
+        {
+          "attack_step": "Clone legitimate API interface",
+          "technique_id": "T1106",
+          "technique_name": "Native API",
+          "confidence": 0.4452086606518377,
+          "tactics": [
+            "execution"
+          ],
+          "reasoning": "Embedding similarity: 0.445"
+        },
+        {
+          "attack_step": "Register lookalike domain",
+          "technique_id": "T1584.001",
+          "technique_name": "Domains",
+          "confidence": 0.6301445162982681,
+          "tactics": [
+            "resource-development"
+          ],
+          "reasoning": "Embedding similarity: 0.630"
+        },
+        {
+          "attack_step": "Implement request interception",
+          "technique_id": "T1001.003",
+          "technique_name": "Protocol or Service Impersonation",
+          "confidence": 0.5707402747839916,
+          "tactics": [
+            "command-and-control"
+          ],
+          "reasoning": "Embedding similarity: 0.571"
+        },
+        {
+          "attack_step": "Craft convincing phishing campaign",
+          "technique_id": "T1566",
+          "technique_name": "Phishing",
+          "confidence": 0.8247959832538232,
+          "tactics": [
+            "initial-access"
+          ],
+          "reasoning": "Embedding similarity: 0.825"
+        },
+        {
+          "attack_step": "Deploy fake API endpoint",
+          "technique_id": "T1583.006",
+          "technique_name": "Web Services",
+          "confidence": 0.41405701800562644,
+          "tactics": [
+            "resource-development"
+          ],
+          "reasoning": "Embedding similarity: 0.414"
+        },
+        {
+          "attack_step": "Identify target domain patterns",
+          "technique_id": "T1590.001",
+          "technique_name": "Domain Properties",
+          "confidence": 0.6738588084902356,
+          "tactics": [
+            "reconnaissance"
+          ],
+          "reasoning": "Embedding similarity: 0.674"
+        }
+      ],
+      "mapping_count": 24
+    }
+  ],
+  "mapping_summary": {
+    "total_mappings": 113,
+    "successful_mappings": 113,
+    "threshold_used": 0.3,
+    "model": "local"
+  }
+}

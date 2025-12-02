@@ -582,18 +582,21 @@ my-project/
 ### For Better Threat Analysis
 
 **Provide Context:**
+
 - Describe what your application does
 - Explain the business value
 - Identify sensitive data
 - Document security controls
 
 **Be Specific:**
+
 - Name technologies and versions
 - Describe authentication mechanisms
 - Explain data encryption
 - Document access controls
 
 **Show Relationships:**
+
 - How components communicate
 - Where data flows
 - What trust boundaries exist
@@ -602,22 +605,25 @@ my-project/
 ### For Better Attack Trees
 
 **In Threat Statements:**
+
 - Describe the attacker's goal
 - Explain the attack vector
-- Identify prerequisites
-- Specify the impact
+- Identify affected assets
+- Assess potential impact
 
 **In Documentation:**
-- Document security assumptions
-- Explain trust relationships
-- Describe validation logic
-- Note security controls
+
+- Include architecture diagrams
+- Document data flows
+- Explain security controls
+- Describe deployment environment
 
 **In Diagrams:**
-- Show trust boundaries clearly
-- Label protocols and encryption
-- Indicate authentication points
-- Mark sensitive data flows
+
+- Show trust boundaries
+- Label data flows
+- Indicate security controls
+- Highlight external dependencies
 
 ## AI-Generated Threats
 
@@ -626,6 +632,7 @@ If you don't provide a threat model, ThreatForest can generate threats automatic
 ### When AI Generation Works Best
 
 **Good Inputs:**
+
 - Detailed architecture documentation
 - Clear component descriptions
 - Data flow diagrams
@@ -633,15 +640,22 @@ If you don't provide a threat model, ThreatForest can generate threats automatic
 - Security control documentation
 
 **What AI Generates:**
+
+- Threat statements based on architecture
+- STRIDE-categorized threats
+- Priority assignments
+- Attack vectors
+
+**What AI Generates:**
+
 - Threat statements based on architecture
 - STRIDE-categorized threats
 - Priority assignments
 - Attack vectors
 - Potential impacts
 
-### AI Generation Limitations
-
 **May Miss:**
+
 - Business-specific threats
 - Compliance requirements
 - Organizational policies
