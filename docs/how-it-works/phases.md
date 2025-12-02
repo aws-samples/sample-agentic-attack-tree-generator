@@ -127,6 +127,7 @@ This is the core phase where ThreatForest creates detailed attack trees for each
 - Prioritizes content for analysis
 
 **Discovery Patterns:**
+
 ```
 Threat Models: *.tc.json, threats.json, threats.yaml
 Documentation: README.md, ARCHITECTURE.md, docs/**/*.md
@@ -140,6 +141,7 @@ Diagrams: *.png, *.mmd, *.drawio, *.puml
 - Extracts security-relevant information
 
 **What AI Analyzes:**
+
 - Component relationships
 - Authentication mechanisms
 - Data storage and transmission
@@ -189,16 +191,19 @@ Attack Tree
 ### Technologies Used
 
 **Strands Framework:**
+
 - Multi-agent orchestration
 - Error recovery
 
 **AI Models:**
+
 - Claude 3.5 Sonnet (default)
 - Claude 3 Haiku (faster)
 - Claude 3 Opus (highest quality)
 - Other models via configuration
 
 **File Analysis:**
+
 - Strands `file_read` tool for intelligent parsing
 - PDF text extraction
 - Image analysis for diagrams
@@ -241,6 +246,7 @@ This phase maps attack steps to MITRE ATT&CK techniques using semantic similarit
 - Calculates similarity scores
 
 **MITRE ATT&CK Database:**
+
 - Enterprise ATT&CK v13.0+
 - 14 tactics (Initial Access, Execution, etc.)
 - 200+ techniques and sub-techniques
@@ -311,6 +317,7 @@ This phase adds security controls and implementation guidance.
 #### 3. Maps Mitigations
 
 **MITRE Mitigation Database:**
+
 - 40+ mitigation controls (M1001-M1057)
 - Mapped to techniques
 - Implementation guidance
@@ -379,6 +386,7 @@ Final phase creates comprehensive outputs for different audiences.
 - Generates metrics
 
 **Metrics Collected:**
+
 - Total threats analyzed
 - Attack paths identified
 - MITRE techniques mapped
@@ -418,6 +426,7 @@ Final phase creates comprehensive outputs for different audiences.
 - Includes statistics
 
 **Report Sections:**
+
 - Executive Summary
 - Threat Overview
 - Key Findings
@@ -431,6 +440,7 @@ Final phase creates comprehensive outputs for different audiences.
 - Supports filtering and search
 
 **Dashboard Features:**
+
 - Visual network graph
 - Interactive node exploration
 - Dynamic filtering
@@ -462,17 +472,20 @@ project/threatforest/attack_trees/
 ### Automatic Recovery
 
 **Network Failures:**
+
 - Retries with exponential backoff
 - Saves progress before retry
 - Continues from last checkpoint
 
 **Model Errors:**
+
 - Catches API errors
 - Logs error details
 - Attempts alternative approaches
 - Preserves partial results
 
 **Validation Errors:**
+
 - Validates inputs before processing
 - Provides clear error messages
 - Suggests corrections

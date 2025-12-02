@@ -50,16 +50,19 @@ This guide explains ThreatForest's performance characteristics and how to optimi
 ### Threat Complexity
 
 **Number of Attack Paths:**
+
 - Simple threats (1-2 paths): 30-40s per threat
 - Moderate threats (3-5 paths): 40-60s per threat
 - Complex threats (6+ paths): 60-120s per threat
 
 **Step Detail Level:**
+
 - Basic steps (3-5 per path): Faster processing
 - Detailed steps (6-10 per path): Moderate processing
 - Comprehensive steps (10+ per path): Slower processing
 
 **Component Interactions:**
+
 - Single component: Faster analysis
 - Multiple components: Moderate analysis
 - Complex interactions: Slower analysis
@@ -77,32 +80,38 @@ This guide explains ThreatForest's performance characteristics and how to optimi
 ### Network Latency
 
 **AWS Bedrock API Calls:**
+
 - Low latency (<50ms): Minimal impact
 - Medium latency (50-200ms): Moderate impact
 - High latency (>200ms): Significant impact
 
 **MITRE ATT&CK Database Queries:**
+
 - Local cache: Instant
 - First query: 1-2s (downloads data)
 - Subsequent queries: <100ms
 
 **Embedding Calculations:**
+
 - First run: 30-60s (model download)
 - Cached: <1s per calculation
 
 ### Project Size
 
 **Documentation Volume:**
+
 - Small (<10 files): 10-20s analysis
 - Medium (10-50 files): 20-40s analysis
 - Large (>50 files): 40-80s analysis
 
 **Number of Diagrams:**
+
 - 0-2 diagrams: Minimal impact
 - 3-5 diagrams: Moderate impact
 - 6+ diagrams: Significant impact
 
 **Architecture Complexity:**
+
 - Simple (1-3 components): Fast
 - Moderate (4-10 components): Medium
 - Complex (10+ components): Slow
@@ -136,16 +145,19 @@ This guide explains ThreatForest's performance characteristics and how to optimi
 ### Optimize Input Files
 
 **Reduce Documentation:**
+
 - Focus on security-relevant docs
 - Remove redundant files
 - Consolidate related documents
 
 **Optimize Diagrams:**
+
 - Use vector formats (SVG, Mermaid) over raster (PNG, JPG)
 - Keep diagrams focused and clear
 - Avoid overly complex visualizations
 
 **Prioritize Threats:**
+
 - Focus on High-priority threats first
 - Use ThreatComposer priority levels
 - Skip Low-priority threats for initial analysis
@@ -170,6 +182,7 @@ threatforest  # Will offer to resume from last checkpoint
 ### Leverage Caching
 
 **First Run Optimization:**
+
 ```bash
 # Pre-download models and data
 threatforest --setup-only
@@ -179,6 +192,7 @@ threatforest
 ```
 
 **Reuse Embeddings:**
+
 - Embeddings are cached after first calculation
 - Subsequent runs use cached embeddings
 - Significantly faster TTP enrichment
@@ -248,10 +262,10 @@ Phase Breakdown:
 !!! danger "Out of Memory Errors?"
     **Solutions:**
     
-    1. **Reduce Batch Size** - Process fewer threats at once
-    2. **Close Other Applications** - Free up system memory
-    3. **Use Smaller Model** - Switch to Claude 3 Haiku
-    4. **Increase System Memory** - Upgrade RAM if possible
+    1. Reduce Batch Size - Process fewer threats at once
+    2. Close Other Applications - Free up system memory
+    3. Use Smaller Model - Switch to Claude 3 Haiku
+    4. Increase System Memory - Upgrade RAM if possible
 
 ## Benchmarks
 
