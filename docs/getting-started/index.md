@@ -158,43 +158,6 @@ Now that you have ThreatForest installed, explore these guides:
 
 ---
 
-## Troubleshooting
+## Need Help?
 
-Having issues? Check these common problems:
-
-!!! question "Error: 'externally-managed-environment'"
-    
-    **Problem:** Python prevents system-wide pip installs
-    
-    **Solution:** Use pipx instead:
-    ```bash
-    pipx install threatforest
-    ```
-
-!!! question "Error: 'Bedrock access failed'"
-    
-    **Problem:** AWS credentials not configured or insufficient permissions
-    
-    **Solution:**
-    ```bash
-    # Configure AWS credentials
-    aws configure
-    
-    # Verify access
-    aws bedrock list-foundation-models --region us-east-1
-    
-    # Check IAM permissions include:
-    # - bedrock:InvokeModel
-    # - bedrock:InvokeModelWithResponseStream
-    ```
-
-!!! info "Very slow first run"
-    
-    **This is normal!** First run downloads:
-    - sentence-transformers models (~500MB)
-    - torch library
-    - MITRE ATT&CK data
-    
-    Subsequent runs are much faster (seconds instead of minutes).
-
-[→ More Troubleshooting](../faq.md)
+Having issues? Check the [FAQ Troubleshooting section](../faq.md#troubleshooting) for common problems and solutions.

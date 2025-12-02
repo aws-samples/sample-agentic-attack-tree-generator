@@ -81,6 +81,7 @@ Located at the top, displays:
 - Drag to reposition
 
 **Interactions:**
+
 - **Click Node** - View threat details in side panel
 - **Hover Node** - See quick preview
 - **Drag Node** - Reposition for better view
@@ -94,6 +95,7 @@ Located at the top, displays:
 **Right sidebar** (appears when threat selected):
 
 **Sections:**
+
 - **Threat Information** - Full statement, severity, affected components
 - **Attack Paths** - Step-by-step sequences with impact ratings
 - **MITRE ATT&CK Mappings** - Technique IDs, tactics, confidence scores
@@ -111,6 +113,7 @@ Located at the top, displays:
 5. Export findings for documentation
 
 **Key Features:**
+
 - Network graph for architecture visualization
 - Attack path analysis for control validation
 - MITRE mapping for industry alignment
@@ -125,6 +128,7 @@ Located at the top, displays:
 5. Track remediation progress
 
 **Key Features:**
+
 - Detailed attack steps
 - Technical prerequisites
 - Mitigation implementation guidance
@@ -139,6 +143,7 @@ Located at the top, displays:
 5. Verify all threats are addressed
 
 **Key Features:**
+
 - Component-specific filtering
 - Clear attack explanations
 - Actionable mitigation steps
@@ -146,17 +151,20 @@ Located at the top, displays:
 ### Dashboard Performance
 
 **Optimization for Large Threat Models:**
+
 - Use filters to reduce visible threats
 - Collapse details when not needed
 - Export subsets for focused analysis
 
 **Performance Metrics:**
+
 - <10 threats: Instant loading
 - 10-50 threats: <2 seconds
 - 50-100 threats: <5 seconds
 - 100+ threats: May require filtering
 
 **Browser Compatibility:**
+
 - ✅ Chrome 90+
 - ✅ Firefox 88+
 - ✅ Safari 14+
@@ -173,30 +181,35 @@ Each threat gets a dedicated markdown file with complete details.
 ### Contents
 
 **Threat Metadata:**
+
 - ID and title
 - Severity level
 - STRIDE category
 - Affected components
 
 **Attack Paths:**
+
 - Multiple paths per threat
 - Step-by-step sequences
 - Prerequisites for each step
 - Impact and likelihood ratings
 
 **MITRE ATT&CK Mappings:**
+
 - Technique IDs and names
 - Tactic categorization
 - Confidence scores
 - Technique descriptions
 
 **Mitigations:**
+
 - Security control recommendations
 - Implementation guidance
 - Best practices
 - Priority rankings
 
 **Mermaid Diagrams:**
+
 - Visual attack tree representation
 - Shows attack flow and dependencies
 
@@ -386,6 +399,7 @@ requiring immediate attention.
 **Purpose:** Tracks workflow progress for resume capability.
 
 **Contains:**
+
 - Processed threats
 - Current progress
 - Timestamp information
@@ -415,16 +429,19 @@ git tag -a v1.0-threat-analysis -m "Initial threat analysis"
 ### Sharing Results
 
 **Dashboard for Presentations:**
+
 - Host on internal web server for team access
 - Export to PDF for email distribution
 - Screenshot key findings for reports
 
 **JSON for Automation:**
+
 - CI/CD integration
 - Custom dashboards
 - Metrics tracking
 
 **Markdown for Documentation:**
+
 - Include in security docs
 - Version control friendly
 - Easy to review in PRs
@@ -465,39 +482,9 @@ diff current.json previous.json
 - Sanitize data before external sharing
 - Encrypt archives if needed
 
-## Troubleshooting
+## Need Help?
 
-### Dashboard Won't Open
-
-**Solutions:**
-1. Check file exists in output directory
-2. Try different browser
-3. Check file permissions
-4. Clear browser cache (Cmd/Ctrl+Shift+R)
-
-### Graph Not Displaying
-
-**Solutions:**
-1. Enable JavaScript in browser
-2. Check browser console for errors (F12)
-3. Verify `threatforest_data.json` exists
-4. Clear browser cache
-
-### Slow Performance
-
-**Solutions:**
-1. Use filters to reduce visible threats
-2. Close other browser tabs
-3. Update to latest browser version
-4. Reduce zoom level
-
-### Missing Threat Details
-
-**Solutions:**
-1. Regenerate analysis
-2. Check data file integrity
-3. Verify analysis completed successfully
-4. Review state file for errors
+Having issues with results or the dashboard? Check the [FAQ Troubleshooting section](../faq.md#troubleshooting) for solutions.
 
 ## Next Steps
 

@@ -258,6 +258,46 @@ ollama:
 
 ## Troubleshooting
 
+### Error: 'externally-managed-environment'
+
+!!! question "Problem"
+    Python prevents system-wide pip installs
+
+**Solution:** Use pipx instead:
+
+```bash
+pipx install threatforest
+```
+
+### Error: 'Bedrock access failed'
+
+!!! question "Problem"
+    AWS credentials not configured or insufficient permissions
+
+**Solution:**
+
+```bash
+# Configure AWS credentials
+aws configure
+
+# Verify access
+aws bedrock list-foundation-models --region us-east-1
+
+# Check IAM permissions include:
+# - bedrock:InvokeModel
+# - bedrock:InvokeModelWithResponseStream
+```
+
+### Very slow first run
+
+!!! info "This is normal!"
+    First run downloads:
+    - sentence-transformers models (~500MB)
+    - torch library
+    - MITRE ATT&CK data
+    
+    Subsequent runs are much faster (seconds instead of minutes).
+
 ### Why is ThreatForest slow?
 
 !!! info "Typical Duration"
@@ -303,6 +343,42 @@ ollama:
 - Use ThreatComposer format
 
 [→ Preparing Your Project](user-guide/preparing-your-project.md)
+
+### Dashboard Won't Open
+
+**Solutions:**
+
+1. Check file exists in output directory
+2. Try different browser
+3. Check file permissions
+4. Clear browser cache (Cmd/Ctrl+Shift+R)
+
+### Graph Not Displaying
+
+**Solutions:**
+
+1. Enable JavaScript in browser
+2. Check browser console for errors (F12)
+3. Verify `threatforest_data.json` exists
+4. Clear browser cache
+
+### Slow Dashboard Performance
+
+**Solutions:**
+
+1. Use filters to reduce visible threats
+2. Close other browser tabs
+3. Update to latest browser version
+4. Reduce zoom level
+
+### Missing Threat Details
+
+**Solutions:**
+
+1. Regenerate analysis
+2. Check data file integrity
+3. Verify analysis completed successfully
+4. Review state file for errors
 
 ### Can I customize the output format?
 
