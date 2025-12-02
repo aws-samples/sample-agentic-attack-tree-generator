@@ -8,7 +8,7 @@
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-[Documentation](https://threatforest.dev) • [Getting Started](#-quick-start) • [Examples](docs/examples) • [Contributing](CONTRIBUTING.md)
+[Documentation](https://aws-samples.github.io/sample-agentic-attack-tree-generator) • [Getting Started](#-quick-start) • [Examples](sample-applications/) • [Contributing](CONTRIBUTING.md)
 
 </div>
 
@@ -24,13 +24,13 @@ ThreatForest is an AI-powered threat modeling platform built on AWS Labs' [Stran
 - 🎯 Automatic MITRE ATT&CK technique mapping
 - 📊 Interactive HTML dashboards for visualization
 
-📖 **[Read Full Documentation](https://threatforest.dev)**
+📖 **[Read Full Documentation](https://aws-samples.github.io/sample-agentic-attack-tree-generator)**
 
 ## 🚀 Quick Start
 
 ```bash
 # Install with pipx (recommended)
-pipx install threatforest
+pipx install git+https://github.com/aws-samples/sample-agentic-attack-tree-generator.git
 
 # Run the interactive wizard
 threatforest
@@ -599,32 +599,11 @@ pip install -r requirements.txt
 - Check AWS credentials: `aws configure list`
 - Test Bedrock access: `aws bedrock list-foundation-models --region us-east-1`
 - Review logs: `./output/threatforest.log`
-- Open an issue: https://github.com/YOUR-ORG/ThreatForest/issues
+- Open an issue: https://github.com/aws-samples/sample-agentic-attack-tree-generator/issues
 
 ## 🤝 Contributing
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
-
-### Development Setup
-
-```bash
-# Clone your fork
-git clone https://github.com/YOUR-ORG/ThreatForest.git
-cd ThreatForest
-
-# Install in editable mode with dev dependencies
-pip install -e ".[dev]"
-
-# Run tests
-pytest tests/
-
-# Format code
-black src/
-isort src/
-
-# Run security scans
-bandit -r src/
-```
 
 ## 🔒 Security
 
@@ -657,6 +636,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Ready to start?** Follow the [Quick Start](#-quick-start) guide and run your first threat analysis!
 
-For questions, issues, or feature requests, please visit our [GitHub repository](https://github.com/YOUR-ORG/ThreatForest).
-
-
+For questions, issues, or feature requests, please visit our [GitHub repository](https://github.com/aws-samples/sample-agentic-attack-tree-generator).

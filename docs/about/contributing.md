@@ -45,8 +45,8 @@ For more information see the [Code of Conduct FAQ](https://aws.github.io/code-of
 
 ```bash
 # Clone your fork
-git clone https://github.com/YOUR-USERNAME/ThreatForest.git
-cd ThreatForest
+git clone https://github.com/aws-samples/sample-agentic-attack-tree-generator.git
+cd sample-agentic-attack-tree-generator
 
 # Install in editable mode with dev dependencies
 pip install -e ".[dev]"

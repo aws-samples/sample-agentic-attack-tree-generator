@@ -9,7 +9,10 @@ Get comprehensive threat models for your application, with autonomous AI agents 
 
 [Get Started](getting-started/index.md){ .md-button .md-button--primary }
 
-<p style="font-size: 1rem; opacity: 0.8; margin-top: 1rem;">GitHub: sample-agentic-attack-tree-generator</p>
+<p style="font-size: 1rem; opacity: 0.8; margin-top: 1rem;">
+📚 <a href="https://aws-samples.github.io/sample-agentic-attack-tree-generator">Documentation</a> • 
+💻 <a href="https://github.com/aws-samples/sample-agentic-attack-tree-generator">GitHub Repository</a>
+</p>
 
 </div>
 

@@ -116,7 +116,7 @@ We appreciate responsible disclosure and will acknowledge security researchers w
 
 For security concerns, contact: **crisleoo@amazon.com**
 
-For general questions, use [GitHub Issues](https://github.com/YOUR-ORG/ThreatForest/issues).
+For general questions, use [GitHub Issues](https://github.com/aws-samples/sample-agentic-attack-tree-generator/issues).
 
 ---
 
