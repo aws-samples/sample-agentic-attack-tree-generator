@@ -50,6 +50,8 @@ The dashboard provides:
 
 #### 1. Threat Overview Panel
 
+![Executive Summary Threats](../assets/images/ExecutiveSummaryThreats.gif)
+
 Located at the top, displays:
 
 ```
@@ -67,6 +69,8 @@ Located at the top, displays:
 
 #### 2. Interactive Network Graph
 
+![Explore Attack Steps](../assets/images/ExploreAttackSteps.gif)
+
 **Center of dashboard** - Visual representation of all threats:
 
 **Features:**
@@ -83,27 +87,9 @@ Located at the top, displays:
 - **Scroll** - Zoom in/out
 - **Click Background** - Deselect and reset
 
-#### 3. Threat List View
+#### 3. Threat Detail Panel
 
-**Left sidebar** - Sortable, filterable list:
-
-```
-[T001] SQL Injection in Login Form
-Severity: High | Category: Injection
-3 attack paths | 5 MITRE techniques
-
-[T002] XSS in Comment Field
-Severity: Medium | Category: XSS
-2 attack paths | 3 MITRE techniques
-```
-
-**Features:**
-- Sort by severity, ID, or title
-- Filter by severity or category
-- Search by keyword
-- Click to jump to threat
-
-#### 4. Threat Detail Panel
+![Explore Mitigations and Navigate to MITRE](../assets/images/ExploreMitigationsNavigateToMitre.gif)
 
 **Right sidebar** (appears when threat selected):
 
@@ -112,19 +98,6 @@ Severity: Medium | Category: XSS
 - **Attack Paths** - Step-by-step sequences with impact ratings
 - **MITRE ATT&CK Mappings** - Technique IDs, tactics, confidence scores
 - **Mitigations** - Security controls and implementation guidance
-
-#### 5. Search and Filter
-
-**Search Bar:**
-- Search across titles and descriptions
-- Real-time filtering
-- Highlights matching results
-
-**Filter Options:**
-- By Severity: High, Medium, Low
-- By Category: Injection, XSS, Authentication, etc.
-- By Status: With/without attack trees
-- By MITRE Tactic: Initial Access, Execution, etc.
 
 ### Using the Dashboard
 
