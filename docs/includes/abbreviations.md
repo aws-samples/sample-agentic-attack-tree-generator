@@ -1,3 +1,0 @@
-# Abbreviations
-
-Documentation coming soon.

@@ -1,3 +1,0 @@
-# Models
-
-Documentation coming soon.

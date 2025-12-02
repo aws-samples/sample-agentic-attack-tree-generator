@@ -1,3 +1,0 @@
-# Visualization
-
-Documentation coming soon.

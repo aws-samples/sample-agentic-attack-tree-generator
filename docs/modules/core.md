@@ -1,3 +1,0 @@
-# Core
-
-Documentation coming soon.
