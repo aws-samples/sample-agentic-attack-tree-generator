@@ -151,6 +151,24 @@ class CLIWizard:
                     
                     self.console.print(f"\n[green]✓[/green] AWS Profile configured: {aws_profile}")
                     self.console.print(f"[green]✓[/green] AWS Region configured: {aws_region}")
+                    
+                    # Test AWS connection
+                    self.console.print("\n[cyan]Testing AWS connection...[/cyan]")
+                    from threatforest.modules.utils.aws_validator import test_aws_connection
+                    result = test_aws_connection(profile=aws_profile, region=aws_region)
+                    
+                    if not result['success']:
+                        # Ask if user wants to reconfigure
+                        retry = questionary.confirm(
+                            "Would you like to reconfigure AWS credentials?",
+                            default=True
+                        ).ask()
+                        if retry:
+                            # Clear the invalid credentials
+                            env_manager.set_value('AWS_PROFILE', '')
+                            env_manager.set_value('AWS_REGION', '')
+                            self.console.print("[yellow]Credentials cleared. Please restart setup.[/yellow]\n")
+                            return False
                 
                 else:  # access_keys
                     access_key_id = questionary.password("AWS Access Key ID:").ask()
@@ -167,6 +185,29 @@ class CLIWizard:
                     
                     self.console.print(f"\n[green]✓[/green] AWS Access Keys configured")
                     self.console.print(f"[green]✓[/green] AWS Region configured: {aws_region}")
+                    
+                    # Test AWS connection
+                    self.console.print("\n[cyan]Testing AWS connection...[/cyan]")
+                    from threatforest.modules.utils.aws_validator import test_aws_connection
+                    result = test_aws_connection(
+                        access_key_id=access_key_id,
+                        secret_access_key=secret_access_key,
+                        region=aws_region
+                    )
+                    
+                    if not result['success']:
+                        # Ask if user wants to reconfigure
+                        retry = questionary.confirm(
+                            "Would you like to reconfigure AWS credentials?",
+                            default=True
+                        ).ask()
+                        if retry:
+                            # Clear the invalid credentials
+                            env_manager.set_value('AWS_ACCESS_KEY_ID', '')
+                            env_manager.set_value('AWS_SECRET_ACCESS_KEY', '')
+                            env_manager.set_value('AWS_REGION', '')
+                            self.console.print("[yellow]Credentials cleared. Please restart setup.[/yellow]\n")
+                            return False
             
             elif provider == "Anthropic":
                 if not env_manager.get_value('ANTHROPIC_API_KEY'):
@@ -622,6 +663,21 @@ This will execute a complete security analysis:
                 
                 self.console.print(f"\n[green]✓[/green] AWS Profile configured: {profile}")
                 self.console.print(f"[green]✓[/green] AWS Region configured: {region}")
+                
+                # Test AWS connection
+                self.console.print("\n[cyan]Testing AWS connection...[/cyan]")
+                from threatforest.modules.utils.aws_validator import test_aws_connection
+                result = test_aws_connection(profile=profile, region=region)
+                
+                if not result['success']:
+                    # Ask if user wants to retry
+                    retry = questionary.confirm(
+                        "Connection failed. Would you like to try different credentials?",
+                        default=True
+                    ).ask()
+                    if not retry:
+                        self.console.print("\n[yellow]⚠️  Credentials saved but connection test failed[/yellow]")
+                        self.console.print("[dim]You may need to fix them before using ThreatForest[/dim]\n")
             
             else:  # access_keys
                 access_key_id = questionary.password("AWS Access Key ID:").ask()
@@ -643,6 +699,25 @@ This will execute a complete security analysis:
                 
                 self.console.print(f"\n[green]✓[/green] AWS Access Keys configured")
                 self.console.print(f"[green]✓[/green] AWS Region configured: {region}")
+                
+                # Test AWS connection
+                self.console.print("\n[cyan]Testing AWS connection...[/cyan]")
+                from threatforest.modules.utils.aws_validator import test_aws_connection
+                result = test_aws_connection(
+                    access_key_id=access_key_id,
+                    secret_access_key=secret_access_key,
+                    region=region
+                )
+                
+                if not result['success']:
+                    # Ask if user wants to retry
+                    retry = questionary.confirm(
+                        "Connection failed. Would you like to try different credentials?",
+                        default=True
+                    ).ask()
+                    if not retry:
+                        self.console.print("\n[yellow]⚠️  Credentials saved but connection test failed[/yellow]")
+                        self.console.print("[dim]You may need to fix them before using ThreatForest[/dim]\n")
         
         # API Key providers
         elif provider in ["Anthropic", "OpenAI", "Google Gemini", "LiteLLM", "LlamaAPI"]:
