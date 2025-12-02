@@ -186,7 +186,10 @@ nav:
     - Running ThreatForest: user-guide/running-threatforest.md
     - Understanding Results: user-guide/understanding-results.md
   
-  - How It Works: how-it-works.md
+  - How It Works:
+    - Overview: how-it-works/index.md
+    - Workflow Phases: how-it-works/phases.md
+    - Performance: how-it-works/performance.md
   
   - Architecture: architecture/overview.md
   

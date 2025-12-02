@@ -98,31 +98,31 @@ Generate comprehensive attack trees in minutes:
 
 ## 💼 Use Cases
 
-<div class="use-cases" markdown>
+<div class="grid cards" markdown>
 
-### Security Teams
-- Automate threat modeling for new applications
-- Generate comprehensive attack trees for risk assessments
-- Map threats to MITRE ATT&CK for compliance reporting
-- Identify mitigation strategies aligned with security frameworks
+-   🛡️ __Security Teams__
 
-### DevSecOps
-- Integrate threat modeling into CI/CD pipelines
-- Automatically analyze application changes for new threats
-- Generate security documentation for deployment reviews
-- Track threat evolution across application versions
+    ---
 
-### Architects & Developers
-- Understand security implications of design decisions
-- Identify vulnerabilities early in development
-- Learn attack patterns relevant to your technology stack
-- Get actionable security recommendations
+    Automate threat modeling, generate attack trees, map to MITRE ATT&CK for compliance
 
-### Compliance & Auditors
-- Document threat landscape for compliance requirements
-- Demonstrate due diligence in security practices
-- Generate reports mapped to industry frameworks
-- Track mitigation implementation status
+-   🔄 __DevSecOps__
+
+    ---
+
+    Integrate into CI/CD, analyze changes, generate security documentation
+
+-   🏗️ __Architects & Developers__
+
+    ---
+
+    Understand security implications, identify vulnerabilities early, learn attack patterns
+
+-   📋 __Compliance & Auditors__
+
+    ---
+
+    Document threats, demonstrate due diligence, generate compliance reports
 
 </div>
 
@@ -134,7 +134,9 @@ Generate comprehensive attack trees in minutes:
 
 <div class="screenshot-container" markdown>
 
-![ThreatForest Dashboard](assets/dashboard-screenshot.png)
+<!-- TODO: Add dashboard screenshot -->
+![ThreatForest Dashboard](assets/images/dashboard-placeholder.png)
+*Interactive dashboard with network graph visualization - Screenshot coming soon*
 
 **Features:**
 - Visual network graph with pan/zoom

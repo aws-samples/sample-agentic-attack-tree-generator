@@ -8,7 +8,7 @@
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-[Features](#-features) • [Quick Start](#-quick-start) • [How It Works](#-how-it-works) • [Documentation](#-documentation) • [IDE Integration](#-ide-integration) • [Contributing](#-contributing)
+[Documentation](https://threatforest.dev) • [Getting Started](#-quick-start) • [Examples](docs/examples) • [Contributing](CONTRIBUTING.md)
 
 </div>
 
@@ -16,235 +16,43 @@
 
 ## 🎯 Overview
 
-ThreatForest is an intelligent threat modeling platform built on the [Strands](https://github.com/awslabs/strands) agentic framework that combines AI-powered analysis with MITRE ATT&CK framework integration. It orchestrates multiple AI agents to automatically generate comprehensive attack trees from your project documentation, threat models, and architecture diagrams, transforming them into actionable security insights with detailed attack paths and mitigation strategies.
+ThreatForest is an AI-powered threat modeling platform built on AWS Labs' [Strands](https://github.com/awslabs/strands) framework. It automatically generates comprehensive attack trees from your project documentation and threat models, mapping them to MITRE ATT&CK techniques with actionable mitigation strategies.
 
-### Why ThreatForest?
+**Key Features:**
+- 🤖 Autonomous AI agents explore and analyze your project
+- 🌳 Generate detailed attack trees with multiple attack paths
+- 🎯 Automatic MITRE ATT&CK technique mapping
+- 📊 Interactive HTML dashboards for visualization
 
-- 🔄 **Strands-Powered Architecture** - Built on AWS Labs' agentic framework for reliable, orchestrated AI workflows with state management and error recovery
-- 🤖 **Autonomous Agent System** - Three specialized agents (RepositoryAnalysisAgent, ParserAgent, ThreatGenerationAgent) work together using Strands community tools
-- 🔍 **Intelligent Repository Exploration** - Agents autonomously navigate projects using `file_read`, `editor`, and `image_reader` tools
-- 🌳 **Attack Tree Generation** - Automatically creates detailed attack trees for identified threats with step-by-step attack paths
-- 🎯 **MITRE ATT&CK Integration** - Maps attack paths to TTPs (Tactics, Techniques, and Procedures)
-- 🛡️ **Mitigation Recommendations** - Provides actionable security controls and countermeasures
-- 📊 **Interactive Dashboards** - Visualize threats with interactive HTML dashboards using vis-network
-- 🔄 **Multi-Provider Support** - Works with AWS Bedrock, Anthropic, OpenAI, Gemini, Ollama, and more
-- 🔌 **Kiro IDE Integration** - Edit ThreatComposer files and get instant attack tree generation
-
-## ✨ Features
-
-### Core Capabilities
-
-- **🤖 AI-Powered Analysis** - Leverages LLMs to analyze your application and generate threat models
-- **🔍 Autonomous Repository Exploration** - RepositoryAnalysisAgent uses Strands tools to intelligently navigate and analyze projects
-- **🔄 Flexible Threat Input** - Choose to provide existing threats or let ThreatGenerationAgent create them automatically
-- **🌳 Attack Tree Generation** - Creates detailed attack trees with multiple paths and prerequisites
-- **🎯 MITRE ATT&CK Integration** - Maps attack steps to techniques using semantic similarity matching
-- **🛡️ Mitigation Recommendations** - Provides actionable security controls for each identified threat
-- **📊 Interactive Dashboard** - Visual network graphs with dynamic filtering and search capabilities
-- **💾 State Management** - Resume interrupted workflows from checkpoints with Strands-based state persistence
-- **🔒 No Data Storage** - Application details are processed locally and not stored by ThreatForest
-
-### Agent-Based Architecture
-
-ThreatForest uses three specialized Strands agents with community tools:
-
-1. **RepositoryAnalysisAgent** - Autonomously explores repositories using `file_read`, `editor`, and `image_reader` tools
-2. **ParserAgent** - Parses existing threat statements from various formats using `file_read` tool
-3. **ThreatGenerationAgent** - Generates contextual threats when none exist (pure LLM reasoning)
-
-**Learn more:** See [docs/AGENT_ARCHITECTURE.md](docs/AGENT_ARCHITECTURE.md) for detailed architecture documentation.
-
-### Supported Input Formats
-
-- 📋 **Threat Models**: ThreatComposer (.tc), JSON, YAML, Markdown
-- 🏗️ **Diagrams**: PNG, JPG, PDF, Mermaid (.mmd), Draw.io, PlantUML
-- 📖 **Documentation**: Markdown, PDF, Text files
-
-### Flexible Workflows
-
-1. **🌳 Full Analysis** - Complete threat modeling pipeline from discovery to mitigation
-2. **🎯 TTP Enrichment** - Add MITRE ATT&CK mappings to existing attack trees
-3. **🛡️ Mitigation Mapping** - Add security controls to enriched trees
+📖 **[Read Full Documentation](https://threatforest.dev)**
 
 ## 🚀 Quick Start
 
-### Prerequisites
-
-- Python 3.11 or higher
-- AWS Account with Bedrock access (or API keys for other providers)
-- Git
-
-### Installation
-
-For a permanent `threatforest` command you can run from anywhere:
-
-#### Using pipx (Recommended)
-
 ```bash
-# Install pipx if you don't have it
-python3 -m pip install --user pipx
-python3 -m pipx ensurepath
+# Install with pipx (recommended)
+pipx install threatforest
 
-# Install ThreatForest
-git clone https://github.com/YOUR-ORG/ThreatForest.git
-cd ThreatForest
-pipx install .
-
-# Now run from anywhere!
+# Run the interactive wizard
 threatforest
 ```
 
-#### Using uv tool (Modern & Fast)
+**Prerequisites:** Python 3.11+, AWS Bedrock access (or other LLM provider)
 
-```bash
-# Install uv if you don't have it
-curl -LsSf https://astral.sh/uv/install.sh | sh
+📚 **[Complete Installation Guide](docs/getting-started/index.md)**
 
-# Install ThreatForest globally
-git clone https://github.com/YOUR-ORG/ThreatForest.git
-cd ThreatForest
-uv tool install .
+## 📊 What You Get
 
-# Now run from anywhere!
-threatforest
+```
+project/threatforest/attack_trees/
+├── attack_trees_dashboard.html          # Interactive visualization ⭐
+├── attack_tree_T001_sql_injection.md   # Individual attack trees
+├── threatforest_data.json               # Structured data export
+└── threatforest_analysis_report.md      # Executive summary
 ```
 
-#### Using pip (Traditional)
+<!-- TODO: Add dashboard screenshot -->
 
-```bash
-# Clone and install
-git clone https://github.com/YOUR-ORG/ThreatForest.git
-cd ThreatForest
-pip install .
-
-# Run the CLI
-threatforest
-```
-
-#### For Development
-
-Contributors working on ThreatForest code:
-
-```bash
-git clone https://github.com/YOUR-ORG/ThreatForest.git
-cd ThreatForest
-
-# Editable install - code changes reflect immediately!
-pip install -e ".[dev]"
-
-# Now you can:
-# 1. Edit code
-# 2. Run threatforest
-# 3. See changes instantly (no reinstall needed!)
-threatforest
-```
-
-**Alternative: Using uv (Modern)**
-```bash
-# No install needed - always uses latest code
-uv run threatforest
-
-# Make changes and run again
-uv run threatforest  # Automatically uses your edits
-```
-
-### Running ThreatForest
-
-After installation, simply run:
-
-```bash
-threatforest
-```
-
-The interactive wizard will guide you through:
-1. **Mode Selection** - Choose workflow option (Full/Enrich/Mitigate)
-2. **Configuration** - AWS profile, model selection, project path
-3. **Analysis** - Run selected workflow with progress tracking
-4. **Results** - View summary and access output files
-
-> **⏱️ First Run:** Initial startup takes 2-3 minutes while downloading AI model dependencies (sentence-transformers, torch). Subsequent runs are much faster (seconds).
-
-## 🔍 How It Works
-
-ThreatForest uses a multi-stage workflow powered by the Strands agentic framework to transform your application context into comprehensive security analysis:
-
-```mermaid
-graph TB
-    Start([Start Workflow]) --> Setup[Setup & Validation]
-    Setup --> Context[Context Analysis]
-    Context --> Extract[Information Extraction]
-    Extract --> Generate[Attack Tree Generation]
-    Generate --> Enrich[TTP Enrichment]
-    Enrich --> Mitigate[Mitigation Mapping]
-    Mitigate --> Summary[Generate Reports]
-    Summary --> End([Complete])
-    
-    Context -.->|Discovers| Files[Project Files<br/>• Threat Models<br/>• Documentation<br/>• Diagrams<br/>• Architecture]
-    
-    Extract -.->|Uses LLM| AI1[AI Analysis<br/>• Extract threats<br/>• Identify assets<br/>• Understand context]
-    
-    Generate -.->|Uses LLM| AI2[AI Generation<br/>• Create attack trees<br/>• Define attack paths<br/>• Assess impact]
-    
-    Enrich -.->|Maps to| MITRE[MITRE ATT&CK<br/>• Technique IDs<br/>• Tactics<br/>• Procedures]
-    
-    Mitigate -.->|Adds| Controls[Security Controls<br/>• Preventive measures<br/>• Detective controls<br/>• Response actions]
-    
-    Summary -.->|Creates| Output[Output Files<br/>• Attack tree markdown<br/>• Interactive dashboard<br/>• JSON export<br/>• Analysis report]
-    
-    style Start fill:#e1f5e1
-    style End fill:#e1f5e1
-    style AI1 fill:#fff4e1
-    style AI2 fill:#fff4e1
-    style MITRE fill:#e1f0ff
-    style Controls fill:#ffe1f0
-    style Output fill:#f0e1ff
-```
-
-### Workflow Stages
-
-1. **Setup & Validation** (5%)
-   - Validates AWS credentials and Bedrock access
-   - Checks project structure and permissions
-   - Initializes logging and state management
-
-2. **Context Analysis** (10-20%)
-   - Discovers threat models (ThreatComposer, JSON, YAML)
-   - Identifies documentation files (README, architecture docs)
-   - Locates architecture diagrams (PNG, PDF, Mermaid, DrawIO)
-   - Uses Strands `file_read` tool for intelligent document processing
-   - Categorizes files by relevance and type
-
-3. **Information Extraction** (20-40%)
-   - Uses LLM to analyze project context
-   - Extracts application details (name, technologies, architecture)
-   - Identifies or generates threat statements
-   - Prioritizes threats by severity (High/Medium/Low)
-   - Extracts assets, data flows, and trust boundaries
-
-4. **Attack Tree Generation** (40-70%)
-   - Generates detailed attack trees for high-priority threats
-   - Creates step-by-step attack paths with prerequisites
-   - Assesses impact and likelihood for each path
-   - Produces markdown files and Mermaid diagrams
-   - Tracks progress with state management for resume capability
-
-5. **TTP Enrichment** (70-85%)
-   - Maps attack steps to MITRE ATT&CK techniques
-   - Uses semantic similarity matching with embeddings
-   - Adds technique IDs, tactics, and descriptions
-   - Enriches attack trees with industry-standard intelligence
-
-6. **Mitigation Mapping** (85-95%)
-   - Identifies security controls for each technique
-   - Provides preventive, detective, and responsive measures
-   - Adds implementation guidance and best practices
-   - Creates comprehensive mitigation strategies
-
-7. **Report Generation** (95-100%)
-   - Generates interactive HTML dashboard
-   - Creates JSON export for programmatic access
-   - Produces markdown analysis report
-   - Compiles summary statistics and metrics
+🎨 **[Explore Example Outputs](docs/examples)**
 
 ## 📚 Documentation
 
@@ -259,6 +67,7 @@ Analyzes your entire project and generates complete attack trees:
 - Architecture diagrams
 
 **Process:**
+
 1. Analyzes project context
 2. Extracts or generates threats
 3. Creates attack trees for high-priority threats
@@ -273,6 +82,7 @@ Enriches existing attack trees with MITRE ATT&CK techniques:
 **Input:** Attack trees from Full Analysis
 
 **Process:**
+
 1. Reads attack tree markdown files
 2. Extracts attack steps
 3. Maps to MITRE ATT&CK techniques using semantic similarity
@@ -287,6 +97,7 @@ Adds security controls to enriched trees:
 **Input:** Enriched attack trees from TTP Enrichment
 
 **Process:**
+
 1. Reads enriched attack trees
 2. Identifies applicable security controls
 3. Adds mitigation strategies for each technique
@@ -308,6 +119,7 @@ ThreatForest is flexible and works with various input combinations. Threat model
 - **Contains**: Threat statements, priorities, application context
 
 **How to create:**
+
 1. Visit https://awslabs.github.io/threat-composer/
 2. Create workspace with application details
 3. Add threat statements with High/Medium/Low priorities
@@ -751,16 +563,21 @@ aws:
 ### Common Issues
 
 #### "No threat models found"
+
 **Solution**: Add a ThreatComposer export or create `threats.json` in your project directory. ThreatForest can also generate threats from documentation alone.
 
 #### "Bedrock access failed"
+
 **Solution**: 
+
 1. Check AWS credentials: `aws sts get-caller-identity`
 2. Verify Bedrock permissions in us-east-1
 3. Request Bedrock model access in AWS Console
 
 #### "externally-managed-environment"
+
 **Solution**: Always use virtual environment or pipx/uv:
+
 ```bash
 python3 -m venv venv
 source venv/bin/activate
@@ -768,6 +585,7 @@ pip install -r requirements.txt
 ```
 
 #### Virtual Environment Issues
+
 ```bash
 # Recreate virtual environment
 rm -rf venv
@@ -840,3 +658,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Ready to start?** Follow the [Quick Start](#-quick-start) guide and run your first threat analysis!
 
 For questions, issues, or feature requests, please visit our [GitHub repository](https://github.com/YOUR-ORG/ThreatForest).
+
+
