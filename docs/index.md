@@ -134,9 +134,8 @@ Generate comprehensive attack trees in minutes:
 
 <div class="screenshot-container" markdown>
 
-<!-- TODO: Add dashboard screenshot -->
-![ThreatForest Dashboard](assets/images/dashboard-placeholder.png)
-*Interactive dashboard with network graph visualization - Screenshot coming soon*
+![ThreatForest Dashboard](assets/images/InteractiveDashboardOutputWalkthrough.gif)
+*Interactive dashboard with network graph visualization*
 
 **Features:**
 - Visual network graph with pan/zoom
