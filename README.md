@@ -115,23 +115,6 @@ For maximum privacy, use local models with Ollama.
 
 ## 🔧 Advanced Usage
 
-### Command Line Options
-
-```bash
-# Full workflow with specific project
-threatforest --project-path /path/to/project
-
-# TTP enrichment only
-threatforest --mode enrich \
-  --input-dir ./threatforest/attack_trees \
-  --output-dir ./threatforest/enriched
-
-# Mitigation mapping only
-threatforest --mode mitigate \
-  --input-dir ./threatforest/enriched \
-  --output-dir ./threatforest/mitigated
-```
-
 ### Multiple AI Provider Support
 
 ThreatForest supports:
