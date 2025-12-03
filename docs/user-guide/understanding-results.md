@@ -52,21 +52,6 @@ The dashboard provides:
 
 ![Executive Summary Threats](../assets/images/ExecutiveSummaryThreats.gif)
 
-Located at the top, displays:
-
-```
-╭─────────────────────────────────────────╮
-│ Threat Analysis Summary                 │
-├─────────────────────────────────────────┤
-│ Total Threats: 8                        │
-│ High Severity: 3                        │
-│ Medium Severity: 4                      │
-│ Low Severity: 1                         │
-│ Attack Trees Generated: 8               │
-│ Analysis Date: 2025-11-28 14:30:00     │
-╰─────────────────────────────────────────╯
-```
-
 #### 2. Interactive Network Graph
 
 ![Explore Attack Steps](../assets/images/ExploreAttackSteps.gif)
@@ -106,6 +91,7 @@ Located at the top, displays:
 #### For Security Architects
 
 **Workflow:**
+
 1. Review overview to understand threat landscape
 2. Focus on high-severity threats
 3. Examine attack paths to understand vectors
@@ -121,6 +107,7 @@ Located at the top, displays:
 #### For Security Engineers
 
 **Workflow:**
+
 1. Filter by category for specific threat types
 2. Review technical attack steps
 3. Check MITRE techniques for detection alignment
