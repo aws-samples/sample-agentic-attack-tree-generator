@@ -1,7 +1,8 @@
 """Repository Analysis Agent - Autonomous exploration of project repositories"""
 from typing import Dict, Any, Optional
 from pathlib import Path
-from strands_tools import file_read, editor, image_reader
+from strands_tools import file_read, image_reader
+from ..tools.read_only_editor import read_only_editor
 from ..core.base_agent import BaseAgent
 
 
@@ -79,7 +80,7 @@ class RepositoryAnalysisAgent(BaseAgent):
         # Enable summarization for long repository explorations
         agent = self.get_strands_agent(
             prompt_file='repository-analysis.md',
-            tools=[file_read, editor, image_reader],
+            tools=[file_read, read_only_editor, image_reader],
             temperature=0,
             use_summarization=False
         )

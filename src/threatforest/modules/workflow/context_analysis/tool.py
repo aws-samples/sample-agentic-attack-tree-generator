@@ -2,10 +2,10 @@
 from typing import Dict, Any, Optional
 from pathlib import Path
 from threatforest.modules.utils.logger import ThreatForestLogger
-from ...core import FileDiscovery, BaseAgent
-from ...models.project_models import ContextFiles
+from threatforest.modules.core import FileDiscovery, BaseAgent
+from threatforest.modules.models.project_models import ContextFiles
 from .file_categorizer import FileCategorizer
-from ...agents.context_extractor_agent import ContextExtractor
+from threatforest.modules.agents.context_extractor_agent import ContextExtractor
 from .summary_generator import SummaryGenerator
 
 

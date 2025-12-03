@@ -12,7 +12,7 @@ class EmbeddingService:
         Initialize embedding service with a specific model
         
         Args:
-            model_name: SentenceTransformer model name (e.g., "cisco-ai/SecureBERT2.0-biencoder")
+            model_name: SentenceTransformer model name (e.g., "basel/ATTACK-BERT")
         """
         self.model_name = model_name
         self.model: Optional[SentenceTransformer] = None
