@@ -1,7 +1,8 @@
 <div class="hero" markdown>
 
-# 🌳 ThreatForest
+# 🌳 ThreatForest [samples-agentic-attack-tree-generator]
 <p style="font-size: 1.5rem; opacity: 1; margin-top: 1rem;">AI powered threat modeling and attack tree generator</p> 
+
 
 <div class="hero-content" markdown>
 
@@ -10,7 +11,6 @@ Get comprehensive threat models for your application, with autonomous AI agents 
 [Get Started](getting-started/index.md){ .md-button .md-button--primary }
 
 <p style="font-size: 1rem; opacity: 0.8; margin-top: 1rem;">
-📚 <a href="https://aws-samples.github.io/sample-agentic-attack-tree-generator">Documentation</a> • 
 💻 <a href="https://github.com/aws-samples/sample-agentic-attack-tree-generator">GitHub Repository</a>
 </p>
 
@@ -150,17 +150,6 @@ Generate comprehensive attack trees in minutes:
 - Export and sharing capabilities
 
 </div>
-
-### Comprehensive Reports
-
-```
-project/threatforest/attack_trees/
-├── attack_trees_dashboard.html          # Interactive visualization ⭐
-├── attack_tree_T001_sql_injection.md   # Individual attack trees
-├── attack_tree_T002_xss_attack.md
-├── threatforest_data.json               # Structured data export
-└── threatforest_analysis_report.md      # Executive summary
-```
 
 ---
 

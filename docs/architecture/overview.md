@@ -8,13 +8,14 @@ ThreatForest is built on a modular architecture that combines autonomous AI agen
 graph LR
     A[User/IDE] --> B[ThreatForest CLI]
     B --> C[Orchestrator]
-    C --> D[RepositoryAnalysisAgent]
-    C --> E[ParserAgent]
-    C --> F[ThreatGenerationAgent]
-    C --> G[AttackTreeGenerator]
+    C <--> D[RepositoryAnalysisAgent]
+    C <--> E[ParserAgent]
+    C <--> F[ThreatGenerationAgent]
+    C <--> G[AttackTreeGeneratorAgent]
 
     D --> H[(Strands Tools)]
     E --> H
+    F --> H
 
     G --> I[TTP Matcher]
     I --> J[MITRE ATT&CK<br/>Graph]
@@ -29,7 +30,7 @@ graph LR
     style D fill:#6366f1,color:#fff
     style E fill:#6366f1,color:#fff
     style F fill:#6366f1,color:#fff
-    style G fill:#ea580c,color:#fff
+    style G fill:#6366f1,color:#fff
     style N fill:#dc2626,color:#fff
 ```
 
@@ -49,6 +50,7 @@ Powered by AWS Labs' [Strands](https://github.com/awslabs/strands) framework, th
 - **RepositoryAnalysisAgent**: Explores project files using Strands community tools to understand architecture and identify security-relevant information
 - **ParserAgent**: Intelligently parses threat statements from various formats (ThreatComposer, JSON, YAML, Markdown)
 - **ThreatGenerationAgent**: Creates contextual threats when none exist by analyzing application architecture
+- **AttackTreeGeneratorAgent**: Utilizes all the context provided to generate relevant attack steps
 
 
 ### TTP Matcher
