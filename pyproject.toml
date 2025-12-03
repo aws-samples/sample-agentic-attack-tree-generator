@@ -1,0 +1,168 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "threatforest"
+version = "0.0.1"
+description = "AI-Driven Threat Modeling & Attack Tree Generation with MITRE ATT&CK Integration"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [
+    {name = "Cristian Leo", email = "crisleoo@amazon.com"},
+    {name = "Danny Cortegaca", email = "dicorteg@amazon.co.uk"},
+    {name = "Anton Dykyi", email = "antondk@amazon.co.uk"},
+]
+maintainers = [
+    {name = "Cristian Leo", email = "crisleoo@amazon.com"},
+    {name = "Danny Cortegaca", email = "dicorteg@amazon.co.uk"},
+    {name = "Anton Dykyi", email = "antondk@amazon.co.uk"},
+]
+keywords = [
+    "threat-modeling",
+    "security",
+    "attack-trees",
+    "mitre-attack",
+    "ai",
+    "aws-bedrock",
+    "cybersecurity",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology", 
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: System :: Monitoring",
+]
+
+dependencies = [
+    "aioboto3>=15.5.0",
+    "aiobotocore>=2.25.0",
+    "aiofiles>=25.1.0",
+    "boto3>=1.40.0",
+    "botocore>=1.40.0",
+    "click>=8.3.0",
+    "httpx>=0.28.0",
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.0.0",
+    "numpy>=2.3.0",
+    "pydantic>=2.12.0",
+    "pymdown-extensions>=10.0",
+    "python-dotenv>=1.2.0",
+    "pyyaml>=6.0.3",
+    "questionary>=2.1.0",
+    "rich>=14.2.0",
+    "scikit-learn>=1.7.0",
+    "sentence-transformers>=5.1.0",
+    "stix2>=3.0.1",
+    "strands-agents>=1.15.0",
+    "strands-agents[anthropic]",
+    "strands-agents[gemini]",
+    "strands-agents[litellm]",
+    "strands-agents[llamaapi]",
+    "strands-agents[ollama]",
+    "strands-agents[openai]",
+    "strands-agents[sagemaker]",
+    "strands-agents-tools>0.2.0",
+    "torch>=2.9.0",
+    "transformers>=4.57.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+    "hypothesis>=6.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/aws-samples/sample-agentic-attack-tree-generator"
+Documentation = "https://aws-samples.github.io/sample-agentic-attack-tree-generator"
+Repository = "https://github.com/aws-samples/sample-agentic-attack-tree-generator"
+Issues = "https://github.com/aws-samples/sample-agentic-attack-tree-generator/issues"
+Changelog = "https://github.com/aws-samples/sample-agentic-attack-tree-generator/releases"
+
+[project.scripts]
+threatforest = "threatforest.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["threatforest*"]
+
+[tool.setuptools.package-data]
+threatforest = [
+    "*.yaml",
+    "prompts/*.md",
+    "data/**/*.json",
+    "modules/visualization/templates/*",
+]
+
+[tool.black]
+line-length = 100
+target-version = ["py311", "py312", "py313"]
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | venv
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+skip_gitignore = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers"
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["tests/*", "*/venv/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]

@@ -1,0 +1,234 @@
+# ThreatForest Documentation Configuration
+
+site_name: ThreatForest
+site_description: AI-Driven Threat Modeling & Attack Tree Generation with MITRE ATT&CK Integration
+site_author: ThreatForest Team
+site_url: https://threatforest.dev
+
+# Repository
+repo_name: GitHub
+repo_url: https://github.com/aws-samples/sample-agentic-attack-tree-generator
+edit_uri: edit/main/docs/
+
+# Copyright
+copyright: Copyright &copy; 2025 ThreatForest Team
+
+# Theme Configuration
+theme:
+  name: material
+  language: en
+  
+  # Color Palette
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: green
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: green
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  
+  # Fonts
+  font:
+    text: Roboto
+    code: Roboto Mono
+  
+  # Features
+  features:
+    - announce.dismiss
+    - content.action.edit
+    - content.action.view
+    - content.code.annotate
+    - content.code.copy
+    - content.tabs.link
+    - content.tooltips
+    - header.autohide
+    - navigation.expand
+    - navigation.footer
+    - navigation.indexes
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.path
+    - navigation.prune
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+    - toc.integrate
+  
+  # Logo and Favicon
+  logo: assets/logo.png
+  favicon: assets/favicon.png
+  
+  # Icons
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    view: material/eye
+
+# Plugins
+plugins:
+  - search:
+      separator: '[\s\-,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+      lang: en
+      pipeline:
+        - stemmer
+        - stopWordFilter
+        - trimmer
+  - tags
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: timeago
+      fallback_to_build_date: true
+      enable_git_follow: false
+  # - git-authors:
+  #     show_contribution: true
+  #     show_line_count: true
+  #     count_empty_lines: true
+  #     fallback_to_empty: false
+  - minify:
+      minify_html: true
+      minify_js: true
+      minify_css: true
+      htmlmin_opts:
+        remove_comments: true
+        remove_empty_space: true
+        reduce_boolean_attributes: true
+      js_files:
+        - javascripts/extra.js
+  - social:
+      cards: true
+      cards_layout_options:
+        background_color: "#000000"
+        color: "#10B981"
+        font_family: Roboto
+        title: ThreatForest
+        description: AI-Driven Threat Modeling & Attack Tree Generation
+      cards_layout: default/variant
+      cards_dir: assets/social
+      cards_include:
+        - home
+        - getting-started
+        - user-guide
+        - architecture
+        - examples
+        - contributing
+
+# Custom CSS
+extra_css:
+  - stylesheets/extra.css
+
+# Extensions
+markdown_extensions:
+  # Python Markdown
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+      permalink_title: Anchor link to this section
+      toc_depth: 2-6
+  
+  # Python Markdown Extensions
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+# Navigation Structure
+nav:
+  - Home: index.md
+  
+  - Getting Started: getting-started/index.md
+  
+  - User Guide:
+    - Overview: user-guide/index.md
+    - Preparing Your Project: user-guide/preparing-your-project.md
+    - Running ThreatForest: user-guide/running-threatforest.md
+    - Understanding Results: user-guide/understanding-results.md
+  
+  - How It Works:
+    - Overview: how-it-works/index.md
+    - Workflow Phases: how-it-works/phases.md
+  
+  - Architecture: architecture/overview.md
+  
+  - FAQ: faq.md
+  
+  - About:
+    - Release Notes: about/changelog.md
+    - Contributing: about/contributing.md
+    - License: about/license.md
+
+# Extra Configuration
+extra:
+  version:
+    provider: mike
+    default: latest
+  
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/aws-samples/sample-agentic-attack-tree-generator
+      name: ThreatForest on GitHub
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/threatforest/
+      name: ThreatForest on PyPI
+  
+  analytics:
+    provider: google
+    property: G-XXXXXXXXXX  # Replace with your Google Analytics ID
+  
+  generator: false  # Hide "Made with Material for MkDocs" footer
+
+# Extra JavaScript
+extra_javascript:
+  - javascripts/extra.js
+  - https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js
+  - https://d3js.org/d3.v7.min.js
+  - https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js
+
+# Watch for changes
+watch:
+  - src/threatforest
+  - README.md
+  - CONTRIBUTING.md
+  - SECURITY.md

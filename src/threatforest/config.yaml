@@ -1,0 +1,54 @@
+# ThreatForest Configuration
+
+# Model Provider Configuration
+
+# AWS Bedrock (ACTIVE)
+bedrock:
+  model_id: "global.anthropic.claude-sonnet-4-5-20250929-v1:0"
+  # Other options:
+  # - "global.anthropic.claude-haiku-4-5-20251001-v1:0"    # Claude Haiku 4.5
+  # - "global.anthropic.claude-opus-4-5-20251101-v1:0"     # Claude Opus 4.5
+  # Note: Set AWS_PROFILE and AWS_REGION in .env
+
+# # Anthropic Direct API
+# anthropic:
+#   model_id: "claude-sonnet-4-20250514"
+#   # Requires ANTHROPIC_API_KEY in .env
+
+# # OpenAI
+# openai:
+#   model_id: "gpt-4o"
+#   # Requires OPENAI_API_KEY in .env
+
+# # Google Gemini
+# gemini:
+#   model_id: "gemini-2.5-flash"
+#   # Requires GEMINI_API_KEY in .env
+
+# # LiteLLM (Multi-provider proxy)
+# litellm:
+#   model_id: "anthropic/claude-3-7-sonnet-20250219"
+#   # Requires LITELLM_API_KEY in .env
+
+# # LlamaAPI
+# llamaapi:
+#   model_id: "Llama-4-Maverick-17B-128E-Instruct-FP8"
+#   # Requires LLAMAAPI_API_KEY in .env
+
+# # Ollama (Local)
+# ollama:
+#   host: "http://localhost:11434"
+#   model_id: "llama3.1"
+#   # No API key needed (local server)
+
+# Embeddings settings
+embeddings:
+  model: "basel/ATTACK-BERT"
+  ttc_threshold: 0.3  # Similarity threshold for TTP matching (0-1)
+
+# Kiro IDE Integration
+kiro_integration:
+  enabled: true  # Enable/disable automatic ThreatForest execution via Kiro hooks
+  auto_run_on_save: true  # Automatically run when ThreatComposer files are saved
+  notification_level: "summary"  # Output verbosity: 'full', 'summary', or 'silent'
+  timeout_seconds: 300  # Maximum execution time (5 minutes)
