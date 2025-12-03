@@ -90,11 +90,11 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/YOUR-ORG/ThreatForest"
-Documentation = "https://github.com/YOUR-ORG/ThreatForest#readme"
-Repository = "https://github.com/YOUR-ORG/ThreatForest"
-Issues = "https://github.com/YOUR-ORG/ThreatForest/issues"
-Changelog = "https://github.com/YOUR-ORG/ThreatForest/releases"
+Homepage = "https://github.com/aws-samples/sample-agentic-attack-tree-generator"
+Documentation = "https://aws-samples.github.io/sample-agentic-attack-tree-generator"
+Repository = "https://github.com/aws-samples/sample-agentic-attack-tree-generator"
+Issues = "https://github.com/aws-samples/sample-agentic-attack-tree-generator/issues"
+Changelog = "https://github.com/aws-samples/sample-agentic-attack-tree-generator/releases"
 
 [project.scripts]
 threatforest = "threatforest.cli:main"
