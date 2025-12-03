@@ -51,7 +51,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **AWS Labs Strands** - Powerful agentic framework for orchestrating AI workflows
 - **AWS ThreatComposer** - Excellent threat modeling tool and inspiration
 - **MITRE ATT&CK** - Comprehensive threat intelligence framework
-- **STRIDE GPT** - Inspiration for AI-powered threat modeling
 - **AWS Bedrock** - Powerful LLM infrastructure
 - **vis-network** - Interactive graph visualization
 
