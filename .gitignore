@@ -187,7 +187,7 @@ output/
 scripts/
 .threatforest/
 .kiro
-**/site/
+# **/site/
 **/.mkdocs_cache/
 .threat-composer/
 .ash/
