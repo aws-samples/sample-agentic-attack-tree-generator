@@ -25,9 +25,9 @@ OPENAI_MODELS = [
 
 # Google Gemini Models
 GEMINI_MODELS = [
-    "gemini-2.0-flash-exp",
+    "gemini-2.5-flash-exp",
     "gemini-2.5-flash",
-    "gemini-1.5-pro",
+    "gemini-3-pro",
 ]
 
 # Default models for each provider
@@ -35,7 +35,7 @@ DEFAULT_MODELS = {
     'bedrock': "global.anthropic.claude-sonnet-4-5-20250929-v1:0",
     'anthropic': "claude-sonnet-4-20250514",
     'openai': "gpt-4o",
-    'gemini': "gemini-2.0-flash-exp",
+    'gemini': "gemini-2.5-flash-exp",
     'ollama': "llama3.1"
 }
 
