@@ -18,7 +18,7 @@
 
 ## 🎯 Overview
 
-ThreatForest is an AI-powered threat modeling platform built on AWS Labs' [Strands](https://github.com/awslabs/strands) framework. It automatically generates comprehensive attack trees from your project documentation and threat models, mapping them to MITRE ATT&CK techniques with actionable mitigation strategies.
+ThreatForest is an AI-powered threat modeling platform built on [Strands Framework](https://strandsagents.com/latest/). It automatically generates comprehensive attack trees from your project documentation and threat models, mapping them to MITRE ATT&CK techniques with actionable mitigation strategies.
 
 **Key Features:**
 
@@ -48,7 +48,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- **AWS Labs Strands** - Powerful agentic framework for orchestrating AI workflows
+- **[Strands Framework](https://strandsagents.com/latest/)** - Powerful agentic framework for orchestrating AI workflows
 - **AWS ThreatComposer** - Excellent threat modeling tool and inspiration
 - **MITRE ATT&CK** - Comprehensive threat intelligence framework
 - **AWS Bedrock** - Powerful LLM infrastructure
