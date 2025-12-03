@@ -95,11 +95,11 @@ plugins:
       type: timeago
       fallback_to_build_date: true
       enable_git_follow: false
-  - git-authors:
-      show_contribution: true
-      show_line_count: true
-      count_empty_lines: true
-      fallback_to_empty: false
+  # - git-authors:
+  #     show_contribution: true
+  #     show_line_count: true
+  #     count_empty_lines: true
+  #     fallback_to_empty: false
   - minify:
       minify_html: true
       minify_js: true
@@ -189,7 +189,6 @@ nav:
   - How It Works:
     - Overview: how-it-works/index.md
     - Workflow Phases: how-it-works/phases.md
-    - Performance: how-it-works/performance.md
   
   - Architecture: architecture/overview.md
   

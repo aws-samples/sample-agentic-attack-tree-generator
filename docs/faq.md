@@ -23,7 +23,6 @@
 === "Privacy"
     - [Is code sent to LLMs?](#is-my-code-sent-to-the-llm-provider)
     - [Protect sensitive info?](#how-do-i-protect-sensitive-information)
-    - [Air-gapped use?](#can-i-use-threatforest-in-an-air-gapped-environment)
 
 === "Troubleshooting"
     - [Why slow?](#why-is-threatforest-slow)
@@ -56,7 +55,6 @@ An attack tree visualizes attack scenarios:
 - **MITRE**: Technique IDs (e.g., T1190)
 - **Mitigations**: Defensive controls
 
-[→ See Examples](examples/index.md)
 
 ### Who should use ThreatForest?
 
@@ -223,38 +221,9 @@ This helps you understand attacks in standardized terminology and plan defenses 
 ### How do I protect sensitive information?
 
 !!! tip "Protection Strategies"
-    1. Use Ollama for sensitive projects
-    2. Sanitize input (remove secrets/PII)
-    3. Review outputs for leaks
-    4. Use access controls
+    1. Review the [AWS Bedrock security documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/security.html) for best practices on how to secure your data when interacting with Bedrock models 
+    2. Use Ollama if you want to avoid sending data to LLM providers
 
-**Best practices:**
-
-- Remove credentials before analysis
-- Use generic descriptions for demos
-- Check provider data retention policies
-- Store outputs securely
-
-### Can I use ThreatForest in an air-gapped environment?
-
-Yes, with Ollama:
-
-```yaml
-# config.yaml
-ollama:
-  enabled: true
-  base_url: "http://localhost:11434"
-  model_id: "qwen2.5:14b"
-```
-
-1. Install Ollama on air-gapped machine
-2. Download models offline
-3. Configure ThreatForest
-4. Run completely offline
-
-[→ Ollama Setup Guide](advanced/multi-provider.md)
-
----
 
 ## Troubleshooting
 
@@ -315,8 +284,6 @@ aws bedrock list-foundation-models --region us-east-1
 - Use AWS Bedrock or Anthropic
 - Select Claude 3 Haiku for faster results
 - Process threats incrementally
-
-[→ Performance Guide](how-it-works/performance.md)
 
 ### ThreatForest fails with "API rate limit exceeded"
 
@@ -380,6 +347,34 @@ aws bedrock list-foundation-models --region us-east-1
 3. Verify analysis completed successfully
 4. Review state file for errors
 
+### Manual Recovery: State Corruption
+
+!!! question "Problem"
+    Analysis state file is corrupted or you need to restart analysis
+
+**Solution:**
+
+```bash
+# Delete state file and restart
+rm project/threatforest/attack_trees/.threatforest_state.json
+threatforest
+```
+
+### Manual Recovery: Partial Results
+
+!!! question "Problem"
+    Analysis stopped mid-way and you want to check progress or resume
+
+**Solution:**
+
+```bash
+# Review state file to identify completed threats
+cat project/threatforest/attack_trees/.threatforest_state.json
+
+# Resume or restart as needed
+threatforest  # Will detect existing state and offer to resume
+```
+
 ### Can I customize the output format?
 
 Yes! ThreatForest generates:
@@ -395,16 +390,6 @@ You can modify templates and parse JSON for custom reporting.
 ---
 
 ## Integration & Advanced
-
-### Can I integrate into CI/CD?
-
-ThreatForest is designed for interactive use. For CI/CD:
-
-- Run wizard in containerized environment
-- Use JSON output for automation
-- Review attack trees as security gates
-
-[→ CI/CD Patterns](advanced/customization.md)
 
 ### Does ThreatForest support multiple languages?
 

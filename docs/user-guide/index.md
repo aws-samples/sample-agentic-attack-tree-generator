@@ -38,19 +38,6 @@ This user guide covers everything you need to know to effectively use ThreatFore
 
 ---
 
-## 🎯 Quick Navigation
-
-### For First-Time Users
-Start with [Preparing Your Project](preparing-your-project.md) to understand what information ThreatForest needs and how to organize it.
-
-### For Experienced Users
-Jump straight to [Running ThreatForest](running-threatforest.md) for command reference and advanced options.
-
-### For Analysis & Reporting
-Check out [Understanding Results](understanding-results.md) to learn how to interpret and share your threat analysis.
-
----
-
 ## 💡 Getting Help
 
 Need assistance? Here are your options:
@@ -58,13 +45,3 @@ Need assistance? Here are your options:
 - **Documentation Issues**: Check the [FAQ](../faq.md) for common questions
 - **Technical Problems**: Report bugs on [GitHub Issues](https://github.com/aws-samples/sample-agentic-attack-tree-generator/issues)
 - **Getting Started**: Review the [Getting Started Guide](../getting-started/index.md)
-
----
-
-## 🚀 What's Next?
-
-After completing this user guide, you may want to explore:
-
-- [Architecture Overview](../architecture/overview.md) - Understand how ThreatForest works internally
-- [Examples](../examples/index.md) - See real-world use cases and sample outputs
-- [Advanced Topics](../advanced/customization.md) - Customize ThreatForest for your needs

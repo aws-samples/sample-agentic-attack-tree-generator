@@ -114,7 +114,7 @@ graph TD
 
 ---
 
-## Phase 1: Attack Tree Generation (30-70%)
+## Phase 1: Attack Tree Generation 
 
 This is the core phase where ThreatForest creates detailed attack trees for each identified threat.
 
@@ -159,7 +159,7 @@ Diagrams: *.png, *.mmd, *.drawio, *.puml
 === "If No Threat Model Exists"
     - AI analyzes architecture documentation
     - Identifies potential security concerns
-    - Generates STRIDE-categorized threats
+    - Generates relevant threat statements
     - Assigns priority levels
 
 #### 4. Creates Attack Trees
@@ -169,38 +169,11 @@ Diagrams: *.png, *.mmd, *.drawio, *.puml
 - Assesses prerequisites for each step
 - Evaluates impact and likelihood
 
-**Attack Tree Structure:**
-```
-Attack Tree
-├── Threat Statement
-├── Attack Path 1
-│   ├── Step 1 (with prerequisites)
-│   ├── Step 2 (with prerequisites)
-│   └── Step 3 (with prerequisites)
-├── Attack Path 2
-│   ├── Step 1
-│   └── Step 2
-└── Impact Assessment
-```
 
 #### 5. Produces Base Visualizations
 - Creates markdown files for each attack tree
 - Generates Mermaid diagrams
 - Structures data for subsequent phases
-
-### Technologies Used
-
-**Strands Framework:**
-
-- Multi-agent orchestration
-- Error recovery
-
-**AI Models:**
-
-- Claude 3.5 Sonnet (default)
-- Claude 3 Haiku (faster)
-- Claude 3 Opus (highest quality)
-- Other models via configuration
 
 **File Analysis:**
 
@@ -209,19 +182,10 @@ Attack Tree
 - Image analysis for diagrams
 - Mermaid diagram interpretation
 
-### Output from Phase 1
-
-```
-project/threatforest/attack_trees/
-├── attack_tree_T001_sql_injection.md
-├── attack_tree_T002_xss_attack.md
-├── attack_tree_T003_auth_bypass.md
-└── .threatforest_state.json
-```
 
 ---
 
-## Phase 2: TTP Enrichment (70-85%)
+## Phase 2: TTP Enrichment 
 
 This phase maps attack steps to MITRE ATT&CK techniques using semantic similarity.
 
@@ -253,12 +217,26 @@ This phase maps attack steps to MITRE ATT&CK techniques using semantic similarit
 - Pre-computed embeddings for fast matching
 
 **Matching Process:**
-```
-Attack Step → Embedding → Compare → Find Best Match
-                              ↓
-                    MITRE Technique ID
-                    Tactic Category
-                    Confidence Score
+
+```mermaid
+graph LR
+    A[Attack Step] --> B[Generate<br/>Embedding]
+    B --> C[Compare Against<br/>MITRE Database]
+    C --> D[Find Best<br/>Match]
+    D --> E[Output Results]
+    
+    E --> F[MITRE Technique ID]
+    E --> G[Tactic Category]
+    E --> H[Confidence Score]
+    
+    style A fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#000
+    style B fill:#3b82f6,stroke:#2563eb,stroke-width:2px,color:#fff
+    style C fill:#3b82f6,stroke:#2563eb,stroke-width:2px,color:#fff
+    style D fill:#3b82f6,stroke:#2563eb,stroke-width:2px,color:#fff
+    style E fill:#10b981,stroke:#059669,stroke-width:2px,color:#fff
+    style F fill:#8b5cf6,stroke:#7c3aed,stroke-width:2px,color:#fff
+    style G fill:#8b5cf6,stroke:#7c3aed,stroke-width:2px,color:#fff
+    style H fill:#8b5cf6,stroke:#7c3aed,stroke-width:2px,color:#fff
 ```
 
 #### 4. Enriches Trees
@@ -285,20 +263,10 @@ Attack Step → Embedding → Compare → Find Best Match
 | 0.3-0.5 | Low | Weak but relevant match |
 | <0.3 | None | No match (step not mapped) |
 
-### Enhanced Output
-
-```markdown
-**Step 3:** Craft payload to bypass authentication
-
-- **MITRE ATT&CK:** T1078 - Valid Accounts
-- **Tactic:** Defense Evasion, Persistence, Privilege Escalation
-- **Description:** Adversaries may obtain and abuse credentials
-- **Confidence:** 0.87
-```
 
 ---
 
-## Phase 3: Mitigation Mapping (85-95%)
+## Phase 3: Mitigation Mapping 
 
 This phase adds security controls and implementation guidance.
 
@@ -323,16 +291,6 @@ This phase adds security controls and implementation guidance.
 - Implementation guidance
 - Best practices
 
-**Common Mitigations:**
-
-| ID | Name | Purpose |
-|----|------|---------|
-| M1027 | Password Policies | Enforce strong passwords |
-| M1032 | Multi-factor Authentication | Require MFA |
-| M1050 | Exploit Protection | Prevent exploitation |
-| M1026 | Privileged Account Management | Manage admin accounts |
-| M1018 | User Account Management | Control user access |
-
 #### 4. Adds Recommendations
 - Includes mitigation IDs and descriptions
 - Provides implementation guidance
@@ -344,37 +302,11 @@ This phase adds security controls and implementation guidance.
 - Includes all previous information
 - Adds actionable mitigations
 - Provides implementation priorities
-
-#### 6. Produces Final Dashboard
-- Creates interactive HTML dashboard
-- Includes complete analysis data
-- Enables filtering by mitigations
-- Supports export options
-
-### Mitigation Output
-
-```markdown
-**Step 3:** Craft payload to bypass authentication
-
-- **MITRE ATT&CK:** T1078 - Valid Accounts
-- **Mitigations:**
-  - **M1027 - Password Policies**
-    - Enforce strong password requirements
-    - Implement password expiration
-    - Prevent password reuse
-  
-  - **M1032 - Multi-factor Authentication**
-    - Require MFA for all accounts
-    - Use hardware tokens or authenticator apps
-    - Implement adaptive authentication
-
-**Implementation Priority:** High
-**Estimated Effort:** Medium (2-4 weeks)
-```
+o
 
 ---
 
-## Phase 4: Report Generation (95-100%)
+## Phase 4: Report Generation 
 
 Final phase creates comprehensive outputs for different audiences.
 
@@ -397,7 +329,6 @@ Final phase creates comprehensive outputs for different audiences.
 - Structures data in JSON format
 - Includes metadata
 - Enables programmatic access
-
 **JSON Structure:**
 ```json
 {
@@ -491,37 +422,11 @@ project/threatforest/attack_trees/
 - Suggests corrections
 - Prevents invalid state
 
-### Manual Recovery
-
-**State Corruption:**
-```bash
-# Delete state file and restart
-rm project/threatforest/attack_trees/.threatforest_state.json
-threatforest
-```
-
-**Partial Results:**
-```bash
-# Review state file to identify completed threats
-cat project/threatforest/attack_trees/.threatforest_state.json
-
-# Resume or restart as needed
-threatforest  # Will detect existing state and offer to resume
-```
-
 ---
 
 ## Next Steps
 
 <div class="grid cards" markdown>
-
--   ⚡ __Performance Guide__
-
-    ---
-
-    Optimize analysis speed and quality
-
-    [→ Performance](performance.md)
 
 -   🏗️ __Architecture Details__
 
