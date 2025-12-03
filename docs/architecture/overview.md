@@ -6,7 +6,7 @@ ThreatForest is built on a modular architecture that combines autonomous AI agen
 
 ```mermaid
 graph LR
-    A[User/IDE] --> B[ThreatForest CLI]
+    A[User] --> B[ThreatForest CLI]
     B --> C[Orchestrator]
     C <--> D[RepositoryAnalysisAgent]
     C <--> E[ParserAgent]
@@ -151,10 +151,3 @@ Data handling prioritizes user privacy:
 - No data storage beyond local outputs
 - LLM provider choice for data governance
 - Support for fully local models (Ollama)
-
-## Integration Points
-
-### IDE Integration
-- Kiro hook for automatic analysis on file save
-- Real-time threat model updates
-- Inline security recommendations
