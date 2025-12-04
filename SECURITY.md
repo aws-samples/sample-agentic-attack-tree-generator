@@ -10,7 +10,7 @@ Please do not create public GitHub issues for security vulnerabilities, as this 
 
 ### 2. Report Privately
 
-Send a detailed report to: **crisleoo@amazon.com**
+Send a detailed report to: **crisleoo@amazon.com**, **dicorteg@amazon.com**, **antondk@amazon.com**
 
 Include:
 - Description of the vulnerability
