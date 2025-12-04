@@ -191,3 +191,4 @@ scripts/
 **/.mkdocs_cache/
 .threat-composer/
 .ash/
+uv.lock
