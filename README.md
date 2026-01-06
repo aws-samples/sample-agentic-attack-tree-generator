@@ -10,7 +10,7 @@
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-[Documentation](https://aws-samples.github.io/sample-agentic-attack-tree-generator) • [Contributing](CONTRIBUTING.md)
+[Documentation](http://aws-samples.github.io/sample-agentic-attack-tree-generator/) • [Contributing](CONTRIBUTING.md)
 
 </div>
 
@@ -28,7 +28,7 @@ ThreatForest is an AI-powered threat modeling platform built on [Strands Framewo
 - 📊 Interactive HTML dashboards for visualization
 - 🔄 Seamless IDE integration with Kiro
 
-📖 **[Read Full Documentation](https://aws-samples.github.io/sample-agentic-attack-tree-generator)**
+📖 **[Read Full Documentation](http://aws-samples.github.io/sample-agentic-attack-tree-generator/)**
 
 ## 🚀 Quick Start
 
