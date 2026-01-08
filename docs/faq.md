@@ -94,24 +94,6 @@ Yes, open-source under MIT License. You need LLM provider access:
 
 [→ Installation Guide](getting-started/index.md)
 
-### How do I install ThreatForest?
-
-!!! info "TL;DR"
-    `pipx install threatforest` then run `threatforest`
-
-```bash
-# Recommended: pipx
-pipx install threatforest
-threatforest
-
-# Alternative: pip with venv
-python3 -m venv venv
-source venv/bin/activate
-pip install threatforest
-```
-
-[→ Complete Installation](getting-started/index.md)
-
 ### Can I try ThreatForest without AWS?
 
 Yes! ThreatForest supports multiple providers:
@@ -235,7 +217,7 @@ This helps you understand attacks in standardized terminology and plan defenses 
 **Solution:** Use pipx instead:
 
 ```bash
-pipx install threatforest
+pipx install -e .
 ```
 
 ### Error: 'Bedrock access failed'
