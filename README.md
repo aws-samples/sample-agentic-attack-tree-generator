@@ -32,12 +32,20 @@ ThreatForest is an AI-powered threat modeling platform built on [Strands Framewo
 
 ## 🚀 Quick Start
 
+### Option 1: Install with pipx (recommended for regular use)
+
 ```bash
-# Install with pipx (recommended)
 pipx install git+https://github.com/aws-samples/sample-agentic-attack-tree-generator.git
 
 # Run the interactive wizard
 threatforest
+```
+
+### Option 2: Run directly with uvx (no installation required)
+
+```bash
+# Run without installing - uv handles dependencies automatically
+uvx --from git+https://github.com/aws-samples/sample-agentic-attack-tree-generator.git threatforest
 ```
 
 **Prerequisites:** Python 3.11+, AWS Bedrock access (or other LLM provider)
