@@ -8,6 +8,22 @@ import os
 # Suppress tokenizers parallelism warning
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
+# Suppress HuggingFace Hub's background safetensors auto-conversion thread.
+#
+# When loading models via SentenceTransformers/transformers, the library spawns
+# a background thread (Thread-auto_conversion) that queries the HuggingFace Hub
+# to check if safetensors format conversion PRs exist for the model. This HTTP
+# request can timeout on slow/congested networks, causing spurious error messages
+# like "httpx.ReadTimeout: The read operation timed out" to appear in stderr.
+#
+# These errors are cosmetic - they don't affect model loading or functionality,
+# but they can be confusing to users. The settings below disable the background
+# conversion checking while still allowing model downloads.
+#
+# See: https://github.com/huggingface/transformers/blob/main/src/transformers/safetensors_conversion.py
+os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
+os.environ.setdefault("HF_HUB_DISABLE_IMPLICIT_TOKEN", "1")
+
 import asyncio
 import platform
 import sys

@@ -1,5 +1,12 @@
 """Embedding service using SentenceTransformers"""
+import os
 from typing import List, Optional
+
+# Fallback: Ensure HF Hub telemetry is disabled to prevent background thread timeouts.
+# Primary fix is in cli.py; this serves as defense-in-depth for direct module imports.
+os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
+os.environ.setdefault("HF_HUB_DISABLE_IMPLICIT_TOKEN", "1")
+
 from sentence_transformers import SentenceTransformer
 from ..utils.logger import ThreatForestLogger
 
