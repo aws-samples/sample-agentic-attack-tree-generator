@@ -8,6 +8,25 @@ import os
 # Suppress tokenizers parallelism warning
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
+# Suppress noisy output from HuggingFace/ML libraries during model loading.
+#
+# Issues suppressed:
+# 1. httpx.ReadTimeout from Thread-auto_conversion: The transformers library spawns
+#    a background thread that queries HuggingFace Hub for safetensors conversion PRs.
+#    This times out on slow networks, causing spurious error messages.
+#
+# 2. "Loading weights" progress bars: tqdm progress bars from mlx/safetensors during
+#    model weight loading create visual noise in the CLI.
+#
+# 3. "UNEXPECTED" key warnings: Model architecture differences between training and
+#    inference cause harmless warnings that confuse users.
+#
+# These are all cosmetic - they don't affect functionality. The settings below
+# disable background checks and progress output while allowing model downloads.
+os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
+os.environ.setdefault("HF_HUB_DISABLE_IMPLICIT_TOKEN", "1")
+os.environ.setdefault("TQDM_DISABLE", "1")  # Suppress progress bars during model loading
+
 import asyncio
 import platform
 import sys
