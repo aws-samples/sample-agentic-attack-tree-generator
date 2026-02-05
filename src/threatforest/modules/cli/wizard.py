@@ -608,6 +608,15 @@ This will execute a complete security analysis:
         # Ollama (Experimental, no credentials)
         choices.append(questionary.Choice(f"✓ Ollama (Experimental) [No credentials needed]", value="Ollama"))
         
+        # Separator
+        choices.append(questionary.Choice("─────────────", value="separator", disabled=True))
+        
+        # Langfuse (Tracing)
+        if env_manager.get_value('LANGFUSE_ENABLED') == 'true' and env_manager.get_value('LANGFUSE_PUBLIC_KEY'):
+            choices.append(questionary.Choice(f"✓ Langfuse Tracing [Enabled]", value="Langfuse"))
+        else:
+            choices.append(questionary.Choice(f"○ Langfuse Tracing [Not configured]", value="Langfuse"))
+        
         # Add cancel option
         choices.append(questionary.Choice(f"← Cancel", value="cancel"))
         
@@ -740,6 +749,74 @@ This will execute a complete security analysis:
         elif provider == "Ollama":
             self.console.print("\n[dim]Ollama runs locally and doesn't require credentials[/dim]")
             self.console.print("[dim]If you need to change the host, use 'Configure Model Settings'[/dim]")
+        
+        # Langfuse - tracing configuration
+        elif provider == "Langfuse":
+            self.console.print("\n[bold cyan]Langfuse Tracing Configuration[/bold cyan]")
+            self.console.print("[dim]Langfuse provides observability for your threat modeling workflows.[/dim]")
+            self.console.print("[dim]Get your API keys from: https://cloud.langfuse.com[/dim]\n")
+            
+            # Ask if user wants to enable Langfuse
+            enable_langfuse = questionary.confirm(
+                "Enable Langfuse tracing?",
+                default=True
+            ).ask()
+            
+            if enable_langfuse:
+                # Get public key
+                current_public_key = env_manager.get_value('LANGFUSE_PUBLIC_KEY') or ''
+                public_key = questionary.text(
+                    "Langfuse Public Key (pk-lf-...):",
+                    default=current_public_key if current_public_key and current_public_key != 'pk-lf-your-public-key' else ''
+                ).ask()
+                
+                # Get secret key
+                secret_key = questionary.password(
+                    "Langfuse Secret Key (sk-lf-...):"
+                ).ask()
+                
+                # Get host (optional)
+                current_host = env_manager.get_value('LANGFUSE_HOST') or 'https://cloud.langfuse.com'
+                host = questionary.text(
+                    "Langfuse Host (optional, for self-hosted):",
+                    default=current_host
+                ).ask()
+                
+                # Save configuration
+                env_manager.set_value('LANGFUSE_ENABLED', 'true')
+                env_manager.set_value('LANGFUSE_PUBLIC_KEY', public_key)
+                env_manager.set_value('LANGFUSE_SECRET_KEY', secret_key)
+                if host:
+                    env_manager.set_value('LANGFUSE_HOST', host)
+                
+                self.console.print(f"\n[green]✓[/green] Langfuse enabled")
+                self.console.print(f"[green]✓[/green] Public key configured")
+                self.console.print(f"[green]✓[/green] Secret key configured")
+                if host:
+                    self.console.print(f"[green]✓[/green] Host: {host}")
+                
+                # Test connection
+                self.console.print("\n[cyan]Testing Langfuse connection...[/cyan]")
+                try:
+                    from langfuse import Langfuse
+                    client = Langfuse(
+                        public_key=public_key,
+                        secret_key=secret_key,
+                        host=host or 'https://cloud.langfuse.com'
+                    )
+                    # Try to authenticate
+                    client.auth_check()
+                    self.console.print("[green]✓[/green] Connection successful!")
+                except ImportError:
+                    self.console.print("[yellow]⚠️  Langfuse package not installed[/yellow]")
+                    self.console.print("[dim]Install with: pip install langfuse[/dim]")
+                except Exception as e:
+                    self.console.print(f"[yellow]⚠️  Connection test failed: {e}[/yellow]")
+                    self.console.print("[dim]Credentials saved but please verify they are correct[/dim]")
+            else:
+                # Disable Langfuse
+                env_manager.set_value('LANGFUSE_ENABLED', 'false')
+                self.console.print("\n[dim]Langfuse tracing disabled[/dim]")
         
         self.console.print("\n[green]✓[/green] Credentials updated successfully!")
         self.console.print("[dim]Changes will take effect immediately[/dim]\n")

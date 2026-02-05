@@ -52,3 +52,17 @@ kiro_integration:
   auto_run_on_save: true  # Automatically run when ThreatComposer files are saved
   notification_level: "summary"  # Output verbosity: 'full', 'summary', or 'silent'
   timeout_seconds: 300  # Maximum execution time (5 minutes)
+
+# Langfuse Tracing Configuration
+# Langfuse provides OpenTelemetry-based tracing for ThreatForest workflows,
+# enabling SME review workflows and evaluation pipeline integration.
+# For credentials, use environment variables (recommended) or set them here.
+langfuse:
+  enabled: false  # Set to true to enable Langfuse tracing
+  host: "https://cloud.langfuse.com"  # Langfuse server URL
+  # Credentials should be set via environment variables:
+  #   LANGFUSE_PUBLIC_KEY=pk-lf-...
+  #   LANGFUSE_SECRET_KEY=sk-lf-...
+  # Or uncomment below (not recommended for production):
+  # public_key: "pk-lf-your-public-key"
+  # secret_key: "sk-lf-your-secret-key"

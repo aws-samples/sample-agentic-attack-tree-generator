@@ -192,3 +192,4 @@ scripts/
 .threat-composer/
 .ash/
 uv.lock
+sample-applications/
