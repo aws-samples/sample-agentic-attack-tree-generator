@@ -440,6 +440,386 @@ def config_path():
     console.print(f"\n[cyan]Config file:[/cyan] {manager.get_config_path()}\n")
 
 
+@config_cmd.command(name="langfuse")
+@click.option("--enable/--disable", default=None, help="Enable or disable Langfuse tracing")
+@click.option("--public-key", "-p", default=None, help="Langfuse public key (pk-lf-...)")
+@click.option("--secret-key", "-s", default=None, help="Langfuse secret key (sk-lf-...)")
+@click.option("--host", "-h", default=None, help="Langfuse host (default: https://cloud.langfuse.com)")
+@click.option("--test", is_flag=True, help="Test the connection after configuring")
+def config_langfuse(enable, public_key, secret_key, host, test):
+    """Configure Langfuse tracing credentials.
+    
+    Langfuse provides observability for your threat modeling workflows,
+    enabling you to track traces, review outputs, and export data.
+    
+    Examples:
+    
+        # Interactive setup
+        threatforest config langfuse
+        
+        # Set credentials directly
+        threatforest config langfuse --public-key pk-lf-xxx --secret-key sk-lf-xxx
+        
+        # Enable with all options
+        threatforest config langfuse --enable --public-key pk-lf-xxx --secret-key sk-lf-xxx --host https://cloud.langfuse.com
+        
+        # Disable Langfuse
+        threatforest config langfuse --disable
+        
+        # Test existing configuration
+        threatforest config langfuse --test
+    """
+    from threatforest.modules.utils.env_manager import EnvManager
+    from rich.panel import Panel
+    
+    env_manager = EnvManager()
+    env_manager.ensure_exists()
+    
+    # If no options provided, run interactive setup
+    if enable is None and public_key is None and secret_key is None and host is None and not test:
+        console.print("\n[bold cyan]Langfuse Tracing Configuration[/bold cyan]")
+        console.print("[dim]Langfuse provides observability for your threat modeling workflows.[/dim]")
+        console.print("[dim]Get your API keys from: https://cloud.langfuse.com[/dim]\n")
+        
+        import questionary
+        
+        # Show current status
+        current_enabled = env_manager.get_value('LANGFUSE_ENABLED') == 'true'
+        current_public = env_manager.get_value('LANGFUSE_PUBLIC_KEY') or ''
+        current_host = env_manager.get_value('LANGFUSE_HOST') or 'https://cloud.langfuse.com'
+        
+        if current_enabled and current_public:
+            console.print(f"[green]✓[/green] Currently enabled with key: {current_public[:20]}...")
+        else:
+            console.print("[dim]○ Currently not configured[/dim]")
+        console.print()
+        
+        # Ask if user wants to enable
+        enable_choice = questionary.confirm(
+            "Enable Langfuse tracing?",
+            default=True
+        ).ask()
+        
+        if not enable_choice:
+            env_manager.set_value('LANGFUSE_ENABLED', 'false')
+            console.print("\n[dim]Langfuse tracing disabled[/dim]\n")
+            return
+        
+        # Get credentials
+        public_key = questionary.text(
+            "Langfuse Public Key (pk-lf-...):",
+            default=current_public if current_public and 'your-public-key' not in current_public else ''
+        ).ask()
+        
+        secret_key = questionary.password(
+            "Langfuse Secret Key (sk-lf-...):"
+        ).ask()
+        
+        host = questionary.text(
+            "Langfuse Host (optional):",
+            default=current_host
+        ).ask()
+        
+        # Save
+        env_manager.set_value('LANGFUSE_ENABLED', 'true')
+        env_manager.set_value('LANGFUSE_PUBLIC_KEY', public_key)
+        env_manager.set_value('LANGFUSE_SECRET_KEY', secret_key)
+        if host:
+            env_manager.set_value('LANGFUSE_HOST', host)
+        
+        console.print(f"\n[green]✓[/green] Langfuse configured successfully!")
+        test = True  # Auto-test after interactive setup
+    
+    # Handle --disable flag
+    elif enable is False:
+        env_manager.set_value('LANGFUSE_ENABLED', 'false')
+        console.print("\n[green]✓[/green] Langfuse tracing disabled\n")
+        return
+    
+    # Handle direct credential setting
+    else:
+        if enable is True:
+            env_manager.set_value('LANGFUSE_ENABLED', 'true')
+        
+        if public_key:
+            env_manager.set_value('LANGFUSE_PUBLIC_KEY', public_key)
+            console.print(f"[green]✓[/green] Public key configured")
+        
+        if secret_key:
+            env_manager.set_value('LANGFUSE_SECRET_KEY', secret_key)
+            console.print(f"[green]✓[/green] Secret key configured")
+        
+        if host:
+            env_manager.set_value('LANGFUSE_HOST', host)
+            console.print(f"[green]✓[/green] Host configured: {host}")
+        
+        if enable is True:
+            console.print(f"[green]✓[/green] Langfuse tracing enabled")
+    
+    # Test connection if requested
+    if test:
+        console.print("\n[cyan]Testing Langfuse connection...[/cyan]")
+        
+        # Get current values
+        test_public = public_key or env_manager.get_value('LANGFUSE_PUBLIC_KEY')
+        test_secret = secret_key or env_manager.get_value('LANGFUSE_SECRET_KEY')
+        test_host = host or env_manager.get_value('LANGFUSE_HOST') or 'https://cloud.langfuse.com'
+        
+        if not test_public or not test_secret:
+            console.print("[red]Error:[/red] Missing public key or secret key")
+            console.print("[dim]Configure credentials first: threatforest config langfuse[/dim]\n")
+            return
+        
+        try:
+            from langfuse import Langfuse
+            client = Langfuse(
+                public_key=test_public,
+                secret_key=test_secret,
+                host=test_host
+            )
+            client.auth_check()
+            console.print(Panel(
+                f"[green]✓ Connection successful![/green]\n\n"
+                f"Host: {test_host}\n"
+                f"Public Key: {test_public[:20]}...",
+                title="Langfuse Connected",
+                border_style="green"
+            ))
+        except ImportError:
+            console.print("[red]Error:[/red] Langfuse package not installed")
+            console.print("[dim]Install with: pip install langfuse[/dim]\n")
+        except Exception as e:
+            console.print(f"[red]Connection failed:[/red] {e}")
+            console.print("[dim]Please verify your credentials are correct[/dim]\n")
+    
+    console.print()
+
+
+@cli.group()
+def export():
+    """Export traces from Langfuse to DynamoDB"""
+    pass
+
+
+@export.command(name="traces")
+@click.option(
+    "--trace-type",
+    "-t",
+    type=click.Choice(["threat_statement", "attack_tree", "ttp_matching"]),
+    default=None,
+    help="Filter by trace type",
+)
+@click.option(
+    "--status",
+    "-s",
+    type=click.Choice(["pending_review", "reviewed"]),
+    default=None,
+    help="Filter by review status",
+)
+@click.option(
+    "--start-date",
+    type=str,
+    default=None,
+    help="Filter by start date (ISO format, e.g., 2024-01-01)",
+)
+@click.option(
+    "--end-date",
+    type=str,
+    default=None,
+    help="Filter by end date (ISO format, e.g., 2024-01-07)",
+)
+@click.option(
+    "--ground-truth-only",
+    is_flag=True,
+    default=False,
+    help="Only export ground truth candidates",
+)
+@click.option(
+    "--traces-table",
+    default="threatforest-traces",
+    help="DynamoDB table name for traces (default: threatforest-traces)",
+)
+@click.option(
+    "--gt-table",
+    default="threatforest-ground-truth",
+    help="DynamoDB table name for ground truth (default: threatforest-ground-truth)",
+)
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    default=False,
+    help="Show what would be exported without actually exporting",
+)
+def export_traces(trace_type, status, start_date, end_date, ground_truth_only, traces_table, gt_table, dry_run):
+    """Export traces from Langfuse to DynamoDB.
+    
+    This command queries Langfuse for traces matching the specified filters
+    and exports them to DynamoDB tables. Ground truth candidates are exported
+    to a separate table without TTL, while regular traces have a 90-day TTL.
+    
+    Examples:
+    
+        # Export all reviewed attack tree traces
+        threatforest export traces --trace-type attack_tree --status reviewed
+        
+        # Export traces from a specific date range
+        threatforest export traces --start-date 2024-01-01 --end-date 2024-01-07
+        
+        # Export only ground truth candidates
+        threatforest export traces --ground-truth-only
+        
+        # Dry run to see what would be exported
+        threatforest export traces --trace-type attack_tree --dry-run
+    """
+    from datetime import datetime as dt
+    from rich.table import Table
+    from rich.panel import Panel
+    
+    try:
+        # Import tracing modules
+        from threatforest.tracing.config import LangfuseConfig
+        from threatforest.tracing.export import LangfuseExporter, ExportFilter
+        
+        # Parse dates if provided
+        parsed_start_date = None
+        parsed_end_date = None
+        
+        if start_date:
+            try:
+                parsed_start_date = dt.fromisoformat(start_date)
+            except ValueError:
+                console.print(f"[red]Error:[/red] Invalid start date format: {start_date}")
+                console.print("[dim]Use ISO format, e.g., 2024-01-01 or 2024-01-01T00:00:00[/dim]")
+                sys.exit(1)
+        
+        if end_date:
+            try:
+                parsed_end_date = dt.fromisoformat(end_date)
+            except ValueError:
+                console.print(f"[red]Error:[/red] Invalid end date format: {end_date}")
+                console.print("[dim]Use ISO format, e.g., 2024-01-07 or 2024-01-07T23:59:59[/dim]")
+                sys.exit(1)
+        
+        # Create export filter
+        export_filter = ExportFilter(
+            trace_type=trace_type,
+            review_status=status,
+            start_date=parsed_start_date,
+            end_date=parsed_end_date,
+            ground_truth_only=ground_truth_only,
+        )
+        
+        # Validate filter
+        try:
+            export_filter.validate()
+        except ValueError as e:
+            console.print(f"[red]Error:[/red] {e}")
+            sys.exit(1)
+        
+        # Display filter configuration
+        console.print()
+        filter_table = Table(title="Export Filter Configuration", show_header=True, header_style="bold cyan")
+        filter_table.add_column("Filter", style="cyan")
+        filter_table.add_column("Value", style="white")
+        
+        filter_table.add_row("Trace Type", trace_type or "All")
+        filter_table.add_row("Review Status", status or "All")
+        filter_table.add_row("Start Date", start_date or "Not set")
+        filter_table.add_row("End Date", end_date or "Not set")
+        filter_table.add_row("Ground Truth Only", "Yes" if ground_truth_only else "No")
+        filter_table.add_row("Traces Table", traces_table)
+        filter_table.add_row("Ground Truth Table", gt_table)
+        
+        console.print(filter_table)
+        console.print()
+        
+        if dry_run:
+            console.print(Panel(
+                "[yellow]DRY RUN MODE[/yellow]\n\n"
+                "This is a dry run. No traces will be exported.\n"
+                "Remove --dry-run flag to perform actual export.",
+                title="Dry Run",
+                border_style="yellow"
+            ))
+            console.print()
+            return
+        
+        # Load Langfuse configuration
+        langfuse_config = LangfuseConfig.from_env()
+        
+        if not langfuse_config.enabled:
+            console.print(Panel(
+                "[yellow]Langfuse is not enabled.[/yellow]\n\n"
+                "To enable Langfuse, set the following environment variables:\n"
+                "  • LANGFUSE_ENABLED=true\n"
+                "  • LANGFUSE_PUBLIC_KEY=<your-public-key>\n"
+                "  • LANGFUSE_SECRET_KEY=<your-secret-key>\n"
+                "  • LANGFUSE_HOST=<your-host> (optional)",
+                title="Configuration Required",
+                border_style="yellow"
+            ))
+            sys.exit(1)
+        
+        # Create exporter and run export
+        console.print("[cyan]Connecting to Langfuse...[/cyan]")
+        
+        try:
+            exporter = LangfuseExporter(
+                langfuse_config=langfuse_config,
+                dynamodb_table=traces_table,
+                ground_truth_table=gt_table,
+            )
+        except ValueError as e:
+            console.print(f"[red]Configuration Error:[/red] {e}")
+            sys.exit(1)
+        except ImportError as e:
+            console.print(f"[red]Missing Dependency:[/red] {e}")
+            console.print("[dim]Install required packages with: pip install langfuse boto3[/dim]")
+            sys.exit(1)
+        
+        console.print("[cyan]Querying traces from Langfuse...[/cyan]")
+        
+        with console.status("[bold cyan]Exporting traces...", spinner="dots"):
+            result = exporter.export_traces(export_filter)
+        
+        # Display results
+        console.print()
+        result_table = Table(title="Export Results", show_header=True, header_style="bold green")
+        result_table.add_column("Category", style="cyan")
+        result_table.add_column("Count", style="white", justify="right")
+        
+        result_table.add_row("Regular Traces", str(result.get("traces", 0)))
+        result_table.add_row("Ground Truth Records", str(result.get("ground_truth", 0)))
+        result_table.add_row("Total Exported", str(result.get("traces", 0) + result.get("ground_truth", 0)))
+        
+        console.print(result_table)
+        console.print()
+        
+        total = result.get("traces", 0) + result.get("ground_truth", 0)
+        if total > 0:
+            console.print(Panel(
+                f"[green]✓ Successfully exported {total} trace(s) to DynamoDB[/green]",
+                border_style="green"
+            ))
+        else:
+            console.print(Panel(
+                "[yellow]No traces found matching the specified filters.[/yellow]\n\n"
+                "Try adjusting your filter criteria or check that traces exist in Langfuse.",
+                title="No Results",
+                border_style="yellow"
+            ))
+        
+    except RuntimeError as e:
+        console.print(f"[red]Export Error:[/red] {e}")
+        console.print("[dim]Check your Langfuse connection and credentials.[/dim]")
+        sys.exit(1)
+    except Exception as e:
+        console.print(f"[red]Unexpected Error:[/red] {e}")
+        import traceback
+        console.print("[dim]" + traceback.format_exc() + "[/dim]")
+        sys.exit(1)
+
+
 @cli.command()
 def help_cmd():
     """Show help information"""
@@ -453,6 +833,8 @@ def help_cmd():
   [cyan]config edit[/cyan]      Edit configuration interactively
   [cyan]config set[/cyan]       Set a specific config value
   [cyan]config path[/cyan]      Show path to active config file
+  [cyan]config langfuse[/cyan]  Configure Langfuse tracing credentials
+  [cyan]export traces[/cyan]    Export traces from Langfuse to DynamoDB
   [cyan]status[/cyan]           Show current workflow status
 
 [bold]Examples:[/bold]
@@ -469,11 +851,32 @@ def help_cmd():
   # Set specific value
   threatforest config set bedrock.model_id claude-sonnet-4
 
+  # Configure Langfuse (interactive)
+  threatforest config langfuse
+
+  # Configure Langfuse (direct)
+  threatforest config langfuse --public-key pk-lf-xxx --secret-key sk-lf-xxx --enable
+
+  # Disable Langfuse
+  threatforest config langfuse --disable
+
+  # Test Langfuse connection
+  threatforest config langfuse --test
+
   # Full workflow with project path
   threatforest run --project-path /path/to/project
 
   # TTP enrichment only
   threatforest run --mode enrich --input-dir ./threatforest/attack_trees --output-dir ./threatforest/enriched
+
+  # Export reviewed attack tree traces
+  threatforest export traces --trace-type attack_tree --status reviewed
+
+  # Export traces from a date range
+  threatforest export traces --start-date 2024-01-01 --end-date 2024-01-07
+
+  # Export only ground truth candidates
+  threatforest export traces --ground-truth-only
 
   # View generated HTML dashboard
   open path/to/project/threatforest/attack_trees/attack_trees_dashboard.html

@@ -75,6 +75,7 @@ dependencies = [
     "strands-agents-tools>0.2.0",
     "torch>=2.9.0",
     "transformers>=4.57.0",
+    "langfuse>=2.0.0,<3.0.0",
 ]
 
 [project.optional-dependencies]
