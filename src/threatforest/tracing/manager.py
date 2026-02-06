@@ -25,6 +25,7 @@ from threatforest.tracing.noop import NoOpSpan, NoOpTrace, NoOpTracingManager
 
 if TYPE_CHECKING:
     from langfuse import Langfuse
+    from threatforest.tracing.score_configs import ScoreConfigRegistry
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +47,8 @@ class LangfuseTrace(ITrace):
         self,
         langfuse_trace: Any,
         trace_id: str,
-        session_id: str
+        session_id: str,
+        score_config_registry: Optional["ScoreConfigRegistry"] = None
     ):
         """
         Initialize a LangfuseTrace wrapper.
@@ -55,11 +57,13 @@ class LangfuseTrace(ITrace):
             langfuse_trace: The underlying Langfuse trace object.
             trace_id: Unique identifier for this trace.
             session_id: Session identifier for grouping related traces.
+            score_config_registry: Optional registry for score config validation.
         """
         self._langfuse_trace = langfuse_trace
         self._trace_id = trace_id
         self._session_id = session_id
         self._metadata: Dict[str, Any] = {}
+        self._score_config_registry = score_config_registry
     
     @property
     def trace_id(self) -> str:
@@ -109,7 +113,8 @@ class LangfuseTrace(ITrace):
         self,
         name: str,
         value: float,
-        comment: Optional[str] = None
+        comment: Optional[str] = None,
+        config_id: Optional[str] = None
     ) -> None:
         """
         Add a numeric score to this trace.
@@ -118,6 +123,9 @@ class LangfuseTrace(ITrace):
             name: Score dimension name.
             value: Score value in range [0.0, 1.0].
             comment: Optional comment explaining the score.
+            config_id: Optional Langfuse score config ID for server-side validation.
+                      If not provided and a score_config_registry is available,
+                      the config_id will be looked up automatically.
         
         Raises:
             ValueError: If value is outside the range [0.0, 1.0].
@@ -134,6 +142,14 @@ class LangfuseTrace(ITrace):
             }
             if comment:
                 score_data["comment"] = comment
+            
+            # Try to get config_id from registry if not provided
+            if config_id is None and self._score_config_registry:
+                config_id = self._score_config_registry.get_config_id(name)
+            
+            if config_id:
+                score_data["config_id"] = config_id
+            
             self._langfuse_trace.score(**score_data)
     
     def add_categorical_score(
@@ -141,7 +157,8 @@ class LangfuseTrace(ITrace):
         name: str,
         category: str,
         allowed_categories: List[str],
-        comment: Optional[str] = None
+        comment: Optional[str] = None,
+        config_id: Optional[str] = None
     ) -> None:
         """
         Add a categorical score to this trace.
@@ -154,6 +171,9 @@ class LangfuseTrace(ITrace):
             category: The categorical value.
             allowed_categories: List of valid category values.
             comment: Optional comment explaining the score.
+            config_id: Optional Langfuse score config ID for server-side validation.
+                      If not provided and a score_config_registry is available,
+                      the config_id will be looked up automatically.
         
         Raises:
             ValueError: If category is not in allowed_categories.
@@ -170,6 +190,14 @@ class LangfuseTrace(ITrace):
             }
             if comment:
                 score_data["comment"] = comment
+            
+            # Try to get config_id from registry if not provided
+            if config_id is None and self._score_config_registry:
+                config_id = self._score_config_registry.get_config_id(name)
+            
+            if config_id:
+                score_data["config_id"] = config_id
+            
             self._langfuse_trace.score(**score_data)
     
     def add_metadata(self, key: str, value: Any) -> None:
@@ -349,10 +377,12 @@ class TracingManager(ITracingManager):
         
         self._config = config or LangfuseConfig.from_env()
         self._client: Optional["Langfuse"] = None
+        self._score_config_registry: Optional["ScoreConfigRegistry"] = None
         
         if self._config.enabled:
             self._config.validate()
             self._client = self._init_client()
+            self._init_score_config_registry()
         
         self._initialized = True
         logger.info(
@@ -382,6 +412,42 @@ class TracingManager(ITracingManager):
             secret_key=self._config.secret_key,
             host=self._config.host
         )
+    
+    def _init_score_config_registry(self) -> None:
+        """
+        Initialize the score config registry and register all score definitions.
+        
+        This method creates a ScoreConfigRegistry and registers all ThreatForest
+        score definitions with Langfuse for server-side validation.
+        """
+        if not self._client:
+            return
+        
+        try:
+            from threatforest.tracing.score_configs import ScoreConfigRegistry
+            
+            self._score_config_registry = ScoreConfigRegistry(self._config)
+            
+            # Register all score definitions on startup
+            registered = self._score_config_registry.register_all_score_definitions()
+            
+            if registered:
+                logger.info(
+                    f"Registered {len(registered)} score configs with Langfuse"
+                )
+        except Exception as e:
+            logger.warning(f"Failed to initialize score config registry: {e}")
+            self._score_config_registry = None
+    
+    @property
+    def score_config_registry(self) -> Optional["ScoreConfigRegistry"]:
+        """
+        Get the score config registry.
+        
+        Returns:
+            ScoreConfigRegistry if initialized, None otherwise.
+        """
+        return self._score_config_registry
     
     def create_trace(
         self,
@@ -429,7 +495,8 @@ class TracingManager(ITracingManager):
         return LangfuseTrace(
             langfuse_trace=langfuse_trace,
             trace_id=trace_id,
-            session_id=session_id
+            session_id=session_id,
+            score_config_registry=self._score_config_registry
         )
     
     def create_span(

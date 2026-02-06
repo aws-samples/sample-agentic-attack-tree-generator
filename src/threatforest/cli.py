@@ -446,7 +446,9 @@ def config_path():
 @click.option("--secret-key", "-s", default=None, help="Langfuse secret key (sk-lf-...)")
 @click.option("--host", "-h", default=None, help="Langfuse host (default: https://cloud.langfuse.com)")
 @click.option("--test", is_flag=True, help="Test the connection after configuring")
-def config_langfuse(enable, public_key, secret_key, host, test):
+@click.option("--register-scores", is_flag=True, help="Register score definitions with Langfuse")
+@click.option("--sync-scores", is_flag=True, help="Sync local registry with existing Langfuse score configs")
+def config_langfuse(enable, public_key, secret_key, host, test, register_scores, sync_scores):
     """Configure Langfuse tracing credentials.
     
     Langfuse provides observability for your threat modeling workflows,
@@ -468,6 +470,12 @@ def config_langfuse(enable, public_key, secret_key, host, test):
         
         # Test existing configuration
         threatforest config langfuse --test
+        
+        # Register score definitions with Langfuse
+        threatforest config langfuse --register-scores
+        
+        # Sync local registry with existing Langfuse configs
+        threatforest config langfuse --sync-scores
     """
     from threatforest.modules.utils.env_manager import EnvManager
     from rich.panel import Panel
@@ -592,12 +600,78 @@ def config_langfuse(enable, public_key, secret_key, host, test):
             console.print(f"[red]Connection failed:[/red] {e}")
             console.print("[dim]Please verify your credentials are correct[/dim]\n")
     
+    # Handle score registration
+    if register_scores or sync_scores:
+        console.print("\n[cyan]Managing score configurations...[/cyan]")
+        
+        # Get current values
+        reg_public = public_key or env_manager.get_value('LANGFUSE_PUBLIC_KEY')
+        reg_secret = secret_key or env_manager.get_value('LANGFUSE_SECRET_KEY')
+        reg_host = host or env_manager.get_value('LANGFUSE_HOST') or 'https://cloud.langfuse.com'
+        
+        if not reg_public or not reg_secret:
+            console.print("[red]Error:[/red] Missing public key or secret key")
+            console.print("[dim]Configure credentials first: threatforest config langfuse[/dim]\n")
+            return
+        
+        try:
+            from threatforest.tracing.config import LangfuseConfig
+            from threatforest.tracing.score_configs import ScoreConfigRegistry
+            
+            langfuse_config = LangfuseConfig(
+                enabled=True,
+                public_key=reg_public,
+                secret_key=reg_secret,
+                host=reg_host
+            )
+            
+            registry = ScoreConfigRegistry(langfuse_config)
+            
+            if sync_scores:
+                console.print("[cyan]Syncing with existing Langfuse score configs...[/cyan]")
+                registry.sync_with_langfuse()
+                configs = registry.get_registered_configs()
+                console.print(f"[green]✓[/green] Synced {len(configs)} score config(s) from Langfuse")
+            
+            if register_scores:
+                console.print("[cyan]Registering ThreatForest score definitions...[/cyan]")
+                registered = registry.register_all_score_definitions()
+                
+                if registered:
+                    console.print(Panel(
+                        f"[green]✓ Registered {len(registered)} score config(s) with Langfuse[/green]\n\n"
+                        "Score configs enable server-side validation of scores.\n"
+                        "View them in Langfuse: Settings → Score Configs",
+                        title="Score Configs Registered",
+                        border_style="green"
+                    ))
+                    
+                    # Show registered scores
+                    from rich.table import Table
+                    score_table = Table(title="Registered Score Configs", show_header=True, header_style="bold cyan")
+                    score_table.add_column("Name", style="cyan")
+                    score_table.add_column("Type", style="white")
+                    score_table.add_column("Config ID", style="dim")
+                    
+                    for name, config in sorted(registered.items()):
+                        score_table.add_row(name, config.data_type, config.config_id[:20] + "...")
+                    
+                    console.print(score_table)
+                else:
+                    console.print("[yellow]No new score configs registered (may already exist)[/yellow]")
+        
+        except ImportError as e:
+            console.print(f"[red]Error:[/red] {e}")
+            console.print("[dim]Install required packages with: pip install langfuse[/dim]\n")
+        except Exception as e:
+            console.print(f"[red]Error registering score configs:[/red] {e}")
+    
     console.print()
 
 
 @cli.group()
 def export():
-    """Export traces from Langfuse to DynamoDB"""
+    """Export traces from Langfuse to Langfuse Datasets for evaluation"""
     pass
 
 
@@ -635,14 +709,15 @@ def export():
     help="Only export ground truth candidates",
 )
 @click.option(
-    "--traces-table",
-    default="threatforest-traces",
-    help="DynamoDB table name for traces (default: threatforest-traces)",
+    "--dataset-name",
+    "-d",
+    required=True,
+    help="Name of the Langfuse Dataset to export to",
 )
 @click.option(
-    "--gt-table",
-    default="threatforest-ground-truth",
-    help="DynamoDB table name for ground truth (default: threatforest-ground-truth)",
+    "--dataset-description",
+    default=None,
+    help="Description for the dataset (used when creating new dataset)",
 )
 @click.option(
     "--dry-run",
@@ -650,26 +725,26 @@ def export():
     default=False,
     help="Show what would be exported without actually exporting",
 )
-def export_traces(trace_type, status, start_date, end_date, ground_truth_only, traces_table, gt_table, dry_run):
-    """Export traces from Langfuse to DynamoDB.
+def export_traces(trace_type, status, start_date, end_date, ground_truth_only, dataset_name, dataset_description, dry_run):
+    """Export traces from Langfuse to a Langfuse Dataset.
     
     This command queries Langfuse for traces matching the specified filters
-    and exports them to DynamoDB tables. Ground truth candidates are exported
-    to a separate table without TTL, while regular traces have a 90-day TTL.
+    and exports them to a Langfuse Dataset for evaluation. Dataset items include
+    input/expected_output pairs that can be used for running experiments.
     
     Examples:
     
-        # Export all reviewed attack tree traces
-        threatforest export traces --trace-type attack_tree --status reviewed
+        # Export all reviewed attack tree traces to a dataset
+        threatforest export traces --trace-type attack_tree --status reviewed -d attack-trees-v1
         
         # Export traces from a specific date range
-        threatforest export traces --start-date 2024-01-01 --end-date 2024-01-07
+        threatforest export traces --start-date 2024-01-01 --end-date 2024-01-07 -d weekly-eval
         
         # Export only ground truth candidates
-        threatforest export traces --ground-truth-only
+        threatforest export traces --ground-truth-only -d ground-truth-v1
         
         # Dry run to see what would be exported
-        threatforest export traces --trace-type attack_tree --dry-run
+        threatforest export traces --trace-type attack_tree --dry-run -d test-dataset
     """
     from datetime import datetime as dt
     from rich.table import Table
@@ -678,7 +753,7 @@ def export_traces(trace_type, status, start_date, end_date, ground_truth_only, t
     try:
         # Import tracing modules
         from threatforest.tracing.config import LangfuseConfig
-        from threatforest.tracing.export import LangfuseExporter, ExportFilter
+        from threatforest.tracing.export import LangfuseDatasetExporter, ExportFilter
         
         # Parse dates if provided
         parsed_start_date = None
@@ -718,17 +793,16 @@ def export_traces(trace_type, status, start_date, end_date, ground_truth_only, t
         
         # Display filter configuration
         console.print()
-        filter_table = Table(title="Export Filter Configuration", show_header=True, header_style="bold cyan")
-        filter_table.add_column("Filter", style="cyan")
+        filter_table = Table(title="Export Configuration", show_header=True, header_style="bold cyan")
+        filter_table.add_column("Setting", style="cyan")
         filter_table.add_column("Value", style="white")
         
+        filter_table.add_row("Dataset Name", dataset_name)
         filter_table.add_row("Trace Type", trace_type or "All")
         filter_table.add_row("Review Status", status or "All")
         filter_table.add_row("Start Date", start_date or "Not set")
         filter_table.add_row("End Date", end_date or "Not set")
         filter_table.add_row("Ground Truth Only", "Yes" if ground_truth_only else "No")
-        filter_table.add_row("Traces Table", traces_table)
-        filter_table.add_row("Ground Truth Table", gt_table)
         
         console.print(filter_table)
         console.print()
@@ -764,41 +838,43 @@ def export_traces(trace_type, status, start_date, end_date, ground_truth_only, t
         console.print("[cyan]Connecting to Langfuse...[/cyan]")
         
         try:
-            exporter = LangfuseExporter(
-                langfuse_config=langfuse_config,
-                dynamodb_table=traces_table,
-                ground_truth_table=gt_table,
-            )
+            exporter = LangfuseDatasetExporter(langfuse_config=langfuse_config)
         except ValueError as e:
             console.print(f"[red]Configuration Error:[/red] {e}")
             sys.exit(1)
         except ImportError as e:
             console.print(f"[red]Missing Dependency:[/red] {e}")
-            console.print("[dim]Install required packages with: pip install langfuse boto3[/dim]")
+            console.print("[dim]Install required packages with: pip install langfuse[/dim]")
             sys.exit(1)
         
         console.print("[cyan]Querying traces from Langfuse...[/cyan]")
         
-        with console.status("[bold cyan]Exporting traces...", spinner="dots"):
-            result = exporter.export_traces(export_filter)
+        with console.status("[bold cyan]Exporting traces to dataset...", spinner="dots"):
+            result = exporter.export_to_dataset(
+                filters=export_filter,
+                dataset_name=dataset_name,
+                dataset_description=dataset_description,
+            )
         
         # Display results
         console.print()
         result_table = Table(title="Export Results", show_header=True, header_style="bold green")
-        result_table.add_column("Category", style="cyan")
+        result_table.add_column("Metric", style="cyan")
         result_table.add_column("Count", style="white", justify="right")
         
-        result_table.add_row("Regular Traces", str(result.get("traces", 0)))
-        result_table.add_row("Ground Truth Records", str(result.get("ground_truth", 0)))
-        result_table.add_row("Total Exported", str(result.get("traces", 0) + result.get("ground_truth", 0)))
+        result_table.add_row("Dataset Name", result.get("dataset_name", dataset_name))
+        result_table.add_row("Total Traces Found", str(result.get("total_traces", 0)))
+        result_table.add_row("Items Created", str(result.get("items_created", 0)))
+        result_table.add_row("Items Skipped", str(result.get("items_skipped", 0)))
         
         console.print(result_table)
         console.print()
         
-        total = result.get("traces", 0) + result.get("ground_truth", 0)
-        if total > 0:
+        items_created = result.get("items_created", 0)
+        if items_created > 0:
             console.print(Panel(
-                f"[green]✓ Successfully exported {total} trace(s) to DynamoDB[/green]",
+                f"[green]✓ Successfully exported {items_created} item(s) to dataset '{dataset_name}'[/green]\n\n"
+                f"View your dataset in Langfuse: Datasets → {dataset_name}",
                 border_style="green"
             ))
         else:
@@ -834,7 +910,7 @@ def help_cmd():
   [cyan]config set[/cyan]       Set a specific config value
   [cyan]config path[/cyan]      Show path to active config file
   [cyan]config langfuse[/cyan]  Configure Langfuse tracing credentials
-  [cyan]export traces[/cyan]    Export traces from Langfuse to DynamoDB
+  [cyan]export traces[/cyan]    Export traces from Langfuse to Langfuse Datasets
   [cyan]status[/cyan]           Show current workflow status
 
 [bold]Examples:[/bold]
@@ -863,6 +939,12 @@ def help_cmd():
   # Test Langfuse connection
   threatforest config langfuse --test
 
+  # Register score definitions with Langfuse
+  threatforest config langfuse --register-scores
+
+  # Sync local registry with existing Langfuse configs
+  threatforest config langfuse --sync-scores
+
   # Full workflow with project path
   threatforest run --project-path /path/to/project
 
@@ -870,13 +952,13 @@ def help_cmd():
   threatforest run --mode enrich --input-dir ./threatforest/attack_trees --output-dir ./threatforest/enriched
 
   # Export reviewed attack tree traces
-  threatforest export traces --trace-type attack_tree --status reviewed
+  threatforest export traces --trace-type attack_tree --status reviewed -d my-dataset
 
   # Export traces from a date range
-  threatforest export traces --start-date 2024-01-01 --end-date 2024-01-07
+  threatforest export traces --start-date 2024-01-01 --end-date 2024-01-07 -d weekly-eval
 
   # Export only ground truth candidates
-  threatforest export traces --ground-truth-only
+  threatforest export traces --ground-truth-only -d ground-truth-v1
 
   # View generated HTML dashboard
   open path/to/project/threatforest/attack_trees/attack_trees_dashboard.html

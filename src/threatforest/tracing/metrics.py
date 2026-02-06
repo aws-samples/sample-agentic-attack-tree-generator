@@ -576,3 +576,103 @@ def calculate_automated_metrics(content: str) -> Dict[str, Any]:
         "phase_coverage": calculate_phase_coverage(content),
         "technique_detection": detect_mitre_techniques(content),
     }
+
+
+# =============================================================================
+# Mermaid Visualization Helpers
+# =============================================================================
+
+def generate_mermaid_live_link(mermaid_code: str) -> str:
+    """
+    Generate a Mermaid Live Editor link for visualizing a Mermaid diagram.
+    
+    This creates a URL that opens the Mermaid Live Editor with the diagram
+    pre-loaded, allowing reviewers to see the rendered attack tree without
+    needing to install any tools.
+    
+    The Mermaid code is base64-encoded and embedded in the URL using the
+    pako compression format that Mermaid Live Editor expects.
+    
+    Args:
+        mermaid_code: The Mermaid diagram code (e.g., "graph TD\\n  A --> B")
+        
+    Returns:
+        URL string that opens Mermaid Live Editor with the diagram
+        
+    Example:
+        >>> code = "graph TD\\n    A[Start] --> B[End]"
+        >>> link = generate_mermaid_live_link(code)
+        >>> link.startswith("https://mermaid.live/edit#")
+        True
+    """
+    import base64
+    import json
+    import zlib
+    
+    if not mermaid_code or not mermaid_code.strip():
+        return ""
+    
+    try:
+        # Create the state object that Mermaid Live Editor expects
+        state = {
+            "code": mermaid_code,
+            "mermaid": {"theme": "default"},
+            "autoSync": True,
+            "updateDiagram": True,
+        }
+        
+        # Serialize to JSON
+        json_str = json.dumps(state)
+        
+        # Compress with zlib (pako-compatible)
+        compressed = zlib.compress(json_str.encode("utf-8"), level=9)
+        
+        # Base64 encode with URL-safe alphabet
+        encoded = base64.urlsafe_b64encode(compressed).decode("utf-8")
+        
+        # Remove padding for cleaner URL
+        encoded = encoded.rstrip("=")
+        
+        return f"https://mermaid.live/edit#pako:{encoded}"
+        
+    except Exception:
+        # If encoding fails, return empty string
+        return ""
+
+
+def add_mermaid_visualization_to_output(
+    output: Dict[str, Any],
+    mermaid_code_key: str = "mermaid_code"
+) -> Dict[str, Any]:
+    """
+    Add a Mermaid Live Editor visualization link to trace output.
+    
+    This function takes a trace output dictionary and adds a
+    'mermaid_live_link' field if the output contains Mermaid code.
+    This makes it easy for reviewers in Langfuse to click and view
+    the rendered attack tree diagram.
+    
+    Args:
+        output: The trace output dictionary
+        mermaid_code_key: Key in the output dict containing Mermaid code
+        
+    Returns:
+        Updated output dictionary with 'mermaid_live_link' added
+        
+    Example:
+        >>> output = {"mermaid_code": "graph TD\\n    A --> B"}
+        >>> result = add_mermaid_visualization_to_output(output)
+        >>> "mermaid_live_link" in result
+        True
+    """
+    if not output or not isinstance(output, dict):
+        return output
+    
+    mermaid_code = output.get(mermaid_code_key)
+    if mermaid_code:
+        link = generate_mermaid_live_link(mermaid_code)
+        if link:
+            output = output.copy()
+            output["mermaid_live_link"] = link
+    
+    return output

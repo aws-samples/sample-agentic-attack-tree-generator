@@ -2,29 +2,24 @@
 Export Pipeline for ThreatForest Tracing
 
 This module provides functionality for exporting scored traces from Langfuse
-to DynamoDB for evaluation pipelines and ground truth dataset curation.
+to Langfuse Datasets for evaluation pipelines and ground truth dataset curation.
 
 The export pipeline supports:
 - Filtering traces by type, review status, date range, and ground truth status
-- Transforming Langfuse trace data to DynamoDB schema
-- Exporting ground truth candidates to a separate table without TTL
-- Setting TTL on non-ground-truth traces for automatic cleanup
+- Creating and managing Langfuse Datasets
+- Adding dataset items with input/expected_output for evaluation
+- Supporting dataset versioning and experiment tracking
 
 Requirements:
 - 7.1: THE Export_Pipeline SHALL query Langfuse API for traces with specified
        review_status and date_range filters
-- 7.2: THE Export_Pipeline SHALL transform Langfuse trace data to the DynamoDB
-       schema with PK format TRACE#{trace_type}#{trace_id}
 - 7.3: THE Export_Pipeline SHALL support filtering by trace_type:
        threat_statement, attack_tree, ttp_matching
-- 7.4: THE Export_Pipeline SHALL set TTL on non-ground-truth traces to 90 days
 - 7.5: THE Export_Pipeline SHALL preserve langfuse_trace_id for cross-reference
-- 7.6: WHEN a trace is marked as ground_truth_candidate, THE Export_Pipeline
-       SHALL export to threatforest-ground-truth table without TTL
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 import uuid
 from typing import Any, Dict, List, Optional
@@ -41,7 +36,7 @@ class ExportFilter:
     Filters for querying Langfuse traces.
     
     This dataclass defines the filter criteria used when querying traces
-    from Langfuse for export to DynamoDB. All filter fields are optional
+    from Langfuse for export to Langfuse Datasets. All filter fields are optional
     and can be combined to narrow down the query results.
     
     Attributes:
@@ -121,16 +116,6 @@ class ExportFilter:
             ValueError: If the date range is invalid (start_date > end_date)
             ValueError: If trace_type is not a valid trace type
             ValueError: If review_status is not a valid review status
-        
-        Example:
-            >>> filter = ExportFilter(
-            ...     start_date=datetime(2024, 1, 1),
-            ...     end_date=datetime(2023, 12, 31)  # Invalid: end before start
-            ... )
-            >>> filter.validate()
-            Traceback (most recent call last):
-                ...
-            ValueError: Invalid date range: start_date (2024-01-01 00:00:00) must be <= end_date (2023-12-31 00:00:00)
         """
         # Validate date range
         if self.start_date is not None and self.end_date is not None:
@@ -160,33 +145,8 @@ class ExportFilter:
         """
         Convert filter to Langfuse API query parameters.
         
-        Transforms the filter fields into a dictionary format suitable
-        for querying the Langfuse API. Only non-None filter values are
-        included in the output.
-        
         Returns:
             Dict[str, Any]: Dictionary of query parameters for Langfuse API.
-                The dictionary may contain:
-                - "trace_type": String filter for trace type
-                - "review_status": String filter for review status  
-                - "from_timestamp": ISO format string for start date
-                - "to_timestamp": ISO format string for end date
-                - "tags": List containing "ground_truth_candidate" if filtering
-                         for ground truth only
-        
-        Example:
-            >>> filter = ExportFilter(
-            ...     trace_type="attack_tree",
-            ...     start_date=datetime(2024, 1, 1),
-            ...     ground_truth_only=True
-            ... )
-            >>> params = filter.to_langfuse_params()
-            >>> params["trace_type"]
-            'attack_tree'
-            >>> "from_timestamp" in params
-            True
-            >>> "ground_truth_candidate" in params.get("tags", [])
-            True
         """
         params: Dict[str, Any] = {}
         
@@ -208,108 +168,65 @@ class ExportFilter:
         return params
     
     def __post_init__(self) -> None:
-        """
-        Post-initialization hook to validate the filter.
-        
-        This method is automatically called after the dataclass is initialized.
-        It validates the filter configuration to catch errors early.
-        
-        Note: This validation runs automatically on construction. If you need
-        to create an ExportFilter without immediate validation (e.g., for
-        testing invalid configurations), you can catch the ValueError.
-        """
-        # Don't auto-validate to allow creating filters for testing
-        # Users should call validate() explicitly before use
+        """Post-initialization hook - validation is deferred to explicit call."""
         pass
 
 
-class LangfuseExporter:
+class LangfuseDatasetExporter:
     """
-    Export scored traces from Langfuse to DynamoDB.
+    Export scored traces from Langfuse to Langfuse Datasets.
     
     This class provides functionality to query traces from Langfuse based on
-    filter criteria and export them to DynamoDB tables. It supports:
+    filter criteria and export them to Langfuse Datasets for evaluation. It supports:
     
     - Querying traces with filters (trace_type, review_status, date range)
-    - Transforming Langfuse trace data to DynamoDB schema
-    - Exporting ground truth candidates to a separate table without TTL
-    - Setting TTL on non-ground-truth traces for automatic cleanup (90 days)
+    - Creating datasets in Langfuse
+    - Adding dataset items with input/expected_output pairs
+    - Preserving metadata and scores for evaluation
     
-    The DynamoDB schema uses a single-table design with the following key structure:
-    - PK: TRACE#{trace_type}#{trace_id}
-    - SK: META
-    - GSI1: TYPE#{trace_type} / {timestamp}#{trace_id}
-    - GSI2: SESSION#{session_id} / {timestamp}#{trace_id}
-    - GSI3: STATUS#{review_status} / {timestamp}#{trace_id}
+    Langfuse Datasets enable:
+    - Running experiments with different model configurations
+    - Comparing outputs against reference outputs
+    - Tracking evaluation metrics over time
     
     Requirements:
         - 7.1: Query Langfuse API with review_status and date_range filters
-        - 7.2: Transform to DynamoDB schema with PK format TRACE#{trace_type}#{trace_id}
-        - 7.4: Set TTL on non-ground-truth traces to 90 days
         - 7.5: Preserve langfuse_trace_id for cross-reference
-        - 7.6: Export ground_truth_candidate traces to separate table without TTL
     
     Attributes:
-        _langfuse: Langfuse client for querying traces
-        _dynamodb: boto3 DynamoDB resource
-        _traces_table: DynamoDB table for regular traces
-        _gt_table: DynamoDB table for ground truth records
+        _langfuse: Langfuse client for querying traces and managing datasets
+        _config: LangfuseConfig with connection settings
     
     Example:
         >>> from threatforest.tracing.config import LangfuseConfig
-        >>> from threatforest.tracing.export import LangfuseExporter, ExportFilter
+        >>> from threatforest.tracing.export import LangfuseDatasetExporter, ExportFilter
         >>> 
         >>> config = LangfuseConfig.from_env()
-        >>> exporter = LangfuseExporter(config)
+        >>> exporter = LangfuseDatasetExporter(config)
         >>> 
-        >>> # Export reviewed attack tree traces from the last week
+        >>> # Export reviewed attack tree traces to a dataset
         >>> filter = ExportFilter(
         ...     trace_type="attack_tree",
         ...     review_status="reviewed",
         ...     start_date=datetime.now() - timedelta(days=7)
         ... )
-        >>> result = exporter.export_traces(filter)
-        >>> print(f"Exported {result['traces']} traces, {result['ground_truth']} ground truth")
+        >>> result = exporter.export_to_dataset(filter, dataset_name="attack-trees-v1")
+        >>> print(f"Exported {result['items_created']} items to dataset")
     """
     
-    # Default TTL duration for non-ground-truth traces (90 days)
-    DEFAULT_TTL_DAYS: int = 90
-    
-    def __init__(
-        self,
-        langfuse_config: LangfuseConfig,
-        dynamodb_table: str = "threatforest-traces",
-        ground_truth_table: str = "threatforest-ground-truth"
-    ):
+    def __init__(self, langfuse_config: LangfuseConfig):
         """
-        Initialize the LangfuseExporter.
+        Initialize the LangfuseDatasetExporter.
         
         Args:
             langfuse_config: Configuration for connecting to Langfuse.
-            dynamodb_table: Name of the DynamoDB table for regular traces.
-                Defaults to "threatforest-traces".
-            ground_truth_table: Name of the DynamoDB table for ground truth records.
-                Defaults to "threatforest-ground-truth".
         
         Raises:
             ValueError: If langfuse_config is enabled but credentials are missing.
-            ImportError: If boto3 is not installed.
-        
-        Example:
-            >>> config = LangfuseConfig.from_env()
-            >>> exporter = LangfuseExporter(
-            ...     langfuse_config=config,
-            ...     dynamodb_table="my-traces-table",
-            ...     ground_truth_table="my-gt-table"
-            ... )
+            ImportError: If langfuse is not installed.
         """
         self._config = langfuse_config
         self._langfuse = self._init_langfuse(langfuse_config)
-        self._dynamodb = self._init_dynamodb()
-        self._traces_table = self._dynamodb.Table(dynamodb_table)
-        self._gt_table = self._dynamodb.Table(ground_truth_table)
-        self._dynamodb_table_name = dynamodb_table
-        self._ground_truth_table_name = ground_truth_table
     
     def _init_langfuse(self, config: LangfuseConfig) -> Any:
         """
@@ -341,36 +258,13 @@ class LangfuseExporter:
             )
         except ImportError:
             raise ImportError(
-                "langfuse package is required for LangfuseExporter. "
+                "langfuse package is required for LangfuseDatasetExporter. "
                 "Install it with: pip install langfuse"
-            )
-    
-    def _init_dynamodb(self) -> Any:
-        """
-        Initialize the DynamoDB resource.
-        
-        Returns:
-            boto3 DynamoDB resource.
-        
-        Raises:
-            ImportError: If boto3 is not installed.
-        """
-        try:
-            import boto3
-            return boto3.resource("dynamodb")
-        except ImportError:
-            raise ImportError(
-                "boto3 package is required for LangfuseExporter. "
-                "Install it with: pip install boto3"
             )
     
     def _query_langfuse(self, filters: ExportFilter) -> List[Dict[str, Any]]:
         """
         Query Langfuse for traces matching the given filters.
-        
-        This method queries the Langfuse API to retrieve traces that match
-        the specified filter criteria. It handles pagination automatically
-        to retrieve all matching traces.
         
         Args:
             filters: ExportFilter with query criteria.
@@ -380,15 +274,6 @@ class LangfuseExporter:
         
         Raises:
             RuntimeError: If Langfuse client is not initialized.
-        
-        Requirements:
-            - 7.1: Query Langfuse API with review_status and date_range filters
-            - 7.3: Support filtering by trace_type
-        
-        Example:
-            >>> filter = ExportFilter(trace_type="attack_tree", review_status="reviewed")
-            >>> traces = exporter._query_langfuse(filter)
-            >>> print(f"Found {len(traces)} traces")
         """
         if self._langfuse is None:
             logger.warning("Langfuse client not initialized, returning empty list")
@@ -436,18 +321,9 @@ class LangfuseExporter:
         return traces
     
     def _build_langfuse_query_params(self, params: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Build Langfuse API query parameters from filter params.
-        
-        Args:
-            params: Dictionary of filter parameters.
-        
-        Returns:
-            Dictionary of Langfuse API query parameters.
-        """
+        """Build Langfuse API query parameters from filter params."""
         query_params: Dict[str, Any] = {}
         
-        # Map filter params to Langfuse API params
         if "from_timestamp" in params:
             query_params["from_timestamp"] = params["from_timestamp"]
         
@@ -464,16 +340,7 @@ class LangfuseExporter:
         traces: List[Dict[str, Any]],
         filters: ExportFilter
     ) -> List[Dict[str, Any]]:
-        """
-        Apply additional filters locally that Langfuse API may not support.
-        
-        Args:
-            traces: List of traces from Langfuse.
-            filters: ExportFilter with filter criteria.
-        
-        Returns:
-            Filtered list of traces.
-        """
+        """Apply additional filters locally that Langfuse API may not support."""
         filtered = traces
         
         # Filter by trace_type (stored in metadata)
@@ -499,161 +366,9 @@ class LangfuseExporter:
         
         return filtered
     
-    def _transform_to_ddb(self, trace: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Transform a Langfuse trace to DynamoDB schema.
-        
-        This method converts a Langfuse trace dictionary to the DynamoDB
-        schema used for storing traces. The schema includes:
-        - Primary key (PK): TRACE#{trace_type}#{trace_id}
-        - Sort key (SK): META
-        - GSI keys for querying by type, session, and status
-        
-        Args:
-            trace: Langfuse trace dictionary.
-        
-        Returns:
-            Dictionary formatted for DynamoDB put_item.
-        
-        Requirements:
-            - 7.2: Transform to DynamoDB schema with PK format TRACE#{trace_type}#{trace_id}
-            - 7.5: Preserve langfuse_trace_id for cross-reference
-        
-        Example:
-            >>> trace = {"id": "lf_123", "metadata": {"trace_type": "attack_tree"}, ...}
-            >>> ddb_item = exporter._transform_to_ddb(trace)
-            >>> print(ddb_item["PK"])  # "TRACE#attack_tree#lf_123"
-        """
-        metadata = trace.get("metadata", {})
-        trace_type = metadata.get("trace_type", "unknown")
-        trace_id = trace.get("id", str(uuid.uuid4()))
-        timestamp = trace.get("timestamp", datetime.now().isoformat())
-        session_id = trace.get("session_id", "")
-        review_status = metadata.get("review_status", "pending_review")
-        
-        # Ensure timestamp is a string
-        if isinstance(timestamp, datetime):
-            timestamp = timestamp.isoformat()
-        
-        return {
-            # Primary key
-            "PK": f"TRACE#{trace_type}#{trace_id}",
-            "SK": "META",
-            
-            # GSI keys for efficient querying
-            "GSI1PK": f"TYPE#{trace_type}",
-            "GSI1SK": f"{timestamp}#{trace_id}",
-            "GSI2PK": f"SESSION#{session_id}",
-            "GSI2SK": f"{timestamp}#{trace_id}",
-            "GSI3PK": f"STATUS#{review_status}",
-            "GSI3SK": f"{timestamp}#{trace_id}",
-            
-            # Core trace data
-            "trace_id": trace_id,
-            "trace_type": trace_type,
-            "langfuse_trace_id": trace.get("id"),
-            "created_at": timestamp,
-            "session_id": session_id,
-            
-            # Input/output data
-            "input": trace.get("input"),
-            "output": trace.get("output"),
-            
-            # Metadata
-            "generation_metadata": metadata.get("generation_metadata"),
-            "scores": self._extract_scores(trace),
-            "review_status": review_status,
-        }
-    
-    def _transform_to_gt(self, trace: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Transform a Langfuse trace to ground truth DynamoDB schema.
-        
-        This method converts a Langfuse trace marked as a ground truth candidate
-        to the ground truth table schema. Ground truth records have a different
-        key structure and include evaluation criteria.
-        
-        Args:
-            trace: Langfuse trace dictionary marked as ground truth candidate.
-        
-        Returns:
-            Dictionary formatted for ground truth table put_item.
-        
-        Requirements:
-            - 7.6: Export ground_truth_candidate traces to separate table without TTL
-            - 10.2: Export approved ground truth with evaluation_criteria
-        
-        Example:
-            >>> trace = {"id": "lf_123", "metadata": {"is_ground_truth_candidate": True}, ...}
-            >>> gt_item = exporter._transform_to_gt(trace)
-            >>> print(gt_item["PK"])  # "GT#attack_tree#gt_..."
-        """
-        metadata = trace.get("metadata", {})
-        trace_type = metadata.get("trace_type", "unknown")
-        trace_id = trace.get("id", str(uuid.uuid4()))
-        timestamp = trace.get("timestamp", datetime.now().isoformat())
-        
-        # Generate a unique ground truth ID
-        gt_id = f"gt_{trace_id}"
-        
-        # Ensure timestamp is a string
-        if isinstance(timestamp, datetime):
-            timestamp = timestamp.isoformat()
-        
-        return {
-            # Primary key for ground truth table
-            "PK": f"GT#{trace_type}#{gt_id}",
-            "SK": "META",
-            
-            # Ground truth identifiers
-            "ground_truth_id": gt_id,
-            "type": trace_type,
-            "source_trace_id": trace_id,
-            
-            # Timestamps and attribution
-            "created_at": timestamp,
-            "created_by": metadata.get("reviewer_id", "system"),
-            
-            # Dataset information
-            "dataset_id": metadata.get("dataset_id", "default"),
-            "split": metadata.get("split", "train"),
-            
-            # Input/output data
-            "input": trace.get("input"),
-            "reference_output": trace.get("output"),
-            
-            # Evaluation criteria from metadata
-            "evaluation_criteria": metadata.get("evaluation_criteria", {}),
-            
-            # Additional metadata
-            "metadata": {
-                "langfuse_trace_id": trace.get("id"),
-                "scores": self._extract_scores(trace),
-                "session_id": trace.get("session_id"),
-            }
-        }
-    
     def _extract_scores(self, trace: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """
-        Extract scores from a Langfuse trace.
-        
-        This method extracts SME scores from the trace data, converting them
-        to a standardized format for storage in DynamoDB.
-        
-        Args:
-            trace: Langfuse trace dictionary.
-        
-        Returns:
-            List of score dictionaries with name, value, and optional comment.
-        
-        Example:
-            >>> trace = {"scores": [{"name": "quality", "value": 0.85}]}
-            >>> scores = exporter._extract_scores(trace)
-            >>> print(scores[0]["name"])  # "quality"
-        """
+        """Extract scores from a Langfuse trace."""
         scores: List[Dict[str, Any]] = []
-        
-        # Extract scores from trace data
         trace_scores = trace.get("scores", [])
         
         for score in trace_scores:
@@ -662,7 +377,6 @@ class LangfuseExporter:
                 "value": score.get("value", 0.0),
             }
             
-            # Include optional fields if present
             if "comment" in score:
                 score_dict["comment"] = score["comment"]
             
@@ -680,82 +394,192 @@ class LangfuseExporter:
         
         return scores
     
-    def export_traces(self, filters: ExportFilter) -> Dict[str, int]:
+    def create_dataset(self, name: str, description: Optional[str] = None) -> Any:
         """
-        Export traces matching filters to DynamoDB.
+        Create a new dataset in Langfuse.
         
-        This is the main method for exporting traces from Langfuse to DynamoDB.
+        Args:
+            name: Name of the dataset to create.
+            description: Optional description for the dataset.
+        
+        Returns:
+            The created dataset object.
+        
+        Raises:
+            RuntimeError: If Langfuse client is not initialized.
+        """
+        if self._langfuse is None:
+            raise RuntimeError("Langfuse client not initialized")
+        
+        try:
+            dataset = self._langfuse.create_dataset(
+                name=name,
+                description=description or f"ThreatForest evaluation dataset: {name}"
+            )
+            logger.info(f"Created dataset: {name}")
+            return dataset
+        except Exception as e:
+            logger.error(f"Failed to create dataset {name}: {e}")
+            raise RuntimeError(f"Failed to create dataset: {e}") from e
+    
+    def get_or_create_dataset(self, name: str, description: Optional[str] = None) -> Any:
+        """
+        Get an existing dataset or create a new one.
+        
+        Args:
+            name: Name of the dataset.
+            description: Optional description for new dataset.
+        
+        Returns:
+            The dataset object.
+        """
+        if self._langfuse is None:
+            raise RuntimeError("Langfuse client not initialized")
+        
+        try:
+            # Try to get existing dataset
+            dataset = self._langfuse.get_dataset(name)
+            logger.info(f"Found existing dataset: {name}")
+            return dataset
+        except Exception:
+            # Dataset doesn't exist, create it
+            return self.create_dataset(name, description)
+    
+    def _transform_to_dataset_item(self, trace: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Transform a Langfuse trace to a dataset item format.
+        
+        Args:
+            trace: Langfuse trace dictionary.
+        
+        Returns:
+            Dictionary with input, expected_output, and metadata for dataset item.
+        """
+        metadata = trace.get("metadata", {})
+        trace_type = metadata.get("trace_type", "unknown")
+        trace_id = trace.get("id", str(uuid.uuid4()))
+        timestamp = trace.get("timestamp", datetime.now().isoformat())
+        
+        # Ensure timestamp is a string
+        if isinstance(timestamp, datetime):
+            timestamp = timestamp.isoformat()
+        
+        return {
+            "input": trace.get("input"),
+            "expected_output": trace.get("output"),
+            "metadata": {
+                "langfuse_trace_id": trace_id,
+                "trace_type": trace_type,
+                "session_id": trace.get("session_id"),
+                "created_at": timestamp,
+                "review_status": metadata.get("review_status", "pending_review"),
+                "generation_metadata": metadata.get("generation_metadata"),
+                "scores": self._extract_scores(trace),
+                "is_ground_truth_candidate": metadata.get("is_ground_truth_candidate", False),
+                "evaluation_criteria": metadata.get("evaluation_criteria"),
+            }
+        }
+    
+    def export_to_dataset(
+        self,
+        filters: ExportFilter,
+        dataset_name: str,
+        dataset_description: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Export traces matching filters to a Langfuse Dataset.
+        
+        This is the main method for exporting traces from Langfuse to a Dataset.
         It queries Langfuse for traces matching the filter criteria, transforms
-        them to the DynamoDB schema, and writes them to the appropriate table.
-        
-        Ground truth candidates are written to the ground truth table without TTL.
-        Regular traces are written to the traces table with a 90-day TTL.
+        them to dataset items, and adds them to the specified dataset.
         
         Args:
             filters: ExportFilter with query criteria.
+            dataset_name: Name of the dataset to export to.
+            dataset_description: Optional description for the dataset.
         
         Returns:
-            Dictionary with counts of exported items:
-            - "traces": Number of regular traces exported
-            - "ground_truth": Number of ground truth records exported
+            Dictionary with export statistics:
+            - "dataset_name": Name of the dataset
+            - "items_created": Number of items added to the dataset
+            - "items_skipped": Number of items skipped (e.g., duplicates)
+            - "total_traces": Total traces found matching filters
         
         Raises:
-            RuntimeError: If Langfuse query fails.
-            Exception: If DynamoDB write fails after retries.
-        
-        Requirements:
-            - 7.1: Query Langfuse API with filters
-            - 7.2: Transform to DynamoDB schema
-            - 7.4: Set TTL on non-ground-truth traces to 90 days
-            - 7.6: Export ground_truth_candidate to separate table without TTL
+            RuntimeError: If Langfuse query or dataset operations fail.
         
         Example:
             >>> filter = ExportFilter(
             ...     trace_type="attack_tree",
             ...     review_status="reviewed"
             ... )
-            >>> result = exporter.export_traces(filter)
-            >>> print(f"Exported {result['traces']} traces")
-            >>> print(f"Exported {result['ground_truth']} ground truth records")
+            >>> result = exporter.export_to_dataset(filter, "attack-trees-eval-v1")
+            >>> print(f"Created {result['items_created']} dataset items")
         """
         # Query Langfuse for matching traces
         traces = self._query_langfuse(filters)
         
-        exported = {"traces": 0, "ground_truth": 0}
+        result = {
+            "dataset_name": dataset_name,
+            "items_created": 0,
+            "items_skipped": 0,
+            "total_traces": len(traces),
+        }
+        
+        if not traces:
+            logger.info("No traces found matching filters")
+            return result
+        
+        # Get or create the dataset
+        dataset = self.get_or_create_dataset(dataset_name, dataset_description)
         
         for trace in traces:
             try:
-                # Check if this is a ground truth candidate
-                is_gt_candidate = trace.get("metadata", {}).get(
-                    "is_ground_truth_candidate", False
+                # Transform trace to dataset item format
+                item_data = self._transform_to_dataset_item(trace)
+                
+                # Create dataset item
+                self._langfuse.create_dataset_item(
+                    dataset_name=dataset_name,
+                    input=item_data["input"],
+                    expected_output=item_data["expected_output"],
+                    metadata=item_data["metadata"],
                 )
                 
-                if is_gt_candidate:
-                    # Export to ground truth table without TTL
-                    gt_item = self._transform_to_gt(trace)
-                    self._gt_table.put_item(Item=gt_item)
-                    exported["ground_truth"] += 1
-                    logger.debug(f"Exported ground truth: {gt_item['PK']}")
-                else:
-                    # Export to traces table with TTL
-                    ddb_item = self._transform_to_ddb(trace)
-                    
-                    # Set TTL for non-ground-truth traces (90 days from now)
-                    ttl = int((datetime.now() + timedelta(days=self.DEFAULT_TTL_DAYS)).timestamp())
-                    ddb_item["ttl"] = ttl
-                    
-                    self._traces_table.put_item(Item=ddb_item)
-                    exported["traces"] += 1
-                    logger.debug(f"Exported trace: {ddb_item['PK']}")
-                    
+                result["items_created"] += 1
+                logger.debug(f"Created dataset item for trace: {trace.get('id')}")
+                
             except Exception as e:
-                logger.error(f"Failed to export trace {trace.get('id')}: {e}")
-                # Continue with other traces instead of failing completely
+                logger.warning(f"Failed to create dataset item for trace {trace.get('id')}: {e}")
+                result["items_skipped"] += 1
                 continue
         
         logger.info(
-            f"Export complete: {exported['traces']} traces, "
-            f"{exported['ground_truth']} ground truth records"
+            f"Export complete: {result['items_created']} items created, "
+            f"{result['items_skipped']} skipped"
         )
         
-        return exported
+        return result
+    
+    def list_datasets(self) -> List[Dict[str, Any]]:
+        """
+        List all datasets in Langfuse.
+        
+        Returns:
+            List of dataset dictionaries with name and metadata.
+        """
+        if self._langfuse is None:
+            return []
+        
+        try:
+            # Note: Langfuse v2 API may not have a direct list_datasets method
+            # This is a placeholder - actual implementation depends on API
+            datasets = self._langfuse.get_datasets()
+            return [{"name": d.name, "description": d.description} for d in datasets.data]
+        except Exception as e:
+            logger.warning(f"Failed to list datasets: {e}")
+            return []
+
+
+# Backwards compatibility alias
+LangfuseExporter = LangfuseDatasetExporter

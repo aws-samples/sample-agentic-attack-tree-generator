@@ -2,7 +2,7 @@
 ThreatForest Tracing Module
 
 This module provides Langfuse-based tracing infrastructure for ThreatForest workflows.
-It supports OpenTelemetry-based tracing, SME review workflows, and DynamoDB export pipelines.
+It supports OpenTelemetry-based tracing, SME review workflows, and Langfuse Dataset export.
 
 The module implements a no-op fallback when tracing is disabled, ensuring backward
 compatibility with existing workflows.
@@ -10,7 +10,7 @@ compatibility with existing workflows.
 
 from threatforest.tracing.config import LangfuseConfig
 from threatforest.tracing.context import TracingContext
-from threatforest.tracing.export import ExportFilter, LangfuseExporter
+from threatforest.tracing.export import ExportFilter, LangfuseDatasetExporter, LangfuseExporter
 from threatforest.tracing.interfaces import (
     IGeneration,
     ISpan,
@@ -29,22 +29,24 @@ from threatforest.tracing.metrics import (
     PhaseCoverage,
     StructuralMetrics,
     TechniqueDetection,
+    add_mermaid_visualization_to_output,
     calculate_automated_metrics,
     calculate_phase_coverage,
     calculate_structural_metrics,
     detect_mitre_techniques,
+    generate_mermaid_live_link,
 )
 from threatforest.tracing.models import (
     AttackTreeInput,
     AttackTreeOutput,
     AutomatedMetrics,
+    DatasetItem,
+    DatasetItemMetadata,
     EvaluationCriteria,
     GenerationMetadata,
-    GroundTruthRecord,
     SMEScore,
     ThreatStatementInput,
     ThreatStatementOutput,
-    TraceRecord,
     TraceStatus,
     TraceType,
     TTPMapping,
@@ -76,6 +78,12 @@ from threatforest.tracing.scores import (
     get_score_definition,
     get_ttp_numeric_value,
 )
+from threatforest.tracing.score_configs import (
+    RegisteredScoreConfig,
+    ScoreConfigRegistry,
+    get_score_config_registry,
+    reset_score_config_registry,
+)
 
 __all__ = [
     # Configuration
@@ -84,7 +92,8 @@ __all__ = [
     "TracingContext",
     # Export
     "ExportFilter",
-    "LangfuseExporter",
+    "LangfuseDatasetExporter",
+    "LangfuseExporter",  # Backwards compatibility alias
     # Interfaces
     "IGeneration",
     "ISpan",
@@ -105,6 +114,8 @@ __all__ = [
     "calculate_phase_coverage",
     "detect_mitre_techniques",
     "calculate_automated_metrics",
+    "generate_mermaid_live_link",
+    "add_mermaid_visualization_to_output",
     # Data Models
     "TraceType",
     "TraceStatus",
@@ -118,9 +129,9 @@ __all__ = [
     "TTPMapping",
     "TTPMatchingOutput",
     "SMEScore",
-    "TraceRecord",
     "EvaluationCriteria",
-    "GroundTruthRecord",
+    "DatasetItem",
+    "DatasetItemMetadata",
     # No-op implementations
     "NoOpGeneration",
     "NoOpSpan",
@@ -143,4 +154,9 @@ __all__ = [
     "get_score_definition",
     "get_ttp_numeric_value",
     "get_all_score_definitions",
+    # Score config registration
+    "RegisteredScoreConfig",
+    "ScoreConfigRegistry",
+    "get_score_config_registry",
+    "reset_score_config_registry",
 ]

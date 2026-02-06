@@ -82,8 +82,8 @@ comment_strategy = st.one_of(
     ).filter(lambda s: s.strip() != "")
 )
 
-# Strategy for generating TTP categories
-ttp_category_strategy = st.sampled_from(["excellent", "good", "poor", "no_mapping"])
+# Strategy for generating TTP categories (now 5 categories)
+ttp_category_strategy = st.sampled_from(["excellent", "good", "acceptable", "poor", "no_mapping"])
 
 # Strategy for generating invalid TTP categories
 invalid_ttp_category_strategy = st.text(
@@ -381,8 +381,9 @@ class TestProperty9CategoricalTTPScoreMapping:
         """
         expected_values = {
             "excellent": 1.0,
-            "good": 0.66,
-            "poor": 0.33,
+            "good": 0.75,
+            "acceptable": 0.5,
+            "poor": 0.25,
             "no_mapping": 0.0
         }
         
@@ -403,27 +404,38 @@ class TestProperty9CategoricalTTPScoreMapping:
         assert TTP_SCORE_VALUES["excellent"] == 1.0
         assert get_ttp_numeric_value("excellent") == 1.0
     
-    def test_good_maps_to_066(self):
+    def test_good_maps_to_075(self):
         """
         Feature: langfuse-evaluation-integration, Property 9: Categorical TTP Score Mapping
         
-        Test that 'good' category maps to 0.66.
+        Test that 'good' category maps to 0.75.
         
         **Validates: Requirements 6.1**
         """
-        assert TTP_SCORE_VALUES["good"] == 0.66
-        assert get_ttp_numeric_value("good") == 0.66
+        assert TTP_SCORE_VALUES["good"] == 0.75
+        assert get_ttp_numeric_value("good") == 0.75
     
-    def test_poor_maps_to_033(self):
+    def test_acceptable_maps_to_05(self):
         """
         Feature: langfuse-evaluation-integration, Property 9: Categorical TTP Score Mapping
         
-        Test that 'poor' category maps to 0.33.
+        Test that 'acceptable' category maps to 0.5.
         
         **Validates: Requirements 6.1**
         """
-        assert TTP_SCORE_VALUES["poor"] == 0.33
-        assert get_ttp_numeric_value("poor") == 0.33
+        assert TTP_SCORE_VALUES["acceptable"] == 0.5
+        assert get_ttp_numeric_value("acceptable") == 0.5
+    
+    def test_poor_maps_to_025(self):
+        """
+        Feature: langfuse-evaluation-integration, Property 9: Categorical TTP Score Mapping
+        
+        Test that 'poor' category maps to 0.25.
+        
+        **Validates: Requirements 6.1**
+        """
+        assert TTP_SCORE_VALUES["poor"] == 0.25
+        assert get_ttp_numeric_value("poor") == 0.25
     
     def test_no_mapping_maps_to_zero(self):
         """
@@ -503,12 +515,13 @@ class TestProperty9CategoricalTTPScoreMapping:
         """
         Feature: langfuse-evaluation-integration, Property 9: Categorical TTP Score Mapping
         
-        Test that TTP score values are ordered by quality (excellent > good > poor > no_mapping).
+        Test that TTP score values are ordered by quality (excellent > good > acceptable > poor > no_mapping).
         
         **Validates: Requirements 6.1**
         """
         assert TTP_SCORE_VALUES["excellent"] > TTP_SCORE_VALUES["good"]
-        assert TTP_SCORE_VALUES["good"] > TTP_SCORE_VALUES["poor"]
+        assert TTP_SCORE_VALUES["good"] > TTP_SCORE_VALUES["acceptable"]
+        assert TTP_SCORE_VALUES["acceptable"] > TTP_SCORE_VALUES["poor"]
         assert TTP_SCORE_VALUES["poor"] > TTP_SCORE_VALUES["no_mapping"]
     
     def test_ttp_mapping_scores_definition_has_correct_categories(self):
@@ -522,7 +535,7 @@ class TestProperty9CategoricalTTPScoreMapping:
         mapping_quality_score = TTP_MAPPING_SCORES[0]
         
         assert mapping_quality_score.name == "mapping_quality"
-        assert set(mapping_quality_score.categories) == {"excellent", "good", "poor", "no_mapping"}
+        assert set(mapping_quality_score.categories) == {"excellent", "good", "acceptable", "poor", "no_mapping"}
     
     @settings(max_examples=100)
     @given(
