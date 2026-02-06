@@ -330,17 +330,27 @@ class ThreatForestOrchestrator:
                         )
                         
                         # Capture output with automated metrics (Requirement 5.2)
-                        from .tracing import calculate_automated_metrics
+                        from .tracing import calculate_automated_metrics, generate_mermaid_live_link
                         
                         trees = attack_trees.get("attack_trees", [])
                         trees_with_metrics = []
                         for tree in trees:
                             tree_content = tree.get("attack_tree_markdown", "")
+                            mermaid_code = tree.get("mermaid_code", "")
                             metrics = calculate_automated_metrics(tree_content)
-                            trees_with_metrics.append({
+                            
+                            tree_data = {
                                 "threat_id": tree.get("threat_id"),
                                 "automated_metrics": metrics,
-                            })
+                            }
+                            
+                            # Add Mermaid Live Editor link for visualization in Langfuse
+                            if mermaid_code:
+                                mermaid_link = generate_mermaid_live_link(mermaid_code)
+                                if mermaid_link:
+                                    tree_data["mermaid_live_link"] = mermaid_link
+                            
+                            trees_with_metrics.append(tree_data)
                         
                         span.set_output({
                             "attack_trees": trees,

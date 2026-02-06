@@ -193,10 +193,10 @@ class TestThreatStatementScores:
         """Verify THREAT_STATEMENT_SCORES has exactly 5 dimensions."""
         assert len(THREAT_STATEMENT_SCORES) == 5
     
-    def test_all_scores_are_numeric(self):
-        """Verify all threat statement scores are numeric."""
+    def test_all_scores_are_categorical(self):
+        """Verify all threat statement scores are categorical."""
         for score in THREAT_STATEMENT_SCORES:
-            assert score.score_type == ScoreType.NUMERIC
+            assert score.score_type == ScoreType.CATEGORICAL
     
     def test_contains_overall_quality(self):
         """Verify overall_quality score exists."""
@@ -229,11 +229,11 @@ class TestThreatStatementScores:
             assert score.description
             assert len(score.description) > 0
     
-    def test_all_have_default_range(self):
-        """Verify all scores have default 0.0-1.0 range."""
+    def test_all_have_standard_categories(self):
+        """Verify all scores use the standard 5-point categorical scale."""
+        from threatforest.tracing.scores import STANDARD_CATEGORIES
         for score in THREAT_STATEMENT_SCORES:
-            assert score.min_value == 0.0
-            assert score.max_value == 1.0
+            assert score.categories == STANDARD_CATEGORIES
 
 
 class TestAttackTreeScores:
@@ -243,10 +243,10 @@ class TestAttackTreeScores:
         """Verify ATTACK_TREE_SCORES has exactly 6 dimensions."""
         assert len(ATTACK_TREE_SCORES) == 6
     
-    def test_all_scores_are_numeric(self):
-        """Verify all attack tree scores are numeric."""
+    def test_all_scores_are_categorical(self):
+        """Verify all attack tree scores are categorical."""
         for score in ATTACK_TREE_SCORES:
-            assert score.score_type == ScoreType.NUMERIC
+            assert score.score_type == ScoreType.CATEGORICAL
     
     def test_contains_overall_quality(self):
         """Verify overall_quality score exists."""
@@ -298,10 +298,10 @@ class TestTTPMappingScores:
         assert score.name == "mapping_quality"
         assert score.score_type == ScoreType.CATEGORICAL
     
-    def test_has_four_categories(self):
-        """Verify mapping_quality has 4 categories."""
+    def test_has_five_categories(self):
+        """Verify mapping_quality has 5 categories."""
         score = TTP_MAPPING_SCORES[0]
-        assert len(score.categories) == 4
+        assert len(score.categories) == 5
     
     def test_contains_excellent_category(self):
         """Verify excellent category exists."""
@@ -312,6 +312,11 @@ class TestTTPMappingScores:
         """Verify good category exists."""
         score = TTP_MAPPING_SCORES[0]
         assert "good" in score.categories
+    
+    def test_contains_acceptable_category(self):
+        """Verify acceptable category exists."""
+        score = TTP_MAPPING_SCORES[0]
+        assert "acceptable" in score.categories
     
     def test_contains_poor_category(self):
         """Verify poor category exists."""
@@ -331,26 +336,31 @@ class TestTTPScoreValues:
         """Verify excellent maps to 1.0."""
         assert TTP_SCORE_VALUES["excellent"] == 1.0
     
-    def test_good_maps_to_066(self):
-        """Verify good maps to 0.66."""
-        assert TTP_SCORE_VALUES["good"] == 0.66
+    def test_good_maps_to_075(self):
+        """Verify good maps to 0.75."""
+        assert TTP_SCORE_VALUES["good"] == 0.75
     
-    def test_poor_maps_to_033(self):
-        """Verify poor maps to 0.33."""
-        assert TTP_SCORE_VALUES["poor"] == 0.33
+    def test_acceptable_maps_to_05(self):
+        """Verify acceptable maps to 0.5."""
+        assert TTP_SCORE_VALUES["acceptable"] == 0.5
+    
+    def test_poor_maps_to_025(self):
+        """Verify poor maps to 0.25."""
+        assert TTP_SCORE_VALUES["poor"] == 0.25
     
     def test_no_mapping_maps_to_zero(self):
         """Verify no_mapping maps to 0.0."""
         assert TTP_SCORE_VALUES["no_mapping"] == 0.0
     
-    def test_has_four_mappings(self):
-        """Verify TTP_SCORE_VALUES has exactly 4 mappings."""
-        assert len(TTP_SCORE_VALUES) == 4
+    def test_has_five_mappings(self):
+        """Verify TTP_SCORE_VALUES has exactly 5 mappings."""
+        assert len(TTP_SCORE_VALUES) == 5
     
     def test_values_are_in_descending_order(self):
         """Verify values are in descending order of quality."""
         assert TTP_SCORE_VALUES["excellent"] > TTP_SCORE_VALUES["good"]
-        assert TTP_SCORE_VALUES["good"] > TTP_SCORE_VALUES["poor"]
+        assert TTP_SCORE_VALUES["good"] > TTP_SCORE_VALUES["acceptable"]
+        assert TTP_SCORE_VALUES["acceptable"] > TTP_SCORE_VALUES["poor"]
         assert TTP_SCORE_VALUES["poor"] > TTP_SCORE_VALUES["no_mapping"]
     
     def test_all_values_in_valid_range(self):
@@ -397,13 +407,17 @@ class TestGetTTPNumericValue:
         """Verify excellent returns 1.0."""
         assert get_ttp_numeric_value("excellent") == 1.0
     
-    def test_good_returns_066(self):
-        """Verify good returns 0.66."""
-        assert get_ttp_numeric_value("good") == 0.66
+    def test_good_returns_075(self):
+        """Verify good returns 0.75."""
+        assert get_ttp_numeric_value("good") == 0.75
     
-    def test_poor_returns_033(self):
-        """Verify poor returns 0.33."""
-        assert get_ttp_numeric_value("poor") == 0.33
+    def test_acceptable_returns_05(self):
+        """Verify acceptable returns 0.5."""
+        assert get_ttp_numeric_value("acceptable") == 0.5
+    
+    def test_poor_returns_025(self):
+        """Verify poor returns 0.25."""
+        assert get_ttp_numeric_value("poor") == 0.25
     
     def test_no_mapping_returns_zero(self):
         """Verify no_mapping returns 0.0."""

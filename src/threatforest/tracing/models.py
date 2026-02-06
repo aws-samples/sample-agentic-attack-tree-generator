@@ -2,19 +2,15 @@
 Pydantic Data Models for ThreatForest Tracing
 
 This module defines the data models used for tracing ThreatForest workflows,
-including input/output models for each capability, score models, and the
-DynamoDB record schema for export.
+including input/output models for each capability, score models, and dataset
+item schemas for Langfuse Datasets.
 
 The models support:
 - Threat Statement Generation tracing
 - Attack Tree Generation tracing
 - TTP (Tactics, Techniques, and Procedures) Matching tracing
 - SME (Subject Matter Expert) scoring
-- DynamoDB export with proper key structure
-
-Requirements:
-- 7.2: THE Export_Pipeline SHALL transform Langfuse trace data to the DynamoDB
-       schema with PK format TRACE#{trace_type}#{trace_id}
+- Langfuse Dataset items for evaluation
 """
 
 from datetime import datetime
@@ -76,14 +72,6 @@ class GenerationMetadata(BaseModel):
         input_tokens: Number of tokens in the input prompt
         output_tokens: Number of tokens in the generated output
         temperature: Temperature setting used for generation
-    
-    Example:
-        >>> metadata = GenerationMetadata(
-        ...     model_id="anthropic.claude-3-sonnet",
-        ...     latency_ms=1500,
-        ...     input_tokens=500,
-        ...     output_tokens=200
-        ... )
     """
     model_id: str
     prompt_version: Optional[str] = None
@@ -102,9 +90,6 @@ class ThreatStatementInput(BaseModel):
     """
     Input for threat statement generation.
     
-    Captures the input parameters for the threat statement generation stage,
-    including the evaluation mode and context information.
-    
     Attributes:
         mode: The evaluation mode - one of:
             - "generate_new": Generate new threats from context
@@ -112,12 +97,6 @@ class ThreatStatementInput(BaseModel):
             - "augment": Augment provided threats with additional ones
         context: Context information about the application being analyzed
         provided_threats: Optional list of user-provided threats (for validate/augment modes)
-    
-    Example:
-        >>> input_data = ThreatStatementInput(
-        ...     mode="generate_new",
-        ...     context={"application_type": "web_api", "tech_stack": ["python", "aws"]}
-        ... )
     """
     mode: str  # generate_new, validate_existing, augment
     context: Dict[str, Any]
@@ -128,17 +107,9 @@ class ThreatStatementOutput(BaseModel):
     """
     Output from threat statement generation.
     
-    Captures the results of the threat statement generation stage.
-    
     Attributes:
         generated_threats: List of generated threat statements with their details
         threat_count: Total number of threats generated
-    
-    Example:
-        >>> output = ThreatStatementOutput(
-        ...     generated_threats=[{"id": "T1", "description": "SQL Injection"}],
-        ...     threat_count=1
-        ... )
     """
     generated_threats: List[Dict[str, Any]]
     threat_count: int
@@ -153,18 +124,9 @@ class AttackTreeInput(BaseModel):
     """
     Input for attack tree generation.
     
-    Captures the input parameters for generating an attack tree from
-    a threat statement.
-    
     Attributes:
         threat_statement: The threat statement to generate an attack tree for
         context: Additional context about the application
-    
-    Example:
-        >>> input_data = AttackTreeInput(
-        ...     threat_statement={"id": "T1", "description": "SQL Injection"},
-        ...     context={"database": "postgresql"}
-        ... )
     """
     threat_statement: Dict[str, Any]
     context: Dict[str, Any]
@@ -174,17 +136,9 @@ class AttackTreeOutput(BaseModel):
     """
     Output from attack tree generation.
     
-    Captures the results of the attack tree generation stage.
-    
     Attributes:
         attack_tree_markdown: The generated attack tree in markdown format
         parsed_structure: Parsed tree structure with nodes and edges
-    
-    Example:
-        >>> output = AttackTreeOutput(
-        ...     attack_tree_markdown="# Root\\n## Step 1",
-        ...     parsed_structure={"nodes": ["Root", "Step 1"], "edges": [(0, 1)]}
-        ... )
     """
     attack_tree_markdown: str
     parsed_structure: Dict[str, Any]
@@ -194,21 +148,12 @@ class AutomatedMetrics(BaseModel):
     """
     Automated metrics for attack trees.
     
-    Captures automatically calculated metrics about attack tree quality,
-    including structural analysis and phase coverage.
-    
     Attributes:
         structural: Structural metrics including node_count, path_count,
                    max_depth, branching_factor, syntax_valid
         phase_coverage: Phase coverage metrics including phases_detected,
                        expected_phases, coverage_score
         technique_detection: Optional MITRE technique detection results
-    
-    Example:
-        >>> metrics = AutomatedMetrics(
-        ...     structural={"node_count": 10, "max_depth": 3},
-        ...     phase_coverage={"coverage_score": 0.75}
-        ... )
     """
     structural: Dict[str, Any]  # node_count, path_count, max_depth, etc.
     phase_coverage: Dict[str, Any]  # phases_detected, coverage_score
@@ -224,19 +169,10 @@ class TTPMatchingInput(BaseModel):
     """
     Input for TTP matching.
     
-    Captures the input parameters for matching attack steps to
-    MITRE ATT&CK techniques.
-    
     Attributes:
         attack_step: The attack step to match, including node_id, label, node_type
         attack_matrix: The attack matrix to match against (default: MITRE ATT&CK Enterprise)
         context: Optional additional context for matching
-    
-    Example:
-        >>> input_data = TTPMatchingInput(
-        ...     attack_step={"node_id": "1", "label": "Execute PowerShell", "node_type": "action"},
-        ...     attack_matrix="mitre_attack_enterprise"
-        ... )
     """
     attack_step: Dict[str, Any]  # node_id, label, node_type
     attack_matrix: str = "mitre_attack_enterprise"
@@ -247,9 +183,6 @@ class TTPMapping(BaseModel):
     """
     Single TTP mapping result.
     
-    Represents a single technique mapping from the TTP matching process,
-    including confidence scores and explanations.
-    
     Attributes:
         rank: Ranking position of this mapping (1 = best match)
         technique_id: MITRE ATT&CK technique ID (e.g., "T1059.001")
@@ -259,17 +192,6 @@ class TTPMapping(BaseModel):
         confidence: Overall confidence score (0.0 to 1.0)
         embedding_similarity: Similarity score from embedding comparison
         explanation: Optional explanation of why this technique was matched
-    
-    Example:
-        >>> mapping = TTPMapping(
-        ...     rank=1,
-        ...     technique_id="T1059.001",
-        ...     technique_name="PowerShell",
-        ...     tactic="Execution",
-        ...     tactic_id="TA0002",
-        ...     confidence=0.95,
-        ...     embedding_similarity=0.92
-        ... )
     """
     rank: int
     technique_id: str
@@ -285,18 +207,9 @@ class TTPMatchingOutput(BaseModel):
     """
     Output from TTP matching.
     
-    Captures the results of the TTP matching process, including
-    all candidate mappings.
-    
     Attributes:
         mappings: List of TTP mappings, ordered by rank
         top_k: Number of top mappings returned (default: 3)
-    
-    Example:
-        >>> output = TTPMatchingOutput(
-        ...     mappings=[TTPMapping(rank=1, technique_id="T1059", ...)],
-        ...     top_k=3
-        ... )
     """
     mappings: List[TTPMapping]
     top_k: int = 3
@@ -320,14 +233,6 @@ class SMEScore(BaseModel):
         comment: Optional comment explaining the score
         reviewer_id: Optional identifier of the reviewer
         reviewed_at: Optional timestamp of when the review was done
-    
-    Example:
-        >>> score = SMEScore(
-        ...     name="overall_quality",
-        ...     value=0.85,
-        ...     comment="Good coverage but missing some edge cases",
-        ...     reviewer_id="sme_user_123"
-        ... )
     """
     name: str
     value: float
@@ -337,69 +242,7 @@ class SMEScore(BaseModel):
 
 
 # =============================================================================
-# DynamoDB Record Model
-# =============================================================================
-
-
-class TraceRecord(BaseModel):
-    """
-    Complete trace record for DynamoDB.
-    
-    This model represents the full trace record as stored in DynamoDB,
-    including the key structure, metadata, and all associated data.
-    
-    The DynamoDB key structure follows the pattern:
-    - PK: TRACE#{trace_type}#{trace_id}
-    - SK: META (for the main record)
-    
-    Attributes:
-        PK: Primary key in format TRACE#{trace_type}#{trace_id}
-        SK: Sort key, defaults to "META"
-        trace_id: Unique identifier for this trace
-        trace_type: Type of trace (threat_statement, attack_tree, ttp_matching)
-        langfuse_trace_id: Cross-reference ID to Langfuse
-        created_at: Timestamp when the trace was created
-        session_id: Session ID grouping related traces
-        input: Input data for the traced operation
-        output: Output data from the traced operation
-        generation_metadata: Optional LLM generation metadata
-        automated_metrics: Optional automated metrics (for attack trees)
-        scores: List of SME-provided scores
-        review_status: Current review status
-        is_ground_truth_candidate: Whether this trace is a ground truth candidate
-        ttl: Optional TTL timestamp for automatic deletion (Unix timestamp)
-    
-    Example:
-        >>> record = TraceRecord(
-        ...     PK="TRACE#attack_tree#abc123",
-        ...     trace_id="abc123",
-        ...     trace_type=TraceType.ATTACK_TREE,
-        ...     langfuse_trace_id="lf_xyz789",
-        ...     created_at=datetime.now(),
-        ...     session_id="session_456",
-        ...     input={"threat_statement": {...}},
-        ...     output={"attack_tree_markdown": "..."}
-        ... )
-    """
-    PK: str  # TRACE#{trace_type}#{trace_id}
-    SK: str = "META"
-    trace_id: str
-    trace_type: TraceType
-    langfuse_trace_id: str
-    created_at: datetime
-    session_id: str
-    input: Dict[str, Any]
-    output: Dict[str, Any]
-    generation_metadata: Optional[GenerationMetadata] = None
-    automated_metrics: Optional[AutomatedMetrics] = None
-    scores: List[SMEScore] = Field(default_factory=list)
-    review_status: TraceStatus = TraceStatus.PENDING_REVIEW
-    is_ground_truth_candidate: bool = False
-    ttl: Optional[int] = None  # Unix timestamp for TTL
-
-
-# =============================================================================
-# Ground Truth Models
+# Evaluation Criteria Model
 # =============================================================================
 
 
@@ -408,8 +251,8 @@ class EvaluationCriteria(BaseModel):
     Criteria for evaluating outputs.
     
     Defines the evaluation criteria used by SMEs to assess the quality of
-    ThreatForest outputs. These criteria are stored with ground truth records
-    to enable consistent evaluation across datasets.
+    ThreatForest outputs. These criteria are stored with dataset items
+    to enable consistent evaluation.
     
     Attributes:
         structural: Structural requirements for attack trees (e.g., min_nodes,
@@ -424,23 +267,6 @@ class EvaluationCriteria(BaseModel):
                          in the attack tree
         domain_requirements: Domain-specific requirements as key-value pairs
                             (e.g., {"industry": "healthcare", "compliance": "HIPAA"})
-    
-    Requirements:
-        - 10.4: THE Export_Pipeline SHALL preserve SME-defined evaluation_criteria
-                including required_phases, required_techniques, and forbidden_patterns
-    
-    Example:
-        >>> criteria = EvaluationCriteria(
-        ...     structural={"min_nodes": 5, "min_paths": 2, "max_depth": 4},
-        ...     required_phases=["initial_access", "execution"],
-        ...     required_techniques=[
-        ...         {"technique_id": "T1059", "tactic": "execution"},
-        ...         {"technique_id": "T1003", "tactic": "credential_access"}
-        ...     ],
-        ...     forbidden_patterns=["UNKNOWN_TECHNIQUE", "TODO"],
-        ...     key_attack_paths=["phishing -> execution -> persistence"],
-        ...     domain_requirements={"industry": "finance", "data_sensitivity": "high"}
-        ... )
     """
     structural: Optional[Dict[str, Any]] = None  # min_nodes, min_paths, etc.
     required_phases: Optional[List[str]] = None
@@ -450,69 +276,63 @@ class EvaluationCriteria(BaseModel):
     domain_requirements: Optional[Dict[str, Any]] = None
 
 
-class GroundTruthRecord(BaseModel):
+# =============================================================================
+# Dataset Item Models (for Langfuse Datasets)
+# =============================================================================
+
+
+class DatasetItemMetadata(BaseModel):
     """
-    Ground truth record for evaluation datasets.
+    Metadata for a Langfuse Dataset item.
     
-    Represents an SME-approved example used for model evaluation and training.
-    Ground truth records are stored in a separate DynamoDB table without TTL
-    to preserve them indefinitely.
-    
-    The DynamoDB key structure follows the pattern:
-    - PK: GT#{type}#{id}
-    - SK: META (for the main record)
+    This model captures the metadata stored with each dataset item,
+    including trace provenance, scores, and evaluation criteria.
     
     Attributes:
-        PK: Primary key in format GT#{type}#{id}
-        SK: Sort key, defaults to "META"
-        ground_truth_id: Unique identifier for this ground truth record
-        type: Type of ground truth (threat_statement, attack_tree, ttp_matching)
-        source_trace_id: ID of the original trace this ground truth was derived from
-        created_at: Timestamp when the ground truth was created
-        created_by: Identifier of the SME who approved this as ground truth
-        dataset_id: Identifier of the dataset this record belongs to
-        split: Dataset split assignment (train, eval, or test)
-        input: The input data that produced the reference output
-        reference_output: The SME-approved reference output
-        evaluation_criteria: Criteria for evaluating outputs against this ground truth
-        metadata: Additional metadata as key-value pairs
+        langfuse_trace_id: Original trace ID from Langfuse for cross-reference
+        trace_type: Type of trace (threat_statement, attack_tree, ttp_matching)
+        session_id: Session ID grouping related traces
+        created_at: Timestamp when the trace was created
+        review_status: Current review status
+        generation_metadata: Optional LLM generation metadata
+        scores: List of SME-provided scores
+        is_ground_truth_candidate: Whether this trace is a ground truth candidate
+        evaluation_criteria: Optional criteria for evaluating outputs
+    """
+    langfuse_trace_id: str
+    trace_type: str
+    session_id: Optional[str] = None
+    created_at: Optional[str] = None
+    review_status: str = "pending_review"
+    generation_metadata: Optional[Dict[str, Any]] = None
+    scores: List[Dict[str, Any]] = Field(default_factory=list)
+    is_ground_truth_candidate: bool = False
+    evaluation_criteria: Optional[Dict[str, Any]] = None
+
+
+class DatasetItem(BaseModel):
+    """
+    A dataset item for Langfuse Datasets.
     
-    Requirements:
-        - 10.2: THE Export_Pipeline SHALL export approved ground truth to
-                threatforest-ground-truth table with evaluation_criteria
-        - 10.3: THE Export_Pipeline SHALL support dataset versioning with
-                dataset_id and split (train/eval/test) attributes
-        - 10.4: THE Export_Pipeline SHALL preserve SME-defined evaluation_criteria
+    Represents a single item in a Langfuse Dataset, containing the input,
+    expected output, and metadata for evaluation.
+    
+    Attributes:
+        input: The input data that was provided to the model
+        expected_output: The reference/expected output for evaluation
+        metadata: Additional metadata about the item
     
     Example:
-        >>> ground_truth = GroundTruthRecord(
-        ...     PK="GT#attack_tree#gt_abc123",
-        ...     ground_truth_id="gt_abc123",
-        ...     type=TraceType.ATTACK_TREE,
-        ...     source_trace_id="trace_xyz789",
-        ...     created_at=datetime.now(),
-        ...     created_by="sme_user_456",
-        ...     dataset_id="dataset_v1.0",
-        ...     split="train",
+        >>> item = DatasetItem(
         ...     input={"threat_statement": {"id": "T1", "description": "SQL Injection"}},
-        ...     reference_output={"attack_tree_markdown": "# SQL Injection Attack Tree..."},
-        ...     evaluation_criteria=EvaluationCriteria(
-        ...         required_phases=["initial_access", "execution"],
-        ...         structural={"min_nodes": 5}
-        ...     ),
-        ...     metadata={"review_notes": "Excellent example of SQL injection attack tree"}
+        ...     expected_output={"attack_tree_markdown": "# Attack Tree..."},
+        ...     metadata=DatasetItemMetadata(
+        ...         langfuse_trace_id="lf_123",
+        ...         trace_type="attack_tree",
+        ...         review_status="reviewed"
+        ...     )
         ... )
     """
-    PK: str  # GT#{type}#{id}
-    SK: str = "META"
-    ground_truth_id: str
-    type: TraceType
-    source_trace_id: str
-    created_at: datetime
-    created_by: str
-    dataset_id: str
-    split: str  # train, eval, test
     input: Dict[str, Any]
-    reference_output: Dict[str, Any]
-    evaluation_criteria: EvaluationCriteria
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    expected_output: Dict[str, Any]
+    metadata: DatasetItemMetadata

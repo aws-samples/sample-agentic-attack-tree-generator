@@ -7,8 +7,12 @@ across three core capabilities:
 - Attack Tree Generation
 - TTP (Tactics, Techniques, and Procedures) Matching
 
-Score definitions support both numeric scores (0.0-1.0 range) and categorical
-scores with predefined categories.
+All scores use a 5-point categorical scale for easier SME review:
+- excellent (1.0): Exceptional quality, no issues
+- good (0.75): Above average, minor issues
+- acceptable (0.5): Meets minimum requirements
+- poor (0.25): Below expectations, significant issues
+- unacceptable (0.0): Fails to meet requirements
 
 Requirements:
 - 4.1: Define score dimensions for threat statement evaluation
@@ -31,6 +35,28 @@ class ScoreType(Enum):
     """
     NUMERIC = "numeric"  # 0.0 - 1.0
     CATEGORICAL = "categorical"  # predefined categories
+
+
+# =============================================================================
+# Standard 5-Point Rating Scale
+# =============================================================================
+# All evaluation scores use this categorical scale for consistency
+
+STANDARD_CATEGORIES: List[str] = [
+    "excellent",
+    "good", 
+    "acceptable",
+    "poor",
+    "unacceptable"
+]
+
+STANDARD_SCORE_VALUES: dict[str, float] = {
+    "excellent": 1.0,
+    "good": 0.75,
+    "acceptable": 0.5,
+    "poor": 0.25,
+    "unacceptable": 0.0
+}
 
 
 @dataclass
@@ -134,28 +160,33 @@ class ScoreDefinition:
 THREAT_STATEMENT_SCORES: List[ScoreDefinition] = [
     ScoreDefinition(
         name="overall_quality",
-        score_type=ScoreType.NUMERIC,
-        description="Overall quality of generated threats"
+        score_type=ScoreType.CATEGORICAL,
+        description="Overall quality of generated threats",
+        categories=STANDARD_CATEGORIES
     ),
     ScoreDefinition(
         name="relevance_to_context",
-        score_type=ScoreType.NUMERIC,
-        description="How well threats match application context"
+        score_type=ScoreType.CATEGORICAL,
+        description="How well threats match application context",
+        categories=STANDARD_CATEGORIES
     ),
     ScoreDefinition(
         name="completeness",
-        score_type=ScoreType.NUMERIC,
-        description="Coverage of threat categories"
+        score_type=ScoreType.CATEGORICAL,
+        description="Coverage of threat categories",
+        categories=STANDARD_CATEGORIES
     ),
     ScoreDefinition(
         name="technical_accuracy",
-        score_type=ScoreType.NUMERIC,
-        description="Technical correctness of threats"
+        score_type=ScoreType.CATEGORICAL,
+        description="Technical correctness of threats",
+        categories=STANDARD_CATEGORIES
     ),
     ScoreDefinition(
         name="hallucination_score",
-        score_type=ScoreType.NUMERIC,
-        description="1.0 = no hallucinations, 0.0 = all hallucinated"
+        score_type=ScoreType.CATEGORICAL,
+        description="Presence of hallucinated content (excellent = none, unacceptable = severe)",
+        categories=STANDARD_CATEGORIES
     ),
 ]
 
@@ -169,33 +200,39 @@ THREAT_STATEMENT_SCORES: List[ScoreDefinition] = [
 ATTACK_TREE_SCORES: List[ScoreDefinition] = [
     ScoreDefinition(
         name="overall_quality",
-        score_type=ScoreType.NUMERIC,
-        description="Overall quality of attack tree"
+        score_type=ScoreType.CATEGORICAL,
+        description="Overall quality of attack tree",
+        categories=STANDARD_CATEGORIES
     ),
     ScoreDefinition(
         name="structural_quality",
-        score_type=ScoreType.NUMERIC,
-        description="Quality of tree structure"
+        score_type=ScoreType.CATEGORICAL,
+        description="Quality of tree structure (depth, branching, organization)",
+        categories=STANDARD_CATEGORIES
     ),
     ScoreDefinition(
         name="technical_realism",
-        score_type=ScoreType.NUMERIC,
-        description="Realism of attack techniques"
+        score_type=ScoreType.CATEGORICAL,
+        description="Realism of attack techniques and feasibility",
+        categories=STANDARD_CATEGORIES
     ),
     ScoreDefinition(
         name="attack_path_logic",
-        score_type=ScoreType.NUMERIC,
-        description="Logical progression of attack paths"
+        score_type=ScoreType.CATEGORICAL,
+        description="Logical progression of attack paths",
+        categories=STANDARD_CATEGORIES
     ),
     ScoreDefinition(
         name="completeness",
-        score_type=ScoreType.NUMERIC,
-        description="Coverage of attack vectors"
+        score_type=ScoreType.CATEGORICAL,
+        description="Coverage of attack vectors and phases",
+        categories=STANDARD_CATEGORIES
     ),
     ScoreDefinition(
         name="actionability",
-        score_type=ScoreType.NUMERIC,
-        description="Usefulness for defenders"
+        score_type=ScoreType.CATEGORICAL,
+        description="Usefulness for defenders and security teams",
+        categories=STANDARD_CATEGORIES
     ),
 ]
 
@@ -205,27 +242,36 @@ ATTACK_TREE_SCORES: List[ScoreDefinition] = [
 # =============================================================================
 # These scores evaluate the quality of TTP (MITRE ATT&CK) mappings.
 # Requirement 6.1: Define categorical scores for TTP mapping quality
+# Note: Uses a specialized scale with "no_mapping" instead of "unacceptable"
+
+TTP_CATEGORIES: List[str] = [
+    "excellent",
+    "good",
+    "acceptable",
+    "poor",
+    "no_mapping"
+]
 
 TTP_MAPPING_SCORES: List[ScoreDefinition] = [
     ScoreDefinition(
         name="mapping_quality",
         score_type=ScoreType.CATEGORICAL,
-        description="Quality of technique mapping",
-        categories=["excellent", "good", "poor", "no_mapping"]
+        description="Quality of MITRE ATT&CK technique mapping",
+        categories=TTP_CATEGORIES
     ),
 ]
 
 
 # =============================================================================
-# TTP Score Value Mapping
+# Score Value Mappings
 # =============================================================================
-# Maps categorical TTP scores to numeric values for aggregation and analysis.
-# Requirement 6.1: Define categorical scores for TTP mapping quality
+# Maps categorical scores to numeric values for aggregation and analysis.
 
 TTP_SCORE_VALUES: dict[str, float] = {
     "excellent": 1.0,
-    "good": 0.66,
-    "poor": 0.33,
+    "good": 0.75,
+    "acceptable": 0.5,
+    "poor": 0.25,
     "no_mapping": 0.0
 }
 
