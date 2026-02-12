@@ -109,6 +109,15 @@ class AttackTreeParser:
             # Parse node connections (e.g., 'A["text"] --> B["text"]')
             if '-->' in line:
                 self._parse_connection(line, nodes, edges)
+                continue
+            
+            # Parse standalone node definitions (e.g., 'A["descriptive text"]')
+            node_id, node_label = self._extract_node_info(line)
+            if node_id and node_label != node_id:
+                if node_id not in nodes:
+                    nodes[node_id] = {'id': node_id, 'label': node_label}
+                else:
+                    nodes[node_id]['label'] = node_label
         
         return nodes, edges, node_classes
     
@@ -139,11 +148,16 @@ class AttackTreeParser:
         to_id, to_label = self._extract_node_info(to_part)
         
         if from_id and to_id:
-            # Add nodes if not already present
+            # Add or update nodes — always prefer a real label over node_id fallback
             if from_id not in nodes:
                 nodes[from_id] = {'id': from_id, 'label': from_label}
+            elif from_label != from_id:
+                nodes[from_id]['label'] = from_label
+            
             if to_id not in nodes:
                 nodes[to_id] = {'id': to_id, 'label': to_label}
+            elif to_label != to_id:
+                nodes[to_id]['label'] = to_label
             
             # Add edge
             edges.append({'from': from_id, 'to': to_id})
