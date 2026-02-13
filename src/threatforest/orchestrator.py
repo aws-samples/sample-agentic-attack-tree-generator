@@ -405,10 +405,12 @@ class ThreatForestOrchestrator:
                                 "tree_count": len(attack_trees.get('attack_trees', [])),
                             })
                             
+                            # Pass tracing_context for granular attack_step + TTP spans
                             ttc_mapped = self.ttc_tool.run(
                                 attack_trees=attack_trees,
                                 bedrock_model=self.config.bedrock_model,
-                                aws_profile=self.config.aws_profile
+                                aws_profile=self.config.aws_profile,
+                                tracing_context=self.tracing_context
                             )
                             
                             # Capture output: technique_mappings with confidence and embedding_similarity
