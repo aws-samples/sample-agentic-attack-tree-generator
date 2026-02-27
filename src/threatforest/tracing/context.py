@@ -14,7 +14,7 @@ Requirements:
 """
 
 from contextlib import contextmanager
-from typing import Any, Dict, Generator, Optional
+from typing import Any, Dict, Generator, List, Optional
 import time
 import uuid
 
@@ -97,7 +97,8 @@ class TracingContext:
         self,
         name: str,
         session_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
+        tags: Optional[List[str]] = None
     ) -> Generator[ITrace, None, None]:
         """
         Context manager for a complete trace.
@@ -120,6 +121,7 @@ class TracingContext:
             session_id: Optional session identifier. If not provided, a new
                        UUID will be generated.
             metadata: Optional metadata to attach to the trace.
+            tags: Optional list of tags for filtering in Langfuse.
         
         Yields:
             ITrace: The created trace object.
@@ -144,7 +146,7 @@ class TracingContext:
         self._current_session_id = session_id
         
         # Create the trace
-        trace = self._manager.create_trace(name, session_id, metadata)
+        trace = self._manager.create_trace(name, session_id, metadata, tags)
         self._current_trace = trace
         
         try:
@@ -160,6 +162,82 @@ class TracingContext:
             self._manager.flush()
             self._current_trace = None
             self._current_session_id = None
+
+    @contextmanager
+    def session_trace(
+        self,
+        name: str,
+        metadata: Optional[Dict[str, Any]] = None,
+        tags: Optional[List[str]] = None
+    ) -> Generator[ITrace, None, None]:
+        """
+        Context manager for a trace within the current session.
+        
+        Creates a new trace that shares the session_id of the current session,
+        allowing multiple traces to be grouped together in Langfuse while each
+        being independently queueable for annotation.
+        
+        Unlike trace(), this does NOT reset the session_id on exit, so multiple
+        session_trace() calls can share the same session.
+        
+        Args:
+            name: Name of the trace (e.g., "threat_statement_generation").
+            metadata: Optional metadata to attach to the trace.
+            tags: Optional list of tags for filtering (e.g., ["trace_type:attack_tree"]).
+        
+        Yields:
+            ITrace: The created trace object.
+        
+        Raises:
+            ValueError: If called outside of a session (no current session_id).
+            Exception: Re-raises any exception that occurs within the context.
+        
+        Example:
+            >>> ctx.start_session()
+            >>> with ctx.session_trace("threat_generation", tags=["trace_type:threat_statement"]) as trace:
+            ...     trace.set_output({"threats": [...]})
+            >>> with ctx.session_trace("attack_tree", tags=["trace_type:attack_tree"]) as trace:
+            ...     trace.set_output({"trees": [...]})
+            >>> ctx.end_session()
+        """
+        if not self._current_session_id:
+            raise ValueError("session_trace() requires an active session. Call start_session() first.")
+        
+        trace = self._manager.create_trace(
+            name, self._current_session_id, metadata, tags
+        )
+        previous_trace = self._current_trace
+        self._current_trace = trace
+        
+        try:
+            yield trace
+            trace.set_status("success")
+        except Exception as e:
+            trace.set_status("error", str(e))
+            raise
+        finally:
+            self._manager.flush()
+            self._current_trace = previous_trace
+
+    def start_session(self, session_id: Optional[str] = None) -> str:
+        """
+        Start a tracing session. All subsequent session_trace() calls will
+        share this session_id.
+        
+        Args:
+            session_id: Optional session identifier. Generated if not provided.
+        
+        Returns:
+            str: The session_id for this session.
+        """
+        self._current_session_id = session_id or str(uuid.uuid4())
+        return self._current_session_id
+
+    def end_session(self) -> None:
+        """End the current tracing session."""
+        self._manager.flush()
+        self._current_trace = None
+        self._current_session_id = None
     
     @contextmanager
     def span(

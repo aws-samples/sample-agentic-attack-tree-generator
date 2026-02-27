@@ -402,7 +402,8 @@ class ITracingManager(ABC):
         self,
         name: str,
         session_id: str,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
+        tags: Optional[List[str]] = None
     ) -> ITrace:
         """
         Create a new parent trace for a workflow run.
@@ -415,6 +416,7 @@ class ITracingManager(ABC):
             name: Name of the trace (e.g., "threatforest_analysis").
             session_id: Session identifier for grouping related traces.
             metadata: Optional metadata to attach to the trace.
+            tags: Optional list of tags for filtering (e.g., ["trace_type:attack_tree"]).
         
         Returns:
             ITrace: New trace object.
@@ -423,7 +425,8 @@ class ITracingManager(ABC):
             >>> trace = manager.create_trace(
             ...     name="threatforest_analysis",
             ...     session_id="session-123",
-            ...     metadata={"bedrock_model": "anthropic.claude-3-sonnet"}
+            ...     metadata={"bedrock_model": "anthropic.claude-3-sonnet"},
+            ...     tags=["trace_type:attack_tree"]
             ... )
         """
         pass

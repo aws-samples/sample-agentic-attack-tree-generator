@@ -440,7 +440,8 @@ class ResilientTracingManager(TracingManager):
         self,
         name: str,
         session_id: str,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
+        tags: Optional[List[str]] = None
     ) -> ITrace:
         """
         Create a new parent trace for a workflow run.
@@ -453,6 +454,7 @@ class ResilientTracingManager(TracingManager):
             name: Name of the trace.
             session_id: Session identifier.
             metadata: Optional metadata.
+            tags: Optional list of tags for filtering.
         
         Returns:
             ITrace: New trace object (LangfuseTrace or BufferedTraceWrapper).
@@ -461,7 +463,7 @@ class ResilientTracingManager(TracingManager):
             return self._buffer_trace(name, session_id, metadata)
         
         try:
-            return super().create_trace(name, session_id, metadata)
+            return super().create_trace(name, session_id, metadata, tags)
         except Exception as e:
             self._logger.warning(
                 f"Langfuse unavailable, buffering traces: {e}"
