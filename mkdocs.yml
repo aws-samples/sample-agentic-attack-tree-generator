@@ -185,6 +185,7 @@ nav:
     - Preparing Your Project: user-guide/preparing-your-project.md
     - Running ThreatForest: user-guide/running-threatforest.md
     - Understanding Results: user-guide/understanding-results.md
+    - Evaluation & Optimization: user-guide/evaluation-with-langfuse.md
   
   - How It Works:
     - Overview: how-it-works/index.md

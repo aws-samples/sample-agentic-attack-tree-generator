@@ -453,7 +453,8 @@ class TracingManager(ITracingManager):
         self,
         name: str,
         session_id: str,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
+        tags: Optional[List[str]] = None
     ) -> ITrace:
         """
         Create a new parent trace for a workflow run.
@@ -467,6 +468,7 @@ class TracingManager(ITracingManager):
             name: Name of the trace (e.g., "threatforest_analysis").
             session_id: Session identifier for grouping related traces.
             metadata: Optional metadata to attach to the trace.
+            tags: Optional list of tags for filtering (e.g., ["trace_type:attack_tree"]).
         
         Returns:
             ITrace: New trace object (LangfuseTrace or NoOpTrace).
@@ -485,12 +487,16 @@ class TracingManager(ITracingManager):
         trace_metadata = metadata.copy() if metadata else {}
         trace_metadata["timestamp"] = datetime.now(timezone.utc).isoformat()
         
-        langfuse_trace = self._client.trace(
-            id=trace_id,
-            name=name,
-            session_id=session_id,
-            metadata=trace_metadata
-        )
+        trace_kwargs: Dict[str, Any] = {
+            "id": trace_id,
+            "name": name,
+            "session_id": session_id,
+            "metadata": trace_metadata,
+        }
+        if tags:
+            trace_kwargs["tags"] = tags
+        
+        langfuse_trace = self._client.trace(**trace_kwargs)
         
         return LangfuseTrace(
             langfuse_trace=langfuse_trace,

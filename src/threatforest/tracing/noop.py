@@ -310,7 +310,8 @@ class NoOpTracingManager(ITracingManager):
         self,
         name: str,
         session_id: str,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
+        tags: Optional[List[str]] = None
     ) -> ITrace:
         """
         Create a no-op trace.
@@ -322,6 +323,7 @@ class NoOpTracingManager(ITracingManager):
             name: Trace name (ignored).
             session_id: Session identifier (ignored).
             metadata: Trace metadata (ignored).
+            tags: Trace tags (ignored).
         
         Returns:
             NoOpTrace: A no-op trace object.

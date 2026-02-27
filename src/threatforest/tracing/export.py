@@ -162,8 +162,13 @@ class ExportFilter:
         if self.end_date is not None:
             params["to_timestamp"] = self.end_date.isoformat()
         
+        tags = []
         if self.ground_truth_only:
-            params["tags"] = ["ground_truth_candidate"]
+            tags.append("ground_truth_candidate")
+        if self.trace_type is not None:
+            tags.append(f"trace_type:{self.trace_type}")
+        if tags:
+            params["tags"] = tags
         
         return params
     
