@@ -8,6 +8,7 @@ import FormField from '@cloudscape-design/components/form-field';
 import Button from '@cloudscape-design/components/button';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import Grid from '@cloudscape-design/components/grid';
+import ExpandableSection from '@cloudscape-design/components/expandable-section';
 import { aggregateMitigations } from '../utils/mitigation-aggregator';
 import {
   filterMitigations,
@@ -32,31 +33,38 @@ const COLUMN_DEFINITIONS = [
   {
     id: "name",
     header: "Mitigation",
-    cell: (item) => item.name,
+    cell: (item) => (
+      <ExpandableSection headerText={item.name.length > 80 ? item.name.slice(0, 80) + '…' : item.name} variant="footer">
+        <Box fontSize="body-s" color="text-body-secondary" padding={{ top: 'xxs' }}>
+          {item.name}
+        </Box>
+      </ExpandableSection>
+    ),
     sortingField: "name",
-    width: 200,
-    minWidth: 140,
+    width: 250,
+    minWidth: 180,
   },
   {
     id: "description",
     header: "Implementation Guidance",
     cell: (item) => {
       if (!item.description) return "—";
-      // Split numbered steps (1. xxx 2. xxx) into a list
+      const brief = item.description.slice(0, 100) + (item.description.length > 100 ? '…' : '');
       const steps = item.description.split(/(?=\d+\.\s)/).filter(Boolean);
-      if (steps.length > 1) {
-        return (
-          <ol style={{ margin: '4px 0', paddingLeft: '20px', whiteSpace: 'normal', wordBreak: 'break-word', fontSize: '13px', lineHeight: '1.5' }}>
-            {steps.map((s, i) => (
-              <li key={i} style={{ marginBottom: '4px' }}>{s.replace(/^\d+\.\s*/, '')}</li>
-            ))}
-          </ol>
-        );
-      }
       return (
-        <div style={{ whiteSpace: "normal", wordBreak: "break-word" }}>
-          {item.description}
-        </div>
+        <ExpandableSection headerText={brief} variant="footer">
+          {steps.length > 1 ? (
+            <ol style={{ margin: '4px 0', paddingLeft: '20px', fontSize: '13px', lineHeight: '1.6' }}>
+              {steps.map((s, i) => (
+                <li key={i} style={{ marginBottom: '6px' }}>{s.replace(/^\d+\.\s*/, '')}</li>
+              ))}
+            </ol>
+          ) : (
+            <Box fontSize="body-s" color="text-body-secondary" padding={{ top: 'xxs' }}>
+              {item.description}
+            </Box>
+          )}
+        </ExpandableSection>
       );
     },
     minWidth: 200,
