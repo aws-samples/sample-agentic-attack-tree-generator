@@ -1,0 +1,54 @@
+%==============================================================================
+% Appendix
+%==============================================================================
+
+\section{Score Definitions Reference}
+\label{app:scores}
+
+Table~\ref{tab:all-scores} lists all 12 score dimensions defined in the evaluation framework.
+
+\begin{table}[h]
+\centering
+\caption{Complete score dimension reference.}
+\label{tab:all-scores}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Capability} & \textbf{Dimension} & \textbf{Type} & \textbf{Scale} \\
+\midrule
+Threat Statement & overall\_quality & Categorical & 5-point \\
+Threat Statement & relevance\_to\_context & Categorical & 5-point \\
+Threat Statement & completeness & Categorical & 5-point \\
+Threat Statement & technical\_accuracy & Categorical & 5-point \\
+Threat Statement & hallucination\_score & Categorical & 5-point \\
+\midrule
+Attack Tree & overall\_quality & Categorical & 5-point \\
+Attack Tree & structural\_quality & Categorical & 5-point \\
+Attack Tree & technical\_realism & Categorical & 5-point \\
+Attack Tree & attack\_path\_logic & Categorical & 5-point \\
+Attack Tree & completeness & Categorical & 5-point \\
+Attack Tree & actionability & Categorical & 5-point \\
+\midrule
+TTP Matching & mapping\_quality & Categorical & 5-point$^*$ \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.5em}
+{\small $^*$TTP matching uses ``no\_mapping'' instead of ``unacceptable'' as the lowest category.}
+\end{table}
+
+\section{Phase Detection Keywords}
+\label{app:phases}
+
+The automated phase coverage metric matches attack tree node descriptions against keyword lists for 12 MITRE ATT\&CK tactics. The dictionary contains 130+ terms. Representative examples:
+
+\begin{itemize}
+    \item \textbf{Initial Access}: phishing, exploit public, drive-by, supply chain, valid accounts
+    \item \textbf{Privilege Escalation}: escalate, elevate, admin, root, UAC bypass, token
+    \item \textbf{Lateral Movement}: pivot, spread, pass the hash, RDP, SSH, remote service
+    \item \textbf{Exfiltration}: exfiltrate, transfer, upload, data theft, steal data
+\end{itemize}
+
+\section{Tracing Data Schema}
+\label{app:schema}
+
+\todo{Include the full JSON schema for evaluation records}

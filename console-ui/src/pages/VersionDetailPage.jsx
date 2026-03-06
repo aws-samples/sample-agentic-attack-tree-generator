@@ -1,0 +1,162 @@
+import { useState, useEffect, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
+import ColumnLayout from '@cloudscape-design/components/column-layout';
+import Box from '@cloudscape-design/components/box';
+import Header from '@cloudscape-design/components/header';
+import Alert from '@cloudscape-design/components/alert';
+import Spinner from '@cloudscape-design/components/spinner';
+import SpaceBetween from '@cloudscape-design/components/space-between';
+import Container from '@cloudscape-design/components/container';
+import Badge from '@cloudscape-design/components/badge';
+import Select from '@cloudscape-design/components/select';
+import FormField from '@cloudscape-design/components/form-field';
+import CloudscapeShell from '../components/CloudscapeShell';
+import AttackFlowViewer from '../components/AttackFlowViewer';
+import MitigationsTable from '../components/MitigationsTable';
+import ExportButton from '../components/ExportButton';
+
+function PriorityBadge({ priority }) {
+  const colorMap = { High: 'red', Medium: 'grey', Low: 'green' };
+  return <Badge color={colorMap[priority] || 'grey'}>{priority || '\u2014'}</Badge>;
+}
+
+function SummaryBar({ data }) {
+  const ext = data?.extraction_summary || {};
+  const map = data?.mapping_summary || {};
+  return (
+    <Container>
+      <ColumnLayout columns={4} variant="text-grid">
+        <div><Box variant="awsui-key-label">Total Threats</Box>
+          <div style={{ fontSize: '24px', fontWeight: 700 }}>{ext.total_threats ?? 0}</div></div>
+        <div><Box variant="awsui-key-label">High Severity</Box>
+          <div style={{ fontSize: '24px', fontWeight: 700, color: '#d13212' }}>{ext.high_severity_count ?? 0}</div></div>
+        <div><Box variant="awsui-key-label">Attack Trees</Box>
+          <div style={{ fontSize: '24px', fontWeight: 700 }}>{(data?.attack_trees || []).length}</div></div>
+        <div><Box variant="awsui-key-label">TTP Mappings</Box>
+          <div style={{ fontSize: '24px', fontWeight: 700 }}>{map.total_mappings ?? 0}</div></div>
+      </ColumnLayout>
+    </Container>
+  );
+}
+
+function ThreatDetailsBar({ tree }) {
+  if (!tree) return null;
+  return (
+    <Container>
+      <ColumnLayout columns={2} variant="text-grid">
+        <div><Box variant="awsui-key-label">Threat Statement</Box>
+          <div>{tree.threat_statement || '\u2014'}</div></div>
+        <div><SpaceBetween size="m">
+          <div><Box variant="awsui-key-label">Priority</Box><PriorityBadge priority={tree.priority} /></div>
+          <div><Box variant="awsui-key-label">Action</Box><div>{tree.threat_action || '\u2014'}</div></div>
+          <div><Box variant="awsui-key-label">Source</Box><div>{tree.threatSource || '\u2014'}</div></div>
+        </SpaceBetween></div>
+      </ColumnLayout>
+    </Container>
+  );
+}
+
+
+export default function VersionDetailPage() {
+  const { appId, versionId } = useParams();
+  const [data, setData] = useState(null);
+  const [appName, setAppName] = useState(appId);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function fetchVersion() {
+      try {
+        setLoading(true); setError(null);
+        const response = await fetch(`/api/applications/${encodeURIComponent(appId)}/versions/${encodeURIComponent(versionId)}/data`);
+        if (!response.ok) throw new Error(`Failed to load (HTTP ${response.status})`);
+        const json = await response.json();
+        if (cancelled) return;
+        setData(json);
+        if (json.project_info?.application_name) setAppName(json.project_info.application_name);
+        else if (json.application_name) setAppName(json.application_name);
+        if (json.attack_trees?.length > 0) {
+          const t = json.attack_trees[0];
+          setSelectedOption({ label: `${t.threat_id} \u2014 ${t.threat_category} (${t.priority})`, value: '0' });
+        }
+      } catch (err) {
+        if (!cancelled) setError(err.message || 'Failed to load');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    fetchVersion();
+    return () => { cancelled = true; };
+  }, [appId, versionId]);
+
+  const attackTrees = data?.attack_trees || [];
+  const selectedIdx = selectedOption ? parseInt(selectedOption.value, 10) : 0;
+  const selectedTree = attackTrees[selectedIdx] || null;
+  const threatOptions = attackTrees.map((t, i) => ({
+    label: `${t.threat_id || `Threat ${i + 1}`} \u2014 ${t.threat_category || 'Unknown'} (${t.priority || '\u2014'})`,
+    value: String(i),
+  }));
+
+  return (
+    <CloudscapeShell
+      activePage="/applications"
+      breadcrumbs={[
+        { text: 'Home', href: '/' },
+        { text: 'Applications', href: '/applications' },
+        { text: appName, href: `/applications/${appId}` },
+        { text: 'Attack Tree Dashboard', href: `/applications/${appId}/versions/${versionId}` },
+      ]}
+    >
+      {error && <Alert type="error" header="Error loading dashboard">{error}</Alert>}
+      {loading ? (
+        <Box textAlign="center" padding="l" data-testid="loading-spinner"><Spinner size="large" /></Box>
+      ) : data ? (
+        <SpaceBetween size="m">
+          <Header variant="h1" actions={
+            <ExportButton
+              attackTree={selectedTree}
+              summaryData={data}
+              appId={appId}
+              versionId={versionId}
+            />
+          }>Attack Tree Dashboard</Header>
+          <SummaryBar data={data} />
+          {threatOptions.length > 0 && (
+            <div style={{ maxWidth: '400px' }}>
+              <FormField label="Select threat">
+                <Select
+                  selectedOption={selectedOption}
+                  onChange={({ detail }) => setSelectedOption(detail.selectedOption)}
+                  options={threatOptions}
+                  placeholder="Choose a threat..."
+                />
+              </FormField>
+            </div>
+          )}
+          {selectedTree && <ThreatDetailsBar tree={selectedTree} />}
+          {selectedTree && (
+            <div>
+              <Header variant="h3">Attack Tree</Header>
+              <Box variant="p" color="text-status-inactive" fontSize="body-s" margin={{ bottom: 'xs' }}>
+                Click any node to view and edit its properties in the right panel.
+              </Box>
+              <div style={{
+                border: '1px solid #d5dbdb',
+                borderRadius: 8,
+                overflow: 'hidden',
+              }}>
+                <AttackFlowViewer attackTree={selectedTree} />
+              </div>
+            </div>
+          )}
+          {selectedTree && <MitigationsTable attackTree={selectedTree} />}
+          {!selectedTree && attackTrees.length === 0 && (
+            <Box color="text-status-inactive" textAlign="center" padding="l">No attack trees available.</Box>
+          )}
+        </SpaceBetween>
+      ) : null}
+    </CloudscapeShell>
+  );
+}

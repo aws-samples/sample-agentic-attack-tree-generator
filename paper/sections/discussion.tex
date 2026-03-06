@@ -1,0 +1,37 @@
+%==============================================================================
+\section{Discussion}
+%==============================================================================
+
+\subsection{Framework Design Decisions}
+
+\textbf{Categorical vs.\ numeric scales.} We chose a 5-point categorical scale over continuous numeric scores to reduce SME cognitive load and improve inter-rater reliability. Categorical labels (``excellent'' through ``unacceptable'') provide clearer anchoring than arbitrary numeric ranges, while the fixed mapping to $[0, 1]$ preserves compatibility with optimization objectives.
+
+\textbf{Production tracing vs.\ offline evaluation.} Embedding evaluation in the production tracing system---rather than building a separate evaluation harness---ensures that every execution produces evaluation-ready data. This eliminates the common gap between ``how the system runs'' and ``how the system is evaluated.''
+
+\textbf{Capability separation.} Evaluating threat statements, attack trees, and TTP mappings independently allows targeted optimization of each agent without confounding effects. A system may excel at threat identification but produce poor attack trees; unified scores would mask this.
+
+\subsection{Limitations}
+
+\begin{itemize}
+    \item \textbf{SME availability.} The framework requires security domain experts for scoring. Scaling evaluation beyond a small number of domains requires either more SMEs or a calibrated automated evaluator.
+    \item \textbf{Keyword-based phase detection.} The automated phase coverage metric relies on keyword matching, which may miss novel phrasings or produce false positives for ambiguous terms.
+    \item \textbf{Domain coverage.} Our baseline evaluation covers five domains. Broader coverage is needed to assess generalization.
+    \item \textbf{Inter-rater reliability.} We have not yet measured agreement across multiple SMEs on the same outputs. This is planned as part of the baseline collection.
+    \item \textbf{Optimization results.} The preliminary optimization experiment was inconclusive due to insufficient data. Meaningful optimization results require the larger dataset enabled by this framework.
+\end{itemize}
+
+\subsection{Broader Impact}
+
+By establishing measurable baselines for automated threat modeling, this framework enables the security community to objectively compare tools and track progress. The open-source implementation and standardized scoring rubrics lower the barrier for other researchers to evaluate their own systems against the same criteria.
+
+However, quantitative evaluation of threat models carries risks. Over-optimization for specific metrics may produce outputs that score well but miss novel threats outside the evaluation taxonomy. We recommend that automated evaluation always be complemented by periodic expert review of edge cases.
+
+%==============================================================================
+\section{Conclusion}
+%==============================================================================
+
+We presented an evaluation framework for automated threat modeling that decomposes quality into three independently measurable capabilities---threat statement generation, attack tree generation, and TTP matching---with 12 score dimensions, automated structural metrics, and SME review protocols. The framework is implemented as a production tracing infrastructure on OpenTelemetry and Langfuse, ensuring that every system execution produces evaluation-ready data.
+
+Our key insight is that \emph{evaluation infrastructure is a prerequisite for optimization}. Without standardized metrics, structured data collection, and export pipelines, there is no path from ``the system works'' to ``the system improves.'' By designing the evaluation framework first, we establish the foundation for iterative prompt optimization via DSPy's MIPROv2, where each cycle of SME scoring produces training data for the next optimization round.
+
+We report baseline measurements across \todo{N} domains and outline a concrete roadmap from evaluation to optimization. To our knowledge, this is the first comprehensive evaluation framework for automated threat modeling, and we release it as open source to enable reproducible research in this emerging area.

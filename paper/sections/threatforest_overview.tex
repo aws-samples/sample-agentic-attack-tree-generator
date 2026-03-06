@@ -1,0 +1,22 @@
+%==============================================================================
+\section{\threatforest{} System Overview}
+\label{sec:system}
+%==============================================================================
+
+Before describing the evaluation framework, we briefly summarize the system under evaluation. \threatforest{} is a multi-agent threat modeling system built on the Strands agentic framework that processes project documentation into attack trees mapped to MITRE ATT\&CK.
+
+\subsection{Multi-Agent Pipeline}
+
+The system employs five specialized agents executed sequentially:
+
+\begin{enumerate}
+    \item \textbf{Context Analysis.} Extracts structured understanding of the target system from documentation, architecture diagrams, and deployment specifications.
+    \item \textbf{Information Extraction.} Parses threat specifications from multiple formats (ThreatComposer JSON, Markdown, YAML) into structured threat statements.
+    \item \textbf{Attack Tree Generation.} Produces Mermaid-formatted attack trees with hierarchical attack paths, color-coded by attack phase.
+    \item \textbf{TTP Mapping.} Maps attack tree nodes to MITRE ATT\&CK techniques using SecureBERT2.0~\cite{aghaei2023securebert} embeddings and cosine similarity search over a pre-computed index of 600+ techniques.
+    \item \textbf{Mitigation Synthesis.} Generates prioritized mitigation recommendations for identified techniques.
+\end{enumerate}
+
+\subsection{Evaluation Challenge}
+
+Each agent produces qualitatively different outputs requiring different evaluation criteria. The context analysis agent produces structured summaries; the attack tree agent produces graph structures; the TTP mapping agent produces ranked technique lists. A single quality score cannot capture this diversity, motivating the multi-dimensional framework described in Section~\ref{sec:framework}.

@@ -192,4 +192,10 @@ scripts/
 .threat-composer/
 .ash/
 uv.lock
-sample-applications/
+sample-applications/console-ui/node_modules/
+
+# Console UI
+console-ui/node_modules/
+console-ui/dist/
+sample-applications/iam-identity-center-team/
+sample-applications/sample-scientific-meeting-transcription/

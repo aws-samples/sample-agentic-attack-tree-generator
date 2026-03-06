@@ -47,14 +47,59 @@ with _loading_console.status("[bold cyan]🌳 Initializing ThreatForest...", spi
 console = Console()
 
 
+def _resolve_workspace_root() -> Path:
+    """Resolve the repo root directory."""
+    package_dir = Path(__file__).resolve().parent
+    return package_dir.parent.parent
+
+
+def launch_server(host: str = "127.0.0.1", port: int = 8000) -> None:
+    """Start the FastAPI web console server and open the browser."""
+    import threading
+    import time
+
+    repo_root = _resolve_workspace_root()
+    src_dir = str(repo_root / "src")
+    if src_dir not in sys.path:
+        sys.path.insert(0, src_dir)
+
+    console.print(f"[bold cyan]🌳 Starting ThreatForest Web Console on http://{host}:{port}[/bold cyan]")
+
+    def open_browser():
+        time.sleep(1.5)
+        webbrowser.open(f"http://{host}:{port}")
+
+    threading.Thread(target=open_browser, daemon=True).start()
+
+    try:
+        import uvicorn
+        uvicorn.run("server.app:app", host=host, port=port, log_level="info")
+    except KeyboardInterrupt:
+        console.print("\n[cyan]👋 ThreatForest Web Console stopped.[/cyan]")
+    except ImportError:
+        console.print("[red]Error:[/red] uvicorn is not installed. Install it with: pip install uvicorn[standard]")
+        sys.exit(1)
+    except OSError as e:
+        if "address already in use" in str(e).lower():
+            console.print(f"[red]Error:[/red] Port {port} is already in use.")
+            console.print(f"[dim]Try: threatforest --port {port + 1}[/dim]")
+            sys.exit(1)
+        raise
+
 
 @click.group(invoke_without_command=True)
+@click.option("--tui", is_flag=True, default=False, help="Run in interactive terminal mode")
+@click.option("--host", default="127.0.0.1", help="Host for web console server")
+@click.option("--port", default=8000, type=int, help="Port for web console server")
 @click.pass_context
-def cli(ctx):
-    """ThreatForest - AI-Driven Threat Modeling CLI"""
-    if ctx.invoked_subcommand is None:
-        # No subcommand - run interactive wizard
+def cli(ctx, tui, host, port):
+    """ThreatForest - AI-Driven Threat Modeling"""
+    if ctx.invoked_subcommand is not None:
+        return
+    if tui:
         ctx.invoke(run)
+    else:
+        launch_server(host=host, port=port)
 
 
 @cli.command()

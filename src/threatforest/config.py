@@ -11,9 +11,10 @@ from dotenv import load_dotenv
 # This gives us the repo root: /path/to/ThreatForest-internal
 ROOT_DIR = Path(__file__).parent.parent.parent
 
-# Load environment variables from fixed location in .threatforest/.env
-ENV_FILE = ROOT_DIR / ".threatforest" / ".env"
-ENV_FILE.parent.mkdir(parents=True, exist_ok=True)  # Ensure directory exists
+# Load environment variables — check cwd first, then ROOT_DIR
+_cwd_env = Path.cwd() / ".threatforest" / ".env"
+ENV_FILE = _cwd_env if _cwd_env.is_file() else ROOT_DIR / ".threatforest" / ".env"
+ENV_FILE.parent.mkdir(parents=True, exist_ok=True)
 load_dotenv(dotenv_path=ENV_FILE, override=True)
 
 
@@ -34,15 +35,29 @@ class Config:
         pass
 
     def _find_config_file(self) -> Path:
-        """Find config.yaml using professional search hierarchy"""
-        # Project config directory
-        project_config = ROOT_DIR / ".threatforest" / "config.yaml"
-        if project_config.exists():
-            return project_config
+        """Find config.yaml using a search hierarchy.
+
+        Resolution order:
+        1. cwd/.threatforest/config.yaml  — workspace config (UI / user runs from repo root)
+        2. ROOT_DIR/.threatforest/config.yaml — relative to engine source (editable installs)
+
+        This ensures the config is found regardless of install method
+        (uv tool, pipx, pip, editable, PYTHONPATH).
+        """
+        candidates = [
+            Path.cwd() / ".threatforest" / "config.yaml",
+            ROOT_DIR / ".threatforest" / "config.yaml",
+        ]
+        for candidate in candidates:
+            if candidate.is_file():
+                return candidate
 
         raise FileNotFoundError(
-            f"Configuration file not found at {project_config}\n"
-            "\nTo fix: Run 'threatforest' to auto-create config"
+            f"Configuration file not found. Searched:\n"
+            f"  1. {candidates[0]}\n"
+            f"  2. {candidates[1]}\n"
+            "\nTo fix: Run 'threatforest' to auto-create config or "
+            "save configuration via the Configure page."
         )
 
     def _load_config(self):
