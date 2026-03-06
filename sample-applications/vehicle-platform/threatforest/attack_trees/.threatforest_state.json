@@ -1,0 +1,9 @@
+{
+  "threat_status": {
+    "T001": "success",
+    "T002": "success",
+    "T003": "success",
+    "T004": "success"
+  },
+  "last_updated": "2026-02-26 17:16:59"
+}

@@ -1,0 +1,1570 @@
+{
+  "metadata": {
+    "generated_at": "2026-02-26T17:17:08.856078",
+    "generator": "ThreatForest",
+    "version": "1.0"
+  },
+  "project_info": {
+    "application_name": "AWS Connected Vehicle Solution - Vehicle Registration Platform",
+    "technologies": [
+      "AWS Lambda",
+      "Amazon API Gateway (REST)",
+      "Amazon DynamoDB",
+      "Amazon S3 (server-side encryption)",
+      "Amazon Cognito (user pool authentication)",
+      "AWS Amplify (static web hosting)",
+      "AWS CloudWatch Logs",
+      "AWS WAF",
+      "AWS Shield",
+      "AWS Certificate Manager (ACM)",
+      "Amazon Macie",
+      "Pre-signed S3 URLs",
+      "TLS/HTTPS",
+      "REST APIs",
+      "Serverless architecture",
+      "IoT connected vehicles"
+    ],
+    "architecture_type": "serverless",
+    "deployment_environment": "AWS",
+    "sector": "Automotive / Fleet Management / IoT",
+    "security_objectives": [
+      "Protect user authentication credentials and Cognito tokens",
+      "Ensure confidentiality of vehicle registration documents (PDFs stored in S3)",
+      "Ensure integrity of vehicle registration metadata in DynamoDB",
+      "Prevent unauthorized access to vehicle registration operations (IDOR prevention)",
+      "Protect data in transit via TLS between browser and API Gateway/S3",
+      "Protect data at rest using S3 server-side encryption and DynamoDB encryption",
+      "Ensure non-repudiation of vehicle registration/deregistration actions for billing",
+      "Prevent credential stuffing and password spraying against Cognito",
+      "Prevent privilege escalation via Lambda execution role abuse",
+      "Protect sensitive data from leaking into CloudWatch Logs",
+      "Ensure availability of vehicle registration services against DDoS",
+      "Validate all API inputs to prevent injection attacks",
+      "Limit pre-signed S3 URL capabilities and exposure",
+      "Apply least-privilege IAM permissions across all AWS resources",
+      "Monitor and detect unauthorized configuration changes"
+    ],
+    "data_assets": [
+      "User authentication credentials and Cognito tokens",
+      "Vehicle registration documents (PDF files stored in S3 with server-side encryption)",
+      "Vehicle registration metadata (registration number, expiry dates) in DynamoDB",
+      "Vehicle listing data in DynamoDB",
+      "Vehicle registration status in DynamoDB",
+      "Pre-signed S3 URLs for document access",
+      "GUIDs used as API response identifiers",
+      "API request tokens and method data",
+      "Lambda function execution logs in CloudWatch",
+      "Billing and financial records related to vehicle registration",
+      "IoT vehicle telemetry data",
+      "Customer PII (driver information, email addresses)",
+      "Vehicle diagnostic error codes",
+      "Trip data from connected vehicles"
+    ],
+    "entry_points": [
+      "REST API via Amazon API Gateway (ListVehicles, RegisterVehicle, DeregisterVehicle, DescribeVehicle)",
+      "AWS Amplify-hosted web frontend (HTML, CSS, JavaScript)",
+      "Amazon Cognito user pool authentication endpoint (Initiate Auth, Challenge Response)",
+      "Pre-signed S3 URLs for direct document upload/download",
+      "IoT vehicle telemetry data ingestion endpoints",
+      "Vehicle CAN bus interface (physical/remote)",
+      "Vehicle Bluetooth and Wi-Fi interfaces (infotainment system)",
+      "Keyless entry and start system",
+      "OBD-II diagnostic port",
+      "OTA firmware update channel"
+    ],
+    "trust_boundaries": [
+      "Between user browser and AWS Amplify frontend (TLS-protected)",
+      "Between user browser and Amazon API Gateway (TLS-protected, token-authenticated)",
+      "Between user browser and Amazon Cognito (authentication/authorization boundary)",
+      "Between user browser and Amazon S3 via pre-signed URLs (direct object access)",
+      "Between Amazon API Gateway and AWS Lambda function (same trust zone - Lambda trusts API Gateway authentication)",
+      "Between AWS Lambda and Amazon DynamoDB (IAM role-based access)",
+      "Between AWS Lambda and Amazon S3 (IAM role-based access)",
+      "Between external internet and Connected Vehicle Solution AWS account boundary",
+      "Between vehicle IoT devices and cloud backend",
+      "Between vehicle internal network subsystems (CAN bus, infotainment, safety-critical systems)",
+      "Between third-party component repositories and vehicle platform build pipeline",
+      "Between internal actors with AWS account access and production resources"
+    ],
+    "summary": "The AWS Connected Vehicle Solution is a serverless fleet management platform deployed on AWS, focused on a Vehicle Registration feature. It enables fleet managers to register, deregister, list, and describe IoT-connected vehicles. The architecture uses AWS Amplify for the web frontend, Amazon Cognito for user authentication, Amazon API Gateway with a single Lambda function for REST API processing (ListVehicles, RegisterVehicle, DeregisterVehicle, DescribeVehicle), Amazon DynamoDB for vehicle metadata storage, and Amazon S3 with server-side encryption for vehicle registration PDF documents. Pre-signed S3 URLs are used for document retrieval. The system has a comprehensive threat model with 11+ identified threats including IDOR/broken access control on API parameters, authentication bypass via Cognito password spraying (no MFA), privilege escalation through Lambda execution role abuse by internal actors, data breach risks from DynamoDB/S3 access, sensitive data leakage in Lambda logs, data-in-transit interception, non-repudiation issues for billing, and domain spoofing. Key security assumptions include: all users can perform all operations (single authorization scope), MFA is not used, GUIDs are random/non-sequential, Lambda trusts API Gateway authentication without additional checks, and all AWS services reside in the same account and region. Mitigations identified include AWS WAF/Shield for DDoS protection, ACM for TLS certificates, Cognito-based auth, IAM least-privilege, input validation, CloudWatch monitoring, Amazon Macie for sensitive data discovery, API throttling, and cost monitoring. The broader connected vehicle ecosystem also faces threats from CAN bus injection, OTA firmware tampering, relay attacks on keyless entry, lateral movement via infotainment systems, and supply chain attacks on the build pipeline.",
+    "short_summary": "AWS serverless vehicle registration platform (Lambda, API Gateway, DynamoDB, S3, Cognito) for IoT fleet management with IDOR, auth bypass, and privilege escalation risks."
+  },
+  "extraction_summary": {
+    "total_threats": 12,
+    "high_severity_count": 4,
+    "technologies_identified": 16,
+    "has_security_objectives": true,
+    "agent_based": true,
+    "threat_source": "ai_generated"
+  },
+  "threats": {
+    "all_threats": [
+      {
+        "id": "T001",
+        "statement": "A malicious authenticated user with valid Cognito credentials and knowledge of other vehicles' registration identifiers, can manipulate API request parameters (e.g., vehicle registration number or GUID) to access or modify other users' vehicle records via IDOR, which leads to unauthorized viewing, modification, or deregistration of vehicles belonging to other fleet managers, resulting in reduced confidentiality and integrity of vehicle registration metadata in DynamoDB and vehicle registration documents in S3.",
+        "severity": "High",
+        "category": "Broken Access Control (IDOR)",
+        "threatSource": "malicious authenticated user",
+        "prerequisites": "valid Cognito credentials and knowledge of other vehicles' registration identifiers or GUIDs",
+        "threatAction": "manipulate API request parameters to access or modify other users' vehicle records via Insecure Direct Object Reference",
+        "threatImpact": "unauthorized viewing, modification, or deregistration of vehicles belonging to other fleet managers",
+        "impactedGoal": "confidentiality and integrity",
+        "impactedAssets": "vehicle registration metadata in DynamoDB, vehicle registration documents in S3, vehicle listing data",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T002",
+        "statement": "A remote attacker with network access to the Cognito authentication endpoint and a list of common passwords or breached credential databases, can perform credential stuffing or password spraying attacks against the Cognito user pool which lacks MFA enforcement, which leads to unauthorized account takeover of fleet manager accounts, resulting in reduced confidentiality of user authentication credentials and Cognito tokens.",
+        "severity": "High",
+        "category": "Authentication",
+        "threatSource": "remote attacker",
+        "prerequisites": "network access to the Cognito authentication endpoint and a list of common passwords or breached credential databases",
+        "threatAction": "perform credential stuffing or password spraying attacks against the Cognito user pool which lacks MFA enforcement",
+        "threatImpact": "unauthorized account takeover of fleet manager accounts",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "user authentication credentials and Cognito tokens, vehicle registration metadata, vehicle registration documents",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T003",
+        "statement": "A malicious insider or compromised developer with access to the AWS account and Lambda function configuration, can escalate privileges by modifying the Lambda execution role to attach overly permissive IAM policies, which leads to unauthorized access to DynamoDB tables, S3 buckets, and other AWS services beyond the function's intended scope, resulting in reduced confidentiality and integrity of vehicle registration documents in S3, vehicle registration metadata in DynamoDB, and customer PII.",
+        "severity": "High",
+        "category": "Privilege Escalation",
+        "threatSource": "malicious insider or compromised developer",
+        "prerequisites": "access to the AWS account and Lambda function configuration or IAM permissions",
+        "threatAction": "escalate privileges by modifying the Lambda execution role to attach overly permissive IAM policies",
+        "threatImpact": "unauthorized access to DynamoDB tables, S3 buckets, and other AWS services beyond the function's intended scope",
+        "impactedGoal": "confidentiality and integrity",
+        "impactedAssets": "vehicle registration documents in S3, vehicle registration metadata in DynamoDB, customer PII, Lambda function execution environment",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T004",
+        "statement": "A remote attacker with the ability to intercept or obtain a pre-signed S3 URL before its expiration, can reuse or share the pre-signed URL to download vehicle registration PDF documents without authenticating through the application, which leads to unauthorized access to sensitive vehicle registration documents, resulting in reduced confidentiality of vehicle registration documents stored in S3.",
+        "severity": "High",
+        "category": "Data Breach",
+        "threatSource": "remote attacker",
+        "prerequisites": "ability to intercept or obtain a pre-signed S3 URL before its expiration (e.g., via browser history, logs, or network sniffing on degraded TLS)",
+        "threatAction": "reuse or share the pre-signed URL to download vehicle registration PDF documents without authenticating through the application",
+        "threatImpact": "unauthorized access to sensitive vehicle registration documents",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "vehicle registration documents (PDF files stored in S3)",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T005",
+        "statement": "A malicious actor with the ability to send crafted API requests to the API Gateway endpoints, can inject malicious payloads into vehicle registration fields that are processed by the Lambda function without sufficient input validation, which leads to server-side injection or data corruption in DynamoDB, resulting in reduced integrity of vehicle registration metadata in DynamoDB.",
+        "severity": "Medium",
+        "category": "Injection",
+        "threatSource": "malicious actor",
+        "prerequisites": "valid authentication token and ability to send crafted API requests to the API Gateway endpoints",
+        "threatAction": "inject malicious payloads into vehicle registration fields processed by the Lambda function without sufficient input validation",
+        "threatImpact": "server-side injection or data corruption in DynamoDB (e.g., NoSQL injection)",
+        "impactedGoal": "integrity",
+        "impactedAssets": "vehicle registration metadata in DynamoDB, vehicle listing data in DynamoDB",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T006",
+        "statement": "A Lambda function with verbose error handling or debug logging enabled, can inadvertently write sensitive data such as Cognito tokens, customer PII, or vehicle registration details into CloudWatch Logs, which leads to exposure of sensitive information to anyone with CloudWatch read access, resulting in reduced confidentiality of customer PII, user authentication tokens, and vehicle registration metadata.",
+        "severity": "Medium",
+        "category": "Information Disclosure",
+        "threatSource": "misconfigured Lambda function",
+        "prerequisites": "verbose error handling or debug logging enabled in the Lambda function code",
+        "threatAction": "inadvertently write sensitive data such as Cognito tokens, customer PII, or vehicle registration details into CloudWatch Logs",
+        "threatImpact": "exposure of sensitive information to anyone with CloudWatch Logs read access",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "customer PII, user authentication credentials and Cognito tokens, vehicle registration metadata, Lambda function execution logs in CloudWatch",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T007",
+        "statement": "A malicious authenticated user with the ability to register and deregister vehicles, can perform unauthorized deregistration of vehicles and deny having performed the action due to insufficient audit logging and non-repudiation controls, which leads to billing disputes and inability to attribute vehicle registration changes to specific users, resulting in reduced integrity of billing and financial records related to vehicle registration.",
+        "severity": "Medium",
+        "category": "Repudiation",
+        "threatSource": "malicious authenticated user",
+        "prerequisites": "valid Cognito credentials and ability to perform vehicle registration and deregistration operations",
+        "threatAction": "perform unauthorized deregistration of vehicles and deny having performed the action due to insufficient audit logging and non-repudiation controls",
+        "threatImpact": "billing disputes and inability to attribute vehicle registration changes to specific users",
+        "impactedGoal": "integrity",
+        "impactedAssets": "billing and financial records related to vehicle registration, vehicle registration status in DynamoDB",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T008",
+        "statement": "A distributed botnet or adversary with access to large-scale request generation infrastructure, can launch a volumetric DDoS attack or application-layer flood against the API Gateway endpoints and Amplify-hosted frontend, which leads to service degradation or unavailability of the vehicle registration platform for legitimate fleet managers, resulting in reduced availability of vehicle registration services and REST API endpoints.",
+        "severity": "Medium",
+        "category": "Denial of Service",
+        "threatSource": "distributed botnet or adversary",
+        "prerequisites": "access to large-scale request generation infrastructure",
+        "threatAction": "launch a volumetric DDoS attack or application-layer flood against the API Gateway endpoints and Amplify-hosted frontend",
+        "threatImpact": "service degradation or unavailability of the vehicle registration platform for legitimate fleet managers",
+        "impactedGoal": "availability",
+        "impactedAssets": "REST API via Amazon API Gateway, AWS Amplify-hosted web frontend, vehicle registration services",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T009",
+        "statement": "An attacker with physical or remote access to a connected vehicle's CAN bus interface or OBD-II diagnostic port, can inject malicious CAN frames to spoof vehicle telemetry data or manipulate vehicle diagnostic error codes sent to the cloud platform, which leads to corruption of vehicle health data and potentially incorrect registration status decisions, resulting in reduced integrity of IoT vehicle telemetry data and vehicle diagnostic error codes.",
+        "severity": "Medium",
+        "category": "IoT / Vehicle Tampering",
+        "threatSource": "attacker with physical or remote access to a connected vehicle",
+        "prerequisites": "physical access to the vehicle's CAN bus interface or OBD-II port, or remote access via compromised infotainment system",
+        "threatAction": "inject malicious CAN frames to spoof vehicle telemetry data or manipulate vehicle diagnostic error codes sent to the cloud platform",
+        "threatImpact": "corruption of vehicle health data and potentially incorrect registration status decisions",
+        "impactedGoal": "integrity",
+        "impactedAssets": "IoT vehicle telemetry data, vehicle diagnostic error codes, trip data from connected vehicles",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T010",
+        "statement": "An attacker with the ability to register a look-alike domain and create a phishing site mimicking the Amplify-hosted frontend, can perform domain spoofing to trick fleet managers into entering their Cognito credentials on the fraudulent site, which leads to credential theft and subsequent unauthorized access to the vehicle registration platform, resulting in reduced confidentiality of user authentication credentials and customer PII.",
+        "severity": "Medium",
+        "category": "Spoofing / Phishing",
+        "threatSource": "attacker",
+        "prerequisites": "ability to register a look-alike domain and create a phishing site mimicking the Amplify-hosted frontend",
+        "threatAction": "perform domain spoofing to trick fleet managers into entering their Cognito credentials on the fraudulent site",
+        "threatImpact": "credential theft and subsequent unauthorized access to the vehicle registration platform",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "user authentication credentials and Cognito tokens, customer PII",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T011",
+        "statement": "An attacker with access to the OTA firmware update channel or the CI/CD build pipeline, can tamper with firmware updates or inject malicious code into the vehicle's software supply chain, which leads to compromised vehicle software that could exfiltrate data or manipulate vehicle behavior, resulting in reduced integrity of IoT vehicle telemetry data and vehicle registration status in DynamoDB.",
+        "severity": "Low",
+        "category": "Supply Chain",
+        "threatSource": "attacker with access to the OTA firmware update channel or CI/CD build pipeline",
+        "prerequisites": "access to the OTA firmware update channel or compromise of the software build pipeline",
+        "threatAction": "tamper with firmware updates or inject malicious code into the vehicle's software supply chain",
+        "threatImpact": "compromised vehicle software that could exfiltrate data or manipulate vehicle behavior",
+        "impactedGoal": "integrity",
+        "impactedAssets": "IoT vehicle telemetry data, vehicle registration status in DynamoDB, OTA firmware update channel",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T012",
+        "statement": "An attacker with a radio relay device positioned near a target vehicle and the vehicle owner's key fob, can perform a relay attack on the keyless entry and start system to gain unauthorized physical access to the vehicle, which leads to vehicle theft or unauthorized access to the vehicle's onboard diagnostic systems and connected platform credentials, resulting in reduced confidentiality and integrity of vehicle registration metadata and IoT vehicle telemetry data.",
+        "severity": "Low",
+        "category": "Physical / IoT Attack",
+        "threatSource": "attacker with a radio relay device",
+        "prerequisites": "proximity to both the target vehicle and the vehicle owner's key fob with a radio relay device",
+        "threatAction": "perform a relay attack on the keyless entry and start system to gain unauthorized physical access to the vehicle",
+        "threatImpact": "vehicle theft or unauthorized access to the vehicle's onboard diagnostic systems and connected platform credentials",
+        "impactedGoal": "confidentiality and integrity",
+        "impactedAssets": "vehicle registration metadata, IoT vehicle telemetry data, vehicle CAN bus interface",
+        "source": "AI Generated"
+      }
+    ],
+    "high_severity": [
+      {
+        "id": "T001",
+        "statement": "A malicious authenticated user with valid Cognito credentials and knowledge of other vehicles' registration identifiers, can manipulate API request parameters (e.g., vehicle registration number or GUID) to access or modify other users' vehicle records via IDOR, which leads to unauthorized viewing, modification, or deregistration of vehicles belonging to other fleet managers, resulting in reduced confidentiality and integrity of vehicle registration metadata in DynamoDB and vehicle registration documents in S3.",
+        "severity": "High",
+        "category": "Broken Access Control (IDOR)",
+        "threatSource": "malicious authenticated user",
+        "prerequisites": "valid Cognito credentials and knowledge of other vehicles' registration identifiers or GUIDs",
+        "threatAction": "manipulate API request parameters to access or modify other users' vehicle records via Insecure Direct Object Reference",
+        "threatImpact": "unauthorized viewing, modification, or deregistration of vehicles belonging to other fleet managers",
+        "impactedGoal": "confidentiality and integrity",
+        "impactedAssets": "vehicle registration metadata in DynamoDB, vehicle registration documents in S3, vehicle listing data",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T002",
+        "statement": "A remote attacker with network access to the Cognito authentication endpoint and a list of common passwords or breached credential databases, can perform credential stuffing or password spraying attacks against the Cognito user pool which lacks MFA enforcement, which leads to unauthorized account takeover of fleet manager accounts, resulting in reduced confidentiality of user authentication credentials and Cognito tokens.",
+        "severity": "High",
+        "category": "Authentication",
+        "threatSource": "remote attacker",
+        "prerequisites": "network access to the Cognito authentication endpoint and a list of common passwords or breached credential databases",
+        "threatAction": "perform credential stuffing or password spraying attacks against the Cognito user pool which lacks MFA enforcement",
+        "threatImpact": "unauthorized account takeover of fleet manager accounts",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "user authentication credentials and Cognito tokens, vehicle registration metadata, vehicle registration documents",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T003",
+        "statement": "A malicious insider or compromised developer with access to the AWS account and Lambda function configuration, can escalate privileges by modifying the Lambda execution role to attach overly permissive IAM policies, which leads to unauthorized access to DynamoDB tables, S3 buckets, and other AWS services beyond the function's intended scope, resulting in reduced confidentiality and integrity of vehicle registration documents in S3, vehicle registration metadata in DynamoDB, and customer PII.",
+        "severity": "High",
+        "category": "Privilege Escalation",
+        "threatSource": "malicious insider or compromised developer",
+        "prerequisites": "access to the AWS account and Lambda function configuration or IAM permissions",
+        "threatAction": "escalate privileges by modifying the Lambda execution role to attach overly permissive IAM policies",
+        "threatImpact": "unauthorized access to DynamoDB tables, S3 buckets, and other AWS services beyond the function's intended scope",
+        "impactedGoal": "confidentiality and integrity",
+        "impactedAssets": "vehicle registration documents in S3, vehicle registration metadata in DynamoDB, customer PII, Lambda function execution environment",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T004",
+        "statement": "A remote attacker with the ability to intercept or obtain a pre-signed S3 URL before its expiration, can reuse or share the pre-signed URL to download vehicle registration PDF documents without authenticating through the application, which leads to unauthorized access to sensitive vehicle registration documents, resulting in reduced confidentiality of vehicle registration documents stored in S3.",
+        "severity": "High",
+        "category": "Data Breach",
+        "threatSource": "remote attacker",
+        "prerequisites": "ability to intercept or obtain a pre-signed S3 URL before its expiration (e.g., via browser history, logs, or network sniffing on degraded TLS)",
+        "threatAction": "reuse or share the pre-signed URL to download vehicle registration PDF documents without authenticating through the application",
+        "threatImpact": "unauthorized access to sensitive vehicle registration documents",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "vehicle registration documents (PDF files stored in S3)",
+        "source": "AI Generated"
+      }
+    ]
+  },
+  "attack_trees": [
+    {
+      "threat_id": "T001",
+      "threat_category": "Broken Access Control (IDOR)",
+      "threat_description": null,
+      "threat_statement": "A malicious authenticated user with valid Cognito credentials and knowledge of other vehicles' registration identifiers, can manipulate API request parameters (e.g., vehicle registration number or GUID) to access or modify other users' vehicle records via IDOR, which leads to unauthorized viewing, modification, or deregistration of vehicles belonging to other fleet managers, resulting in reduced confidentiality and integrity of vehicle registration metadata in DynamoDB and vehicle registration documents in S3.",
+      "threat_action": "manipulate API request parameters to access or modify other users' vehicle records via Insecure Direct Object Reference",
+      "threatSource": "malicious authenticated user",
+      "prerequisites": "valid Cognito credentials and knowledge of other vehicles' registration identifiers or GUIDs",
+      "threatAction": "manipulate API request parameters to access or modify other users' vehicle records via Insecure Direct Object Reference",
+      "threatImpact": "unauthorized viewing, modification, or deregistration of vehicles belonging to other fleet managers",
+      "impactedGoal": "confidentiality and integrity",
+      "impactedAssets": "vehicle registration metadata in DynamoDB, vehicle registration documents in S3, vehicle listing data",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    GOAL[\"Unauthorized viewing, modification,nor deregistration of other users vehiclesn(Reduced Confidentiality  Integrity)\"]\n    %% Facts / Initial Conditions\n    F1[\"Malicious authenticated usernwith valid Cognito credentials\"]\n    F2[\"Knowledge of other vehiclesnregistration identifiers or GUIDs\"]\n    F3[\"API lacks ownership validationn(no server-side authorization checkntying resource to authenticated user)\"]\n    %% Attack Path 1: Enumeration-based IDOR\n    F1 --> A1[\"Authenticate via Cognitonand obtain valid JWT token\"]\n    A1 --> A2[\"Enumerate vehicle registrationnidentifiers via predictable patternsnor sequential GUIDs\"]\n    A2 --> A3[\"Craft API requests substitutingnown vehicle ID with target vehicle ID\"]\n    A3 --> A4[\"Send GET requests tonvehicle registration endpoint\"]\n    A4 --> A5[\"Retrieve other fleet managersnvehicle metadata from DynamoDB\"]\n    A5 --> GOAL\n    A3 --> A6[\"Send PUTPATCH requests tonmodify vehicle registration fields\"]\n    A6 --> A7[\"Alter vehicle metadatan(e.g., owner, status, attributes)nin DynamoDB\"]\n    A7 --> GOAL\n    A3 --> A8[\"Send DELETE requests tonderegister target vehicles\"]\n    A8 --> A9[\"Remove vehicle records fromnDynamoDB and associatedndocuments from S3\"]\n    A9 --> GOAL\n    %% Attack Path 2: Known-identifier IDOR via leaked/shared GUIDs\n    F2 --> A10[\"Obtain target vehicle GUIDsnfrom shared fleet reports,nURLs, or API response leakage\"]\n    A10 --> A11[\"Directly reference targetnvehicle GUID in API calls\"]\n    F1 --> A11\n    A11 --> A12[\"Bypass frontend restrictionsnusing proxy tool (e.g., Burp Suite)nto tamper with request parameters\"]\n    F3 --> A12\n    A12 --> A13[\"Access pre-signed S3 URLsnfor other users registration documents\"]\n    A13 --> GOAL\n    A12 --> A14[\"Invoke bulk operations endpointnwith array of target vehicle GUIDs\"]\n    A14 --> A15[\"Mass exfiltration or modificationnof multiple fleet managersnvehicle records\"]\n    A15 --> GOAL\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class F1,F2,F3 fact\n    class A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13,A14,A15 attack\n    class GOAL goal\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "GOAL",
+          "description": "Unauthorized viewing, modification,nor deregistration of other users vehiclesn(Reduced Confidentiality  Integrity)"
+        },
+        {
+          "node_id": "F1",
+          "description": "Malicious authenticated usernwith valid Cognito credentials"
+        },
+        {
+          "node_id": "F2",
+          "description": "Knowledge of other vehiclesnregistration identifiers or GUIDs"
+        },
+        {
+          "node_id": "F3",
+          "description": "API lacks ownership validationn(no server-side authorization checkntying resource to authenticated user)"
+        },
+        {
+          "node_id": "A1",
+          "description": "Authenticate via Cognitonand obtain valid JWT token"
+        },
+        {
+          "node_id": "A2",
+          "description": "Enumerate vehicle registrationnidentifiers via predictable patternsnor sequential GUIDs"
+        },
+        {
+          "node_id": "A3",
+          "description": "Craft API requests substitutingnown vehicle ID with target vehicle ID"
+        },
+        {
+          "node_id": "A4",
+          "description": "Send GET requests tonvehicle registration endpoint"
+        },
+        {
+          "node_id": "A5",
+          "description": "Retrieve other fleet managersnvehicle metadata from DynamoDB"
+        },
+        {
+          "node_id": "A6",
+          "description": "Send PUTPATCH requests tonmodify vehicle registration fields"
+        },
+        {
+          "node_id": "A7",
+          "description": "Alter vehicle metadatan(e.g., owner, status, attributes)nin DynamoDB"
+        },
+        {
+          "node_id": "A8",
+          "description": "Send DELETE requests tonderegister target vehicles"
+        },
+        {
+          "node_id": "A9",
+          "description": "Remove vehicle records fromnDynamoDB and associatedndocuments from S3"
+        },
+        {
+          "node_id": "A10",
+          "description": "Obtain target vehicle GUIDsnfrom shared fleet reports,nURLs, or API response leakage"
+        },
+        {
+          "node_id": "A11",
+          "description": "Directly reference targetnvehicle GUID in API calls"
+        },
+        {
+          "node_id": "A12",
+          "description": "Bypass frontend restrictionsnusing proxy tool (e.g., Burp Suite)nto tamper with request parameters"
+        },
+        {
+          "node_id": "A13",
+          "description": "Access pre-signed S3 URLsnfor other users registration documents"
+        },
+        {
+          "node_id": "A14",
+          "description": "Invoke bulk operations endpointnwith array of target vehicle GUIDs"
+        },
+        {
+          "node_id": "A15",
+          "description": "Mass exfiltration or modificationnof multiple fleet managersnvehicle records"
+        }
+      ],
+      "generated_content": "# Attack Tree: T001 - Broken Access Control (IDOR) on Vehicle Registration Records\n\n```mermaid\ngraph TD\n    GOAL[\"Unauthorized viewing, modification,\\nor deregistration of other users' vehicles\\n(Reduced Confidentiality & Integrity)\"]\n\n    %% Facts / Initial Conditions\n    F1[\"Malicious authenticated user\\nwith valid Cognito credentials\"]\n    F2[\"Knowledge of other vehicles'\\nregistration identifiers or GUIDs\"]\n    F3[\"API lacks ownership validation\\n(no server-side authorization check\\ntying resource to authenticated user)\"]\n\n    %% Attack Path 1: Enumeration-based IDOR\n    F1 --> A1[\"Authenticate via Cognito\\nand obtain valid JWT token\"]\n    A1 --> A2[\"Enumerate vehicle registration\\nidentifiers via predictable patterns\\nor sequential GUIDs\"]\n    A2 --> A3[\"Craft API requests substituting\\nown vehicle ID with target vehicle ID\"]\n    A3 --> A4[\"Send GET requests to\\nvehicle registration endpoint\"]\n    A4 --> A5[\"Retrieve other fleet managers'\\nvehicle metadata from DynamoDB\"]\n    A5 --> GOAL\n\n    A3 --> A6[\"Send PUT/PATCH requests to\\nmodify vehicle registration fields\"]\n    A6 --> A7[\"Alter vehicle metadata\\n(e.g., owner, status, attributes)\\nin DynamoDB\"]\n    A7 --> GOAL\n\n    A3 --> A8[\"Send DELETE requests to\\nderegister target vehicles\"]\n    A8 --> A9[\"Remove vehicle records from\\nDynamoDB and associated\\ndocuments from S3\"]\n    A9 --> GOAL\n\n    %% Attack Path 2: Known-identifier IDOR via leaked/shared GUIDs\n    F2 --> A10[\"Obtain target vehicle GUIDs\\nfrom shared fleet reports,\\nURLs, or API response leakage\"]\n    A10 --> A11[\"Directly reference target\\nvehicle GUID in API calls\"]\n    F1 --> A11\n    A11 --> A12[\"Bypass frontend restrictions\\nusing proxy tool (e.g., Burp Suite)\\nto tamper with request parameters\"]\n    F3 --> A12\n    A12 --> A13[\"Access pre-signed S3 URLs\\nfor other users' registration documents\"]\n    A13 --> GOAL\n\n    A12 --> A14[\"Invoke bulk operations endpoint\\nwith array of target vehicle GUIDs\"]\n    A14 --> A15[\"Mass exfiltration or modification\\nof multiple fleet managers'\\nvehicle records\"]\n    A15 --> GOAL\n\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n\n    class F1,F2,F3 fact\n    class A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13,A14,A15 attack\n    class GOAL goal\n```\n\n## Attack Tree Summary\n\n| Element | Description |\n|---|---|\n| **Threat ID** | T001 |\n| **Root Goal** | Unauthorized access/modification/deletion of other fleet managers' vehicle records |\n| **Path 1 \u2014 Enumeration IDOR** | Attacker authenticates normally, enumerates predictable vehicle IDs, then substitutes them in GET/PUT/DELETE API calls to read, modify, or deregister vehicles in DynamoDB and S3 |\n| **Path 2 \u2014 Known-Identifier IDOR** | Attacker obtains target GUIDs from leaked sources (shared reports, URL parameters, API response bodies), then uses a proxy tool to bypass client-side controls and directly reference those GUIDs \u2014 enabling bulk exfiltration or access to pre-signed S3 document URLs |\n| **Core Vulnerability** | API Gateway / Lambda authorization logic does not enforce resource-level ownership checks \u2014 it validates *authentication* (valid Cognito token) but not *authorization* (does this user own this vehicle record?) |\n| **Impacted Assets** | Vehicle registration metadata (DynamoDB), vehicle registration documents (S3), vehicle listing data |\n",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1,
+          "mitigation": 0
+        },
+        "connection_count": 22,
+        "tech_mentions": 0
+      },
+      "ttc_mappings": [
+        {
+          "attack_step": "Mass exfiltration or modificationnof multiple fleet managersnvehicle records",
+          "technique_id": "T1485.001",
+          "technique_name": "Lifecycle-Triggered Deletion",
+          "confidence": 0.5764072384026352,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.576"
+        },
+        {
+          "attack_step": "Remove vehicle records fromnDynamoDB and associatedndocuments from S3",
+          "technique_id": "T1485.001",
+          "technique_name": "Lifecycle-Triggered Deletion",
+          "confidence": 0.8322327840958341,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.832"
+        },
+        {
+          "attack_step": "Send GET requests tonvehicle registration endpoint",
+          "technique_id": "T1522",
+          "technique_name": "Cloud Instance Metadata API",
+          "confidence": 0.40918162722513063,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.409"
+        },
+        {
+          "attack_step": "Retrieve other fleet managersnvehicle metadata from DynamoDB",
+          "technique_id": "T1602",
+          "technique_name": "Data from Configuration Repository",
+          "confidence": 0.5230052869693889,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.523"
+        },
+        {
+          "attack_step": "Alter vehicle metadatan(e.g., owner, status, attributes)nin DynamoDB",
+          "technique_id": "T1565.003",
+          "technique_name": "Runtime Data Manipulation",
+          "confidence": 0.48396403497906876,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.484"
+        },
+        {
+          "attack_step": "API lacks ownership validationn(no server-side authorization checkntying resource to authenticated user)",
+          "technique_id": "T1548.005",
+          "technique_name": "Temporary Elevated Cloud Access",
+          "confidence": 0.5213512583176595,
+          "tactics": [
+            "privilege-escalation",
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.521"
+        },
+        {
+          "attack_step": "Malicious authenticated usernwith valid Cognito credentials",
+          "technique_id": "T1556",
+          "technique_name": "Modify Authentication Process",
+          "confidence": 0.7964372218586814,
+          "tactics": [
+            "credential-access",
+            "defense-evasion",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.796"
+        },
+        {
+          "attack_step": "Directly reference targetnvehicle GUID in API calls",
+          "technique_id": "T1036.005",
+          "technique_name": "Match Legitimate Resource Name or Location",
+          "confidence": 0.4144119591722292,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.414"
+        },
+        {
+          "attack_step": "Invoke bulk operations endpointnwith array of target vehicle GUIDs",
+          "technique_id": "T1018",
+          "technique_name": "Remote System Discovery",
+          "confidence": 0.3429004038657896,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.343"
+        },
+        {
+          "attack_step": "Obtain target vehicle GUIDsnfrom shared fleet reports,nURLs, or API response leakage",
+          "technique_id": "T1590.001",
+          "technique_name": "Domain Properties",
+          "confidence": 0.5207216522697461,
+          "tactics": [
+            "reconnaissance"
+          ],
+          "reasoning": "Embedding similarity: 0.521"
+        },
+        {
+          "attack_step": "Send DELETE requests tonderegister target vehicles",
+          "technique_id": "T1107",
+          "technique_name": "File Deletion",
+          "confidence": 0.7491426683975883,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.749"
+        },
+        {
+          "attack_step": "Enumerate vehicle registrationnidentifiers via predictable patternsnor sequential GUIDs",
+          "technique_id": "T1003.003",
+          "technique_name": "NTDS",
+          "confidence": 0.4287855265501328,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.429"
+        },
+        {
+          "attack_step": "Access pre-signed S3 URLsnfor other users registration documents",
+          "technique_id": "T1530",
+          "technique_name": "Data from Cloud Storage",
+          "confidence": 0.5739353111342679,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.574"
+        },
+        {
+          "attack_step": "Unauthorized viewing, modification,nor deregistration of other users vehiclesn(Reduced Confidentiality  Integrity)",
+          "technique_id": "T1492",
+          "technique_name": "Stored Data Manipulation",
+          "confidence": 0.6158783791961016,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.616"
+        },
+        {
+          "attack_step": "Bypass frontend restrictionsnusing proxy tool (e.g., Burp Suite)nto tamper with request parameters",
+          "technique_id": "T1188",
+          "technique_name": "Multi-hop Proxy",
+          "confidence": 0.6521870494698294,
+          "tactics": [
+            "command-and-control"
+          ],
+          "reasoning": "Embedding similarity: 0.652"
+        },
+        {
+          "attack_step": "Authenticate via Cognitonand obtain valid JWT token",
+          "technique_id": "T1550",
+          "technique_name": "Use Alternate Authentication Material",
+          "confidence": 0.6100281034494104,
+          "tactics": [
+            "defense-evasion",
+            "lateral-movement"
+          ],
+          "reasoning": "Embedding similarity: 0.610"
+        },
+        {
+          "attack_step": "Send PUTPATCH requests tonmodify vehicle registration fields",
+          "technique_id": "T1568.001",
+          "technique_name": "Fast Flux DNS",
+          "confidence": 0.38513292778464747,
+          "tactics": [
+            "command-and-control"
+          ],
+          "reasoning": "Embedding similarity: 0.385"
+        },
+        {
+          "attack_step": "Knowledge of other vehiclesnregistration identifiers or GUIDs",
+          "technique_id": "T1082",
+          "technique_name": "System Information Discovery",
+          "confidence": 0.5322424434276114,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.532"
+        }
+      ],
+      "mapping_count": 18
+    },
+    {
+      "threat_id": "T002",
+      "threat_category": "Authentication",
+      "threat_description": null,
+      "threat_statement": "A remote attacker with network access to the Cognito authentication endpoint and a list of common passwords or breached credential databases, can perform credential stuffing or password spraying attacks against the Cognito user pool which lacks MFA enforcement, which leads to unauthorized account takeover of fleet manager accounts, resulting in reduced confidentiality of user authentication credentials and Cognito tokens.",
+      "threat_action": "perform credential stuffing or password spraying attacks against the Cognito user pool which lacks MFA enforcement",
+      "threatSource": "remote attacker",
+      "prerequisites": "network access to the Cognito authentication endpoint and a list of common passwords or breached credential databases",
+      "threatAction": "perform credential stuffing or password spraying attacks against the Cognito user pool which lacks MFA enforcement",
+      "threatImpact": "unauthorized account takeover of fleet manager accounts",
+      "impactedGoal": "confidentiality",
+      "impactedAssets": "user authentication credentials and Cognito tokens, vehicle registration metadata, vehicle registration documents",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    GOAL[\"Unauthorized account takeover of fleet manager accountsn Reduced confidentiality of credentials  Cognito tokens\"]\n    %% Facts / Initial Conditions\n    F1[\"Remote attacker with network accessnto Cognito authentication endpoint\"]\n    F2[\"Attacker possesses common password listsnor breached credential databases\"]\n    F3[\"Cognito user pool lacksnMFA enforcement\"]\n    F4[\"Fleet manager accounts usenpassword-only authentication\"]\n    %% Attack Path 1: Credential Stuffing\n    F1 --> A1[\"Enumerate valid fleet managernusernamesemails via Cognito responses\"]\n    F2 --> A2[\"Correlate breached credential databasesnwith target organization domain\"]\n    A1 --> A3[\"Launch automated credential stuffingnagainst Cognito InitiateAuth API\"]\n    A2 --> A3\n    F3 --> A3\n    A3 --> A4[\"Successful authentication withnreused breached credentials\"]\n    A4 --> A8[\"Obtain valid Cognito tokensn(ID, Access, Refresh)\"]\n    %% Attack Path 2: Password Spraying\n    F1 --> A5[\"Discover valid fleet managernusernames via OSINT or enumeration\"]\n    A5 --> A6[\"Perform low-and-slow password sprayingnwith top common passwords against Cognito\"]\n    F2 --> A6\n    F3 --> A6\n    F4 --> A6\n    A6 --> A7[\"Successful authentication withnweakcommon password match\"]\n    A7 --> A8\n    %% Post-Compromise\n    A8 --> A9[\"Access fleet manager sessionnand extract authentication credentials\"]\n    A8 --> A10[\"Use Cognito tokens to accessndownstream APIs and services\"]\n    A9 --> A11[\"Exfiltrate stored credentials,nvehicle registration metadata  documents\"]\n    A10 --> A11\n    A11 --> GOAL\n    %% Styling\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11 attack\n    class GOAL goal\n    class F1,F2,F3,F4 fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "GOAL",
+          "description": "Unauthorized account takeover of fleet manager accountsn Reduced confidentiality of credentials  Cognito tokens"
+        },
+        {
+          "node_id": "F1",
+          "description": "Remote attacker with network accessnto Cognito authentication endpoint"
+        },
+        {
+          "node_id": "F2",
+          "description": "Attacker possesses common password listsnor breached credential databases"
+        },
+        {
+          "node_id": "F3",
+          "description": "Cognito user pool lacksnMFA enforcement"
+        },
+        {
+          "node_id": "F4",
+          "description": "Fleet manager accounts usenpassword-only authentication"
+        },
+        {
+          "node_id": "A1",
+          "description": "Enumerate valid fleet managernusernamesemails via Cognito responses"
+        },
+        {
+          "node_id": "A2",
+          "description": "Correlate breached credential databasesnwith target organization domain"
+        },
+        {
+          "node_id": "A3",
+          "description": "Launch automated credential stuffingnagainst Cognito InitiateAuth API"
+        },
+        {
+          "node_id": "A4",
+          "description": "Successful authentication withnreused breached credentials"
+        },
+        {
+          "node_id": "A8",
+          "description": "Obtain valid Cognito tokensn(ID, Access, Refresh)"
+        },
+        {
+          "node_id": "A5",
+          "description": "Discover valid fleet managernusernames via OSINT or enumeration"
+        },
+        {
+          "node_id": "A6",
+          "description": "Perform low-and-slow password sprayingnwith top common passwords against Cognito"
+        },
+        {
+          "node_id": "A7",
+          "description": "Successful authentication withnweakcommon password match"
+        },
+        {
+          "node_id": "A9",
+          "description": "Access fleet manager sessionnand extract authentication credentials"
+        },
+        {
+          "node_id": "A10",
+          "description": "Use Cognito tokens to accessndownstream APIs and services"
+        },
+        {
+          "node_id": "A11",
+          "description": "Exfiltrate stored credentials,nvehicle registration metadata  documents"
+        }
+      ],
+      "generated_content": "# Attack Tree: T002 - Credential Stuffing/Password Spraying Against Cognito User Pool\n\n```mermaid\ngraph TD\n    GOAL[\"Unauthorized account takeover of fleet manager accounts\\n\u2192 Reduced confidentiality of credentials & Cognito tokens\"]\n\n    %% Facts / Initial Conditions\n    F1[\"Remote attacker with network access\\nto Cognito authentication endpoint\"]\n    F2[\"Attacker possesses common password lists\\nor breached credential databases\"]\n    F3[\"Cognito user pool lacks\\nMFA enforcement\"]\n    F4[\"Fleet manager accounts use\\npassword-only authentication\"]\n\n    %% Attack Path 1: Credential Stuffing\n    F1 --> A1[\"Enumerate valid fleet manager\\nusernames/emails via Cognito responses\"]\n    F2 --> A2[\"Correlate breached credential databases\\nwith target organization domain\"]\n    A1 --> A3[\"Launch automated credential stuffing\\nagainst Cognito InitiateAuth API\"]\n    A2 --> A3\n    F3 --> A3\n    A3 --> A4[\"Successful authentication with\\nreused breached credentials\"]\n    A4 --> A8[\"Obtain valid Cognito tokens\\n(ID, Access, Refresh)\"]\n\n    %% Attack Path 2: Password Spraying\n    F1 --> A5[\"Discover valid fleet manager\\nusernames via OSINT or enumeration\"]\n    A5 --> A6[\"Perform low-and-slow password spraying\\nwith top common passwords against Cognito\"]\n    F2 --> A6\n    F3 --> A6\n    F4 --> A6\n    A6 --> A7[\"Successful authentication with\\nweak/common password match\"]\n    A7 --> A8\n\n    %% Post-Compromise\n    A8 --> A9[\"Access fleet manager session\\nand extract authentication credentials\"]\n    A8 --> A10[\"Use Cognito tokens to access\\ndownstream APIs and services\"]\n    A9 --> A11[\"Exfiltrate stored credentials,\\nvehicle registration metadata & documents\"]\n    A10 --> A11\n    A11 --> GOAL\n\n    %% Styling\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n\n    class A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11 attack\n    class GOAL goal\n    class F1,F2,F3,F4 fact\n```\n\n## Attack Tree Summary\n\n**Threat ID**: T002 | **Priority**: High | **Category**: Authentication\n\n### Two Primary Attack Paths:\n\n| Path | Technique | Key Enabler |\n|------|-----------|-------------|\n| **Path 1 \u2014 Credential Stuffing** | Automated replay of breached username/password pairs against Cognito `InitiateAuth` API | Password reuse by fleet managers combined with no MFA |\n| **Path 2 \u2014 Password Spraying** | Low-and-slow spraying of top common passwords across enumerated fleet manager accounts | Weak password policies and no MFA enforcement |\n\n### Attack Flow Logic:\n\n1. **Initial Conditions (Facts)**: The attacker has network-level access to the Cognito endpoint, possesses credential/password lists, and the Cognito user pool critically lacks MFA enforcement with password-only authentication.\n\n2. **Attack Execution**: Both paths converge on successfully authenticating as a fleet manager \u2014 either through matching breached credentials (stuffing) or guessing weak passwords (spraying) \u2014 both made viable by the absence of a second authentication factor.\n\n3. **Post-Compromise**: Valid Cognito tokens (ID, Access, Refresh) are obtained, granting the attacker authenticated access to downstream services. This enables exfiltration of user credentials, Cognito tokens, vehicle registration metadata, and vehicle registration documents \u2014 achieving the confidentiality impact goal.\n",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1,
+          "mitigation": 0
+        },
+        "connection_count": 19,
+        "tech_mentions": 0
+      },
+      "ttc_mappings": [
+        {
+          "attack_step": "Perform low-and-slow password sprayingnwith top common passwords against Cognito",
+          "technique_id": "T1174",
+          "technique_name": "Password Filter DLL",
+          "confidence": 0.8957443184464444,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.896"
+        },
+        {
+          "attack_step": "Correlate breached credential databasesnwith target organization domain",
+          "technique_id": "T1589.001",
+          "technique_name": "Credentials",
+          "confidence": 0.6883029208223672,
+          "tactics": [
+            "reconnaissance"
+          ],
+          "reasoning": "Embedding similarity: 0.688"
+        },
+        {
+          "attack_step": "Cognito user pool lacksnMFA enforcement",
+          "technique_id": "T1556.006",
+          "technique_name": "Multi-Factor Authentication",
+          "confidence": 0.7286181101563263,
+          "tactics": [
+            "credential-access",
+            "defense-evasion",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.729"
+        },
+        {
+          "attack_step": "Obtain valid Cognito tokensn(ID, Access, Refresh)",
+          "technique_id": "T1134.003",
+          "technique_name": "Make and Impersonate Token",
+          "confidence": 0.7123182395150933,
+          "tactics": [
+            "defense-evasion",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.712"
+        },
+        {
+          "attack_step": "Remote attacker with network accessnto Cognito authentication endpoint",
+          "technique_id": "T1187",
+          "technique_name": "Forced Authentication",
+          "confidence": 0.7350502645265382,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.735"
+        },
+        {
+          "attack_step": "Enumerate valid fleet managernusernamesemails via Cognito responses",
+          "technique_id": "T1114.002",
+          "technique_name": "Remote Email Collection",
+          "confidence": 0.6368775302964821,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.637"
+        },
+        {
+          "attack_step": "Attacker possesses common password listsnor breached credential databases",
+          "technique_id": "T1110.002",
+          "technique_name": "Password Cracking",
+          "confidence": 0.8628794358402947,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.863"
+        },
+        {
+          "attack_step": "Successful authentication withnweakcommon password match",
+          "technique_id": "T1556.004",
+          "technique_name": "Network Device Authentication",
+          "confidence": 0.8084047748722405,
+          "tactics": [
+            "credential-access",
+            "defense-evasion",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.808"
+        },
+        {
+          "attack_step": "Use Cognito tokens to accessndownstream APIs and services",
+          "technique_id": "T1550.001",
+          "technique_name": "Application Access Token",
+          "confidence": 0.6623211040237498,
+          "tactics": [
+            "defense-evasion",
+            "lateral-movement"
+          ],
+          "reasoning": "Embedding similarity: 0.662"
+        },
+        {
+          "attack_step": "Successful authentication withnreused breached credentials",
+          "technique_id": "T1550",
+          "technique_name": "Use Alternate Authentication Material",
+          "confidence": 0.8394307459989834,
+          "tactics": [
+            "defense-evasion",
+            "lateral-movement"
+          ],
+          "reasoning": "Embedding similarity: 0.839"
+        },
+        {
+          "attack_step": "Unauthorized account takeover of fleet manager accountsn Reduced confidentiality of credentials  Cognito tokens",
+          "technique_id": "T1078",
+          "technique_name": "Valid Accounts",
+          "confidence": 0.7215637515177361,
+          "tactics": [
+            "defense-evasion",
+            "persistence",
+            "privilege-escalation",
+            "initial-access"
+          ],
+          "reasoning": "Embedding similarity: 0.722"
+        },
+        {
+          "attack_step": "Access fleet manager sessionnand extract authentication credentials",
+          "technique_id": "T1552.001",
+          "technique_name": "Credentials In Files",
+          "confidence": 0.761124060172758,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.761"
+        },
+        {
+          "attack_step": "Launch automated credential stuffingnagainst Cognito InitiateAuth API",
+          "technique_id": "T1550",
+          "technique_name": "Use Alternate Authentication Material",
+          "confidence": 0.7648115725820166,
+          "tactics": [
+            "defense-evasion",
+            "lateral-movement"
+          ],
+          "reasoning": "Embedding similarity: 0.765"
+        },
+        {
+          "attack_step": "Exfiltrate stored credentials,nvehicle registration metadata  documents",
+          "technique_id": "T1074.001",
+          "technique_name": "Local Data Staging",
+          "confidence": 0.6578377593655855,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.658"
+        },
+        {
+          "attack_step": "Fleet manager accounts usenpassword-only authentication",
+          "technique_id": "T1556",
+          "technique_name": "Modify Authentication Process",
+          "confidence": 0.7661702863562577,
+          "tactics": [
+            "credential-access",
+            "defense-evasion",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.766"
+        },
+        {
+          "attack_step": "Discover valid fleet managernusernames via OSINT or enumeration",
+          "technique_id": "T1018",
+          "technique_name": "Remote System Discovery",
+          "confidence": 0.4791446422557547,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.479"
+        }
+      ],
+      "mapping_count": 16
+    },
+    {
+      "threat_id": "T003",
+      "threat_category": "Privilege Escalation",
+      "threat_description": null,
+      "threat_statement": "A malicious insider or compromised developer with access to the AWS account and Lambda function configuration, can escalate privileges by modifying the Lambda execution role to attach overly permissive IAM policies, which leads to unauthorized access to DynamoDB tables, S3 buckets, and other AWS services beyond the function's intended scope, resulting in reduced confidentiality and integrity of vehicle registration documents in S3, vehicle registration metadata in DynamoDB, and customer PII.",
+      "threat_action": "escalate privileges by modifying the Lambda execution role to attach overly permissive IAM policies",
+      "threatSource": "malicious insider or compromised developer",
+      "prerequisites": "access to the AWS account and Lambda function configuration or IAM permissions",
+      "threatAction": "escalate privileges by modifying the Lambda execution role to attach overly permissive IAM policies",
+      "threatImpact": "unauthorized access to DynamoDB tables, S3 buckets, and other AWS services beyond the function's intended scope",
+      "impactedGoal": "confidentiality and integrity",
+      "impactedAssets": "vehicle registration documents in S3, vehicle registration metadata in DynamoDB, customer PII, Lambda function execution environment",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    ROOT[\"T003: Unauthorized Access to Vehicle Registration Data,nDynamoDB Metadata, and Customer PIInvia Lambda Role Privilege Escalation\"]\n    %% Path 1: Direct IAM Policy Modification\n    F1[\"Malicious insider withnAWS account access andnIAM modification permissions\"]\n    A1[\"Enumerate existing Lambdanfunctions and their execution roles\"]\n    A2[\"Identify target Lambda executionnrole with limited permissions\"]\n    A3[\"Attach AdministratorAccess ornoverly permissive inline policynto Lambda execution role\"]\n    A4[\"Invoke Lambda function tonexecute with escalated privileges\"]\n    A5[\"Access DynamoDB tables containingnvehicle registration metadata\"]\n    A6[\"Access S3 buckets containingnvehicle registration documents\"]\n    A7[\"Exfiltrate customer PII fromnDynamoDB and S3 resources\"]\n    F1 --> A1\n    A1 --> A2\n    A2 --> A3\n    A3 --> A4\n    A4 --> A5\n    A4 --> A6\n    A5 --> A7\n    A6 --> A7\n    A7 --> ROOT\n    %% Path 2: Compromised Developer Credential Chain\n    F2[\"Compromised developer withnLambda configuration accessnbut limited IAM permissions\"]\n    A8[\"Leverage existing iam:PassRolenpermission to assign a different,nmore permissive existing role to Lambda\"]\n    A9[\"Discover pre-existing overlynpermissive IAM roles in the account\"]\n    A10[\"Modify Lambda function configurationnto swap execution role tonthe permissive discovered role\"]\n    A11[\"Deploy modified Lambda codenthat reads sensitive resources\"]\n    A12[\"Trigger Lambda execution vianAPI Gateway, S3 event, ornmanual invocation\"]\n    A13[\"Lambda executes with new role:nqueries DynamoDB for PII andndownloads S3 registration documents\"]\n    F2 --> A9\n    A9 --> A8\n    A8 --> A10\n    A10 --> A11\n    A11 --> A12\n    A12 --> A13\n    A13 --> ROOT\n    %% Path 3: Role Trust Policy Manipulation\n    F3[\"Malicious insider with accessnto IAM role trust policies\"]\n    A14[\"Modify trust policy of anhigh-privilege existing role tonallow Lambda service assumption\"]\n    A15[\"Update Lambda function tonassume the high-privilege rolenvia iam:PassRole\"]\n    A16[\"Inject Lambda code that usesnSTS AssumeRole to chain intonadditional privileged roles\"]\n    A17[\"Perform cross-service access:nread DynamoDB tables, list andndownload S3 objects, accessnother AWS services\"]\n    A18[\"Modify or tamper with vehiclenregistration records in DynamoDBnand documents in S3\"]\n    F3 --> A14\n    A14 --> A15\n    A15 --> A16\n    A16 --> A17\n    A17 --> A18\n    A18 --> ROOT\n    %% Styling\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13,A14,A15,A16,A17,A18 attack\n    class ROOT goal\n    class F1,F2,F3 fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "ROOT",
+          "description": "T003: Unauthorized Access to Vehicle Registration Data,nDynamoDB Metadata, and Customer PIInvia Lambda Role Privilege Escalation"
+        },
+        {
+          "node_id": "F1",
+          "description": "Malicious insider withnAWS account access andnIAM modification permissions"
+        },
+        {
+          "node_id": "A1",
+          "description": "Enumerate existing Lambdanfunctions and their execution roles"
+        },
+        {
+          "node_id": "A2",
+          "description": "Identify target Lambda executionnrole with limited permissions"
+        },
+        {
+          "node_id": "A3",
+          "description": "Attach AdministratorAccess ornoverly permissive inline policynto Lambda execution role"
+        },
+        {
+          "node_id": "A4",
+          "description": "Invoke Lambda function tonexecute with escalated privileges"
+        },
+        {
+          "node_id": "A5",
+          "description": "Access DynamoDB tables containingnvehicle registration metadata"
+        },
+        {
+          "node_id": "A6",
+          "description": "Access S3 buckets containingnvehicle registration documents"
+        },
+        {
+          "node_id": "A7",
+          "description": "Exfiltrate customer PII fromnDynamoDB and S3 resources"
+        },
+        {
+          "node_id": "F2",
+          "description": "Compromised developer withnLambda configuration accessnbut limited IAM permissions"
+        },
+        {
+          "node_id": "A8",
+          "description": "Leverage existing iam:PassRolenpermission to assign a different,nmore permissive existing role to Lambda"
+        },
+        {
+          "node_id": "A9",
+          "description": "Discover pre-existing overlynpermissive IAM roles in the account"
+        },
+        {
+          "node_id": "A10",
+          "description": "Modify Lambda function configurationnto swap execution role tonthe permissive discovered role"
+        },
+        {
+          "node_id": "A11",
+          "description": "Deploy modified Lambda codenthat reads sensitive resources"
+        },
+        {
+          "node_id": "A12",
+          "description": "Trigger Lambda execution vianAPI Gateway, S3 event, ornmanual invocation"
+        },
+        {
+          "node_id": "A13",
+          "description": "Lambda executes with new role:nqueries DynamoDB for PII andndownloads S3 registration documents"
+        },
+        {
+          "node_id": "F3",
+          "description": "Malicious insider with accessnto IAM role trust policies"
+        },
+        {
+          "node_id": "A14",
+          "description": "Modify trust policy of anhigh-privilege existing role tonallow Lambda service assumption"
+        },
+        {
+          "node_id": "A15",
+          "description": "Update Lambda function tonassume the high-privilege rolenvia iam:PassRole"
+        },
+        {
+          "node_id": "A16",
+          "description": "Inject Lambda code that usesnSTS AssumeRole to chain intonadditional privileged roles"
+        },
+        {
+          "node_id": "A17",
+          "description": "Perform cross-service access:nread DynamoDB tables, list andndownload S3 objects, accessnother AWS services"
+        },
+        {
+          "node_id": "A18",
+          "description": "Modify or tamper with vehiclenregistration records in DynamoDBnand documents in S3"
+        }
+      ],
+      "generated_content": "# Attack Tree: T003 - Privilege Escalation via Lambda Execution Role Modification\n\n## Threat Summary\nA malicious insider or compromised developer escalates privileges by modifying the Lambda execution role to attach overly permissive IAM policies, gaining unauthorized access to sensitive vehicle registration data and customer PII.\n\n```mermaid\ngraph TD\n    ROOT[\"T003: Unauthorized Access to Vehicle Registration Data,\\nDynamoDB Metadata, and Customer PII\\nvia Lambda Role Privilege Escalation\"]\n\n    %% Path 1: Direct IAM Policy Modification\n    F1[\"Malicious insider with\\nAWS account access and\\nIAM modification permissions\"]\n    A1[\"Enumerate existing Lambda\\nfunctions and their execution roles\"]\n    A2[\"Identify target Lambda execution\\nrole with limited permissions\"]\n    A3[\"Attach AdministratorAccess or\\noverly permissive inline policy\\nto Lambda execution role\"]\n    A4[\"Invoke Lambda function to\\nexecute with escalated privileges\"]\n    A5[\"Access DynamoDB tables containing\\nvehicle registration metadata\"]\n    A6[\"Access S3 buckets containing\\nvehicle registration documents\"]\n    A7[\"Exfiltrate customer PII from\\nDynamoDB and S3 resources\"]\n\n    F1 --> A1\n    A1 --> A2\n    A2 --> A3\n    A3 --> A4\n    A4 --> A5\n    A4 --> A6\n    A5 --> A7\n    A6 --> A7\n    A7 --> ROOT\n\n    %% Path 2: Compromised Developer Credential Chain\n    F2[\"Compromised developer with\\nLambda configuration access\\nbut limited IAM permissions\"]\n    A8[\"Leverage existing iam:PassRole\\npermission to assign a different,\\nmore permissive existing role to Lambda\"]\n    A9[\"Discover pre-existing overly\\npermissive IAM roles in the account\"]\n    A10[\"Modify Lambda function configuration\\nto swap execution role to\\nthe permissive discovered role\"]\n    A11[\"Deploy modified Lambda code\\nthat reads sensitive resources\"]\n    A12[\"Trigger Lambda execution via\\nAPI Gateway, S3 event, or\\nmanual invocation\"]\n    A13[\"Lambda executes with new role:\\nqueries DynamoDB for PII and\\ndownloads S3 registration documents\"]\n\n    F2 --> A9\n    A9 --> A8\n    A8 --> A10\n    A10 --> A11\n    A11 --> A12\n    A12 --> A13\n    A13 --> ROOT\n\n    %% Path 3: Role Trust Policy Manipulation\n    F3[\"Malicious insider with access\\nto IAM role trust policies\"]\n    A14[\"Modify trust policy of a\\nhigh-privilege existing role to\\nallow Lambda service assumption\"]\n    A15[\"Update Lambda function to\\nassume the high-privilege role\\nvia iam:PassRole\"]\n    A16[\"Inject Lambda code that uses\\nSTS AssumeRole to chain into\\nadditional privileged roles\"]\n    A17[\"Perform cross-service access:\\nread DynamoDB tables, list and\\ndownload S3 objects, access\\nother AWS services\"]\n    A18[\"Modify or tamper with vehicle\\nregistration records in DynamoDB\\nand documents in S3\"]\n\n    F3 --> A14\n    A14 --> A15\n    A15 --> A16\n    A16 --> A17\n    A17 --> A18\n    A18 --> ROOT\n\n    %% Styling\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n\n    class A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13,A14,A15,A16,A17,A18 attack\n    class ROOT goal\n    class F1,F2,F3 fact\n```\n\n## Attack Path Descriptions\n\n| Path | Description | Key Technique |\n|------|-------------|---------------|\n| **Path 1** | Direct IAM policy attachment \u2014 Insider with IAM permissions directly attaches an overly permissive policy (e.g., `AdministratorAccess`) to the Lambda execution role, then invokes the function to access all target resources. | `iam:AttachRolePolicy` / `iam:PutRolePolicy` |\n| **Path 2** | Role swapping via PassRole \u2014 Compromised developer discovers an existing permissive role in the account and uses `iam:PassRole` + `lambda:UpdateFunctionConfiguration` to reassign the Lambda's execution role, then deploys malicious code. | `iam:PassRole` + `lambda:UpdateFunctionConfiguration` |\n| **Path 3** | Trust policy manipulation and role chaining \u2014 Insider modifies the trust policy of a high-privilege role to permit Lambda assumption, then chains role assumptions via STS to access and tamper with sensitive data across DynamoDB and S3. | Trust policy modification + `sts:AssumeRole` chaining |\n",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1,
+          "mitigation": 0
+        },
+        "connection_count": 22,
+        "tech_mentions": 0
+      },
+      "ttc_mappings": [
+        {
+          "attack_step": "Update Lambda function tonassume the high-privilege rolenvia iam:PassRole",
+          "technique_id": "T1088",
+          "technique_name": "Bypass User Account Control",
+          "confidence": 0.751810363243528,
+          "tactics": [
+            "defense-evasion",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.752"
+        },
+        {
+          "attack_step": "Enumerate existing Lambdanfunctions and their execution roles",
+          "technique_id": "T1574.012",
+          "technique_name": "COR_PROFILER",
+          "confidence": 0.40262414121090184,
+          "tactics": [
+            "persistence",
+            "privilege-escalation",
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.403"
+        },
+        {
+          "attack_step": "Leverage existing iam:PassRolenpermission to assign a different,nmore permissive existing role to Lambda",
+          "technique_id": "T1548.005",
+          "technique_name": "Temporary Elevated Cloud Access",
+          "confidence": 0.8722788005447867,
+          "tactics": [
+            "privilege-escalation",
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.872"
+        },
+        {
+          "attack_step": "Malicious insider with accessnto IAM role trust policies",
+          "technique_id": "T1199",
+          "technique_name": "Trusted Relationship",
+          "confidence": 0.6574260933922833,
+          "tactics": [
+            "initial-access"
+          ],
+          "reasoning": "Embedding similarity: 0.657"
+        },
+        {
+          "attack_step": "Identify target Lambda executionnrole with limited permissions",
+          "technique_id": "T1218.012",
+          "technique_name": "Verclsid",
+          "confidence": 0.5433912805803843,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.543"
+        },
+        {
+          "attack_step": "Trigger Lambda execution vianAPI Gateway, S3 event, ornmanual invocation",
+          "technique_id": "T1584.007",
+          "technique_name": "Serverless",
+          "confidence": 0.4650152953916296,
+          "tactics": [
+            "resource-development"
+          ],
+          "reasoning": "Embedding similarity: 0.465"
+        },
+        {
+          "attack_step": "Perform cross-service access:nread DynamoDB tables, list andndownload S3 objects, accessnother AWS services",
+          "technique_id": "T1619",
+          "technique_name": "Cloud Storage Object Discovery",
+          "confidence": 0.6455210464865174,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.646"
+        },
+        {
+          "attack_step": "T003: Unauthorized Access to Vehicle Registration Data,nDynamoDB Metadata, and Customer PIInvia Lambda Role Privilege Escalation",
+          "technique_id": "T1222.001",
+          "technique_name": "Windows File and Directory Permissions Modification",
+          "confidence": 0.5899293226334765,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.590"
+        },
+        {
+          "attack_step": "Lambda executes with new role:nqueries DynamoDB for PII andndownloads S3 registration documents",
+          "technique_id": "T1548.005",
+          "technique_name": "Temporary Elevated Cloud Access",
+          "confidence": 0.5652070781897426,
+          "tactics": [
+            "privilege-escalation",
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.565"
+        },
+        {
+          "attack_step": "Invoke Lambda function tonexecute with escalated privileges",
+          "technique_id": "T1548.002",
+          "technique_name": "Bypass User Account Control",
+          "confidence": 0.683618180096929,
+          "tactics": [
+            "privilege-escalation",
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.684"
+        },
+        {
+          "attack_step": "Compromised developer withnLambda configuration accessnbut limited IAM permissions",
+          "technique_id": "T1548.006",
+          "technique_name": "TCC Manipulation",
+          "confidence": 0.6726160832936092,
+          "tactics": [
+            "defense-evasion",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.673"
+        },
+        {
+          "attack_step": "Modify or tamper with vehiclenregistration records in DynamoDBnand documents in S3",
+          "technique_id": "T1485.001",
+          "technique_name": "Lifecycle-Triggered Deletion",
+          "confidence": 0.7112931793549829,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.711"
+        },
+        {
+          "attack_step": "Inject Lambda code that usesnSTS AssumeRole to chain intonadditional privileged roles",
+          "technique_id": "T1088",
+          "technique_name": "Bypass User Account Control",
+          "confidence": 0.6552698790238168,
+          "tactics": [
+            "defense-evasion",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.655"
+        },
+        {
+          "attack_step": "Discover pre-existing overlynpermissive IAM roles in the account",
+          "technique_id": "T1069.003",
+          "technique_name": "Cloud Groups",
+          "confidence": 0.7423959402840702,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.742"
+        },
+        {
+          "attack_step": "Access S3 buckets containingnvehicle registration documents",
+          "technique_id": "T1619",
+          "technique_name": "Cloud Storage Object Discovery",
+          "confidence": 0.6832632063743078,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.683"
+        },
+        {
+          "attack_step": "Modify Lambda function configurationnto swap execution role tonthe permissive discovered role",
+          "technique_id": "T1548.006",
+          "technique_name": "TCC Manipulation",
+          "confidence": 0.6647868457437975,
+          "tactics": [
+            "defense-evasion",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.665"
+        },
+        {
+          "attack_step": "Attach AdministratorAccess ornoverly permissive inline policynto Lambda execution role",
+          "technique_id": "T1484.001",
+          "technique_name": "Group Policy Modification",
+          "confidence": 0.7981025419140633,
+          "tactics": [
+            "defense-evasion",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.798"
+        },
+        {
+          "attack_step": "Access DynamoDB tables containingnvehicle registration metadata",
+          "technique_id": "T1119",
+          "technique_name": "Automated Collection",
+          "confidence": 0.5458026628648234,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.546"
+        },
+        {
+          "attack_step": "Exfiltrate customer PII fromnDynamoDB and S3 resources",
+          "technique_id": "T1074.001",
+          "technique_name": "Local Data Staging",
+          "confidence": 0.7460931891103443,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.746"
+        },
+        {
+          "attack_step": "Malicious insider withnAWS account access andnIAM modification permissions",
+          "technique_id": "T1098",
+          "technique_name": "Account Manipulation",
+          "confidence": 0.7472964211701835,
+          "tactics": [
+            "persistence",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.747"
+        },
+        {
+          "attack_step": "Deploy modified Lambda codenthat reads sensitive resources",
+          "technique_id": "T1221",
+          "technique_name": "Template Injection",
+          "confidence": 0.4631349439219986,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.463"
+        },
+        {
+          "attack_step": "Modify trust policy of anhigh-privilege existing role tonallow Lambda service assumption",
+          "technique_id": "T1548.002",
+          "technique_name": "Bypass User Account Control",
+          "confidence": 0.6320857987501249,
+          "tactics": [
+            "privilege-escalation",
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.632"
+        }
+      ],
+      "mapping_count": 22
+    },
+    {
+      "threat_id": "T004",
+      "threat_category": "Data Breach",
+      "threat_description": null,
+      "threat_statement": "A remote attacker with the ability to intercept or obtain a pre-signed S3 URL before its expiration, can reuse or share the pre-signed URL to download vehicle registration PDF documents without authenticating through the application, which leads to unauthorized access to sensitive vehicle registration documents, resulting in reduced confidentiality of vehicle registration documents stored in S3.",
+      "threat_action": "reuse or share the pre-signed URL to download vehicle registration PDF documents without authenticating through the application",
+      "threatSource": "remote attacker",
+      "prerequisites": "ability to intercept or obtain a pre-signed S3 URL before its expiration (e.g., via browser history, logs, or network sniffing on degraded TLS)",
+      "threatAction": "reuse or share the pre-signed URL to download vehicle registration PDF documents without authenticating through the application",
+      "threatImpact": "unauthorized access to sensitive vehicle registration documents",
+      "impactedGoal": "confidentiality",
+      "impactedAssets": "vehicle registration documents (PDF files stored in S3)",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    GOAL[\"T004 GOAL: Unauthorized access tonsensitive vehicle registration documentsn(Reduced Confidentiality)\"]\n    %% Attack Path 1: Network Interception\n    F1[\"Remote attacker with networknpositioning capability\"]\n    A1[\"Perform network sniffing onndegraded or misconfigured TLS\"]\n    A2[\"Intercept HTTP traffic containingnpre-signed S3 URL in transit\"]\n    A3[\"Extract pre-signed URL fromncaptured network packets\"]\n    A10[\"Use pre-signed URL before expirationnto download vehicle registration PDFs\"]\n    F1 --> A1\n    A1 --> A2\n    A2 --> A3\n    A3 --> A10\n    A10 --> GOAL\n    %% Attack Path 2: Log/History Exfiltration\n    F2[\"Remote attacker with access tonclient-side or server-side artifacts\"]\n    A4[\"Access victims browser historynor local cache\"]\n    A5[\"Extract pre-signed S3 URLnfrom browser historycache entries\"]\n    F2 --> A4\n    A4 --> A5\n    A5 --> A10\n    %% Attack Path 3: Server-Side Log Exposure\n    F3[\"Remote attacker targetingnapplication infrastructure\"]\n    A6[\"Exploit misconfigured or exposednapplicationproxy server logs\"]\n    A7[\"Harvest pre-signed S3 URLsnlogged in access logs or error logs\"]\n    F3 --> A6\n    A6 --> A7\n    A7 --> A10\n    %% Attack Path 4: Referrer Header Leakage\n    F4[\"Remote attacker controllingnan external resource\"]\n    A8[\"Lure user to click external linknfrom page containing pre-signed URL\"]\n    A9[\"Capture pre-signed S3 URLnleaked via HTTP Referer header\"]\n    F4 --> A8\n    A8 --> A9\n    A9 --> A10\n    %% Attack Path 5: URL Sharing / Social Engineering\n    F5[\"Remote attacker with socialnengineering capability\"]\n    A11[\"Social engineer a legitimate userninto sharing the pre-signed URL\"]\n    A12[\"Receive valid pre-signed URLnvia email, chat, or other channel\"]\n    F5 --> A11\n    A11 --> A12\n    A12 --> A10\n    %% Shared exploitation node branching\n    A13[\"Share pre-signed URL withnadditional unauthorized parties\"]\n    A10 --> A13\n    A13 --> A14[\"Widespread unauthorized bulkndownload of registration documents\"]\n    A14 --> GOAL\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class F1,F2,F3,F4,F5 fact\n    class A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13,A14 attack\n    class GOAL goal\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "GOAL",
+          "description": "T004 GOAL: Unauthorized access tonsensitive vehicle registration documentsn(Reduced Confidentiality)"
+        },
+        {
+          "node_id": "F1",
+          "description": "Remote attacker with networknpositioning capability"
+        },
+        {
+          "node_id": "A1",
+          "description": "Perform network sniffing onndegraded or misconfigured TLS"
+        },
+        {
+          "node_id": "A2",
+          "description": "Intercept HTTP traffic containingnpre-signed S3 URL in transit"
+        },
+        {
+          "node_id": "A3",
+          "description": "Extract pre-signed URL fromncaptured network packets"
+        },
+        {
+          "node_id": "A10",
+          "description": "Use pre-signed URL before expirationnto download vehicle registration PDFs"
+        },
+        {
+          "node_id": "F2",
+          "description": "Remote attacker with access tonclient-side or server-side artifacts"
+        },
+        {
+          "node_id": "A4",
+          "description": "Access victims browser historynor local cache"
+        },
+        {
+          "node_id": "A5",
+          "description": "Extract pre-signed S3 URLnfrom browser historycache entries"
+        },
+        {
+          "node_id": "F3",
+          "description": "Remote attacker targetingnapplication infrastructure"
+        },
+        {
+          "node_id": "A6",
+          "description": "Exploit misconfigured or exposednapplicationproxy server logs"
+        },
+        {
+          "node_id": "A7",
+          "description": "Harvest pre-signed S3 URLsnlogged in access logs or error logs"
+        },
+        {
+          "node_id": "F4",
+          "description": "Remote attacker controllingnan external resource"
+        },
+        {
+          "node_id": "A8",
+          "description": "Lure user to click external linknfrom page containing pre-signed URL"
+        },
+        {
+          "node_id": "A9",
+          "description": "Capture pre-signed S3 URLnleaked via HTTP Referer header"
+        },
+        {
+          "node_id": "F5",
+          "description": "Remote attacker with socialnengineering capability"
+        },
+        {
+          "node_id": "A11",
+          "description": "Social engineer a legitimate userninto sharing the pre-signed URL"
+        },
+        {
+          "node_id": "A12",
+          "description": "Receive valid pre-signed URLnvia email, chat, or other channel"
+        },
+        {
+          "node_id": "A13",
+          "description": "Share pre-signed URL withnadditional unauthorized parties"
+        },
+        {
+          "node_id": "A14",
+          "description": "Widespread unauthorized bulkndownload of registration documents"
+        }
+      ],
+      "generated_content": "# Attack Tree: T004 - Pre-signed S3 URL Exploitation for Vehicle Registration Document Theft\n\n## Threat Summary\nA remote attacker intercepts or obtains pre-signed S3 URLs to bypass application authentication and download sensitive vehicle registration PDFs.\n\n```mermaid\ngraph TD\n    GOAL[\"T004 GOAL: Unauthorized access to\\nsensitive vehicle registration documents\\n(Reduced Confidentiality)\"]\n\n    %% Attack Path 1: Network Interception\n    F1[\"Remote attacker with network\\npositioning capability\"]\n    A1[\"Perform network sniffing on\\ndegraded or misconfigured TLS\"]\n    A2[\"Intercept HTTP traffic containing\\npre-signed S3 URL in transit\"]\n    A3[\"Extract pre-signed URL from\\ncaptured network packets\"]\n    A10[\"Use pre-signed URL before expiration\\nto download vehicle registration PDFs\"]\n\n    F1 --> A1\n    A1 --> A2\n    A2 --> A3\n    A3 --> A10\n    A10 --> GOAL\n\n    %% Attack Path 2: Log/History Exfiltration\n    F2[\"Remote attacker with access to\\nclient-side or server-side artifacts\"]\n    A4[\"Access victim's browser history\\nor local cache\"]\n    A5[\"Extract pre-signed S3 URL\\nfrom browser history/cache entries\"]\n\n    F2 --> A4\n    A4 --> A5\n    A5 --> A10\n\n    %% Attack Path 3: Server-Side Log Exposure\n    F3[\"Remote attacker targeting\\napplication infrastructure\"]\n    A6[\"Exploit misconfigured or exposed\\napplication/proxy server logs\"]\n    A7[\"Harvest pre-signed S3 URLs\\nlogged in access logs or error logs\"]\n\n    F3 --> A6\n    A6 --> A7\n    A7 --> A10\n\n    %% Attack Path 4: Referrer Header Leakage\n    F4[\"Remote attacker controlling\\nan external resource\"]\n    A8[\"Lure user to click external link\\nfrom page containing pre-signed URL\"]\n    A9[\"Capture pre-signed S3 URL\\nleaked via HTTP Referer header\"]\n\n    F4 --> A8\n    A8 --> A9\n    A9 --> A10\n\n    %% Attack Path 5: URL Sharing / Social Engineering\n    F5[\"Remote attacker with social\\nengineering capability\"]\n    A11[\"Social engineer a legitimate user\\ninto sharing the pre-signed URL\"]\n    A12[\"Receive valid pre-signed URL\\nvia email, chat, or other channel\"]\n\n    F5 --> A11\n    A11 --> A12\n    A12 --> A10\n\n    %% Shared exploitation node branching\n    A13[\"Share pre-signed URL with\\nadditional unauthorized parties\"]\n    A10 --> A13\n    A13 --> A14[\"Widespread unauthorized bulk\\ndownload of registration documents\"]\n    A14 --> GOAL\n\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n\n    class F1,F2,F3,F4,F5 fact\n    class A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13,A14 attack\n    class GOAL goal\n```\n\n## Attack Path Summary\n\n| Path | Vector | Description |\n|------|--------|-------------|\n| **Path 1** | Network Interception | Attacker sniffs degraded TLS traffic to capture pre-signed URLs in transit |\n| **Path 2** | Browser History/Cache | Attacker accesses client-side artifacts where pre-signed URLs are stored |\n| **Path 3** | Server Log Exposure | Attacker exploits misconfigured logs that record full pre-signed URLs |\n| **Path 4** | Referrer Header Leakage | Pre-signed URL leaks via HTTP Referer header to attacker-controlled domain |\n| **Path 5** | Social Engineering | Attacker tricks legitimate user into sharing the pre-signed URL directly |\n\nAll paths converge on the critical exploitation node: **reusing the pre-signed URL before expiration** to download vehicle registration PDFs without any application-level authentication. The attacker can further amplify impact by sharing the URL with additional unauthorized parties for bulk document exfiltration.\n",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1,
+          "mitigation": 0
+        },
+        "connection_count": 20,
+        "tech_mentions": 0
+      },
+      "ttc_mappings": [
+        {
+          "attack_step": "Receive valid pre-signed URLnvia email, chat, or other channel",
+          "technique_id": "T1598.003",
+          "technique_name": "Spearphishing Link",
+          "confidence": 0.6518956753119263,
+          "tactics": [
+            "reconnaissance"
+          ],
+          "reasoning": "Embedding similarity: 0.652"
+        },
+        {
+          "attack_step": "Remote attacker controllingnan external resource",
+          "technique_id": "T1108",
+          "technique_name": "Redundant Access",
+          "confidence": 0.5221473294186345,
+          "tactics": [
+            "defense-evasion",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.522"
+        },
+        {
+          "attack_step": "Use pre-signed URL before expirationnto download vehicle registration PDFs",
+          "technique_id": "T1596.003",
+          "technique_name": "Digital Certificates",
+          "confidence": 0.41965027963697055,
+          "tactics": [
+            "reconnaissance"
+          ],
+          "reasoning": "Embedding similarity: 0.420"
+        },
+        {
+          "attack_step": "Capture pre-signed S3 URLnleaked via HTTP Referer header",
+          "technique_id": "T1090.004",
+          "technique_name": "Domain Fronting",
+          "confidence": 0.5402633065734875,
+          "tactics": [
+            "command-and-control"
+          ],
+          "reasoning": "Embedding similarity: 0.540"
+        },
+        {
+          "attack_step": "Lure user to click external linknfrom page containing pre-signed URL",
+          "technique_id": "T1608.005",
+          "technique_name": "Link Target",
+          "confidence": 0.699264000149681,
+          "tactics": [
+            "resource-development"
+          ],
+          "reasoning": "Embedding similarity: 0.699"
+        },
+        {
+          "attack_step": "Remote attacker with access tonclient-side or server-side artifacts",
+          "technique_id": "T1505.003",
+          "technique_name": "Web Shell",
+          "confidence": 0.5201025277046332,
+          "tactics": [
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.520"
+        },
+        {
+          "attack_step": "Remote attacker targetingnapplication infrastructure",
+          "technique_id": "T1190",
+          "technique_name": "Exploit Public-Facing Application",
+          "confidence": 0.5812344311743253,
+          "tactics": [
+            "initial-access"
+          ],
+          "reasoning": "Embedding similarity: 0.581"
+        },
+        {
+          "attack_step": "Social engineer a legitimate userninto sharing the pre-signed URL",
+          "technique_id": "T1598.003",
+          "technique_name": "Spearphishing Link",
+          "confidence": 0.5840680686366271,
+          "tactics": [
+            "reconnaissance"
+          ],
+          "reasoning": "Embedding similarity: 0.584"
+        },
+        {
+          "attack_step": "Remote attacker with networknpositioning capability",
+          "technique_id": "T1219",
+          "technique_name": "Remote Access Tools",
+          "confidence": 0.555051470606809,
+          "tactics": [
+            "command-and-control"
+          ],
+          "reasoning": "Embedding similarity: 0.555"
+        },
+        {
+          "attack_step": "Access victims browser historynor local cache",
+          "technique_id": "T1217",
+          "technique_name": "Browser Information Discovery",
+          "confidence": 0.6586864657428814,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.659"
+        },
+        {
+          "attack_step": "Widespread unauthorized bulkndownload of registration documents",
+          "technique_id": "T1119",
+          "technique_name": "Automated Collection",
+          "confidence": 0.48762798488766707,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.488"
+        },
+        {
+          "attack_step": "Remote attacker with socialnengineering capability",
+          "technique_id": "T1108",
+          "technique_name": "Redundant Access",
+          "confidence": 0.6037692194062376,
+          "tactics": [
+            "defense-evasion",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.604"
+        },
+        {
+          "attack_step": "Intercept HTTP traffic containingnpre-signed S3 URL in transit",
+          "technique_id": "T1001.003",
+          "technique_name": "Protocol or Service Impersonation",
+          "confidence": 0.7518170729586462,
+          "tactics": [
+            "command-and-control"
+          ],
+          "reasoning": "Embedding similarity: 0.752"
+        },
+        {
+          "attack_step": "Perform network sniffing onndegraded or misconfigured TLS",
+          "technique_id": "T1001.003",
+          "technique_name": "Protocol or Service Impersonation",
+          "confidence": 0.6710853428210752,
+          "tactics": [
+            "command-and-control"
+          ],
+          "reasoning": "Embedding similarity: 0.671"
+        },
+        {
+          "attack_step": "Share pre-signed URL withnadditional unauthorized parties",
+          "technique_id": "T1608.003",
+          "technique_name": "Install Digital Certificate",
+          "confidence": 0.4578960050239797,
+          "tactics": [
+            "resource-development"
+          ],
+          "reasoning": "Embedding similarity: 0.458"
+        },
+        {
+          "attack_step": "Extract pre-signed S3 URLnfrom browser historycache entries",
+          "technique_id": "T1217",
+          "technique_name": "Browser Information Discovery",
+          "confidence": 0.6013087132087129,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.601"
+        },
+        {
+          "attack_step": "Extract pre-signed URL fromncaptured network packets",
+          "technique_id": "T1040",
+          "technique_name": "Network Sniffing",
+          "confidence": 0.6724890556590148,
+          "tactics": [
+            "credential-access",
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.672"
+        },
+        {
+          "attack_step": "T004 GOAL: Unauthorized access tonsensitive vehicle registration documentsn(Reduced Confidentiality)",
+          "technique_id": "T1213",
+          "technique_name": "Data from Information Repositories",
+          "confidence": 0.5096988491246813,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.510"
+        },
+        {
+          "attack_step": "Exploit misconfigured or exposednapplicationproxy server logs",
+          "technique_id": "T1188",
+          "technique_name": "Multi-hop Proxy",
+          "confidence": 0.6331272936851241,
+          "tactics": [
+            "command-and-control"
+          ],
+          "reasoning": "Embedding similarity: 0.633"
+        },
+        {
+          "attack_step": "Harvest pre-signed S3 URLsnlogged in access logs or error logs",
+          "technique_id": "T1654",
+          "technique_name": "Log Enumeration",
+          "confidence": 0.5776012990083917,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.578"
+        }
+      ],
+      "mapping_count": 20
+    }
+  ],
+  "mapping_summary": {
+    "total_mappings": 76,
+    "successful_mappings": 76,
+    "threshold_used": 0.3,
+    "model": "local"
+  }
+}

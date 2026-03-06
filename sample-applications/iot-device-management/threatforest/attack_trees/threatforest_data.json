@@ -1,0 +1,2056 @@
+{
+  "metadata": {
+    "generated_at": "2026-02-06T12:01:34.260684",
+    "generator": "ThreatForest",
+    "version": "1.0"
+  },
+  "project_info": {
+    "application_name": "IoT Device Management Platform",
+    "technologies": [
+      "Python",
+      "FastAPI",
+      "Celery",
+      "MongoDB",
+      "InfluxDB",
+      "Apache Kafka",
+      "AWS IoT Core",
+      "AWS Lambda",
+      "MQTT over TLS",
+      "CoAP",
+      "X.509 certificates",
+      "Grafana",
+      "Prometheus",
+      "LoRaWAN",
+      "Zigbee"
+    ],
+    "architecture_type": "microservices",
+    "deployment_environment": "AWS",
+    "sector": "IoT/Industrial/Healthcare/Smart Cities",
+    "security_objectives": [
+      "Protect sensitive sensor data, device configurations, and user information (Confidentiality)",
+      "Ensure accurate sensor readings, secure firmware updates, and reliable device commands (Integrity)",
+      "Maintain continuous device connectivity and data collection capabilities (Availability)",
+      "Secure device identity management and provisioning",
+      "Implement device attestation and authentication",
+      "Manage X.509 certificates for device communication",
+      "Protect personal health data (HIPAA compliance)",
+      "Ensure GDPR compliance for personal data",
+      "Implement ISO 27001 information security management",
+      "Maintain IEC 62443 industrial cybersecurity standards"
+    ],
+    "data_assets": [
+      "Device credentials and authentication tokens",
+      "Encryption keys and cryptographic material",
+      "Personal health data (healthcare devices)",
+      "Device configurations and settings",
+      "Location data (vehicle telematics, GPS trackers)",
+      "Usage patterns and behavioral data",
+      "Sensor readings (temperature, humidity, pressure, motion)",
+      "Consumption data (electricity, water, gas)",
+      "Device metadata and identifiers",
+      "System logs and audit trails",
+      "User information and access credentials",
+      "Firmware versions and update history"
+    ],
+    "entry_points": [
+      "MQTT protocol endpoints (over TLS)",
+      "CoAP protocol endpoints",
+      "AWS IoT Core endpoints",
+      "REST API endpoints (FastAPI backend)",
+      "Dashboard web interface",
+      "Device provisioning endpoints",
+      "Firmware update endpoints",
+      "Configuration management endpoints",
+      "Monitoring and telemetry endpoints"
+    ],
+    "trust_boundaries": [
+      "Between IoT devices and communication gateway (MQTT/CoAP over TLS)",
+      "Between edge gateways and cloud infrastructure",
+      "Between device network and management network",
+      "Between backend services and MongoDB database",
+      "Between backend services and InfluxDB time-series database",
+      "Between Kafka message broker and data processing engine",
+      "Between AWS IoT Core and Lambda functions",
+      "Between backend services and Grafana/Prometheus monitoring",
+      "Between user dashboard and backend API",
+      "Between different microservices in the platform",
+      "Between cloud infrastructure and external networks"
+    ],
+    "summary": "The IoT Device Management Platform is a comprehensive, multi-tenant system designed to securely manage thousands of IoT devices across diverse industries including smart cities, industrial automation, and healthcare. The architecture follows a microservices pattern deployed on AWS, utilizing Python/FastAPI for the backend, MongoDB and InfluxDB for data storage, and Apache Kafka for real-time data streaming. The platform supports multiple device communication protocols (MQTT over TLS, CoAP) and device types (smart sensors, industrial controllers, smart meters, healthcare devices, vehicle telematics). Security is a primary concern with X.509 certificate-based device authentication, device attestation mechanisms, and compliance requirements including ISO 27001, IEC 62443, HIPAA, and GDPR. Key security objectives focus on protecting highly sensitive data (device credentials, encryption keys, personal health data), ensuring data integrity through secure firmware updates, and maintaining availability of device connectivity. The platform implements a layered network architecture with device networks, edge gateways for local processing, cloud infrastructure for scalable services, and a separate management network for administrative access. Critical trust boundaries exist between IoT devices and the communication gateway, between edge gateways and cloud services, and between various microservices handling sensitive data.",
+    "\"applicationname\"": "\"string\",",
+    "\"industry\"": "\"string\",",
+    "\"architecturetype\"": "\"string\",",
+    "\"components\"": "[],",
+    "\"technologies\"": "{"
+  },
+  "extraction_summary": {
+    "total_threats": 12,
+    "high_severity_count": 5,
+    "technologies_identified": 15,
+    "has_security_objectives": true,
+    "agent_based": true,
+    "threat_source": "ai_generated"
+  },
+  "threats": {
+    "all_threats": [
+      {
+        "id": "T001",
+        "statement": "A malicious attacker with network access to MQTT endpoints, can intercept and replay captured TLS handshakes and device certificates, which leads to unauthorized device impersonation, resulting in reduced confidentiality and integrity of device commands and sensor data.",
+        "severity": "High",
+        "category": "Authentication & Certificate Abuse",
+        "threatSource": "malicious attacker",
+        "prerequisites": "network access to MQTT endpoints, captured device certificates or TLS session data",
+        "threatAction": "intercept and replay TLS handshakes and device certificates",
+        "threatImpact": "unauthorized device impersonation and command injection",
+        "impactedGoal": "confidentiality, integrity",
+        "impactedAssets": "device credentials, X.509 certificates, device commands, sensor data",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T002",
+        "statement": "A malicious insider with access to AWS IoT Core or certificate management systems, can extract and exfiltrate X.509 private keys and device credentials, which leads to unauthorized device authentication and lateral movement, resulting in reduced confidentiality of encryption keys and device authentication tokens.",
+        "severity": "High",
+        "category": "Credential Theft & Insider Threat",
+        "threatSource": "malicious insider or compromised AWS IAM account",
+        "prerequisites": "access to AWS IoT Core, certificate storage, or key management systems",
+        "threatAction": "extract and exfiltrate X.509 private keys and device credentials",
+        "threatImpact": "unauthorized device authentication and lateral movement across device network",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "encryption keys, X.509 certificates, device credentials, authentication tokens",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T003",
+        "statement": "A malicious attacker with access to the FastAPI REST API endpoints, can perform SQL injection or NoSQL injection attacks against MongoDB, which leads to unauthorized data extraction and modification, resulting in reduced confidentiality and integrity of device configurations, personal health data, and user information.",
+        "severity": "High",
+        "category": "Injection Attack",
+        "threatSource": "malicious attacker",
+        "prerequisites": "network access to FastAPI REST API endpoints, knowledge of API parameters",
+        "threatAction": "perform SQL/NoSQL injection attacks against MongoDB queries",
+        "threatImpact": "unauthorized data extraction, modification, and potential database compromise",
+        "impactedGoal": "confidentiality, integrity",
+        "impactedAssets": "device configurations, personal health data, user information, device metadata",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T004",
+        "statement": "A malicious attacker with network access to firmware update endpoints, can upload and distribute malicious firmware to IoT devices, which leads to device compromise and botnet formation, resulting in reduced integrity and availability of device functionality and sensor data collection.",
+        "severity": "High",
+        "category": "Malicious Code & Supply Chain Attack",
+        "threatSource": "malicious attacker",
+        "prerequisites": "network access to firmware update endpoints, ability to bypass signature verification",
+        "threatAction": "upload and distribute malicious firmware to IoT devices",
+        "threatImpact": "device compromise, botnet formation, unauthorized command execution",
+        "impactedGoal": "integrity, availability",
+        "impactedAssets": "firmware versions, device functionality, sensor data collection, device control systems",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T005",
+        "statement": "A malicious attacker with access to Apache Kafka message streams, can intercept unencrypted or weakly encrypted sensor data and device commands, which leads to unauthorized data disclosure and command manipulation, resulting in reduced confidentiality and integrity of sensor readings and device configurations.",
+        "severity": "High",
+        "category": "Data Interception & Man-in-the-Middle",
+        "threatSource": "malicious attacker",
+        "prerequisites": "network access to Kafka brokers, ability to intercept message streams",
+        "threatAction": "intercept and read unencrypted sensor data and device commands from Kafka topics",
+        "threatImpact": "unauthorized data disclosure and potential command manipulation",
+        "impactedGoal": "confidentiality, integrity",
+        "impactedAssets": "sensor readings, device commands, device configurations, usage patterns",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T006",
+        "statement": "A malicious attacker with knowledge of device provisioning workflows, can perform certificate spoofing or forge X.509 certificates, which leads to unauthorized device registration and network access, resulting in reduced confidentiality and integrity of device identity management and authentication.",
+        "severity": "Medium",
+        "category": "Certificate Spoofing & Forgery",
+        "threatSource": "malicious attacker",
+        "prerequisites": "knowledge of certificate generation process, access to provisioning endpoints, weak certificate validation",
+        "threatAction": "forge or spoof X.509 certificates to register unauthorized devices",
+        "threatImpact": "unauthorized device registration and network access",
+        "impactedGoal": "confidentiality, integrity",
+        "impactedAssets": "device identity management, X.509 certificates, device provisioning system",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T007",
+        "statement": "A malicious attacker with access to the dashboard web interface, can exploit Cross-Site Scripting (XSS) vulnerabilities, which leads to session hijacking and unauthorized access to user accounts, resulting in reduced confidentiality and integrity of user information and device management capabilities.",
+        "severity": "Medium",
+        "category": "Web Application Vulnerability",
+        "threatSource": "malicious attacker",
+        "prerequisites": "network access to dashboard web interface, knowledge of XSS vulnerabilities",
+        "threatAction": "inject malicious scripts through dashboard input fields to steal session cookies",
+        "threatImpact": "session hijacking and unauthorized account access",
+        "impactedGoal": "confidentiality, integrity",
+        "impactedAssets": "user credentials, session tokens, user information, device management access",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T008",
+        "statement": "A malicious attacker with network access to CoAP endpoints, can perform Denial of Service (DoS) attacks by flooding devices with malformed CoAP packets, which leads to device unavailability and data collection interruption, resulting in reduced availability of device connectivity and sensor data collection.",
+        "severity": "Medium",
+        "category": "Denial of Service",
+        "threatSource": "malicious attacker",
+        "prerequisites": "network access to CoAP endpoints, ability to generate high-volume traffic",
+        "threatAction": "flood CoAP endpoints with malformed packets or amplification attacks",
+        "threatImpact": "device unavailability and interruption of data collection",
+        "impactedGoal": "availability",
+        "impactedAssets": "device connectivity, sensor data collection, CoAP communication endpoints",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T009",
+        "statement": "A malicious attacker with access to InfluxDB or monitoring systems, can exfiltrate time-series sensor data and behavioral patterns, which leads to unauthorized disclosure of sensitive operational and personal information, resulting in reduced confidentiality of sensor readings, usage patterns, and location data.",
+        "severity": "Medium",
+        "category": "Data Breach & Unauthorized Access",
+        "threatSource": "malicious attacker or compromised database credentials",
+        "prerequisites": "network access to InfluxDB, weak authentication credentials, or unencrypted connections",
+        "threatAction": "query and exfiltrate time-series sensor data and behavioral patterns",
+        "threatImpact": "unauthorized disclosure of operational and personal information",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "sensor readings, usage patterns, location data, behavioral data, consumption data",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T010",
+        "statement": "A malicious attacker with access to AWS Lambda functions or Celery task queues, can inject malicious tasks or modify function code, which leads to unauthorized command execution and data manipulation, resulting in reduced integrity and availability of device commands and data processing.",
+        "severity": "Medium",
+        "category": "Code Injection & Privilege Escalation",
+        "threatSource": "malicious attacker or compromised AWS credentials",
+        "prerequisites": "access to Lambda function code or Celery task queue, weak input validation",
+        "threatAction": "inject malicious tasks or modify Lambda function code to execute unauthorized commands",
+        "threatImpact": "unauthorized command execution and data manipulation",
+        "impactedGoal": "integrity, availability",
+        "impactedAssets": "device commands, data processing, AWS Lambda functions, Celery task queues",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T011",
+        "statement": "A malicious attacker with knowledge of device communication protocols, can perform protocol downgrade attacks on MQTT/TLS connections, which leads to forced use of weaker encryption, resulting in reduced confidentiality of device communications and sensor data.",
+        "severity": "Medium",
+        "category": "Cryptographic Weakness & Protocol Downgrade",
+        "threatSource": "malicious attacker",
+        "prerequisites": "network access to MQTT endpoints, ability to intercept connections, weak protocol configuration",
+        "threatAction": "perform protocol downgrade attacks to force use of weaker TLS versions or cipher suites",
+        "threatImpact": "forced use of weaker encryption and potential data interception",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "device communications, sensor data, MQTT protocol security",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T012",
+        "statement": "A malicious attacker with access to system logs or audit trails, can tamper with or delete log entries to cover tracks of unauthorized activities, which leads to loss of forensic evidence and compliance violations, resulting in reduced integrity and availability of audit trails and system logs.",
+        "severity": "Low",
+        "category": "Log Tampering & Audit Trail Manipulation",
+        "threatSource": "malicious attacker or compromised system account",
+        "prerequisites": "access to log storage systems, weak log protection mechanisms",
+        "threatAction": "tamper with or delete system logs and audit trail entries",
+        "threatImpact": "loss of forensic evidence and compliance violations",
+        "impactedGoal": "integrity, availability",
+        "impactedAssets": "system logs, audit trails, forensic evidence, compliance records",
+        "source": "AI Generated"
+      }
+    ],
+    "high_severity": [
+      {
+        "id": "T001",
+        "statement": "A malicious attacker with network access to MQTT endpoints, can intercept and replay captured TLS handshakes and device certificates, which leads to unauthorized device impersonation, resulting in reduced confidentiality and integrity of device commands and sensor data.",
+        "severity": "High",
+        "category": "Authentication & Certificate Abuse",
+        "threatSource": "malicious attacker",
+        "prerequisites": "network access to MQTT endpoints, captured device certificates or TLS session data",
+        "threatAction": "intercept and replay TLS handshakes and device certificates",
+        "threatImpact": "unauthorized device impersonation and command injection",
+        "impactedGoal": "confidentiality, integrity",
+        "impactedAssets": "device credentials, X.509 certificates, device commands, sensor data",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T002",
+        "statement": "A malicious insider with access to AWS IoT Core or certificate management systems, can extract and exfiltrate X.509 private keys and device credentials, which leads to unauthorized device authentication and lateral movement, resulting in reduced confidentiality of encryption keys and device authentication tokens.",
+        "severity": "High",
+        "category": "Credential Theft & Insider Threat",
+        "threatSource": "malicious insider or compromised AWS IAM account",
+        "prerequisites": "access to AWS IoT Core, certificate storage, or key management systems",
+        "threatAction": "extract and exfiltrate X.509 private keys and device credentials",
+        "threatImpact": "unauthorized device authentication and lateral movement across device network",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "encryption keys, X.509 certificates, device credentials, authentication tokens",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T003",
+        "statement": "A malicious attacker with access to the FastAPI REST API endpoints, can perform SQL injection or NoSQL injection attacks against MongoDB, which leads to unauthorized data extraction and modification, resulting in reduced confidentiality and integrity of device configurations, personal health data, and user information.",
+        "severity": "High",
+        "category": "Injection Attack",
+        "threatSource": "malicious attacker",
+        "prerequisites": "network access to FastAPI REST API endpoints, knowledge of API parameters",
+        "threatAction": "perform SQL/NoSQL injection attacks against MongoDB queries",
+        "threatImpact": "unauthorized data extraction, modification, and potential database compromise",
+        "impactedGoal": "confidentiality, integrity",
+        "impactedAssets": "device configurations, personal health data, user information, device metadata",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T004",
+        "statement": "A malicious attacker with network access to firmware update endpoints, can upload and distribute malicious firmware to IoT devices, which leads to device compromise and botnet formation, resulting in reduced integrity and availability of device functionality and sensor data collection.",
+        "severity": "High",
+        "category": "Malicious Code & Supply Chain Attack",
+        "threatSource": "malicious attacker",
+        "prerequisites": "network access to firmware update endpoints, ability to bypass signature verification",
+        "threatAction": "upload and distribute malicious firmware to IoT devices",
+        "threatImpact": "device compromise, botnet formation, unauthorized command execution",
+        "impactedGoal": "integrity, availability",
+        "impactedAssets": "firmware versions, device functionality, sensor data collection, device control systems",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T005",
+        "statement": "A malicious attacker with access to Apache Kafka message streams, can intercept unencrypted or weakly encrypted sensor data and device commands, which leads to unauthorized data disclosure and command manipulation, resulting in reduced confidentiality and integrity of sensor readings and device configurations.",
+        "severity": "High",
+        "category": "Data Interception & Man-in-the-Middle",
+        "threatSource": "malicious attacker",
+        "prerequisites": "network access to Kafka brokers, ability to intercept message streams",
+        "threatAction": "intercept and read unencrypted sensor data and device commands from Kafka topics",
+        "threatImpact": "unauthorized data disclosure and potential command manipulation",
+        "impactedGoal": "confidentiality, integrity",
+        "impactedAssets": "sensor readings, device commands, device configurations, usage patterns",
+        "source": "AI Generated"
+      }
+    ]
+  },
+  "attack_trees": [
+    {
+      "threat_id": "T001",
+      "threat_category": "Authentication & Certificate Abuse",
+      "threat_description": null,
+      "threat_statement": "A malicious attacker with network access to MQTT endpoints, can intercept and replay captured TLS handshakes and device certificates, which leads to unauthorized device impersonation, resulting in reduced confidentiality and integrity of device commands and sensor data.",
+      "threat_action": "intercept and replay TLS handshakes and device certificates",
+      "threatSource": "malicious attacker",
+      "prerequisites": "network access to MQTT endpoints, captured device certificates or TLS session data",
+      "threatAction": "intercept and replay TLS handshakes and device certificates",
+      "threatImpact": "unauthorized device impersonation and command injection",
+      "impactedGoal": "confidentiality, integrity",
+      "impactedAssets": "device credentials, X.509 certificates, device commands, sensor data",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"Malicious Attacker with Network Access\"] --> B[\"Prerequisites Acquired\"]\n    B --> B1[\"Network access to MQTT endpoints\"]\n    B --> B2[\"Captured device certificates or TLS session data\"]\n    B1 --> C[\"Network Reconnaissance\"]\n    B2 --> C\n    C --> D[\"Intercept TLS Handshakes\"]\n    D --> D1[\"Passive network sniffing\"]\n    D --> D2[\"Man-in-the-middle positioning\"]\n    C --> E[\"Capture Device Certificates\"]\n    E --> E1[\"Extract X.509 certificates from traffic\"]\n    E --> E2[\"Obtain certificate private keys\"]\n    D1 --> F[\"Replay Captured TLS Session\"]\n    D2 --> F\n    E1 --> F\n    E2 --> F\n    F --> G[\"Establish Unauthorized Connection\"]\n    G --> G1[\"Impersonate legitimate device\"]\n    G --> G2[\"Bypass certificate validation\"]\n    G1 --> H[\"Unauthorized Device Impersonation\"]\n    G2 --> H\n    H --> I[\"Execute Malicious Actions\"]\n    I --> I1[\"Inject false device commands\"]\n    I --> I2[\"Modify sensor data\"]\n    I --> I3[\"Publish malicious MQTT messages\"]\n    I1 --> J[\"Compromise Confidentiality  Integrity\"]\n    I2 --> J\n    I3 --> J\n    J --> K[\"Impact: Reduced Confidentiality and Integrity\"]\n    K --> K1[\"Device commands compromised\"]\n    K --> K2[\"Sensor data integrity violated\"]\n    K --> K3[\"Unauthorized system control\"]\n    classDef fact fill:#ccccff\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    class A,B,B1,B2 fact\n    class C,D,D1,D2,E,E1,E2,F,G,G1,G2,H,I,I1,I2,I3,J attack\n    class K,K1,K2,K3 goal\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "Malicious Attacker with Network Access"
+        },
+        {
+          "node_id": "B",
+          "description": "Prerequisites Acquired"
+        },
+        {
+          "node_id": "B1",
+          "description": "Network access to MQTT endpoints"
+        },
+        {
+          "node_id": "B2",
+          "description": "Captured device certificates or TLS session data"
+        },
+        {
+          "node_id": "C",
+          "description": "Network Reconnaissance"
+        },
+        {
+          "node_id": "D",
+          "description": "Intercept TLS Handshakes"
+        },
+        {
+          "node_id": "D1",
+          "description": "Passive network sniffing"
+        },
+        {
+          "node_id": "D2",
+          "description": "Man-in-the-middle positioning"
+        },
+        {
+          "node_id": "E",
+          "description": "Capture Device Certificates"
+        },
+        {
+          "node_id": "E1",
+          "description": "Extract X.509 certificates from traffic"
+        },
+        {
+          "node_id": "E2",
+          "description": "Obtain certificate private keys"
+        },
+        {
+          "node_id": "F",
+          "description": "Replay Captured TLS Session"
+        },
+        {
+          "node_id": "G",
+          "description": "Establish Unauthorized Connection"
+        },
+        {
+          "node_id": "G1",
+          "description": "Impersonate legitimate device"
+        },
+        {
+          "node_id": "G2",
+          "description": "Bypass certificate validation"
+        },
+        {
+          "node_id": "H",
+          "description": "Unauthorized Device Impersonation"
+        },
+        {
+          "node_id": "I",
+          "description": "Execute Malicious Actions"
+        },
+        {
+          "node_id": "I1",
+          "description": "Inject false device commands"
+        },
+        {
+          "node_id": "I2",
+          "description": "Modify sensor data"
+        },
+        {
+          "node_id": "I3",
+          "description": "Publish malicious MQTT messages"
+        },
+        {
+          "node_id": "J",
+          "description": "Compromise Confidentiality  Integrity"
+        },
+        {
+          "node_id": "K",
+          "description": "Impact: Reduced Confidentiality and Integrity"
+        },
+        {
+          "node_id": "K1",
+          "description": "Device commands compromised"
+        },
+        {
+          "node_id": "K2",
+          "description": "Sensor data integrity violated"
+        },
+        {
+          "node_id": "K3",
+          "description": "Unauthorized system control"
+        }
+      ],
+      "generated_content": "# Attack Tree: T001 - MQTT Certificate Replay and Device Impersonation\n\n```mermaid\ngraph TD\n    A[\"Malicious Attacker with Network Access\"] --> B[\"Prerequisites Acquired\"]\n    B --> B1[\"Network access to MQTT endpoints\"]\n    B --> B2[\"Captured device certificates or TLS session data\"]\n    \n    B1 --> C[\"Network Reconnaissance\"]\n    B2 --> C\n    \n    C --> D[\"Intercept TLS Handshakes\"]\n    D --> D1[\"Passive network sniffing\"]\n    D --> D2[\"Man-in-the-middle positioning\"]\n    \n    C --> E[\"Capture Device Certificates\"]\n    E --> E1[\"Extract X.509 certificates from traffic\"]\n    E --> E2[\"Obtain certificate private keys\"]\n    \n    D1 --> F[\"Replay Captured TLS Session\"]\n    D2 --> F\n    E1 --> F\n    E2 --> F\n    \n    F --> G[\"Establish Unauthorized Connection\"]\n    G --> G1[\"Impersonate legitimate device\"]\n    G --> G2[\"Bypass certificate validation\"]\n    \n    G1 --> H[\"Unauthorized Device Impersonation\"]\n    G2 --> H\n    \n    H --> I[\"Execute Malicious Actions\"]\n    I --> I1[\"Inject false device commands\"]\n    I --> I2[\"Modify sensor data\"]\n    I --> I3[\"Publish malicious MQTT messages\"]\n    \n    I1 --> J[\"Compromise Confidentiality & Integrity\"]\n    I2 --> J\n    I3 --> J\n    \n    J --> K[\"Impact: Reduced Confidentiality and Integrity\"]\n    K --> K1[\"Device commands compromised\"]\n    K --> K2[\"Sensor data integrity violated\"]\n    K --> K3[\"Unauthorized system control\"]\n    \n    classDef fact fill:#ccccff\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    \n    class A,B,B1,B2 fact\n    class C,D,D1,D2,E,E1,E2,F,G,G1,G2,H,I,I1,I2,I3,J attack\n    class K,K1,K2,K3 goal\n```\n\n## Attack Tree Summary\n\n**Threat ID**: T001\n\n**Attack Paths**:\n\n1. **Path 1 - TLS Handshake Replay**:\n   - Attacker gains network access \u2192 Performs passive sniffing \u2192 Intercepts TLS handshakes \u2192 Replays captured session \u2192 Impersonates device \u2192 Injects malicious commands\n\n2. **Path 2 - Certificate Extraction & Reuse**:\n   - Attacker gains network access \u2192 Captures device certificates \u2192 Extracts X.509 certificates and private keys \u2192 Establishes unauthorized connection using stolen credentials \u2192 Impersonates device \u2192 Modifies sensor data\n\n**Key Attack Vectors**:\n- Passive network sniffing of MQTT traffic\n- Man-in-the-middle positioning on network\n- TLS session replay attacks\n- Certificate credential theft and reuse\n- Malicious MQTT message injection\n\n**Impact**: Unauthorized device impersonation leading to compromised confidentiality and integrity of device commands and sensor data.\n",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1,
+          "mitigation": 0
+        },
+        "connection_count": 31,
+        "tech_mentions": 0
+      },
+      "ttc_mappings": [
+        {
+          "attack_step": "Network access to MQTT endpoints",
+          "technique_id": "T1071.005",
+          "technique_name": "Publish/Subscribe Protocols",
+          "confidence": 0.609668883780808,
+          "tactics": [
+            "command-and-control"
+          ],
+          "reasoning": "Embedding similarity: 0.610"
+        },
+        {
+          "attack_step": "Extract X.509 certificates from traffic",
+          "technique_id": "T1608.003",
+          "technique_name": "Install Digital Certificate",
+          "confidence": 0.6260514285945816,
+          "tactics": [
+            "resource-development"
+          ],
+          "reasoning": "Embedding similarity: 0.626"
+        },
+        {
+          "attack_step": "Publish malicious MQTT messages",
+          "technique_id": "T1071.005",
+          "technique_name": "Publish/Subscribe Protocols",
+          "confidence": 0.7512803278756293,
+          "tactics": [
+            "command-and-control"
+          ],
+          "reasoning": "Embedding similarity: 0.751"
+        },
+        {
+          "attack_step": "Inject false device commands",
+          "technique_id": "T1546.017",
+          "technique_name": "Udev Rules",
+          "confidence": 0.6713956111606368,
+          "tactics": [
+            "persistence",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.671"
+        },
+        {
+          "attack_step": "Obtain certificate private keys",
+          "technique_id": "T1649",
+          "technique_name": "Steal or Forge Authentication Certificates",
+          "confidence": 0.6940377278334667,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.694"
+        },
+        {
+          "attack_step": "Capture Device Certificates",
+          "technique_id": "T1552.004",
+          "technique_name": "Private Keys",
+          "confidence": 0.5519529363543216,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.552"
+        },
+        {
+          "attack_step": "Man-in-the-middle positioning",
+          "technique_id": "T1614",
+          "technique_name": "System Location Discovery",
+          "confidence": 0.40155809760840744,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.402"
+        },
+        {
+          "attack_step": "Unauthorized Device Impersonation",
+          "technique_id": "T1091",
+          "technique_name": "Replication Through Removable Media",
+          "confidence": 0.6448079702286138,
+          "tactics": [
+            "lateral-movement",
+            "initial-access"
+          ],
+          "reasoning": "Embedding similarity: 0.645"
+        },
+        {
+          "attack_step": "Replay Captured TLS Session",
+          "technique_id": "T1572",
+          "technique_name": "Protocol Tunneling",
+          "confidence": 0.5141173941672649,
+          "tactics": [
+            "command-and-control"
+          ],
+          "reasoning": "Embedding similarity: 0.514"
+        },
+        {
+          "attack_step": "Prerequisites Acquired",
+          "technique_id": "T1588",
+          "technique_name": "Obtain Capabilities",
+          "confidence": 0.479299329557341,
+          "tactics": [
+            "resource-development"
+          ],
+          "reasoning": "Embedding similarity: 0.479"
+        },
+        {
+          "attack_step": "Sensor data integrity violated",
+          "technique_id": "T1562.006",
+          "technique_name": "Indicator Blocking",
+          "confidence": 0.5106568278961741,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.511"
+        },
+        {
+          "attack_step": "Execute Malicious Actions",
+          "technique_id": "T1064",
+          "technique_name": "Scripting",
+          "confidence": 0.6978537844015433,
+          "tactics": [
+            "defense-evasion",
+            "execution"
+          ],
+          "reasoning": "Embedding similarity: 0.698"
+        },
+        {
+          "attack_step": "Passive network sniffing",
+          "technique_id": "T1040",
+          "technique_name": "Network Sniffing",
+          "confidence": 0.7992793620441377,
+          "tactics": [
+            "credential-access",
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.799"
+        },
+        {
+          "attack_step": "Impersonate legitimate device",
+          "technique_id": "T1091",
+          "technique_name": "Replication Through Removable Media",
+          "confidence": 0.6055667078487021,
+          "tactics": [
+            "lateral-movement",
+            "initial-access"
+          ],
+          "reasoning": "Embedding similarity: 0.606"
+        },
+        {
+          "attack_step": "Network Reconnaissance",
+          "technique_id": "T1595.001",
+          "technique_name": "Scanning IP Blocks",
+          "confidence": 0.7092571490915986,
+          "tactics": [
+            "reconnaissance"
+          ],
+          "reasoning": "Embedding similarity: 0.709"
+        },
+        {
+          "attack_step": "Device commands compromised",
+          "technique_id": "T1059.008",
+          "technique_name": "Network Device CLI",
+          "confidence": 0.693386194752455,
+          "tactics": [
+            "execution"
+          ],
+          "reasoning": "Embedding similarity: 0.693"
+        },
+        {
+          "attack_step": "Captured device certificates or TLS session data",
+          "technique_id": "T1552.004",
+          "technique_name": "Private Keys",
+          "confidence": 0.5133569642569081,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.513"
+        },
+        {
+          "attack_step": "Bypass certificate validation",
+          "technique_id": "T1587.002",
+          "technique_name": "Code Signing Certificates",
+          "confidence": 0.7122075367521934,
+          "tactics": [
+            "resource-development"
+          ],
+          "reasoning": "Embedding similarity: 0.712"
+        },
+        {
+          "attack_step": "Malicious Attacker with Network Access",
+          "technique_id": "T1108",
+          "technique_name": "Redundant Access",
+          "confidence": 0.639359208563163,
+          "tactics": [
+            "defense-evasion",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.639"
+        },
+        {
+          "attack_step": "Establish Unauthorized Connection",
+          "technique_id": "T1133",
+          "technique_name": "External Remote Services",
+          "confidence": 0.546019008010061,
+          "tactics": [
+            "persistence",
+            "initial-access"
+          ],
+          "reasoning": "Embedding similarity: 0.546"
+        },
+        {
+          "attack_step": "Compromise Confidentiality  Integrity",
+          "technique_id": "T1565.002",
+          "technique_name": "Transmitted Data Manipulation",
+          "confidence": 0.6098689017738756,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.610"
+        },
+        {
+          "attack_step": "Impact: Reduced Confidentiality and Integrity",
+          "technique_id": "T1565.002",
+          "technique_name": "Transmitted Data Manipulation",
+          "confidence": 0.6685399041034709,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.669"
+        },
+        {
+          "attack_step": "Intercept TLS Handshakes",
+          "technique_id": "T1001.003",
+          "technique_name": "Protocol or Service Impersonation",
+          "confidence": 0.7556037293613387,
+          "tactics": [
+            "command-and-control"
+          ],
+          "reasoning": "Embedding similarity: 0.756"
+        },
+        {
+          "attack_step": "Unauthorized system control",
+          "technique_id": "T1177",
+          "technique_name": "LSASS Driver",
+          "confidence": 0.6020799491425571,
+          "tactics": [
+            "execution",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.602"
+        },
+        {
+          "attack_step": "Modify sensor data",
+          "technique_id": "T1562.006",
+          "technique_name": "Indicator Blocking",
+          "confidence": 0.5417574565253618,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.542"
+        }
+      ],
+      "mapping_count": 25
+    },
+    {
+      "threat_id": "T002",
+      "threat_category": "Credential Theft & Insider Threat",
+      "threat_description": null,
+      "threat_statement": "A malicious insider with access to AWS IoT Core or certificate management systems, can extract and exfiltrate X.509 private keys and device credentials, which leads to unauthorized device authentication and lateral movement, resulting in reduced confidentiality of encryption keys and device authentication tokens.",
+      "threat_action": "extract and exfiltrate X.509 private keys and device credentials",
+      "threatSource": "malicious insider or compromised AWS IAM account",
+      "prerequisites": "access to AWS IoT Core, certificate storage, or key management systems",
+      "threatAction": "extract and exfiltrate X.509 private keys and device credentials",
+      "threatImpact": "unauthorized device authentication and lateral movement across device network",
+      "impactedGoal": "confidentiality",
+      "impactedAssets": "encryption keys, X.509 certificates, device credentials, authentication tokens",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"Malicious Insider or Compromised IAM Account\"] --> B[\"Access to AWS IoT Core Systems\"]\n    B --> C[\"Locate Certificate Storage\"]\n    B --> D[\"Locate Key Management Systems\"]\n    C --> E[\"Access AWS IoT Device Registry\"]\n    D --> F[\"Access AWS Secrets Manager or KMS\"]\n    E --> G[\"Extract X.509 Private Keys\"]\n    E --> H[\"Extract Device Certificates\"]\n    F --> I[\"Extract Device Credentials\"]\n    F --> J[\"Extract Authentication Tokens\"]\n    G --> K[\"Exfiltrate Credentials via Unauthorized Channel\"]\n    H --> K\n    I --> K\n    J --> K\n    K --> L[\"Obtain Valid Device Identity\"]\n    L --> M[\"Authenticate as Legitimate Device\"]\n    L --> N[\"Impersonate Multiple Devices\"]\n    M --> O[\"Unauthorized Device Connection to IoT Core\"]\n    N --> O\n    O --> P[\"Access Device Shadow and Data\"]\n    O --> Q[\"Publish Malicious Messages to Topics\"]\n    O --> R[\"Subscribe to Sensitive Device Topics\"]\n    P --> S[\"Lateral Movement Across Device Network\"]\n    Q --> S\n    R --> S\n    S --> T[\"Compromise Additional Devices\"]\n    S --> U[\"Access Backend Systems and Services\"]\n    T --> V[\"Reduced Confidentiality of Encryption Keys\"]\n    U --> V\n    classDef fact fill:#ccccff\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    class A,B fact\n    class C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U attack\n    class V goal\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "Malicious Insider or Compromised IAM Account"
+        },
+        {
+          "node_id": "B",
+          "description": "Access to AWS IoT Core Systems"
+        },
+        {
+          "node_id": "C",
+          "description": "Locate Certificate Storage"
+        },
+        {
+          "node_id": "D",
+          "description": "Locate Key Management Systems"
+        },
+        {
+          "node_id": "E",
+          "description": "Access AWS IoT Device Registry"
+        },
+        {
+          "node_id": "F",
+          "description": "Access AWS Secrets Manager or KMS"
+        },
+        {
+          "node_id": "G",
+          "description": "Extract X.509 Private Keys"
+        },
+        {
+          "node_id": "H",
+          "description": "Extract Device Certificates"
+        },
+        {
+          "node_id": "I",
+          "description": "Extract Device Credentials"
+        },
+        {
+          "node_id": "J",
+          "description": "Extract Authentication Tokens"
+        },
+        {
+          "node_id": "K",
+          "description": "Exfiltrate Credentials via Unauthorized Channel"
+        },
+        {
+          "node_id": "L",
+          "description": "Obtain Valid Device Identity"
+        },
+        {
+          "node_id": "M",
+          "description": "Authenticate as Legitimate Device"
+        },
+        {
+          "node_id": "N",
+          "description": "Impersonate Multiple Devices"
+        },
+        {
+          "node_id": "O",
+          "description": "Unauthorized Device Connection to IoT Core"
+        },
+        {
+          "node_id": "P",
+          "description": "Access Device Shadow and Data"
+        },
+        {
+          "node_id": "Q",
+          "description": "Publish Malicious Messages to Topics"
+        },
+        {
+          "node_id": "R",
+          "description": "Subscribe to Sensitive Device Topics"
+        },
+        {
+          "node_id": "S",
+          "description": "Lateral Movement Across Device Network"
+        },
+        {
+          "node_id": "T",
+          "description": "Compromise Additional Devices"
+        },
+        {
+          "node_id": "U",
+          "description": "Access Backend Systems and Services"
+        },
+        {
+          "node_id": "V",
+          "description": "Reduced Confidentiality of Encryption Keys"
+        }
+      ],
+      "generated_content": "# Attack Tree: T002 - Malicious Insider Credential Exfiltration from AWS IoT Core\n\n```mermaid\ngraph TD\n    A[\"Malicious Insider or Compromised IAM Account\"] --> B[\"Access to AWS IoT Core Systems\"]\n    \n    B --> C[\"Locate Certificate Storage\"]\n    B --> D[\"Locate Key Management Systems\"]\n    \n    C --> E[\"Access AWS IoT Device Registry\"]\n    D --> F[\"Access AWS Secrets Manager or KMS\"]\n    \n    E --> G[\"Extract X.509 Private Keys\"]\n    E --> H[\"Extract Device Certificates\"]\n    F --> I[\"Extract Device Credentials\"]\n    F --> J[\"Extract Authentication Tokens\"]\n    \n    G --> K[\"Exfiltrate Credentials via Unauthorized Channel\"]\n    H --> K\n    I --> K\n    J --> K\n    \n    K --> L[\"Obtain Valid Device Identity\"]\n    \n    L --> M[\"Authenticate as Legitimate Device\"]\n    L --> N[\"Impersonate Multiple Devices\"]\n    \n    M --> O[\"Unauthorized Device Connection to IoT Core\"]\n    N --> O\n    \n    O --> P[\"Access Device Shadow and Data\"]\n    O --> Q[\"Publish Malicious Messages to Topics\"]\n    O --> R[\"Subscribe to Sensitive Device Topics\"]\n    \n    P --> S[\"Lateral Movement Across Device Network\"]\n    Q --> S\n    R --> S\n    \n    S --> T[\"Compromise Additional Devices\"]\n    S --> U[\"Access Backend Systems and Services\"]\n    \n    T --> V[\"Reduced Confidentiality of Encryption Keys\"]\n    U --> V\n    \n    classDef fact fill:#ccccff\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    \n    class A,B fact\n    class C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U attack\n    class V goal\n```\n\n## Attack Tree Summary\n\n**Threat ID**: T002\n\n**Attack Paths**:\n\n1. **Direct Certificate Extraction Path**: Malicious insider \u2192 Access IoT Core \u2192 Extract X.509 private keys from device registry \u2192 Exfiltrate credentials \u2192 Authenticate as legitimate device \u2192 Unauthorized connection \u2192 Lateral movement\n\n2. **Key Management System Path**: Compromised IAM account \u2192 Access KMS/Secrets Manager \u2192 Extract device credentials and tokens \u2192 Impersonate multiple devices \u2192 Publish malicious messages \u2192 Lateral movement across network\n\n**Critical Nodes**:\n- **Initial Access**: Insider privileges or compromised IAM credentials\n- **Credential Extraction**: Direct access to certificate storage and key management systems\n- **Exfiltration**: Unauthorized data channel to move credentials outside AWS\n- **Device Impersonation**: Using stolen credentials to authenticate as legitimate IoT devices\n- **Lateral Movement**: Compromised devices used to access additional systems and data\n\n**Impact**: Complete compromise of device authentication confidentiality, enabling unauthorized device access, network lateral movement, and potential access to backend systems.\n",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1,
+          "mitigation": 0
+        },
+        "connection_count": 28,
+        "tech_mentions": 0
+      },
+      "ttc_mappings": [
+        {
+          "attack_step": "Extract Authentication Tokens",
+          "technique_id": "T1550",
+          "technique_name": "Use Alternate Authentication Material",
+          "confidence": 0.6307948714438655,
+          "tactics": [
+            "defense-evasion",
+            "lateral-movement"
+          ],
+          "reasoning": "Embedding similarity: 0.631"
+        },
+        {
+          "attack_step": "Malicious Insider or Compromised IAM Account",
+          "technique_id": "T1136",
+          "technique_name": "Create Account",
+          "confidence": 0.8274614774419604,
+          "tactics": [
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.827"
+        },
+        {
+          "attack_step": "Extract Device Certificates",
+          "technique_id": "T1552.004",
+          "technique_name": "Private Keys",
+          "confidence": 0.5935411011927842,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.594"
+        },
+        {
+          "attack_step": "Authenticate as Legitimate Device",
+          "technique_id": "T1556.004",
+          "technique_name": "Network Device Authentication",
+          "confidence": 0.6832898043831698,
+          "tactics": [
+            "credential-access",
+            "defense-evasion",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.683"
+        },
+        {
+          "attack_step": "Unauthorized Device Connection to IoT Core",
+          "technique_id": "T1059.008",
+          "technique_name": "Network Device CLI",
+          "confidence": 0.5545913278375465,
+          "tactics": [
+            "execution"
+          ],
+          "reasoning": "Embedding similarity: 0.555"
+        },
+        {
+          "attack_step": "Locate Key Management Systems",
+          "technique_id": "T1145",
+          "technique_name": "Private Keys",
+          "confidence": 0.7367567666910659,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.737"
+        },
+        {
+          "attack_step": "Access AWS IoT Device Registry",
+          "technique_id": "T1059.008",
+          "technique_name": "Network Device CLI",
+          "confidence": 0.6120151810161695,
+          "tactics": [
+            "execution"
+          ],
+          "reasoning": "Embedding similarity: 0.612"
+        },
+        {
+          "attack_step": "Compromise Additional Devices",
+          "technique_id": "T1091",
+          "technique_name": "Replication Through Removable Media",
+          "confidence": 0.673090969136332,
+          "tactics": [
+            "lateral-movement",
+            "initial-access"
+          ],
+          "reasoning": "Embedding similarity: 0.673"
+        },
+        {
+          "attack_step": "Impersonate Multiple Devices",
+          "technique_id": "T1091",
+          "technique_name": "Replication Through Removable Media",
+          "confidence": 0.6457835776927029,
+          "tactics": [
+            "lateral-movement",
+            "initial-access"
+          ],
+          "reasoning": "Embedding similarity: 0.646"
+        },
+        {
+          "attack_step": "Locate Certificate Storage",
+          "technique_id": "T1649",
+          "technique_name": "Steal or Forge Authentication Certificates",
+          "confidence": 0.6568616481958717,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.657"
+        },
+        {
+          "attack_step": "Publish Malicious Messages to Topics",
+          "technique_id": "T1667",
+          "technique_name": "Email Bombing",
+          "confidence": 0.5991324634087118,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.599"
+        },
+        {
+          "attack_step": "Access to AWS IoT Core Systems",
+          "technique_id": "T1021.008",
+          "technique_name": "Direct Cloud VM Connections",
+          "confidence": 0.6220846954161826,
+          "tactics": [
+            "lateral-movement"
+          ],
+          "reasoning": "Embedding similarity: 0.622"
+        },
+        {
+          "attack_step": "Subscribe to Sensitive Device Topics",
+          "technique_id": "T1120",
+          "technique_name": "Peripheral Device Discovery",
+          "confidence": 0.5497742226978202,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.550"
+        },
+        {
+          "attack_step": "Access Device Shadow and Data",
+          "technique_id": "T1025",
+          "technique_name": "Data from Removable Media",
+          "confidence": 0.6050367767541467,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.605"
+        },
+        {
+          "attack_step": "Access Backend Systems and Services",
+          "technique_id": "T1569",
+          "technique_name": "System Services",
+          "confidence": 0.6319123735516048,
+          "tactics": [
+            "execution"
+          ],
+          "reasoning": "Embedding similarity: 0.632"
+        },
+        {
+          "attack_step": "Extract X.509 Private Keys",
+          "technique_id": "T1145",
+          "technique_name": "Private Keys",
+          "confidence": 0.8058352618838998,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.806"
+        },
+        {
+          "attack_step": "Extract Device Credentials",
+          "technique_id": "T1003",
+          "technique_name": "OS Credential Dumping",
+          "confidence": 0.7078165087513404,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.708"
+        },
+        {
+          "attack_step": "Obtain Valid Device Identity",
+          "technique_id": "T1098.005",
+          "technique_name": "Device Registration",
+          "confidence": 0.5996663018208304,
+          "tactics": [
+            "persistence",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.600"
+        },
+        {
+          "attack_step": "Exfiltrate Credentials via Unauthorized Channel",
+          "technique_id": "T1552.001",
+          "technique_name": "Credentials In Files",
+          "confidence": 0.718676141041561,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.719"
+        },
+        {
+          "attack_step": "Lateral Movement Across Device Network",
+          "technique_id": "T1092",
+          "technique_name": "Communication Through Removable Media",
+          "confidence": 0.7310128557664873,
+          "tactics": [
+            "command-and-control"
+          ],
+          "reasoning": "Embedding similarity: 0.731"
+        },
+        {
+          "attack_step": "Reduced Confidentiality of Encryption Keys",
+          "technique_id": "T1600.001",
+          "technique_name": "Reduce Key Space",
+          "confidence": 0.7811514839208356,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.781"
+        },
+        {
+          "attack_step": "Access AWS Secrets Manager or KMS",
+          "technique_id": "T1555.006",
+          "technique_name": "Cloud Secrets Management Stores",
+          "confidence": 0.9839901733664983,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.984"
+        }
+      ],
+      "mapping_count": 22
+    },
+    {
+      "threat_id": "T003",
+      "threat_category": "Injection Attack",
+      "threat_description": null,
+      "threat_statement": "A malicious attacker with access to the FastAPI REST API endpoints, can perform SQL injection or NoSQL injection attacks against MongoDB, which leads to unauthorized data extraction and modification, resulting in reduced confidentiality and integrity of device configurations, personal health data, and user information.",
+      "threat_action": "perform SQL/NoSQL injection attacks against MongoDB queries",
+      "threatSource": "malicious attacker",
+      "prerequisites": "network access to FastAPI REST API endpoints, knowledge of API parameters",
+      "threatAction": "perform SQL/NoSQL injection attacks against MongoDB queries",
+      "threatImpact": "unauthorized data extraction, modification, and potential database compromise",
+      "impactedGoal": "confidentiality, integrity",
+      "impactedAssets": "device configurations, personal health data, user information, device metadata",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"Malicious Attacker with Network Access\"] --> B[\"Reconnaissance of FastAPI Endpoints\"]\n    B --> C[\"Identify API Parameters and Input Fields\"]\n    C --> D[\"Map MongoDB Query Structure\"]\n    D --> E[\"Craft Injection Payloads\"]\n    E --> F[\"NoSQL Injection Attack\"]\n    E --> G[\"SQL Injection Attack\"]\n    F --> H[\"Bypass Authentication Queries\"]\n    F --> I[\"Modify Query Logic with Operators\"]\n    G --> J[\"Inject SQL Syntax into Parameters\"]\n    G --> K[\"Exploit String Concatenation in Queries\"]\n    H --> L[\"Unauthorized Data Access\"]\n    I --> L\n    J --> L\n    K --> L\n    L --> M[\"Extract Device Configurations\"]\n    L --> N[\"Extract Personal Health Data\"]\n    L --> O[\"Extract User Information\"]\n    M --> P[\"Confidentiality Breach\"]\n    N --> P\n    O --> P\n    L --> Q[\"Modify Database Records\"]\n    Q --> R[\"Alter Device Configurations\"]\n    Q --> S[\"Corrupt Health Data\"]\n    Q --> T[\"Compromise User Accounts\"]\n    R --> U[\"Integrity Violation\"]\n    S --> U\n    T --> U\n    P --> V[\"Complete Database Compromise\"]\n    U --> V\n    classDef fact fill:#ccccff\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    class A,B,C,D fact\n    class E,F,G,H,I,J,K,L,Q attack\n    class M,N,O,R,S,T goal\n    class P,U,V goal\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "Malicious Attacker with Network Access"
+        },
+        {
+          "node_id": "B",
+          "description": "Reconnaissance of FastAPI Endpoints"
+        },
+        {
+          "node_id": "C",
+          "description": "Identify API Parameters and Input Fields"
+        },
+        {
+          "node_id": "D",
+          "description": "Map MongoDB Query Structure"
+        },
+        {
+          "node_id": "E",
+          "description": "Craft Injection Payloads"
+        },
+        {
+          "node_id": "F",
+          "description": "NoSQL Injection Attack"
+        },
+        {
+          "node_id": "G",
+          "description": "SQL Injection Attack"
+        },
+        {
+          "node_id": "H",
+          "description": "Bypass Authentication Queries"
+        },
+        {
+          "node_id": "I",
+          "description": "Modify Query Logic with Operators"
+        },
+        {
+          "node_id": "J",
+          "description": "Inject SQL Syntax into Parameters"
+        },
+        {
+          "node_id": "K",
+          "description": "Exploit String Concatenation in Queries"
+        },
+        {
+          "node_id": "L",
+          "description": "Unauthorized Data Access"
+        },
+        {
+          "node_id": "M",
+          "description": "Extract Device Configurations"
+        },
+        {
+          "node_id": "N",
+          "description": "Extract Personal Health Data"
+        },
+        {
+          "node_id": "O",
+          "description": "Extract User Information"
+        },
+        {
+          "node_id": "P",
+          "description": "Confidentiality Breach"
+        },
+        {
+          "node_id": "Q",
+          "description": "Modify Database Records"
+        },
+        {
+          "node_id": "R",
+          "description": "Alter Device Configurations"
+        },
+        {
+          "node_id": "S",
+          "description": "Corrupt Health Data"
+        },
+        {
+          "node_id": "T",
+          "description": "Compromise User Accounts"
+        },
+        {
+          "node_id": "U",
+          "description": "Integrity Violation"
+        },
+        {
+          "node_id": "V",
+          "description": "Complete Database Compromise"
+        }
+      ],
+      "generated_content": "# Attack Tree: T003 - NoSQL/SQL Injection Against MongoDB\n\n```mermaid\ngraph TD\n    A[\"Malicious Attacker with Network Access\"] --> B[\"Reconnaissance of FastAPI Endpoints\"]\n    \n    B --> C[\"Identify API Parameters and Input Fields\"]\n    C --> D[\"Map MongoDB Query Structure\"]\n    \n    D --> E[\"Craft Injection Payloads\"]\n    \n    E --> F[\"NoSQL Injection Attack\"]\n    E --> G[\"SQL Injection Attack\"]\n    \n    F --> H[\"Bypass Authentication Queries\"]\n    F --> I[\"Modify Query Logic with Operators\"]\n    \n    G --> J[\"Inject SQL Syntax into Parameters\"]\n    G --> K[\"Exploit String Concatenation in Queries\"]\n    \n    H --> L[\"Unauthorized Data Access\"]\n    I --> L\n    J --> L\n    K --> L\n    \n    L --> M[\"Extract Device Configurations\"]\n    L --> N[\"Extract Personal Health Data\"]\n    L --> O[\"Extract User Information\"]\n    \n    M --> P[\"Confidentiality Breach\"]\n    N --> P\n    O --> P\n    \n    L --> Q[\"Modify Database Records\"]\n    Q --> R[\"Alter Device Configurations\"]\n    Q --> S[\"Corrupt Health Data\"]\n    Q --> T[\"Compromise User Accounts\"]\n    \n    R --> U[\"Integrity Violation\"]\n    S --> U\n    T --> U\n    \n    P --> V[\"Complete Database Compromise\"]\n    U --> V\n    \n    classDef fact fill:#ccccff\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    \n    class A,B,C,D fact\n    class E,F,G,H,I,J,K,L,Q attack\n    class M,N,O,R,S,T goal\n    class P,U,V goal\n```\n\n---\n\n## Attack Tree Analysis\n\n**Primary Attack Paths:**\n\n**Path 1: NoSQL Injection via Query Operator Manipulation**\n- Attacker identifies API parameters \u2192 Maps MongoDB query structure \u2192 Crafts NoSQL injection payloads using MongoDB operators (e.g., `$ne`, `$gt`, `$where`) \u2192 Bypasses authentication or modifies query logic \u2192 Extracts sensitive data \u2192 Achieves confidentiality breach\n\n**Path 2: Data Modification via Injection**\n- Attacker identifies API parameters \u2192 Crafts injection payloads \u2192 Exploits string concatenation in queries \u2192 Modifies database records \u2192 Alters device configurations, health data, or user accounts \u2192 Achieves integrity violation\n\n**Key Vulnerabilities Exploited:**\n- Unsanitized user input in API parameters\n- Direct concatenation of user input into MongoDB queries\n- Lack of parameterized queries or prepared statements\n- Insufficient input validation and output encoding\n\n**Impact**: Complete compromise of database confidentiality and integrity affecting device configurations, personal health data, and user information.\n",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 2,
+          "fact": 1,
+          "mitigation": 0
+        },
+        "connection_count": 29,
+        "tech_mentions": 0
+      },
+      "ttc_mappings": [
+        {
+          "attack_step": "Exploit String Concatenation in Queries",
+          "technique_id": "T1595.003",
+          "technique_name": "Wordlist Scanning",
+          "confidence": 0.31810670584383816,
+          "tactics": [
+            "reconnaissance"
+          ],
+          "reasoning": "Embedding similarity: 0.318"
+        },
+        {
+          "attack_step": "Map MongoDB Query Structure",
+          "technique_id": "T1595.003",
+          "technique_name": "Wordlist Scanning",
+          "confidence": 0.4776682585725402,
+          "tactics": [
+            "reconnaissance"
+          ],
+          "reasoning": "Embedding similarity: 0.478"
+        },
+        {
+          "attack_step": "SQL Injection Attack",
+          "technique_id": "T1659",
+          "technique_name": "Content Injection",
+          "confidence": 0.42831754232845987,
+          "tactics": [
+            "initial-access",
+            "command-and-control"
+          ],
+          "reasoning": "Embedding similarity: 0.428"
+        },
+        {
+          "attack_step": "Corrupt Health Data",
+          "technique_id": "T1565.003",
+          "technique_name": "Runtime Data Manipulation",
+          "confidence": 0.5258739555026006,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.526"
+        },
+        {
+          "attack_step": "Modify Database Records",
+          "technique_id": "T1492",
+          "technique_name": "Stored Data Manipulation",
+          "confidence": 0.6939982110125129,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.694"
+        },
+        {
+          "attack_step": "Modify Query Logic with Operators",
+          "technique_id": "T1595",
+          "technique_name": "Active Scanning",
+          "confidence": 0.32737072748048396,
+          "tactics": [
+            "reconnaissance"
+          ],
+          "reasoning": "Embedding similarity: 0.327"
+        },
+        {
+          "attack_step": "Integrity Violation",
+          "technique_id": "T1565.003",
+          "technique_name": "Runtime Data Manipulation",
+          "confidence": 0.5606628553159697,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.561"
+        },
+        {
+          "attack_step": "Reconnaissance of FastAPI Endpoints",
+          "technique_id": "T1016.001",
+          "technique_name": "Internet Connection Discovery",
+          "confidence": 0.5425526201033087,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.543"
+        },
+        {
+          "attack_step": "Complete Database Compromise",
+          "technique_id": "T1213.006",
+          "technique_name": "Databases",
+          "confidence": 0.6427592175810695,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.643"
+        },
+        {
+          "attack_step": "Alter Device Configurations",
+          "technique_id": "T1542.004",
+          "technique_name": "ROMMONkit",
+          "confidence": 0.685597246881714,
+          "tactics": [
+            "defense-evasion",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.686"
+        },
+        {
+          "attack_step": "Unauthorized Data Access",
+          "technique_id": "T1530",
+          "technique_name": "Data from Cloud Storage",
+          "confidence": 0.5622633796850809,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.562"
+        },
+        {
+          "attack_step": "Confidentiality Breach",
+          "technique_id": "T1565",
+          "technique_name": "Data Manipulation",
+          "confidence": 0.4981948204618073,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.498"
+        },
+        {
+          "attack_step": "Bypass Authentication Queries",
+          "technique_id": "T1550",
+          "technique_name": "Use Alternate Authentication Material",
+          "confidence": 0.8186375075489447,
+          "tactics": [
+            "defense-evasion",
+            "lateral-movement"
+          ],
+          "reasoning": "Embedding similarity: 0.819"
+        },
+        {
+          "attack_step": "Craft Injection Payloads",
+          "technique_id": "T1218.013",
+          "technique_name": "Mavinject",
+          "confidence": 0.5042234565959347,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.504"
+        },
+        {
+          "attack_step": "Extract Personal Health Data",
+          "technique_id": "T1213.006",
+          "technique_name": "Databases",
+          "confidence": 0.4803435036971344,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.480"
+        },
+        {
+          "attack_step": "Extract Device Configurations",
+          "technique_id": "T1602.002",
+          "technique_name": "Network Device Configuration Dump",
+          "confidence": 0.7478814090018262,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.748"
+        },
+        {
+          "attack_step": "Identify API Parameters and Input Fields",
+          "technique_id": "T1056",
+          "technique_name": "Input Capture",
+          "confidence": 0.49674293196771113,
+          "tactics": [
+            "collection",
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.497"
+        },
+        {
+          "attack_step": "Inject SQL Syntax into Parameters",
+          "technique_id": "T1505.001",
+          "technique_name": "SQL Stored Procedures",
+          "confidence": 0.43328420431442266,
+          "tactics": [
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.433"
+        },
+        {
+          "attack_step": "Malicious Attacker with Network Access",
+          "technique_id": "T1108",
+          "technique_name": "Redundant Access",
+          "confidence": 0.639359208563163,
+          "tactics": [
+            "defense-evasion",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.639"
+        },
+        {
+          "attack_step": "Extract User Information",
+          "technique_id": "T1087",
+          "technique_name": "Account Discovery",
+          "confidence": 0.6294769403747965,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.629"
+        },
+        {
+          "attack_step": "Compromise User Accounts",
+          "technique_id": "T1098",
+          "technique_name": "Account Manipulation",
+          "confidence": 0.7352430335813659,
+          "tactics": [
+            "persistence",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.735"
+        },
+        {
+          "attack_step": "NoSQL Injection Attack",
+          "technique_id": "T1659",
+          "technique_name": "Content Injection",
+          "confidence": 0.45827711743923555,
+          "tactics": [
+            "initial-access",
+            "command-and-control"
+          ],
+          "reasoning": "Embedding similarity: 0.458"
+        }
+      ],
+      "mapping_count": 22
+    },
+    {
+      "threat_id": "T004",
+      "threat_category": "Malicious Code & Supply Chain Attack",
+      "threat_description": null,
+      "threat_statement": "A malicious attacker with network access to firmware update endpoints, can upload and distribute malicious firmware to IoT devices, which leads to device compromise and botnet formation, resulting in reduced integrity and availability of device functionality and sensor data collection.",
+      "threat_action": "upload and distribute malicious firmware to IoT devices",
+      "threatSource": "malicious attacker",
+      "prerequisites": "network access to firmware update endpoints, ability to bypass signature verification",
+      "threatAction": "upload and distribute malicious firmware to IoT devices",
+      "threatImpact": "device compromise, botnet formation, unauthorized command execution",
+      "impactedGoal": "integrity, availability",
+      "impactedAssets": "firmware versions, device functionality, sensor data collection, device control systems",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"Malicious Attacker with Network Access\"] --> B[\"Reconnaissance of Firmware Update Infrastructure\"]\n    B --> C[\"Identify Firmware Update Endpoints\"]\n    B --> D[\"Map Device Fleet and Update Mechanisms\"]\n    C --> E[\"Analyze Signature Verification Mechanisms\"]\n    D --> E\n    E --> F[\"Bypass or Exploit Signature Verification\"]\n    F --> G[\"Craft Malicious Firmware Payload\"]\n    G --> H[\"Upload Malicious Firmware to Update Server\"]\n    H --> I[\"Distribute Firmware to Connected IoT Devices\"]\n    I --> J[\"Device Firmware Installation\"]\n    J --> K[\"Malicious Code Execution on Device\"]\n    K --> L[\"Device Compromise Achieved\"]\n    L --> M[\"Establish Persistence Mechanism\"]\n    L --> N[\"Exfiltrate Device Credentials\"]\n    M --> O[\"Botnet Formation\"]\n    N --> O\n    O --> P[\"Unauthorized Command Execution\"]\n    O --> Q[\"Sensor Data Manipulation\"]\n    O --> R[\"Device Functionality Degradation\"]\n    P --> S[\"Reduced Integrity of Device Control Systems\"]\n    Q --> S\n    R --> T[\"Reduced Availability of Device Functionality\"]\n    R --> U[\"Reduced Availability of Sensor Data Collection\"]\n    classDef fact fill:#ccccff\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    class A fact\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R attack\n    class S,T,U goal\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "Malicious Attacker with Network Access"
+        },
+        {
+          "node_id": "B",
+          "description": "Reconnaissance of Firmware Update Infrastructure"
+        },
+        {
+          "node_id": "C",
+          "description": "Identify Firmware Update Endpoints"
+        },
+        {
+          "node_id": "D",
+          "description": "Map Device Fleet and Update Mechanisms"
+        },
+        {
+          "node_id": "E",
+          "description": "Analyze Signature Verification Mechanisms"
+        },
+        {
+          "node_id": "F",
+          "description": "Bypass or Exploit Signature Verification"
+        },
+        {
+          "node_id": "G",
+          "description": "Craft Malicious Firmware Payload"
+        },
+        {
+          "node_id": "H",
+          "description": "Upload Malicious Firmware to Update Server"
+        },
+        {
+          "node_id": "I",
+          "description": "Distribute Firmware to Connected IoT Devices"
+        },
+        {
+          "node_id": "J",
+          "description": "Device Firmware Installation"
+        },
+        {
+          "node_id": "K",
+          "description": "Malicious Code Execution on Device"
+        },
+        {
+          "node_id": "L",
+          "description": "Device Compromise Achieved"
+        },
+        {
+          "node_id": "M",
+          "description": "Establish Persistence Mechanism"
+        },
+        {
+          "node_id": "N",
+          "description": "Exfiltrate Device Credentials"
+        },
+        {
+          "node_id": "O",
+          "description": "Botnet Formation"
+        },
+        {
+          "node_id": "P",
+          "description": "Unauthorized Command Execution"
+        },
+        {
+          "node_id": "Q",
+          "description": "Sensor Data Manipulation"
+        },
+        {
+          "node_id": "R",
+          "description": "Device Functionality Degradation"
+        },
+        {
+          "node_id": "S",
+          "description": "Reduced Integrity of Device Control Systems"
+        },
+        {
+          "node_id": "T",
+          "description": "Reduced Availability of Device Functionality"
+        },
+        {
+          "node_id": "U",
+          "description": "Reduced Availability of Sensor Data Collection"
+        }
+      ],
+      "generated_content": "# Attack Tree: Malicious Firmware Distribution to IoT Devices (T004)\n\n```mermaid\ngraph TD\n    A[\"Malicious Attacker with Network Access\"] --> B[\"Reconnaissance of Firmware Update Infrastructure\"]\n    \n    B --> C[\"Identify Firmware Update Endpoints\"]\n    B --> D[\"Map Device Fleet and Update Mechanisms\"]\n    \n    C --> E[\"Analyze Signature Verification Mechanisms\"]\n    D --> E\n    \n    E --> F[\"Bypass or Exploit Signature Verification\"]\n    \n    F --> G[\"Craft Malicious Firmware Payload\"]\n    \n    G --> H[\"Upload Malicious Firmware to Update Server\"]\n    \n    H --> I[\"Distribute Firmware to Connected IoT Devices\"]\n    \n    I --> J[\"Device Firmware Installation\"]\n    \n    J --> K[\"Malicious Code Execution on Device\"]\n    \n    K --> L[\"Device Compromise Achieved\"]\n    \n    L --> M[\"Establish Persistence Mechanism\"]\n    L --> N[\"Exfiltrate Device Credentials\"]\n    \n    M --> O[\"Botnet Formation\"]\n    N --> O\n    \n    O --> P[\"Unauthorized Command Execution\"]\n    O --> Q[\"Sensor Data Manipulation\"]\n    O --> R[\"Device Functionality Degradation\"]\n    \n    P --> S[\"Reduced Integrity of Device Control Systems\"]\n    Q --> S\n    R --> T[\"Reduced Availability of Device Functionality\"]\n    R --> U[\"Reduced Availability of Sensor Data Collection\"]\n    \n    classDef fact fill:#ccccff\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    \n    class A fact\n    class B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R attack\n    class S,T,U goal\n```\n\n## Attack Tree Analysis\n\n**Threat ID**: T004\n\n**Attack Flow Summary**:\nThis attack tree illustrates a multi-stage supply chain attack targeting IoT device firmware update mechanisms:\n\n1. **Initial Access**: Attacker gains network access to firmware update endpoints through reconnaissance\n2. **Vulnerability Exploitation**: Bypasses signature verification controls that protect firmware integrity\n3. **Payload Delivery**: Uploads malicious firmware and distributes it through legitimate update channels\n4. **Device Compromise**: Firmware installation triggers malicious code execution on IoT devices\n5. **Botnet Formation**: Establishes persistence and collects device credentials to form a coordinated botnet\n6. **Impact Realization**: Enables unauthorized command execution, data manipulation, and service degradation\n\n**Key Attack Paths**:\n- **Path 1**: Reconnaissance \u2192 Signature Bypass \u2192 Malicious Upload \u2192 Distribution \u2192 Device Compromise \u2192 Botnet \u2192 Integrity Loss\n- **Path 2**: Reconnaissance \u2192 Signature Bypass \u2192 Malicious Upload \u2192 Distribution \u2192 Device Compromise \u2192 Botnet \u2192 Availability Loss\n\n**Impacted Properties**: Integrity and Availability of device functionality and sensor data collection systems\n",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1,
+          "mitigation": 0
+        },
+        "connection_count": 23,
+        "tech_mentions": 0
+      },
+      "ttc_mappings": [
+        {
+          "attack_step": "Establish Persistence Mechanism",
+          "technique_id": "T1037.005",
+          "technique_name": "Startup Items",
+          "confidence": 0.7858091969106726,
+          "tactics": [
+            "persistence",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.786"
+        },
+        {
+          "attack_step": "Unauthorized Command Execution",
+          "technique_id": "T1202",
+          "technique_name": "Indirect Command Execution",
+          "confidence": 0.715882231095299,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.716"
+        },
+        {
+          "attack_step": "Map Device Fleet and Update Mechanisms",
+          "technique_id": "T1120",
+          "technique_name": "Peripheral Device Discovery",
+          "confidence": 0.7179481556880757,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.718"
+        },
+        {
+          "attack_step": "Analyze Signature Verification Mechanisms",
+          "technique_id": "T1036.001",
+          "technique_name": "Invalid Code Signature",
+          "confidence": 0.7224060755604893,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.722"
+        },
+        {
+          "attack_step": "Device Functionality Degradation",
+          "technique_id": "T1495",
+          "technique_name": "Firmware Corruption",
+          "confidence": 0.5882665014361143,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.588"
+        },
+        {
+          "attack_step": "Upload Malicious Firmware to Update Server",
+          "technique_id": "T1542.001",
+          "technique_name": "System Firmware",
+          "confidence": 0.7434904426944218,
+          "tactics": [
+            "persistence",
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.743"
+        },
+        {
+          "attack_step": "Distribute Firmware to Connected IoT Devices",
+          "technique_id": "T1542.001",
+          "technique_name": "System Firmware",
+          "confidence": 0.69733300267402,
+          "tactics": [
+            "persistence",
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.697"
+        },
+        {
+          "attack_step": "Malicious Code Execution on Device",
+          "technique_id": "T1091",
+          "technique_name": "Replication Through Removable Media",
+          "confidence": 0.5410690008106196,
+          "tactics": [
+            "lateral-movement",
+            "initial-access"
+          ],
+          "reasoning": "Embedding similarity: 0.541"
+        },
+        {
+          "attack_step": "Botnet Formation",
+          "technique_id": "T1583.005",
+          "technique_name": "Botnet",
+          "confidence": 0.7089956467317942,
+          "tactics": [
+            "resource-development"
+          ],
+          "reasoning": "Embedding similarity: 0.709"
+        },
+        {
+          "attack_step": "Craft Malicious Firmware Payload",
+          "technique_id": "T1542.001",
+          "technique_name": "System Firmware",
+          "confidence": 0.7674952840481668,
+          "tactics": [
+            "persistence",
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.767"
+        },
+        {
+          "attack_step": "Identify Firmware Update Endpoints",
+          "technique_id": "T1019",
+          "technique_name": "System Firmware",
+          "confidence": 0.7026198482423468,
+          "tactics": [
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.703"
+        },
+        {
+          "attack_step": "Reconnaissance of Firmware Update Infrastructure",
+          "technique_id": "T1019",
+          "technique_name": "System Firmware",
+          "confidence": 0.7313547052503426,
+          "tactics": [
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.731"
+        },
+        {
+          "attack_step": "Device Compromise Achieved",
+          "technique_id": "T1091",
+          "technique_name": "Replication Through Removable Media",
+          "confidence": 0.6778528117648893,
+          "tactics": [
+            "lateral-movement",
+            "initial-access"
+          ],
+          "reasoning": "Embedding similarity: 0.678"
+        },
+        {
+          "attack_step": "Bypass or Exploit Signature Verification",
+          "technique_id": "T1036.001",
+          "technique_name": "Invalid Code Signature",
+          "confidence": 0.7914775792632583,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.791"
+        },
+        {
+          "attack_step": "Exfiltrate Device Credentials",
+          "technique_id": "T1552.001",
+          "technique_name": "Credentials In Files",
+          "confidence": 0.6810042220450991,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.681"
+        },
+        {
+          "attack_step": "Device Firmware Installation",
+          "technique_id": "T1019",
+          "technique_name": "System Firmware",
+          "confidence": 0.8101209578829882,
+          "tactics": [
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.810"
+        },
+        {
+          "attack_step": "Sensor Data Manipulation",
+          "technique_id": "T1054",
+          "technique_name": "Indicator Blocking",
+          "confidence": 0.4784425017357006,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.478"
+        },
+        {
+          "attack_step": "Reduced Availability of Device Functionality",
+          "technique_id": "T1601.002",
+          "technique_name": "Downgrade System Image",
+          "confidence": 0.6430786277012704,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.643"
+        },
+        {
+          "attack_step": "Malicious Attacker with Network Access",
+          "technique_id": "T1108",
+          "technique_name": "Redundant Access",
+          "confidence": 0.639359208563163,
+          "tactics": [
+            "defense-evasion",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.639"
+        },
+        {
+          "attack_step": "Reduced Integrity of Device Control Systems",
+          "technique_id": "T1495",
+          "technique_name": "Firmware Corruption",
+          "confidence": 0.7334695823771489,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.733"
+        },
+        {
+          "attack_step": "Reduced Availability of Sensor Data Collection",
+          "technique_id": "T1562.006",
+          "technique_name": "Indicator Blocking",
+          "confidence": 0.6318191788273323,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.632"
+        }
+      ],
+      "mapping_count": 21
+    },
+    {
+      "threat_id": "T005",
+      "threat_category": "Data Interception & Man-in-the-Middle",
+      "threat_description": null,
+      "threat_statement": "A malicious attacker with access to Apache Kafka message streams, can intercept unencrypted or weakly encrypted sensor data and device commands, which leads to unauthorized data disclosure and command manipulation, resulting in reduced confidentiality and integrity of sensor readings and device configurations.",
+      "threat_action": "intercept and read unencrypted sensor data and device commands from Kafka topics",
+      "threatSource": "malicious attacker",
+      "prerequisites": "network access to Kafka brokers, ability to intercept message streams",
+      "threatAction": "intercept and read unencrypted sensor data and device commands from Kafka topics",
+      "threatImpact": "unauthorized data disclosure and potential command manipulation",
+      "impactedGoal": "confidentiality, integrity",
+      "impactedAssets": "sensor readings, device commands, device configurations, usage patterns",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    A[\"Malicious Attacker with Network Access\"] --> B[\"Reconnaissance of Kafka Infrastructure\"]\n    B --> C[\"Identify Kafka Broker Locations\"]\n    B --> D[\"Enumerate Kafka Topics\"]\n    B --> E[\"Detect Encryption Configuration\"]\n    C --> F[\"Establish Network Position\"]\n    D --> F\n    E --> F\n    F --> G[\"Intercept Kafka Message Streams\"]\n    G --> H[\"Exploit Unencrypted Messages\"]\n    G --> I[\"Exploit Weak Encryption\"]\n    H --> J[\"Read Sensor Data in Plaintext\"]\n    H --> K[\"Read Device Commands in Plaintext\"]\n    I --> L[\"Decrypt Weakly Encrypted Payloads\"]\n    L --> J\n    L --> K\n    J --> M[\"Unauthorized Data Disclosure\"]\n    K --> N[\"Command Manipulation  Injection\"]\n    M --> O[\"Confidentiality Breach\"]\n    N --> P[\"Integrity Compromise\"]\n    O --> Q[\"Reduced Confidentiality of Sensor Readings  Usage Patterns\"]\n    P --> R[\"Reduced Integrity of Device Commands  Configurations\"]\n    classDef fact fill:#ccccff\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    class A,F fact\n    class B,C,D,E,G,H,I,J,K,L,M,N attack\n    class O,P,Q,R goal\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "A",
+          "description": "Malicious Attacker with Network Access"
+        },
+        {
+          "node_id": "B",
+          "description": "Reconnaissance of Kafka Infrastructure"
+        },
+        {
+          "node_id": "C",
+          "description": "Identify Kafka Broker Locations"
+        },
+        {
+          "node_id": "D",
+          "description": "Enumerate Kafka Topics"
+        },
+        {
+          "node_id": "E",
+          "description": "Detect Encryption Configuration"
+        },
+        {
+          "node_id": "F",
+          "description": "Establish Network Position"
+        },
+        {
+          "node_id": "G",
+          "description": "Intercept Kafka Message Streams"
+        },
+        {
+          "node_id": "H",
+          "description": "Exploit Unencrypted Messages"
+        },
+        {
+          "node_id": "I",
+          "description": "Exploit Weak Encryption"
+        },
+        {
+          "node_id": "J",
+          "description": "Read Sensor Data in Plaintext"
+        },
+        {
+          "node_id": "K",
+          "description": "Read Device Commands in Plaintext"
+        },
+        {
+          "node_id": "L",
+          "description": "Decrypt Weakly Encrypted Payloads"
+        },
+        {
+          "node_id": "M",
+          "description": "Unauthorized Data Disclosure"
+        },
+        {
+          "node_id": "N",
+          "description": "Command Manipulation  Injection"
+        },
+        {
+          "node_id": "O",
+          "description": "Confidentiality Breach"
+        },
+        {
+          "node_id": "P",
+          "description": "Integrity Compromise"
+        },
+        {
+          "node_id": "Q",
+          "description": "Reduced Confidentiality of Sensor Readings  Usage Patterns"
+        },
+        {
+          "node_id": "R",
+          "description": "Reduced Integrity of Device Commands  Configurations"
+        }
+      ],
+      "generated_content": "# Attack Tree: T005 - Kafka Message Stream Interception\n\n```mermaid\ngraph TD\n    A[\"Malicious Attacker with Network Access\"] --> B[\"Reconnaissance of Kafka Infrastructure\"]\n    \n    B --> C[\"Identify Kafka Broker Locations\"]\n    B --> D[\"Enumerate Kafka Topics\"]\n    B --> E[\"Detect Encryption Configuration\"]\n    \n    C --> F[\"Establish Network Position\"]\n    D --> F\n    E --> F\n    \n    F --> G[\"Intercept Kafka Message Streams\"]\n    \n    G --> H[\"Exploit Unencrypted Messages\"]\n    G --> I[\"Exploit Weak Encryption\"]\n    \n    H --> J[\"Read Sensor Data in Plaintext\"]\n    H --> K[\"Read Device Commands in Plaintext\"]\n    \n    I --> L[\"Decrypt Weakly Encrypted Payloads\"]\n    L --> J\n    L --> K\n    \n    J --> M[\"Unauthorized Data Disclosure\"]\n    K --> N[\"Command Manipulation & Injection\"]\n    \n    M --> O[\"Confidentiality Breach\"]\n    N --> P[\"Integrity Compromise\"]\n    \n    O --> Q[\"Reduced Confidentiality of Sensor Readings & Usage Patterns\"]\n    P --> R[\"Reduced Integrity of Device Commands & Configurations\"]\n    \n    classDef fact fill:#ccccff\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    \n    class A,F fact\n    class B,C,D,E,G,H,I,J,K,L,M,N attack\n    class O,P,Q,R goal\n```\n\n## Attack Tree Analysis\n\n**Threat ID**: T005\n\n**Attack Paths**:\n\n1. **Path 1 - Unencrypted Data Interception**:\n   - Attacker gains network access \u2192 Reconnaissance \u2192 Identifies unencrypted Kafka topics \u2192 Intercepts plaintext sensor data and commands \u2192 Achieves unauthorized disclosure and manipulation\n\n2. **Path 2 - Weak Encryption Exploitation**:\n   - Attacker gains network access \u2192 Reconnaissance \u2192 Detects weak encryption \u2192 Intercepts encrypted streams \u2192 Decrypts payloads \u2192 Achieves data disclosure and command manipulation\n\n**Key Attack Vectors**:\n- Network sniffing on Kafka broker communication\n- Exploitation of missing TLS/SSL encryption\n- Cryptographic weakness in encryption implementation\n- Lack of authentication on Kafka topics\n\n**Impacted Properties**:\n- **Confidentiality**: Sensor readings and usage patterns exposed\n- **Integrity**: Device commands and configurations subject to manipulation\n",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1,
+          "mitigation": 0
+        },
+        "connection_count": 21,
+        "tech_mentions": 0
+      },
+      "ttc_mappings": [
+        {
+          "attack_step": "Reduced Confidentiality of Sensor Readings  Usage Patterns",
+          "technique_id": "T1054",
+          "technique_name": "Indicator Blocking",
+          "confidence": 0.5708613360288216,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.571"
+        },
+        {
+          "attack_step": "Identify Kafka Broker Locations",
+          "technique_id": "T1619",
+          "technique_name": "Cloud Storage Object Discovery",
+          "confidence": 0.41907090533737207,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.419"
+        },
+        {
+          "attack_step": "Reconnaissance of Kafka Infrastructure",
+          "technique_id": "T1654",
+          "technique_name": "Log Enumeration",
+          "confidence": 0.41638084019686616,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.416"
+        },
+        {
+          "attack_step": "Exploit Unencrypted Messages",
+          "technique_id": "T1032",
+          "technique_name": "Standard Cryptographic Protocol",
+          "confidence": 0.7286222786437102,
+          "tactics": [
+            "command-and-control"
+          ],
+          "reasoning": "Embedding similarity: 0.729"
+        },
+        {
+          "attack_step": "Integrity Compromise",
+          "technique_id": "T1565.003",
+          "technique_name": "Runtime Data Manipulation",
+          "confidence": 0.5974144837978294,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.597"
+        },
+        {
+          "attack_step": "Command Manipulation  Injection",
+          "technique_id": "T1059",
+          "technique_name": "Command and Scripting Interpreter",
+          "confidence": 0.5730821731415436,
+          "tactics": [
+            "execution"
+          ],
+          "reasoning": "Embedding similarity: 0.573"
+        },
+        {
+          "attack_step": "Decrypt Weakly Encrypted Payloads",
+          "technique_id": "T1027.013",
+          "technique_name": "Encrypted/Encoded File",
+          "confidence": 0.7799516853359372,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.780"
+        },
+        {
+          "attack_step": "Exploit Weak Encryption",
+          "technique_id": "T1600.002",
+          "technique_name": "Disable Crypto Hardware",
+          "confidence": 0.7871991689498578,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.787"
+        },
+        {
+          "attack_step": "Unauthorized Data Disclosure",
+          "technique_id": "T1565.002",
+          "technique_name": "Transmitted Data Manipulation",
+          "confidence": 0.6362078237819592,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.636"
+        },
+        {
+          "attack_step": "Malicious Attacker with Network Access",
+          "technique_id": "T1108",
+          "technique_name": "Redundant Access",
+          "confidence": 0.639359208563163,
+          "tactics": [
+            "defense-evasion",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.639"
+        },
+        {
+          "attack_step": "Establish Network Position",
+          "technique_id": "T1018",
+          "technique_name": "Remote System Discovery",
+          "confidence": 0.6471567822375586,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.647"
+        },
+        {
+          "attack_step": "Enumerate Kafka Topics",
+          "technique_id": "T1654",
+          "technique_name": "Log Enumeration",
+          "confidence": 0.40228467278220503,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.402"
+        },
+        {
+          "attack_step": "Detect Encryption Configuration",
+          "technique_id": "T1600.002",
+          "technique_name": "Disable Crypto Hardware",
+          "confidence": 0.7330226072660204,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.733"
+        },
+        {
+          "attack_step": "Intercept Kafka Message Streams",
+          "technique_id": "T1071.005",
+          "technique_name": "Publish/Subscribe Protocols",
+          "confidence": 0.508291480714359,
+          "tactics": [
+            "command-and-control"
+          ],
+          "reasoning": "Embedding similarity: 0.508"
+        },
+        {
+          "attack_step": "Read Sensor Data in Plaintext",
+          "technique_id": "T1048.003",
+          "technique_name": "Exfiltration Over Unencrypted Non-C2 Protocol",
+          "confidence": 0.5197895682442122,
+          "tactics": [
+            "exfiltration"
+          ],
+          "reasoning": "Embedding similarity: 0.520"
+        },
+        {
+          "attack_step": "Confidentiality Breach",
+          "technique_id": "T1565",
+          "technique_name": "Data Manipulation",
+          "confidence": 0.4981948204618073,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.498"
+        },
+        {
+          "attack_step": "Read Device Commands in Plaintext",
+          "technique_id": "T1120",
+          "technique_name": "Peripheral Device Discovery",
+          "confidence": 0.63553543638747,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.636"
+        },
+        {
+          "attack_step": "Reduced Integrity of Device Commands  Configurations",
+          "technique_id": "T1542.004",
+          "technique_name": "ROMMONkit",
+          "confidence": 0.7117038587912894,
+          "tactics": [
+            "defense-evasion",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.712"
+        }
+      ],
+      "mapping_count": 18
+    }
+  ],
+  "mapping_summary": {
+    "total_mappings": 108,
+    "successful_mappings": 108,
+    "threshold_used": 0.3,
+    "model": "local"
+  }
+}
