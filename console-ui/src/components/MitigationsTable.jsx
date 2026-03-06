@@ -118,7 +118,12 @@ const COLUMN_DEFINITIONS = [
 
 
 export default function MitigationsTable({ attackTree }) {
-  const mitigations = useMemo(() => aggregateMitigations(attackTree), [attackTree]);
+  const mitigations = useMemo(() => {
+    const raw = aggregateMitigations(attackTree);
+    // Sort by priority: 1 (critical) first, null/undefined last
+    const order = { 1: 0, 2: 1, 3: 2, critical: 0, high: 1, medium: 2, low: 3 };
+    return raw.sort((a, b) => (order[a.priority] ?? 99) - (order[b.priority] ?? 99));
+  }, [attackTree]);
 
   // --- Task 2.1: Filter state ---
   const [selectedAttackStep, setSelectedAttackStep] = useState(null);
