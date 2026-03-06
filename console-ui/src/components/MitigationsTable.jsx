@@ -33,13 +33,14 @@ const COLUMN_DEFINITIONS = [
   {
     id: "name",
     header: "Mitigation",
-    cell: (item) => (
-      <ExpandableSection headerText={item.name.length > 80 ? item.name.slice(0, 80) + '…' : item.name} variant="footer">
-        <Box fontSize="body-s" color="text-body-secondary" padding={{ top: 'xxs' }}>
-          {item.name}
-        </Box>
-      </ExpandableSection>
-    ),
+    cell: (item) => {
+      if (item.name.length <= 80) return <span style={{ fontSize: '13px' }}>{item.name}</span>;
+      return (
+        <ExpandableSection headerText={item.name.slice(0, 80) + '…'} variant="footer" headerAriaLabel="Expand mitigation">
+          <Box fontSize="body-s" color="text-body-secondary">{item.name}</Box>
+        </ExpandableSection>
+      );
+    },
     sortingField: "name",
     width: 250,
     minWidth: 180,
@@ -49,10 +50,11 @@ const COLUMN_DEFINITIONS = [
     header: "Implementation Guidance",
     cell: (item) => {
       if (!item.description) return "—";
-      const brief = item.description.slice(0, 100) + (item.description.length > 100 ? '…' : '');
+      if (item.description.length <= 100) return <span style={{ fontSize: '13px' }}>{item.description}</span>;
+      const brief = item.description.slice(0, 100) + '…';
       const steps = item.description.split(/(?=\d+\.\s)/).filter(Boolean);
       return (
-        <ExpandableSection headerText={brief} variant="footer">
+        <ExpandableSection headerText={brief} variant="footer" headerAriaLabel="Expand guidance">
           {steps.length > 1 ? (
             <ol style={{ margin: '4px 0', paddingLeft: '20px', fontSize: '13px', lineHeight: '1.6' }}>
               {steps.map((s, i) => (
@@ -60,9 +62,7 @@ const COLUMN_DEFINITIONS = [
               ))}
             </ol>
           ) : (
-            <Box fontSize="body-s" color="text-body-secondary" padding={{ top: 'xxs' }}>
-              {item.description}
-            </Box>
+            <Box fontSize="body-s" color="text-body-secondary">{item.description}</Box>
           )}
         </ExpandableSection>
       );
@@ -84,16 +84,19 @@ const COLUMN_DEFINITIONS = [
     header: "Evidence",
     cell: (item) => {
       if (!item.evidence || item.evidence.length === 0) return "—";
+      const brief = `${item.evidence.length} source${item.evidence.length > 1 ? 's' : ''}: ${item.evidence[0].source_type}`;
       return (
-        <div style={{ whiteSpace: "normal", wordBreak: "break-word" }}>
-          {item.evidence.map((e, i) => (
-            <div key={i} style={{ marginBottom: '4px', fontSize: '12px' }}>
-              <Badge color="grey">{e.source_type}</Badge>{' '}
-              <span style={{ color: '#5f6b7a' }}>{e.source_ref}</span>
-              {e.relevance && <div style={{ color: '#687078', fontStyle: 'italic' }}>{e.relevance}</div>}
-            </div>
-          ))}
-        </div>
+        <ExpandableSection headerText={brief} variant="footer" headerAriaLabel="Expand evidence">
+          <div style={{ fontSize: '12px' }}>
+            {item.evidence.map((e, i) => (
+              <div key={i} style={{ marginBottom: '6px', padding: '4px 0', borderBottom: i < item.evidence.length - 1 ? '1px solid #e9ebed' : 'none' }}>
+                <Badge color="grey">{e.source_type}</Badge>{' '}
+                <span style={{ color: '#5f6b7a' }}>{e.source_ref}</span>
+                {e.relevance && <div style={{ color: '#687078', fontStyle: 'italic', marginTop: '2px' }}>{e.relevance}</div>}
+              </div>
+            ))}
+          </div>
+        </ExpandableSection>
       );
     },
     minWidth: 200,
