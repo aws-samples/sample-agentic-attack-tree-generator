@@ -149,6 +149,14 @@ def _steps_to_mermaid(steps: list, mappings_by_step: dict, root_goal: str) -> st
 
     root_steps = [s for s in steps if not s.get("parent_id")]
 
+    root_ids = {s.get("id", "") for s in root_steps}
+    leaf_ids = set()
+    parent_ids = {s.get("parent_id", "") for s in steps if s.get("parent_id")}
+    for step in steps:
+        sid = step.get("id", "")
+        if sid not in parent_ids:
+            leaf_ids.add(sid)
+
     for step in steps:
         sid = step.get("id", "")
         desc = step.get("description", sid)
@@ -156,10 +164,12 @@ def _steps_to_mermaid(steps: list, mappings_by_step: dict, root_goal: str) -> st
         tid = mapping.get("technique_id", "")
         safe = id_map.get(sid, sid)
 
+        is_root = sid in root_ids
+        prefix = "FACT: " if is_root else ""
         label = _label(step.get("title") or desc)
         if tid:
             label += f" ({tid})"
-        lines.append(f'    {safe}["{label}"]')
+        lines.append(f'    {safe}["{prefix}{label}"]')
 
     # Edges — root steps connect from GOAL
     for step in root_steps:
@@ -178,10 +188,14 @@ def _steps_to_mermaid(steps: list, mappings_by_step: dict, root_goal: str) -> st
     # Class definitions for node styling
     lines.append('    classDef goal fill:#ff6b6b,stroke:#c92a2a,color:#fff,stroke-width:2px')
     lines.append('    classDef attack fill:#ffd43b,stroke:#f08c00,stroke-width:2px')
+    lines.append('    classDef fact fill:#d0ebff,stroke:#1971c2,stroke-width:2px')
     lines.append('    class GOAL goal')
-    all_step_ids = [id_map.get(s.get("id", ""), "") for s in steps]
-    if all_step_ids:
-        lines.append(f'    class {",".join(all_step_ids)} attack')
+    attack_ids = [id_map.get(s.get("id", ""), "") for s in steps if s.get("id", "") not in root_ids]
+    fact_ids = [id_map.get(s.get("id", ""), "") for s in steps if s.get("id", "") in root_ids]
+    if attack_ids:
+        lines.append(f'    class {",".join(attack_ids)} attack')
+    if fact_ids:
+        lines.append(f'    class {",".join(fact_ids)} fact')
 
     return "\n".join(lines)
 
