@@ -134,19 +134,7 @@ def _steps_to_mermaid(steps: list, mappings_by_step: dict, root_goal: str) -> st
         text = text.replace('"', "'").replace("\n", " ")
         if len(text) > max_len:
             text = text[:max_len] + "..."
-        # Use \n for line breaks (mermaid standard, not <br/>)
-        words = text.split()
-        result = []
-        line = ""
-        for w in words:
-            if len(line) + len(w) > 35:
-                result.append(line)
-                line = w
-            else:
-                line = f"{line} {w}" if line else w
-        if line:
-            result.append(line)
-        return "n".join(result)
+        return text
 
     # Map step IDs to simple mermaid-safe IDs (no hyphens)
     id_map = {}
@@ -170,7 +158,7 @@ def _steps_to_mermaid(steps: list, mappings_by_step: dict, root_goal: str) -> st
 
         label = _label(step.get("title") or desc)
         if tid:
-            label += f"n({tid})"
+            label += f" ({tid})"
         lines.append(f'    {safe}["{label}"]')
 
     # Edges — root steps connect from GOAL
