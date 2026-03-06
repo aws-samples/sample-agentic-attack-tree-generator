@@ -82,14 +82,16 @@ async def delete_application(app_id: str) -> dict:
     if attack_trees_dir is None:
         raise HTTPException(status_code=404, detail=f"Application '{app_id}' not found")
 
-    # The threatforest/ directory is the parent of attack_trees/
-    threatforest_dir = attack_trees_dir.parent
-    if not threatforest_dir.name == "threatforest":
-        # Safety check — only delete if it's actually the threatforest dir
-        raise HTTPException(status_code=500, detail="Unexpected directory structure")
+    # Delete the .threatforest/ or threatforest/ directory
+    # attack_trees_dir is either .threatforest/output/ or threatforest/attack_trees/
+    # We want to delete the top-level threatforest dir
+    if attack_trees_dir.parent.name in ("threatforest", ".threatforest"):
+        target = attack_trees_dir.parent
+    else:
+        target = attack_trees_dir
 
     try:
-        shutil.rmtree(str(threatforest_dir))
+        shutil.rmtree(str(target))
     except OSError as exc:
         raise HTTPException(status_code=500, detail=f"Failed to delete: {exc}")
 
