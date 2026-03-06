@@ -76,7 +76,18 @@ def create_bedrock_model(config, temperature: float = 0):
     model = BedrockModel(
         model_id=bedrock_config['model_id'],
         boto_session=session,
+        boto_client_config=_bedrock_client_config(),
         temperature=temperature
     )
     
     return model
+
+
+def _bedrock_client_config():
+    """Bedrock client config with extended timeouts for large LLM responses."""
+    from botocore.config import Config
+    return Config(
+        read_timeout=900,
+        connect_timeout=30,
+        retries={"max_attempts": 3, "mode": "adaptive"},
+    )

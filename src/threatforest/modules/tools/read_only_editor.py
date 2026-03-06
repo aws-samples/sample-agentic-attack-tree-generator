@@ -6,7 +6,7 @@ autonomous repository exploration.
 """
 
 from typing import Any, Dict, List, Optional
-from strands_tools import editor
+from strands_tools.editor import editor as _editor_tool
 from strands import tool
 
 
@@ -85,7 +85,7 @@ def read_only_editor(
     
     # Call original editor with only safe parameters
     # Note: We explicitly don't pass any write-related parameters
-    return editor(
+    return _editor_tool(
         command=command,
         path=path,
         search_text=search_text,

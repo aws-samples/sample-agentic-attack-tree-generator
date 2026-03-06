@@ -1,0 +1,1603 @@
+{
+  "metadata": {
+    "generated_at": "2026-02-24T19:36:28.688894",
+    "generator": "ThreatForest",
+    "version": "1.0"
+  },
+  "project_info": {
+    "application_name": "AWS Connected Vehicle Solution - Vehicle Registration Platform",
+    "technologies": [
+      "AWS Lambda",
+      "Amazon API Gateway",
+      "Amazon DynamoDB",
+      "Amazon S3 (server-side encryption)",
+      "Amazon Cognito (user pool authentication)",
+      "AWS Amplify (static web hosting)",
+      "AWS Web Application Firewall (WAF)",
+      "AWS Shield",
+      "Amazon Macie",
+      "Amazon CloudWatch Logs",
+      "AWS Certificate Manager (ACM)",
+      "AWS IAM",
+      "REST APIs",
+      "HTTPS/TLS",
+      "Pre-signed S3 URLs",
+      "GUIDs (random, non-sequential)",
+      "PDF document storage",
+      "Serverless architecture"
+    ],
+    "architecture_type": "serverless",
+    "deployment_environment": "AWS",
+    "sector": "Automotive / Fleet Management / IoT",
+    "security_objectives": [
+      "Protect user authentication credentials via Amazon Cognito",
+      "Ensure data confidentiality of vehicle registration documents and status",
+      "Ensure data integrity of vehicle registration records",
+      "Ensure availability of vehicle registration and listing services",
+      "Protect data in transit using TLS/HTTPS between all components",
+      "Protect data at rest using S3 server-side encryption and DynamoDB encryption",
+      "Implement least-privilege IAM permissions for Lambda execution roles",
+      "Validate all API inputs to prevent injection and parameter manipulation",
+      "Implement API request throttling to prevent abuse",
+      "Use detective controls (CloudWatch, AWS Config) for security monitoring",
+      "Protect sensitive data in logs (CloudWatch Logs)",
+      "Prevent unauthorized deployment of Lambda functions using existing execution roles",
+      "Protect against credential stuffing/password spraying on Cognito",
+      "Ensure non-repudiation of vehicle registration actions for billing integrity",
+      "Protect against domain spoofing and phishing attacks",
+      "Perform vulnerability management across all components",
+      "Monitor costs proactively to detect anomalous usage patterns"
+    ],
+    "data_assets": [
+      "Vehicle registration documents (PDF files stored in S3)",
+      "Vehicle registration status and metadata (stored in DynamoDB)",
+      "Vehicle listing information (stored in DynamoDB)",
+      "User authentication credentials and tokens (managed by Cognito)",
+      "API request tokens and session data",
+      "GUIDs (globally unique identifiers for API responses)",
+      "Pre-signed S3 URLs (temporary access to registration PDFs)",
+      "Lambda function execution logs (may contain sensitive data)",
+      "Billing and financial records related to vehicle registration",
+      "IoT vehicle telemetry data (broader system context)",
+      "Driver registration data (broader system context)",
+      "Diagnostic error codes from connected vehicles (broader system context)"
+    ],
+    "entry_points": [
+      "REST API endpoints via Amazon API Gateway (ListVehicles, RegisterVehicle, DeregisterVehicle, DescribeVehicle)",
+      "AWS Amplify-hosted web front-end (HTML/CSS/JS served to browser)",
+      "Amazon Cognito authentication endpoint (user login with challenge/response)",
+      "Pre-signed S3 URLs for direct PDF upload/download (browser to S3 bucket)",
+      "AWS Management Console (internal actor access to AWS account)",
+      "IAM Principal access to DynamoDB tables and S3 buckets"
+    ],
+    "trust_boundaries": [
+      "Between user browser and AWS Amplify front-end (TLS protected)",
+      "Between user browser and Amazon Cognito (authentication challenge/token exchange)",
+      "Between user browser and API Gateway (tokens, API methods, data, objects over HTTPS)",
+      "Between user browser and S3 bucket (pre-signed URL for direct PDF upload/download)",
+      "Between API Gateway and Lambda function (same trust zone - Lambda trusts API Gateway authentication)",
+      "Between Lambda function and DynamoDB (GUIDs, data storage/retrieval)",
+      "Between Lambda function and S3 bucket (GUIDs, objects storage/retrieval)",
+      "Between internal AWS account users and AWS resources (IAM-controlled access)",
+      "Between the Connected Vehicle Solution boundary and external users",
+      "Between the Vehicle Registration subsystem and the broader Connected Vehicle platform"
+    ],
+    "summary": "The AWS Connected Vehicle Solution is a serverless fleet management platform deployed on AWS, focused on a Vehicle Registration feature that allows fleet managers to register, deregister, list, and describe IoT-connected vehicles. The architecture uses AWS Amplify for the web front-end, Amazon Cognito for authentication/authorization, Amazon API Gateway with AWS Lambda for REST API processing, Amazon DynamoDB for structured data storage, and Amazon S3 (with server-side encryption) for vehicle registration PDF documents. The system operates within a single AWS account and region, with all services in the same trust zone. Key security concerns identified in the threat model include: (1) credential stuffing/password spraying against Cognito (no MFA), (2) API parameter manipulation for unauthorized resource access, (3) unauthorized Lambda deployment using existing execution roles, (4) data exposure through Lambda function logs, (5) domain spoofing/phishing attacks, (6) data deletion by compromised IAM principals, (7) insufficient authorization controls (single scope for all APIs, all users can perform all operations), and (8) non-repudiation issues for billing disputes. The threat model identifies 11 specific threats across confidentiality, integrity, and availability goals, with 23 proposed mitigations including WAF/Shield protection, input validation, API throttling, encryption at rest, TLS for data in transit, IAM best practices, and detective controls via CloudWatch and AWS Config. Notable assumptions include that MFA is not used, all users can perform all operations (no fine-grained authorization), and the Lambda function trusts all API Gateway requests as pre-authenticated.",
+    "short_summary": "AWS serverless vehicle fleet registration platform (Lambda, API Gateway, Cognito, DynamoDB, S3) with 11 identified threats targeting confidentiality, integrity & availability across REST APIs."
+  },
+  "extraction_summary": {
+    "total_threats": 12,
+    "high_severity_count": 4,
+    "technologies_identified": 18,
+    "has_security_objectives": true,
+    "agent_based": true,
+    "threat_source": "ai_generated"
+  },
+  "threats": {
+    "all_threats": [
+      {
+        "id": "T001",
+        "statement": "A remote attacker with knowledge of the Cognito user pool endpoint, can perform credential stuffing or password spraying attacks against the Amazon Cognito authentication endpoint (which lacks MFA), which leads to unauthorized account takeover of fleet manager accounts, resulting in reduced confidentiality of vehicle registration documents, vehicle metadata, and pre-signed S3 URLs.",
+        "severity": "High",
+        "category": "Authentication",
+        "threatSource": "remote attacker",
+        "prerequisites": "knowledge of the Cognito user pool endpoint and access to breached credential lists",
+        "threatAction": "perform credential stuffing or password spraying attacks against the Amazon Cognito authentication endpoint lacking MFA",
+        "threatImpact": "unauthorized account takeover granting full access to all vehicle registration operations",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "user authentication credentials and tokens, vehicle registration documents, vehicle registration metadata in DynamoDB",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T002",
+        "statement": "An authenticated malicious user with valid Cognito tokens and knowledge of API structure, can manipulate API parameters such as vehicle GUIDs in DescribeVehicle or DeregisterVehicle requests to access or modify other users' resources (IDOR), which leads to unauthorized access to or deletion of vehicle registration records belonging to other fleet managers, resulting in reduced confidentiality and integrity of vehicle registration status and metadata in DynamoDB and registration documents in S3.",
+        "severity": "High",
+        "category": "Broken Access Control",
+        "threatSource": "authenticated malicious user",
+        "prerequisites": "valid Cognito authentication token and knowledge of or ability to enumerate vehicle GUIDs",
+        "threatAction": "manipulate API parameters (vehicle GUIDs) in REST API calls to access or modify resources belonging to other users due to single-scope authorization for all APIs",
+        "threatImpact": "unauthorized viewing, modification, or deletion of other users' vehicle registration records",
+        "impactedGoal": "confidentiality and integrity",
+        "impactedAssets": "vehicle registration documents in S3, vehicle registration status and metadata in DynamoDB, vehicle listing information in DynamoDB",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T003",
+        "statement": "A compromised or malicious IAM principal with write/delete permissions on DynamoDB tables and S3 buckets, can delete or corrupt vehicle registration records and PDF documents, which leads to permanent loss of vehicle registration data and inability to prove registration status, resulting in reduced integrity and availability of vehicle registration documents in S3 and vehicle registration metadata in DynamoDB.",
+        "severity": "High",
+        "category": "Insider Threat / Privilege Abuse",
+        "threatSource": "compromised or malicious IAM principal",
+        "prerequisites": "IAM credentials with write or delete permissions on DynamoDB tables and S3 buckets within the same AWS account",
+        "threatAction": "delete or corrupt vehicle registration records in DynamoDB and PDF documents in S3",
+        "threatImpact": "permanent loss or corruption of vehicle registration data affecting fleet operations and billing integrity",
+        "impactedGoal": "integrity and availability",
+        "impactedAssets": "vehicle registration documents in S3, vehicle registration status and metadata in DynamoDB, billing and financial records related to vehicle registration",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T004",
+        "statement": "An internal developer or compromised CI/CD pipeline with IAM permissions to create Lambda functions, can deploy a malicious Lambda function using an existing overly-permissive execution role, which leads to unauthorized access to DynamoDB data, S3 objects, and other AWS resources accessible by that role, resulting in reduced confidentiality of vehicle registration documents, vehicle metadata, and user data.",
+        "severity": "High",
+        "category": "Privilege Escalation",
+        "threatSource": "internal developer or compromised CI/CD pipeline",
+        "prerequisites": "IAM permissions to create or update Lambda functions and knowledge of existing Lambda execution role ARNs",
+        "threatAction": "deploy a malicious Lambda function that assumes an existing execution role with broad permissions to exfiltrate data from DynamoDB and S3",
+        "threatImpact": "unauthorized access to all data accessible by the Lambda execution role including vehicle records and registration documents",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "vehicle registration documents in S3, vehicle registration status and metadata in DynamoDB, Lambda function execution logs",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T005",
+        "statement": "A remote attacker with the ability to intercept or guess pre-signed S3 URLs, can access vehicle registration PDF documents directly from S3 without authenticating through the API Gateway, which leads to unauthorized disclosure of sensitive vehicle registration documents, resulting in reduced confidentiality of vehicle registration documents stored in S3.",
+        "severity": "Medium",
+        "category": "Data Breach",
+        "threatSource": "remote attacker",
+        "prerequisites": "ability to intercept network traffic, access browser history, or predict pre-signed URL parameters before expiration",
+        "threatAction": "access pre-signed S3 URLs to download vehicle registration PDF documents without proper authentication",
+        "threatImpact": "unauthorized disclosure of sensitive vehicle registration documents",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "vehicle registration documents (PDF files stored in S3)",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T006",
+        "statement": "A malicious actor with the ability to craft phishing emails or create spoofed domains, can impersonate the vehicle registration platform to trick fleet managers into submitting credentials on a fake login page, which leads to credential theft and subsequent unauthorized access to the legitimate platform, resulting in reduced confidentiality of user authentication credentials and vehicle registration data.",
+        "severity": "Medium",
+        "category": "Social Engineering / Phishing",
+        "threatSource": "malicious actor",
+        "prerequisites": "ability to register similar domain names and craft convincing phishing emails targeting fleet managers",
+        "threatAction": "create a spoofed domain mimicking the AWS Amplify-hosted web front-end to harvest Cognito credentials from fleet managers",
+        "threatImpact": "credential theft enabling unauthorized access to vehicle registration operations and data",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "user authentication credentials and tokens, vehicle registration documents, vehicle registration status and metadata",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T007",
+        "statement": "A remote attacker with network access to the API Gateway endpoints, can send crafted injection payloads (NoSQL injection, command injection) through API input parameters such as vehicle identifiers or registration fields, which leads to unauthorized data retrieval or manipulation in DynamoDB or unintended Lambda code execution, resulting in reduced integrity of vehicle registration status and metadata in DynamoDB.",
+        "severity": "Medium",
+        "category": "Injection",
+        "threatSource": "remote attacker",
+        "prerequisites": "network access to API Gateway REST endpoints and knowledge of API parameter structure",
+        "threatAction": "send crafted injection payloads through RegisterVehicle or DescribeVehicle API parameters targeting DynamoDB queries in Lambda functions",
+        "threatImpact": "unauthorized data retrieval, modification, or unintended code execution within Lambda functions",
+        "impactedGoal": "integrity",
+        "impactedAssets": "vehicle registration status and metadata in DynamoDB, Lambda function execution environment",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T008",
+        "statement": "An operations engineer or automated log analysis tool with access to Amazon CloudWatch Logs, can view sensitive data inadvertently logged by Lambda functions during execution (e.g., registration details, authentication tokens, PII), which leads to exposure of sensitive vehicle and user information through log data, resulting in reduced confidentiality of vehicle registration documents, user data, and API request tokens.",
+        "severity": "Medium",
+        "category": "Information Disclosure",
+        "threatSource": "operations engineer or automated log analysis tool",
+        "prerequisites": "read access to Amazon CloudWatch Logs containing Lambda function execution output",
+        "threatAction": "view or extract sensitive data (PII, registration details, tokens) inadvertently written to CloudWatch Logs by Lambda functions",
+        "threatImpact": "exposure of sensitive vehicle registration data and authentication tokens through log files",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "Lambda function execution logs, vehicle registration status and metadata, API request tokens and session data",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T009",
+        "statement": "A remote attacker with network access, can flood the API Gateway endpoints with high volumes of requests (DDoS or application-layer abuse), which leads to API throttling exhaustion, elevated Lambda concurrency costs, and degraded service availability, resulting in reduced availability of vehicle registration and listing services and increased operational costs.",
+        "severity": "Medium",
+        "category": "Denial of Service",
+        "threatSource": "remote attacker",
+        "prerequisites": "network access to API Gateway endpoints (potentially with valid or stolen authentication tokens)",
+        "threatAction": "flood API Gateway endpoints with high volumes of ListVehicles, RegisterVehicle, or DescribeVehicle requests to exhaust throttling limits and drive up Lambda invocations",
+        "threatImpact": "service degradation or unavailability for legitimate fleet managers and anomalous cost increases",
+        "impactedGoal": "availability",
+        "impactedAssets": "REST API endpoints via Amazon API Gateway, Lambda function compute resources, vehicle registration and listing services",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T010",
+        "statement": "An authenticated user involved in a billing dispute with no fine-grained audit trail, can deny having performed a vehicle registration or deregistration action, which leads to inability to prove which user initiated a specific registration operation, resulting in reduced integrity of billing and financial records related to vehicle registration (non-repudiation failure).",
+        "severity": "Medium",
+        "category": "Non-Repudiation",
+        "threatSource": "authenticated user involved in a billing dispute",
+        "prerequisites": "valid Cognito authentication and absence of fine-grained audit logging tying user identity to specific registration actions",
+        "threatAction": "deny having performed a RegisterVehicle or DeregisterVehicle action to dispute associated billing charges",
+        "threatImpact": "inability to attribute registration actions to specific users for billing and compliance purposes",
+        "impactedGoal": "integrity",
+        "impactedAssets": "billing and financial records related to vehicle registration, vehicle registration status and metadata in DynamoDB",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T011",
+        "statement": "A low-skilled attacker with access to the public web front-end, can enumerate vehicle GUIDs by observing API response patterns or exploiting predictable identifiers in the ListVehicles endpoint, which leads to discovery of valid vehicle identifiers that can be used in subsequent IDOR attacks, resulting in reduced confidentiality of vehicle listing information stored in DynamoDB.",
+        "severity": "Low",
+        "category": "Information Disclosure",
+        "threatSource": "low-skilled attacker",
+        "prerequisites": "access to the AWS Amplify-hosted web front-end and a valid Cognito authentication token",
+        "threatAction": "enumerate vehicle GUIDs by analyzing API responses from the ListVehicles endpoint to build a catalog of valid vehicle identifiers",
+        "threatImpact": "discovery of valid vehicle GUIDs enabling targeted unauthorized access attempts via other API endpoints",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "GUIDs (globally unique identifiers), vehicle listing information in DynamoDB",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T012",
+        "statement": "A malicious actor with access to a misconfigured or publicly exposed S3 bucket policy, can directly access vehicle registration PDF documents bypassing API Gateway and Cognito authentication entirely, which leads to bulk unauthorized disclosure of sensitive registration documents, resulting in reduced confidentiality of vehicle registration documents stored in S3.",
+        "severity": "Low",
+        "category": "Misconfiguration",
+        "threatSource": "malicious actor",
+        "prerequisites": "discovery of the S3 bucket name and existence of an overly permissive bucket policy or ACL misconfiguration",
+        "threatAction": "directly access or list objects in the S3 bucket containing vehicle registration PDFs without going through the application's authentication layer",
+        "threatImpact": "bulk unauthorized disclosure of vehicle registration PDF documents",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "vehicle registration documents (PDF files stored in S3)",
+        "source": "AI Generated"
+      }
+    ],
+    "high_severity": [
+      {
+        "id": "T001",
+        "statement": "A remote attacker with knowledge of the Cognito user pool endpoint, can perform credential stuffing or password spraying attacks against the Amazon Cognito authentication endpoint (which lacks MFA), which leads to unauthorized account takeover of fleet manager accounts, resulting in reduced confidentiality of vehicle registration documents, vehicle metadata, and pre-signed S3 URLs.",
+        "severity": "High",
+        "category": "Authentication",
+        "threatSource": "remote attacker",
+        "prerequisites": "knowledge of the Cognito user pool endpoint and access to breached credential lists",
+        "threatAction": "perform credential stuffing or password spraying attacks against the Amazon Cognito authentication endpoint lacking MFA",
+        "threatImpact": "unauthorized account takeover granting full access to all vehicle registration operations",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "user authentication credentials and tokens, vehicle registration documents, vehicle registration metadata in DynamoDB",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T002",
+        "statement": "An authenticated malicious user with valid Cognito tokens and knowledge of API structure, can manipulate API parameters such as vehicle GUIDs in DescribeVehicle or DeregisterVehicle requests to access or modify other users' resources (IDOR), which leads to unauthorized access to or deletion of vehicle registration records belonging to other fleet managers, resulting in reduced confidentiality and integrity of vehicle registration status and metadata in DynamoDB and registration documents in S3.",
+        "severity": "High",
+        "category": "Broken Access Control",
+        "threatSource": "authenticated malicious user",
+        "prerequisites": "valid Cognito authentication token and knowledge of or ability to enumerate vehicle GUIDs",
+        "threatAction": "manipulate API parameters (vehicle GUIDs) in REST API calls to access or modify resources belonging to other users due to single-scope authorization for all APIs",
+        "threatImpact": "unauthorized viewing, modification, or deletion of other users' vehicle registration records",
+        "impactedGoal": "confidentiality and integrity",
+        "impactedAssets": "vehicle registration documents in S3, vehicle registration status and metadata in DynamoDB, vehicle listing information in DynamoDB",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T003",
+        "statement": "A compromised or malicious IAM principal with write/delete permissions on DynamoDB tables and S3 buckets, can delete or corrupt vehicle registration records and PDF documents, which leads to permanent loss of vehicle registration data and inability to prove registration status, resulting in reduced integrity and availability of vehicle registration documents in S3 and vehicle registration metadata in DynamoDB.",
+        "severity": "High",
+        "category": "Insider Threat / Privilege Abuse",
+        "threatSource": "compromised or malicious IAM principal",
+        "prerequisites": "IAM credentials with write or delete permissions on DynamoDB tables and S3 buckets within the same AWS account",
+        "threatAction": "delete or corrupt vehicle registration records in DynamoDB and PDF documents in S3",
+        "threatImpact": "permanent loss or corruption of vehicle registration data affecting fleet operations and billing integrity",
+        "impactedGoal": "integrity and availability",
+        "impactedAssets": "vehicle registration documents in S3, vehicle registration status and metadata in DynamoDB, billing and financial records related to vehicle registration",
+        "source": "AI Generated"
+      },
+      {
+        "id": "T004",
+        "statement": "An internal developer or compromised CI/CD pipeline with IAM permissions to create Lambda functions, can deploy a malicious Lambda function using an existing overly-permissive execution role, which leads to unauthorized access to DynamoDB data, S3 objects, and other AWS resources accessible by that role, resulting in reduced confidentiality of vehicle registration documents, vehicle metadata, and user data.",
+        "severity": "High",
+        "category": "Privilege Escalation",
+        "threatSource": "internal developer or compromised CI/CD pipeline",
+        "prerequisites": "IAM permissions to create or update Lambda functions and knowledge of existing Lambda execution role ARNs",
+        "threatAction": "deploy a malicious Lambda function that assumes an existing execution role with broad permissions to exfiltrate data from DynamoDB and S3",
+        "threatImpact": "unauthorized access to all data accessible by the Lambda execution role including vehicle records and registration documents",
+        "impactedGoal": "confidentiality",
+        "impactedAssets": "vehicle registration documents in S3, vehicle registration status and metadata in DynamoDB, Lambda function execution logs",
+        "source": "AI Generated"
+      }
+    ]
+  },
+  "attack_trees": [
+    {
+      "threat_id": "T001",
+      "threat_category": "Authentication",
+      "threat_description": null,
+      "threat_statement": "A remote attacker with knowledge of the Cognito user pool endpoint, can perform credential stuffing or password spraying attacks against the Amazon Cognito authentication endpoint (which lacks MFA), which leads to unauthorized account takeover of fleet manager accounts, resulting in reduced confidentiality of vehicle registration documents, vehicle metadata, and pre-signed S3 URLs.",
+      "threat_action": "perform credential stuffing or password spraying attacks against the Amazon Cognito authentication endpoint lacking MFA",
+      "threatSource": "remote attacker",
+      "prerequisites": "knowledge of the Cognito user pool endpoint and access to breached credential lists",
+      "threatAction": "perform credential stuffing or password spraying attacks against the Amazon Cognito authentication endpoint lacking MFA",
+      "threatImpact": "unauthorized account takeover granting full access to all vehicle registration operations",
+      "impactedGoal": "confidentiality",
+      "impactedAssets": "user authentication credentials and tokens, vehicle registration documents, vehicle registration metadata in DynamoDB",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    GOAL[\"Unauthorized account takeover granting full accessnto vehicle registration operationsn(Reduced Confidentiality)\"]\n    %% Facts / Initial Conditions\n    F1[\"Remote attacker identifiesnCognito user pool endpoint\"]\n    F2[\"Attacker possesses breachedncredential lists from dark web\"]\n    F3[\"Cognito endpoint lacks MFAnenforcement\"]\n    F4[\"Cognito endpoint lacksnadvanced rate limiting\"]\n    %% Attack Path 1: Credential Stuffing\n    F1 --> A1[\"Enumerate valid email addressesnvia Cognito signuperror responses\"]\n    F2 --> A2[\"Correlate breached credentialsnwith enumerated accounts\"]\n    A1 --> A2\n    A2 --> A3[\"Launch automated credentialnstuffing against CognitonAuthFlow API\"]\n    F3 --> A3\n    A3 --> A4[\"Successfully authenticate asnfleet manager using reused password\"]\n    %% Attack Path 2: Password Spraying\n    F1 --> A5[\"Harvest fleet manager usernamesnvia OSINT or social engineering\"]\n    A5 --> A6[\"Compile list of commonweaknpasswords matching Cognito policy\"]\n    A6 --> A7[\"Execute low-and-slow passwordnspraying across multiple accountsnto evade lockout thresholds\"]\n    F3 --> A7\n    F4 --> A7\n    A7 --> A8[\"Successfully authenticate asnfleet manager via weak password\"]\n    %% Post-Authentication Exploitation (shared path)\n    A4 --> A9[\"Obtain valid Cognito JWTntokens (ID, Access, Refresh)\"]\n    A8 --> A9\n    A9 --> A10[\"Invoke API Gateway endpointsnwith stolen JWT tokens\"]\n    A10 --> A11[\"Access vehicle registrationndocuments via pre-signed S3 URLs\"]\n    A10 --> A12[\"Query DynamoDB for vehiclenregistration metadata\"]\n    A10 --> A13[\"Exfiltrate authentication tokensnfor persistent access\"]\n    A11 --> GOAL\n    A12 --> GOAL\n    A13 --> GOAL\n    %% Styling\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13 attack\n    class GOAL goal\n    class F1,F2,F3,F4 fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "GOAL",
+          "description": "Unauthorized account takeover granting full accessnto vehicle registration operationsn(Reduced Confidentiality)"
+        },
+        {
+          "node_id": "F1",
+          "description": "Remote attacker identifiesnCognito user pool endpoint"
+        },
+        {
+          "node_id": "F2",
+          "description": "Attacker possesses breachedncredential lists from dark web"
+        },
+        {
+          "node_id": "F3",
+          "description": "Cognito endpoint lacks MFAnenforcement"
+        },
+        {
+          "node_id": "F4",
+          "description": "Cognito endpoint lacksnadvanced rate limiting"
+        },
+        {
+          "node_id": "A1",
+          "description": "Enumerate valid email addressesnvia Cognito signuperror responses"
+        },
+        {
+          "node_id": "A2",
+          "description": "Correlate breached credentialsnwith enumerated accounts"
+        },
+        {
+          "node_id": "A3",
+          "description": "Launch automated credentialnstuffing against CognitonAuthFlow API"
+        },
+        {
+          "node_id": "A4",
+          "description": "Successfully authenticate asnfleet manager using reused password"
+        },
+        {
+          "node_id": "A5",
+          "description": "Harvest fleet manager usernamesnvia OSINT or social engineering"
+        },
+        {
+          "node_id": "A6",
+          "description": "Compile list of commonweaknpasswords matching Cognito policy"
+        },
+        {
+          "node_id": "A7",
+          "description": "Execute low-and-slow passwordnspraying across multiple accountsnto evade lockout thresholds"
+        },
+        {
+          "node_id": "A8",
+          "description": "Successfully authenticate asnfleet manager via weak password"
+        },
+        {
+          "node_id": "A9",
+          "description": "Obtain valid Cognito JWTntokens (ID, Access, Refresh)"
+        },
+        {
+          "node_id": "A10",
+          "description": "Invoke API Gateway endpointsnwith stolen JWT tokens"
+        },
+        {
+          "node_id": "A11",
+          "description": "Access vehicle registrationndocuments via pre-signed S3 URLs"
+        },
+        {
+          "node_id": "A12",
+          "description": "Query DynamoDB for vehiclenregistration metadata"
+        },
+        {
+          "node_id": "A13",
+          "description": "Exfiltrate authentication tokensnfor persistent access"
+        }
+      ],
+      "generated_content": "# Attack Tree: T001 - Credential Stuffing/Password Spraying Against Cognito\n\n```mermaid\ngraph TD\n    GOAL[\"Unauthorized account takeover granting full access\\nto vehicle registration operations\\n(Reduced Confidentiality)\"]\n\n    %% Facts / Initial Conditions\n    F1[\"Remote attacker identifies\\nCognito user pool endpoint\"]\n    F2[\"Attacker possesses breached\\ncredential lists from dark web\"]\n    F3[\"Cognito endpoint lacks MFA\\nenforcement\"]\n    F4[\"Cognito endpoint lacks\\nadvanced rate limiting\"]\n\n    %% Attack Path 1: Credential Stuffing\n    F1 --> A1[\"Enumerate valid email addresses\\nvia Cognito signup/error responses\"]\n    F2 --> A2[\"Correlate breached credentials\\nwith enumerated accounts\"]\n    A1 --> A2\n    A2 --> A3[\"Launch automated credential\\nstuffing against Cognito\\nAuthFlow API\"]\n    F3 --> A3\n    A3 --> A4[\"Successfully authenticate as\\nfleet manager using reused password\"]\n\n    %% Attack Path 2: Password Spraying\n    F1 --> A5[\"Harvest fleet manager usernames\\nvia OSINT or social engineering\"]\n    A5 --> A6[\"Compile list of common/weak\\npasswords matching Cognito policy\"]\n    A6 --> A7[\"Execute low-and-slow password\\nspraying across multiple accounts\\nto evade lockout thresholds\"]\n    F3 --> A7\n    F4 --> A7\n    A7 --> A8[\"Successfully authenticate as\\nfleet manager via weak password\"]\n\n    %% Post-Authentication Exploitation (shared path)\n    A4 --> A9[\"Obtain valid Cognito JWT\\ntokens (ID, Access, Refresh)\"]\n    A8 --> A9\n    A9 --> A10[\"Invoke API Gateway endpoints\\nwith stolen JWT tokens\"]\n    A10 --> A11[\"Access vehicle registration\\ndocuments via pre-signed S3 URLs\"]\n    A10 --> A12[\"Query DynamoDB for vehicle\\nregistration metadata\"]\n    A10 --> A13[\"Exfiltrate authentication tokens\\nfor persistent access\"]\n\n    A11 --> GOAL\n    A12 --> GOAL\n    A13 --> GOAL\n\n    %% Styling\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n\n    class A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13 attack\n    class GOAL goal\n    class F1,F2,F3,F4 fact\n```\n\n## Attack Tree Summary\n\n| Component | Description |\n|-----------|-------------|\n| **Threat ID** | T001 |\n| **Root Goal** | Unauthorized account takeover \u2192 exfiltration of vehicle registration data |\n| **Attack Path 1** | **Credential Stuffing** \u2014 Attacker enumerates valid accounts, cross-references breached credential databases, and replays stolen username/password pairs against the MFA-less Cognito endpoint |\n| **Attack Path 2** | **Password Spraying** \u2014 Attacker harvests fleet manager usernames via OSINT, then systematically sprays common passwords at low velocity to avoid account lockout detection |\n| **Convergence Point** | Both paths yield valid Cognito JWT tokens, enabling authenticated API Gateway access |\n| **Terminal Impact** | Exfiltration of vehicle registration documents (S3), vehicle metadata (DynamoDB), and authentication tokens for persistent unauthorized access |\n| **Key Enablers** | Absence of MFA on Cognito, publicly reachable authentication endpoint, lack of aggressive rate limiting, and password reuse by fleet managers |\n",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1,
+          "mitigation": 0
+        },
+        "connection_count": 21,
+        "tech_mentions": 0
+      },
+      "ttc_mappings": [
+        {
+          "attack_step": "Exfiltrate authentication tokensnfor persistent access",
+          "technique_id": "T1134.003",
+          "technique_name": "Make and Impersonate Token",
+          "confidence": 0.6347077795768667,
+          "tactics": [
+            "defense-evasion",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.635"
+        },
+        {
+          "attack_step": "Cognito endpoint lacks MFAnenforcement",
+          "technique_id": "T1556.006",
+          "technique_name": "Multi-Factor Authentication",
+          "confidence": 0.610177703275689,
+          "tactics": [
+            "credential-access",
+            "defense-evasion",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.610"
+        },
+        {
+          "attack_step": "Correlate breached credentialsnwith enumerated accounts",
+          "technique_id": "T1110.004",
+          "technique_name": "Credential Stuffing",
+          "confidence": 0.7789011768260408,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.779"
+        },
+        {
+          "attack_step": "Remote attacker identifiesnCognito user pool endpoint",
+          "technique_id": "T1208",
+          "technique_name": "Kerberoasting",
+          "confidence": 0.4552131598855241,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.455"
+        },
+        {
+          "attack_step": "Compile list of commonweaknpasswords matching Cognito policy",
+          "technique_id": "T1003.004",
+          "technique_name": "LSA Secrets",
+          "confidence": 0.6428389263798211,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.643"
+        },
+        {
+          "attack_step": "Obtain valid Cognito JWTntokens (ID, Access, Refresh)",
+          "technique_id": "T1550",
+          "technique_name": "Use Alternate Authentication Material",
+          "confidence": 0.5822812555000514,
+          "tactics": [
+            "defense-evasion",
+            "lateral-movement"
+          ],
+          "reasoning": "Embedding similarity: 0.582"
+        },
+        {
+          "attack_step": "Successfully authenticate asnfleet manager using reused password",
+          "technique_id": "T1550",
+          "technique_name": "Use Alternate Authentication Material",
+          "confidence": 0.8150102800637924,
+          "tactics": [
+            "defense-evasion",
+            "lateral-movement"
+          ],
+          "reasoning": "Embedding similarity: 0.815"
+        },
+        {
+          "attack_step": "Harvest fleet manager usernamesnvia OSINT or social engineering",
+          "technique_id": "T1087",
+          "technique_name": "Account Discovery",
+          "confidence": 0.48109506424207626,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.481"
+        },
+        {
+          "attack_step": "Invoke API Gateway endpointsnwith stolen JWT tokens",
+          "technique_id": "T1528",
+          "technique_name": "Steal Application Access Token",
+          "confidence": 0.7057624697250043,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.706"
+        },
+        {
+          "attack_step": "Cognito endpoint lacksnadvanced rate limiting",
+          "technique_id": "T1499.001",
+          "technique_name": "OS Exhaustion Flood",
+          "confidence": 0.5573219963024263,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.557"
+        },
+        {
+          "attack_step": "Query DynamoDB for vehiclenregistration metadata",
+          "technique_id": "T1119",
+          "technique_name": "Automated Collection",
+          "confidence": 0.5720083687356883,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.572"
+        },
+        {
+          "attack_step": "Attacker possesses breachedncredential lists from dark web",
+          "technique_id": "T1681",
+          "technique_name": "Search Threat Vendor Data",
+          "confidence": 0.6561235087260107,
+          "tactics": [
+            "reconnaissance"
+          ],
+          "reasoning": "Embedding similarity: 0.656"
+        },
+        {
+          "attack_step": "Unauthorized account takeover granting full accessnto vehicle registration operationsn(Reduced Confidentiality)",
+          "technique_id": "T1098",
+          "technique_name": "Account Manipulation",
+          "confidence": 0.6306745023014617,
+          "tactics": [
+            "persistence",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.631"
+        },
+        {
+          "attack_step": "Launch automated credentialnstuffing against CognitonAuthFlow API",
+          "technique_id": "T1550",
+          "technique_name": "Use Alternate Authentication Material",
+          "confidence": 0.7212610826335351,
+          "tactics": [
+            "defense-evasion",
+            "lateral-movement"
+          ],
+          "reasoning": "Embedding similarity: 0.721"
+        },
+        {
+          "attack_step": "Access vehicle registrationndocuments via pre-signed S3 URLs",
+          "technique_id": "T1619",
+          "technique_name": "Cloud Storage Object Discovery",
+          "confidence": 0.46020987805042224,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.460"
+        },
+        {
+          "attack_step": "Execute low-and-slow passwordnspraying across multiple accountsnto evade lockout thresholds",
+          "technique_id": "T1174",
+          "technique_name": "Password Filter DLL",
+          "confidence": 0.6962607888202617,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.696"
+        },
+        {
+          "attack_step": "Enumerate valid email addressesnvia Cognito signuperror responses",
+          "technique_id": "T1589.002",
+          "technique_name": "Email Addresses",
+          "confidence": 0.7843576642171755,
+          "tactics": [
+            "reconnaissance"
+          ],
+          "reasoning": "Embedding similarity: 0.784"
+        },
+        {
+          "attack_step": "Successfully authenticate asnfleet manager via weak password",
+          "technique_id": "T1556.004",
+          "technique_name": "Network Device Authentication",
+          "confidence": 0.785039496104691,
+          "tactics": [
+            "credential-access",
+            "defense-evasion",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.785"
+        }
+      ],
+      "mapping_count": 18
+    },
+    {
+      "threat_id": "T002",
+      "threat_category": "Broken Access Control",
+      "threat_description": null,
+      "threat_statement": "An authenticated malicious user with valid Cognito tokens and knowledge of API structure, can manipulate API parameters such as vehicle GUIDs in DescribeVehicle or DeregisterVehicle requests to access or modify other users' resources (IDOR), which leads to unauthorized access to or deletion of vehicle registration records belonging to other fleet managers, resulting in reduced confidentiality and integrity of vehicle registration status and metadata in DynamoDB and registration documents in S3.",
+      "threat_action": "manipulate API parameters (vehicle GUIDs) in REST API calls to access or modify resources belonging to other users due to single-scope authorization for all APIs",
+      "threatSource": "authenticated malicious user",
+      "prerequisites": "valid Cognito authentication token and knowledge of or ability to enumerate vehicle GUIDs",
+      "threatAction": "manipulate API parameters (vehicle GUIDs) in REST API calls to access or modify resources belonging to other users due to single-scope authorization for all APIs",
+      "threatImpact": "unauthorized viewing, modification, or deletion of other users' vehicle registration records",
+      "impactedGoal": "confidentiality and integrity",
+      "impactedAssets": "vehicle registration documents in S3, vehicle registration status and metadata in DynamoDB, vehicle listing information in DynamoDB",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    GOAL[\"Unauthorized access to or deletion ofnother users vehicle registration recordsn(Reduced Confidentiality  Integrity)\"]\n    %% Facts / Initial Conditions\n    F1[\"Authenticated malicious usernwith valid Cognito token\"]\n    F2[\"Knowledge of or ability tonenumerate vehicle GUIDs\"]\n    F3[\"API uses single-scope authorizationnfor all endpoints  no per-resourcenownership validation\"]\n    %% Attack Path 1: Enumeration-based IDOR\n    A1[\"Enumerate vehicle GUIDs vianpredictable patterns, leaked IDs,nor ListVehicles response analysis\"]\n    A2[\"Craft DescribeVehicle requestnwith another users vehicle GUID\"]\n    A3[\"API Gateway passes request;nLambda authorizer validates tokennbut does NOT verify resource ownership\"]\n    A4[\"Retrieve victims vehicle registrationnstatus and metadata from DynamoDB\"]\n    A5[\"Retrieve victims registrationndocuments (pre-signed S3 URLs or direct read)\"]\n    G1[\"Confidentiality breach:nUnauthorized viewing of othernfleet managers vehicle data\"]\n    %% Attack Path 2: Destructive IDOR via DeregisterVehicle\n    A6[\"Craft DeregisterVehicle requestnwith another users vehicle GUID\"]\n    A7[\"API processes deletion withoutnverifying caller owns the target resource\"]\n    A8[\"Vehicle registration recordndeleted from DynamoDB\"]\n    A9[\"Associated registration documentnremoved or orphaned in S3\"]\n    G2[\"Integrity breach:nUnauthorized deletionmodificationnof other fleet managers records\"]\n    %% Attack Path 3: Bulk exploitation\n    A10[\"Automate GUID enumerationnand parameter manipulationnacross multiple API endpoints\"]\n    A11[\"Mass exfiltration of vehiclenlisting information from DynamoDB\"]\n    A12[\"Mass deletion of vehiclenregistrations across fleet managers\"]\n    G3[\"Large-scale data breach andnservice disruption across tenants\"]\n    %% Connections \u2014 Path 1 (Read IDOR)\n    F1 --> A1\n    F2 --> A1\n    A1 --> A2\n    F3 --> A3\n    A2 --> A3\n    A3 --> A4\n    A3 --> A5\n    A4 --> G1\n    A5 --> G1\n    %% Connections \u2014 Path 2 (Destructive IDOR)\n    F1 --> A6\n    F2 --> A6\n    A6 --> A7\n    F3 --> A7\n    A7 --> A8\n    A7 --> A9\n    A8 --> G2\n    A9 --> G2\n    %% Connections \u2014 Path 3 (Bulk exploitation)\n    A1 --> A10\n    A10 --> A11\n    A10 --> A12\n    A11 --> G3\n    A12 --> G3\n    %% Roll-up to top-level goal\n    G1 --> GOAL\n    G2 --> GOAL\n    G3 --> GOAL\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12 attack\n    class G1,G2,G3,GOAL goal\n    class F1,F2,F3 fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "GOAL",
+          "description": "Unauthorized access to or deletion ofnother users vehicle registration recordsn(Reduced Confidentiality  Integrity)"
+        },
+        {
+          "node_id": "F1",
+          "description": "Authenticated malicious usernwith valid Cognito token"
+        },
+        {
+          "node_id": "F2",
+          "description": "Knowledge of or ability tonenumerate vehicle GUIDs"
+        },
+        {
+          "node_id": "F3",
+          "description": "API uses single-scope authorizationnfor all endpoints  no per-resourcenownership validation"
+        },
+        {
+          "node_id": "A1",
+          "description": "Enumerate vehicle GUIDs vianpredictable patterns, leaked IDs,nor ListVehicles response analysis"
+        },
+        {
+          "node_id": "A2",
+          "description": "Craft DescribeVehicle requestnwith another users vehicle GUID"
+        },
+        {
+          "node_id": "A3",
+          "description": "API Gateway passes request;nLambda authorizer validates tokennbut does NOT verify resource ownership"
+        },
+        {
+          "node_id": "A4",
+          "description": "Retrieve victims vehicle registrationnstatus and metadata from DynamoDB"
+        },
+        {
+          "node_id": "A5",
+          "description": "Retrieve victims registrationndocuments (pre-signed S3 URLs or direct read)"
+        },
+        {
+          "node_id": "G1",
+          "description": "Confidentiality breach:nUnauthorized viewing of othernfleet managers vehicle data"
+        },
+        {
+          "node_id": "A6",
+          "description": "Craft DeregisterVehicle requestnwith another users vehicle GUID"
+        },
+        {
+          "node_id": "A7",
+          "description": "API processes deletion withoutnverifying caller owns the target resource"
+        },
+        {
+          "node_id": "A8",
+          "description": "Vehicle registration recordndeleted from DynamoDB"
+        },
+        {
+          "node_id": "A9",
+          "description": "Associated registration documentnremoved or orphaned in S3"
+        },
+        {
+          "node_id": "G2",
+          "description": "Integrity breach:nUnauthorized deletionmodificationnof other fleet managers records"
+        },
+        {
+          "node_id": "A10",
+          "description": "Automate GUID enumerationnand parameter manipulationnacross multiple API endpoints"
+        },
+        {
+          "node_id": "A11",
+          "description": "Mass exfiltration of vehiclenlisting information from DynamoDB"
+        },
+        {
+          "node_id": "A12",
+          "description": "Mass deletion of vehiclenregistrations across fleet managers"
+        },
+        {
+          "node_id": "G3",
+          "description": "Large-scale data breach andnservice disruption across tenants"
+        }
+      ],
+      "generated_content": "# Attack Tree: T002 - Insecure Direct Object Reference (IDOR) on Vehicle Registration API\n\n```mermaid\ngraph TD\n    GOAL[\"Unauthorized access to or deletion of\\nother users' vehicle registration records\\n(Reduced Confidentiality & Integrity)\"]\n\n    %% Facts / Initial Conditions\n    F1[\"Authenticated malicious user\\nwith valid Cognito token\"]\n    F2[\"Knowledge of or ability to\\nenumerate vehicle GUIDs\"]\n    F3[\"API uses single-scope authorization\\nfor all endpoints \u2014 no per-resource\\nownership validation\"]\n\n    %% Attack Path 1: Enumeration-based IDOR\n    A1[\"Enumerate vehicle GUIDs via\\npredictable patterns, leaked IDs,\\nor ListVehicles response analysis\"]\n    A2[\"Craft DescribeVehicle request\\nwith another user's vehicle GUID\"]\n    A3[\"API Gateway passes request;\\nLambda authorizer validates token\\nbut does NOT verify resource ownership\"]\n    A4[\"Retrieve victim's vehicle registration\\nstatus and metadata from DynamoDB\"]\n    A5[\"Retrieve victim's registration\\ndocuments (pre-signed S3 URLs or direct read)\"]\n    G1[\"Confidentiality breach:\\nUnauthorized viewing of other\\nfleet managers' vehicle data\"]\n\n    %% Attack Path 2: Destructive IDOR via DeregisterVehicle\n    A6[\"Craft DeregisterVehicle request\\nwith another user's vehicle GUID\"]\n    A7[\"API processes deletion without\\nverifying caller owns the target resource\"]\n    A8[\"Vehicle registration record\\ndeleted from DynamoDB\"]\n    A9[\"Associated registration document\\nremoved or orphaned in S3\"]\n    G2[\"Integrity breach:\\nUnauthorized deletion/modification\\nof other fleet managers' records\"]\n\n    %% Attack Path 3: Bulk exploitation\n    A10[\"Automate GUID enumeration\\nand parameter manipulation\\nacross multiple API endpoints\"]\n    A11[\"Mass exfiltration of vehicle\\nlisting information from DynamoDB\"]\n    A12[\"Mass deletion of vehicle\\nregistrations across fleet managers\"]\n    G3[\"Large-scale data breach and\\nservice disruption across tenants\"]\n\n    %% Connections \u2014 Path 1 (Read IDOR)\n    F1 --> A1\n    F2 --> A1\n    A1 --> A2\n    F3 --> A3\n    A2 --> A3\n    A3 --> A4\n    A3 --> A5\n    A4 --> G1\n    A5 --> G1\n\n    %% Connections \u2014 Path 2 (Destructive IDOR)\n    F1 --> A6\n    F2 --> A6\n    A6 --> A7\n    F3 --> A7\n    A7 --> A8\n    A7 --> A9\n    A8 --> G2\n    A9 --> G2\n\n    %% Connections \u2014 Path 3 (Bulk exploitation)\n    A1 --> A10\n    A10 --> A11\n    A10 --> A12\n    A11 --> G3\n    A12 --> G3\n\n    %% Roll-up to top-level goal\n    G1 --> GOAL\n    G2 --> GOAL\n    G3 --> GOAL\n\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n\n    class A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12 attack\n    class G1,G2,G3,GOAL goal\n    class F1,F2,F3 fact\n```\n\n## Attack Tree Summary\n\n| Element | Description |\n|---|---|\n| **Root Goal** | Unauthorized access/deletion of other users' vehicle registration records |\n| **Key Vulnerability** | Single-scope Cognito authorization with no per-resource ownership check (IDOR) |\n| **Path 1 \u2014 Read IDOR** | Attacker enumerates GUIDs \u2192 calls `DescribeVehicle` with victim's GUID \u2192 exfiltrates DynamoDB metadata and S3 documents (confidentiality breach) |\n| **Path 2 \u2014 Destructive IDOR** | Attacker calls `DeregisterVehicle` with victim's GUID \u2192 deletes DynamoDB records and orphans S3 documents (integrity breach) |\n| **Path 3 \u2014 Bulk Exploitation** | Attacker automates enumeration and parameter manipulation \u2192 mass exfiltration and mass deletion across tenants (combined large-scale breach) |\n\nAll three paths share the same foundational weakness: the Lambda/API Gateway authorization layer validates that the caller **is authenticated** but never validates that the caller **owns the requested resource**, making every vehicle GUID a valid attack surface for any authenticated user.\n",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1,
+          "mitigation": 0
+        },
+        "connection_count": 25,
+        "tech_mentions": 0
+      },
+      "ttc_mappings": [
+        {
+          "attack_step": "Retrieve victims vehicle registrationnstatus and metadata from DynamoDB",
+          "technique_id": "T1602",
+          "technique_name": "Data from Configuration Repository",
+          "confidence": 0.5200837117888139,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.520"
+        },
+        {
+          "attack_step": "API Gateway passes request;nLambda authorizer validates tokennbut does NOT verify resource ownership",
+          "technique_id": "T1528",
+          "technique_name": "Steal Application Access Token",
+          "confidence": 0.6574786365511418,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.657"
+        },
+        {
+          "attack_step": "Authenticated malicious usernwith valid Cognito token",
+          "technique_id": "T1550",
+          "technique_name": "Use Alternate Authentication Material",
+          "confidence": 0.7082301782702309,
+          "tactics": [
+            "defense-evasion",
+            "lateral-movement"
+          ],
+          "reasoning": "Embedding similarity: 0.708"
+        },
+        {
+          "attack_step": "Large-scale data breach andnservice disruption across tenants",
+          "technique_id": "T1565",
+          "technique_name": "Data Manipulation",
+          "confidence": 0.5471820217007789,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.547"
+        },
+        {
+          "attack_step": "API uses single-scope authorizationnfor all endpoints  no per-resourcenownership validation",
+          "technique_id": "T1528",
+          "technique_name": "Steal Application Access Token",
+          "confidence": 0.6493199877010539,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.649"
+        },
+        {
+          "attack_step": "Mass exfiltration of vehiclenlisting information from DynamoDB",
+          "technique_id": "T1119",
+          "technique_name": "Automated Collection",
+          "confidence": 0.6095277688994983,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.610"
+        },
+        {
+          "attack_step": "Enumerate vehicle GUIDs vianpredictable patterns, leaked IDs,nor ListVehicles response analysis",
+          "technique_id": "T1082",
+          "technique_name": "System Information Discovery",
+          "confidence": 0.5276145157962915,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.528"
+        },
+        {
+          "attack_step": "Knowledge of or ability tonenumerate vehicle GUIDs",
+          "technique_id": "T1082",
+          "technique_name": "System Information Discovery",
+          "confidence": 0.5783514971347598,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.578"
+        },
+        {
+          "attack_step": "Integrity breach:nUnauthorized deletionmodificationnof other fleet managers records",
+          "technique_id": "T1485.001",
+          "technique_name": "Lifecycle-Triggered Deletion",
+          "confidence": 0.6721162579420488,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.672"
+        },
+        {
+          "attack_step": "API processes deletion withoutnverifying caller owns the target resource",
+          "technique_id": "T1485.001",
+          "technique_name": "Lifecycle-Triggered Deletion",
+          "confidence": 0.7121828649796904,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.712"
+        },
+        {
+          "attack_step": "Unauthorized access to or deletion ofnother users vehicle registration recordsn(Reduced Confidentiality  Integrity)",
+          "technique_id": "T1492",
+          "technique_name": "Stored Data Manipulation",
+          "confidence": 0.6275208603709951,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.628"
+        },
+        {
+          "attack_step": "Craft DeregisterVehicle requestnwith another users vehicle GUID",
+          "technique_id": "T1070.009",
+          "technique_name": "Clear Persistence",
+          "confidence": 0.4494551786352794,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.449"
+        },
+        {
+          "attack_step": "Mass deletion of vehiclenregistrations across fleet managers",
+          "technique_id": "T1107",
+          "technique_name": "File Deletion",
+          "confidence": 0.6743751660539765,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.674"
+        },
+        {
+          "attack_step": "Retrieve victims registrationndocuments (pre-signed S3 URLs or direct read)",
+          "technique_id": "T1552.005",
+          "technique_name": "Cloud Instance Metadata API",
+          "confidence": 0.5474642786248003,
+          "tactics": [
+            "credential-access"
+          ],
+          "reasoning": "Embedding similarity: 0.547"
+        },
+        {
+          "attack_step": "Vehicle registration recordndeleted from DynamoDB",
+          "technique_id": "T1602",
+          "technique_name": "Data from Configuration Repository",
+          "confidence": 0.4881117830159035,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.488"
+        },
+        {
+          "attack_step": "Confidentiality breach:nUnauthorized viewing of othernfleet managers vehicle data",
+          "technique_id": "T1213",
+          "technique_name": "Data from Information Repositories",
+          "confidence": 0.5701921802429265,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.570"
+        },
+        {
+          "attack_step": "Craft DescribeVehicle requestnwith another users vehicle GUID",
+          "technique_id": "T1033",
+          "technique_name": "System Owner/User Discovery",
+          "confidence": 0.4731316067255621,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.473"
+        },
+        {
+          "attack_step": "Associated registration documentnremoved or orphaned in S3",
+          "technique_id": "T1485.001",
+          "technique_name": "Lifecycle-Triggered Deletion",
+          "confidence": 0.6778025196993552,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.678"
+        },
+        {
+          "attack_step": "Automate GUID enumerationnand parameter manipulationnacross multiple API endpoints",
+          "technique_id": "T1548.001",
+          "technique_name": "Setuid and Setgid",
+          "confidence": 0.4422746416190311,
+          "tactics": [
+            "privilege-escalation",
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.442"
+        }
+      ],
+      "mapping_count": 19
+    },
+    {
+      "threat_id": "T003",
+      "threat_category": "Insider Threat / Privilege Abuse",
+      "threat_description": null,
+      "threat_statement": "A compromised or malicious IAM principal with write/delete permissions on DynamoDB tables and S3 buckets, can delete or corrupt vehicle registration records and PDF documents, which leads to permanent loss of vehicle registration data and inability to prove registration status, resulting in reduced integrity and availability of vehicle registration documents in S3 and vehicle registration metadata in DynamoDB.",
+      "threat_action": "delete or corrupt vehicle registration records in DynamoDB and PDF documents in S3",
+      "threatSource": "compromised or malicious IAM principal",
+      "prerequisites": "IAM credentials with write or delete permissions on DynamoDB tables and S3 buckets within the same AWS account",
+      "threatAction": "delete or corrupt vehicle registration records in DynamoDB and PDF documents in S3",
+      "threatImpact": "permanent loss or corruption of vehicle registration data affecting fleet operations and billing integrity",
+      "impactedGoal": "integrity and availability",
+      "impactedAssets": "vehicle registration documents in S3, vehicle registration status and metadata in DynamoDB, billing and financial records related to vehicle registration",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    GOAL[\"Permanent losscorruption of vehicle registration datanand inability to prove registration statusn(Reduced Integrity  Availability)\"]\n    %% Facts - Initial Conditions\n    F1[\"Compromised or malicious IAM principalnwith active credentials\"]\n    F2[\"IAM policy grants writedelete permissionsnon DynamoDB tables and S3 buckets\"]\n    F3[\"DynamoDB tables contain vehicle registrationnmetadata, status, and billing records\"]\n    F4[\"S3 buckets contain vehicle registrationnPDF documents\"]\n    F5[\"No MFA or break-glass controlsnenforced on destructive operations\"]\n    %% Attack Path 1: Direct Deletion Campaign\n    F1 --> A1[\"Enumerate accessible DynamoDB tablesnand S3 buckets via API calls\"]\n    F2 --> A1\n    A1 --> A2[\"Identify vehicle registration tablesnand document buckets\"]\n    A2 --> A3_BRANCH[\"Launch parallel deletion attack\"]\n    A3_BRANCH --> A3A[\"BatchWriteItem  DeleteItem on DynamoDBnto mass-delete registration records\"]\n    F3 --> A3A\n    A3_BRANCH --> A3B[\"DeleteObjects  delete-bucket on S3nto remove registration PDF documents\"]\n    F4 --> A3B\n    A3A --> A7[\"Vehicle registration metadatanand billing records destroyed\"]\n    A3B --> A8[\"Vehicle registration PDF documentsnpermanently removed from S3\"]\n    A7 --> GOAL\n    A8 --> GOAL\n    %% Attack Path 2: Silent Data Corruption\n    A2 --> A4_BRANCH[\"Execute stealthy corruption campaign\"]\n    A4_BRANCH --> A4A[\"PutItem  UpdateItem on DynamoDB to overwritenregistration status fields with invalid data\"]\n    F3 --> A4A\n    A4_BRANCH --> A4B[\"PutObject to overwrite S3 PDFs withncorrupted or blank documents\"]\n    F4 --> A4B\n    A4A --> A9[\"Registration metadata silently corruptedn(status, dates, VINs altered)\"]\n    A4B --> A10[\"PDF documents replaced withninvalid or falsified files\"]\n    A9 --> A11[\"Billing and financial recordsnderived from metadata become unreliable\"]\n    A10 --> GOAL\n    A11 --> GOAL\n    %% Attack Path 3: Versioning & Backup Neutralization + Deletion\n    F5 --> A5[\"Disable S3 versioning onnregistration document buckets\"]\n    A2 --> A5\n    A5 --> A5B[\"Delete all existing object versionsnand delete markers\"]\n    A5B --> A3B\n    A2 --> A6[\"Delete DynamoDB backups andndisable point-in-time recovery\"]\n    A6 --> A6B[\"Disable PITR on registration tablesnto prevent future restoration\"]\n    A6B --> A3A\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class A1,A2,A3_BRANCH,A3A,A3B,A4_BRANCH,A4A,A4B,A5,A5B,A6,A6B attack\n    class GOAL,A7,A8,A9,A10,A11 goal\n    class F1,F2,F3,F4,F5 fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "GOAL",
+          "description": "Permanent losscorruption of vehicle registration datanand inability to prove registration statusn(Reduced Integrity  Availability)"
+        },
+        {
+          "node_id": "F1",
+          "description": "Compromised or malicious IAM principalnwith active credentials"
+        },
+        {
+          "node_id": "F2",
+          "description": "IAM policy grants writedelete permissionsnon DynamoDB tables and S3 buckets"
+        },
+        {
+          "node_id": "F3",
+          "description": "DynamoDB tables contain vehicle registrationnmetadata, status, and billing records"
+        },
+        {
+          "node_id": "F4",
+          "description": "S3 buckets contain vehicle registrationnPDF documents"
+        },
+        {
+          "node_id": "F5",
+          "description": "No MFA or break-glass controlsnenforced on destructive operations"
+        },
+        {
+          "node_id": "A1",
+          "description": "Enumerate accessible DynamoDB tablesnand S3 buckets via API calls"
+        },
+        {
+          "node_id": "A2",
+          "description": "Identify vehicle registration tablesnand document buckets"
+        },
+        {
+          "node_id": "A3_BRANCH",
+          "description": "Launch parallel deletion attack"
+        },
+        {
+          "node_id": "A3A",
+          "description": "BatchWriteItem  DeleteItem on DynamoDBnto mass-delete registration records"
+        },
+        {
+          "node_id": "A3B",
+          "description": "DeleteObjects  delete-bucket on S3nto remove registration PDF documents"
+        },
+        {
+          "node_id": "A7",
+          "description": "Vehicle registration metadatanand billing records destroyed"
+        },
+        {
+          "node_id": "A8",
+          "description": "Vehicle registration PDF documentsnpermanently removed from S3"
+        },
+        {
+          "node_id": "A4_BRANCH",
+          "description": "Execute stealthy corruption campaign"
+        },
+        {
+          "node_id": "A4A",
+          "description": "PutItem  UpdateItem on DynamoDB to overwritenregistration status fields with invalid data"
+        },
+        {
+          "node_id": "A4B",
+          "description": "PutObject to overwrite S3 PDFs withncorrupted or blank documents"
+        },
+        {
+          "node_id": "A9",
+          "description": "Registration metadata silently corruptedn(status, dates, VINs altered)"
+        },
+        {
+          "node_id": "A10",
+          "description": "PDF documents replaced withninvalid or falsified files"
+        },
+        {
+          "node_id": "A11",
+          "description": "Billing and financial recordsnderived from metadata become unreliable"
+        },
+        {
+          "node_id": "A5",
+          "description": "Disable S3 versioning onnregistration document buckets"
+        },
+        {
+          "node_id": "A5B",
+          "description": "Delete all existing object versionsnand delete markers"
+        },
+        {
+          "node_id": "A6",
+          "description": "Delete DynamoDB backups andndisable point-in-time recovery"
+        },
+        {
+          "node_id": "A6B",
+          "description": "Disable PITR on registration tablesnto prevent future restoration"
+        }
+      ],
+      "generated_content": "# Attack Tree: T003 - Compromised IAM Principal Destroys/Corrupts Vehicle Registration Data\n\n```mermaid\ngraph TD\n    GOAL[\"Permanent loss/corruption of vehicle registration data\\nand inability to prove registration status\\n(Reduced Integrity & Availability)\"]\n\n    %% Facts - Initial Conditions\n    F1[\"Compromised or malicious IAM principal\\nwith active credentials\"]\n    F2[\"IAM policy grants write/delete permissions\\non DynamoDB tables and S3 buckets\"]\n    F3[\"DynamoDB tables contain vehicle registration\\nmetadata, status, and billing records\"]\n    F4[\"S3 buckets contain vehicle registration\\nPDF documents\"]\n    F5[\"No MFA or break-glass controls\\nenforced on destructive operations\"]\n\n    %% Attack Path 1: Direct Deletion Campaign\n    F1 --> A1[\"Enumerate accessible DynamoDB tables\\nand S3 buckets via API calls\"]\n    F2 --> A1\n    A1 --> A2[\"Identify vehicle registration tables\\nand document buckets\"]\n\n    A2 --> A3_BRANCH[\"Launch parallel deletion attack\"]\n\n    A3_BRANCH --> A3A[\"BatchWriteItem / DeleteItem on DynamoDB\\nto mass-delete registration records\"]\n    F3 --> A3A\n    A3_BRANCH --> A3B[\"DeleteObjects / delete-bucket on S3\\nto remove registration PDF documents\"]\n    F4 --> A3B\n\n    A3A --> A7[\"Vehicle registration metadata\\nand billing records destroyed\"]\n    A3B --> A8[\"Vehicle registration PDF documents\\npermanently removed from S3\"]\n\n    A7 --> GOAL\n    A8 --> GOAL\n\n    %% Attack Path 2: Silent Data Corruption\n    A2 --> A4_BRANCH[\"Execute stealthy corruption campaign\"]\n\n    A4_BRANCH --> A4A[\"PutItem / UpdateItem on DynamoDB to overwrite\\nregistration status fields with invalid data\"]\n    F3 --> A4A\n    A4_BRANCH --> A4B[\"PutObject to overwrite S3 PDFs with\\ncorrupted or blank documents\"]\n    F4 --> A4B\n\n    A4A --> A9[\"Registration metadata silently corrupted\\n(status, dates, VINs altered)\"]\n    A4B --> A10[\"PDF documents replaced with\\ninvalid or falsified files\"]\n\n    A9 --> A11[\"Billing and financial records\\nderived from metadata become unreliable\"]\n    A10 --> GOAL\n    A11 --> GOAL\n\n    %% Attack Path 3: Versioning & Backup Neutralization + Deletion\n    F5 --> A5[\"Disable S3 versioning on\\nregistration document buckets\"]\n    A2 --> A5\n    A5 --> A5B[\"Delete all existing object versions\\nand delete markers\"]\n    A5B --> A3B\n\n    A2 --> A6[\"Delete DynamoDB backups and\\ndisable point-in-time recovery\"]\n    A6 --> A6B[\"Disable PITR on registration tables\\nto prevent future restoration\"]\n    A6B --> A3A\n\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n\n    class A1,A2,A3_BRANCH,A3A,A3B,A4_BRANCH,A4A,A4B,A5,A5B,A6,A6B attack\n    class GOAL,A7,A8,A9,A10,A11 goal\n    class F1,F2,F3,F4,F5 fact\n```\n\n## Attack Tree Summary\n\n| Element | Description |\n|---|---|\n| **Threat Actor** | Compromised or malicious IAM principal with write/delete permissions |\n| **Root Goal** | Permanent loss/corruption of vehicle registration data across S3 and DynamoDB |\n\n### Three Attack Paths Identified:\n\n1. **Path 1 \u2014 Direct Mass Deletion**: The attacker enumerates resources, then executes bulk `DeleteItem`/`BatchWriteItem` operations against DynamoDB and `DeleteObjects` against S3 to permanently remove all registration records and PDF documents in a rapid destructive campaign.\n\n2. **Path 2 \u2014 Silent Data Corruption**: Instead of deleting, the attacker uses `UpdateItem`/`PutItem` on DynamoDB and `PutObject` on S3 to overwrite registration metadata with invalid values and replace PDFs with corrupted files. This is harder to detect and poisons downstream billing and fleet operations before discovery.\n\n3. **Path 3 \u2014 Backup Neutralization + Deletion**: The attacker first disables S3 versioning and deletes all object versions, then disables DynamoDB Point-in-Time Recovery and removes existing backups \u2014 ensuring no recovery path exists before executing the destructive deletion from Path 1. This makes the data loss truly permanent.\n",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 1 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 1,
+          "goal": 1,
+          "fact": 1,
+          "mitigation": 0
+        },
+        "connection_count": 29,
+        "tech_mentions": 0
+      },
+      "ttc_mappings": [
+        {
+          "attack_step": "Compromised or malicious IAM principalnwith active credentials",
+          "technique_id": "T1556",
+          "technique_name": "Modify Authentication Process",
+          "confidence": 0.827178255651658,
+          "tactics": [
+            "credential-access",
+            "defense-evasion",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.827"
+        },
+        {
+          "attack_step": "PutItem  UpdateItem on DynamoDB to overwritenregistration status fields with invalid data",
+          "technique_id": "T1485.001",
+          "technique_name": "Lifecycle-Triggered Deletion",
+          "confidence": 0.6446083010642025,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.645"
+        },
+        {
+          "attack_step": "Delete DynamoDB backups andndisable point-in-time recovery",
+          "technique_id": "T1485.001",
+          "technique_name": "Lifecycle-Triggered Deletion",
+          "confidence": 0.777020389189564,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.777"
+        },
+        {
+          "attack_step": "BatchWriteItem  DeleteItem on DynamoDBnto mass-delete registration records",
+          "technique_id": "T1485.001",
+          "technique_name": "Lifecycle-Triggered Deletion",
+          "confidence": 0.71618415604362,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.716"
+        },
+        {
+          "attack_step": "PDF documents replaced withninvalid or falsified files",
+          "technique_id": "T1036.008",
+          "technique_name": "Masquerade File Type",
+          "confidence": 0.5556447762094197,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.556"
+        },
+        {
+          "attack_step": "DeleteObjects  delete-bucket on S3nto remove registration PDF documents",
+          "technique_id": "T1485.001",
+          "technique_name": "Lifecycle-Triggered Deletion",
+          "confidence": 0.9194607703093887,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.919"
+        },
+        {
+          "attack_step": "Vehicle registration PDF documentsnpermanently removed from S3",
+          "technique_id": "T1020",
+          "technique_name": "Automated Exfiltration",
+          "confidence": 0.6373141693219084,
+          "tactics": [
+            "exfiltration"
+          ],
+          "reasoning": "Embedding similarity: 0.637"
+        },
+        {
+          "attack_step": "Delete all existing object versionsnand delete markers",
+          "technique_id": "T1070.004",
+          "technique_name": "File Deletion",
+          "confidence": 0.7262859731929913,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.726"
+        },
+        {
+          "attack_step": "Execute stealthy corruption campaign",
+          "technique_id": "T1565",
+          "technique_name": "Data Manipulation",
+          "confidence": 0.5180674507997853,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.518"
+        },
+        {
+          "attack_step": "Disable S3 versioning onnregistration document buckets",
+          "technique_id": "T1485.001",
+          "technique_name": "Lifecycle-Triggered Deletion",
+          "confidence": 0.9018748960755242,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.902"
+        },
+        {
+          "attack_step": "DynamoDB tables contain vehicle registrationnmetadata, status, and billing records",
+          "technique_id": "T1119",
+          "technique_name": "Automated Collection",
+          "confidence": 0.5664119589544407,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.566"
+        },
+        {
+          "attack_step": "S3 buckets contain vehicle registrationnPDF documents",
+          "technique_id": "T1119",
+          "technique_name": "Automated Collection",
+          "confidence": 0.7142246119853004,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.714"
+        },
+        {
+          "attack_step": "Disable PITR on registration tablesnto prevent future restoration",
+          "technique_id": "T1070.009",
+          "technique_name": "Clear Persistence",
+          "confidence": 0.7246546368130489,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.725"
+        },
+        {
+          "attack_step": "Permanent losscorruption of vehicle registration datanand inability to prove registration statusn(Reduced Integrity  Availability)",
+          "technique_id": "T1485",
+          "technique_name": "Data Destruction",
+          "confidence": 0.52474077711598,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.525"
+        },
+        {
+          "attack_step": "PutObject to overwrite S3 PDFs withncorrupted or blank documents",
+          "technique_id": "T1485",
+          "technique_name": "Data Destruction",
+          "confidence": 0.6293731331986103,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.629"
+        },
+        {
+          "attack_step": "Vehicle registration metadatanand billing records destroyed",
+          "technique_id": "T1485",
+          "technique_name": "Data Destruction",
+          "confidence": 0.564054507652372,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.564"
+        },
+        {
+          "attack_step": "IAM policy grants writedelete permissionsnon DynamoDB tables and S3 buckets",
+          "technique_id": "T1485.001",
+          "technique_name": "Lifecycle-Triggered Deletion",
+          "confidence": 0.8430307078910925,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.843"
+        },
+        {
+          "attack_step": "No MFA or break-glass controlsnenforced on destructive operations",
+          "technique_id": "T1531",
+          "technique_name": "Account Access Removal",
+          "confidence": 0.5714715229928797,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.571"
+        },
+        {
+          "attack_step": "Launch parallel deletion attack",
+          "technique_id": "T1070.004",
+          "technique_name": "File Deletion",
+          "confidence": 0.739408599206044,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.739"
+        },
+        {
+          "attack_step": "Enumerate accessible DynamoDB tablesnand S3 buckets via API calls",
+          "technique_id": "T1619",
+          "technique_name": "Cloud Storage Object Discovery",
+          "confidence": 0.7482328113057324,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.748"
+        },
+        {
+          "attack_step": "Registration metadata silently corruptedn(status, dates, VINs altered)",
+          "technique_id": "T1207",
+          "technique_name": "Rogue Domain Controller",
+          "confidence": 0.5580075091435599,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.558"
+        },
+        {
+          "attack_step": "Billing and financial recordsnderived from metadata become unreliable",
+          "technique_id": "T1565.001",
+          "technique_name": "Stored Data Manipulation",
+          "confidence": 0.4638353621286815,
+          "tactics": [
+            "impact"
+          ],
+          "reasoning": "Embedding similarity: 0.464"
+        },
+        {
+          "attack_step": "Identify vehicle registration tablesnand document buckets",
+          "technique_id": "T1119",
+          "technique_name": "Automated Collection",
+          "confidence": 0.6251106633181458,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.625"
+        }
+      ],
+      "mapping_count": 23
+    },
+    {
+      "threat_id": "T004",
+      "threat_category": "Privilege Escalation",
+      "threat_description": null,
+      "threat_statement": "An internal developer or compromised CI/CD pipeline with IAM permissions to create Lambda functions, can deploy a malicious Lambda function using an existing overly-permissive execution role, which leads to unauthorized access to DynamoDB data, S3 objects, and other AWS resources accessible by that role, resulting in reduced confidentiality of vehicle registration documents, vehicle metadata, and user data.",
+      "threat_action": "deploy a malicious Lambda function that assumes an existing execution role with broad permissions to exfiltrate data from DynamoDB and S3",
+      "threatSource": "internal developer or compromised CI/CD pipeline",
+      "prerequisites": "IAM permissions to create or update Lambda functions and knowledge of existing Lambda execution role ARNs",
+      "threatAction": "deploy a malicious Lambda function that assumes an existing execution role with broad permissions to exfiltrate data from DynamoDB and S3",
+      "threatImpact": "unauthorized access to all data accessible by the Lambda execution role including vehicle records and registration documents",
+      "impactedGoal": "confidentiality",
+      "impactedAssets": "vehicle registration documents in S3, vehicle registration status and metadata in DynamoDB, Lambda function execution logs",
+      "priority": "High",
+      "mermaid_code": "graph TD\n    GOAL[\"Unauthorized access to vehicle registration documents,nvehicle metadata, and user datan(Reduced Confidentiality)\"]\n    %% Path 1: Malicious Insider Developer\n    P1_FACT1[\"Internal developer with IAM permissionsnto createupdate Lambda functions\"]\n    P1_FACT2[\"Overly-permissive Lambda execution rolenexists in AWS account\"]\n    P1_A1[\"Enumerate existing IAM rolesnand identify overly-permissive execution roles\"]\n    P1_A2[\"Inspect role policies to confirm accessnto DynamoDB tables and S3 buckets\"]\n    P1_A3[\"Author malicious Lambda function codenwith data exfiltration logic\"]\n    P1_A4[\"Deploy malicious Lambda functionnassigned to the overly-permissive role\"]\n    P1_A5[\"Invoke Lambda function to query DynamoDBnfor vehicle registration status and metadata\"]\n    P1_A6[\"Invoke Lambda function to list and downloadnvehicle registration documents from S3\"]\n    P1_A7[\"Exfiltrate data to external endpointnor attacker-controlled S3 bucket\"]\n    P1_FACT1 --> P1_A1\n    P1_FACT2 --> P1_A1\n    P1_A1 --> P1_A2\n    P1_A2 --> P1_A3\n    P1_A3 --> P1_A4\n    P1_A4 --> P1_A5\n    P1_A4 --> P1_A6\n    P1_A5 --> P1_A7\n    P1_A6 --> P1_A7\n    P1_A7 --> GOAL\n    %% Path 2: Compromised CI/CD Pipeline\n    P2_FACT1[\"CICD pipeline with IAM permissionsnto deploy Lambda functions\"]\n    P2_FACT2[\"Pipeline credentials or service accountnaccessible to attacker\"]\n    P2_A1[\"Compromise CICD pipeline vianpoisoned dependency, repo injection,nor stolen service account credentials\"]\n    P2_A2[\"Modify pipeline configuration or injectnmalicious build stage\"]\n    P2_A3[\"Enumerate available Lambda executionnrole ARNs from pipeline environmentnor AWS account\"]\n    P2_A4[\"Deploy trojanized Lambda functionnthrough compromised pipelinenusing overly-permissive role ARN\"]\n    P2_A5[\"Trigger Lambda execution vianAPI Gateway, event source,nor direct invocation\"]\n    P2_A6_DDB[\"Lambda reads all vehicle registrationnrecords and user data from DynamoDB\"]\n    P2_A6_S3[\"Lambda downloads vehicle registrationndocuments and sensitive objects from S3\"]\n    P2_A7[\"Exfiltrate harvested data vianHTTPS callback, DNS tunneling,nor cross-account S3 transfer\"]\n    P2_FACT1 --> P2_A1\n    P2_FACT2 --> P2_A1\n    P2_A1 --> P2_A2\n    P2_A2 --> P2_A3\n    P2_A3 --> P2_A4\n    P2_A4 --> P2_A5\n    P2_A5 --> P2_A6_DDB\n    P2_A5 --> P2_A6_S3\n    P2_A6_DDB --> P2_A7\n    P2_A6_S3 --> P2_A7\n    P2_A7 --> GOAL\n    %% Styling\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n    class P1_A1,P1_A2,P1_A3,P1_A4,P1_A5,P1_A6,P1_A7 attack\n    class P2_A1,P2_A2,P2_A3,P2_A4,P2_A5,P2_A6_DDB,P2_A6_S3,P2_A7 attack\n    class GOAL goal\n    class P1_FACT1,P1_FACT2,P2_FACT1,P2_FACT2 fact\n    classDef mitigation fill:#ccffcc",
+      "attack_steps": [
+        {
+          "node_id": "GOAL",
+          "description": "Unauthorized access to vehicle registration documents,nvehicle metadata, and user datan(Reduced Confidentiality)"
+        },
+        {
+          "node_id": "P1_FACT1",
+          "description": "Internal developer with IAM permissionsnto createupdate Lambda functions"
+        },
+        {
+          "node_id": "P1_FACT2",
+          "description": "Overly-permissive Lambda execution rolenexists in AWS account"
+        },
+        {
+          "node_id": "P1_A1",
+          "description": "Enumerate existing IAM rolesnand identify overly-permissive execution roles"
+        },
+        {
+          "node_id": "P1_A2",
+          "description": "Inspect role policies to confirm accessnto DynamoDB tables and S3 buckets"
+        },
+        {
+          "node_id": "P1_A3",
+          "description": "Author malicious Lambda function codenwith data exfiltration logic"
+        },
+        {
+          "node_id": "P1_A4",
+          "description": "Deploy malicious Lambda functionnassigned to the overly-permissive role"
+        },
+        {
+          "node_id": "P1_A5",
+          "description": "Invoke Lambda function to query DynamoDBnfor vehicle registration status and metadata"
+        },
+        {
+          "node_id": "P1_A6",
+          "description": "Invoke Lambda function to list and downloadnvehicle registration documents from S3"
+        },
+        {
+          "node_id": "P1_A7",
+          "description": "Exfiltrate data to external endpointnor attacker-controlled S3 bucket"
+        },
+        {
+          "node_id": "P2_FACT1",
+          "description": "CICD pipeline with IAM permissionsnto deploy Lambda functions"
+        },
+        {
+          "node_id": "P2_FACT2",
+          "description": "Pipeline credentials or service accountnaccessible to attacker"
+        },
+        {
+          "node_id": "P2_A1",
+          "description": "Compromise CICD pipeline vianpoisoned dependency, repo injection,nor stolen service account credentials"
+        },
+        {
+          "node_id": "P2_A2",
+          "description": "Modify pipeline configuration or injectnmalicious build stage"
+        },
+        {
+          "node_id": "P2_A3",
+          "description": "Enumerate available Lambda executionnrole ARNs from pipeline environmentnor AWS account"
+        },
+        {
+          "node_id": "P2_A4",
+          "description": "Deploy trojanized Lambda functionnthrough compromised pipelinenusing overly-permissive role ARN"
+        },
+        {
+          "node_id": "P2_A5",
+          "description": "Trigger Lambda execution vianAPI Gateway, event source,nor direct invocation"
+        },
+        {
+          "node_id": "P2_A6_DDB",
+          "description": "Lambda reads all vehicle registrationnrecords and user data from DynamoDB"
+        },
+        {
+          "node_id": "P2_A6_S3",
+          "description": "Lambda downloads vehicle registrationndocuments and sensitive objects from S3"
+        },
+        {
+          "node_id": "P2_A7",
+          "description": "Exfiltrate harvested data vianHTTPS callback, DNS tunneling,nor cross-account S3 transfer"
+        }
+      ],
+      "generated_content": "# Attack Tree: T004 - Privilege Escalation via Malicious Lambda Deployment\n\n## Threat Summary\nAn internal developer or compromised CI/CD pipeline deploys a malicious Lambda function using an overly-permissive execution role to exfiltrate sensitive vehicle registration data from DynamoDB and S3.\n\n```mermaid\ngraph TD\n    GOAL[\"Unauthorized access to vehicle registration documents,\\nvehicle metadata, and user data\\n(Reduced Confidentiality)\"]\n\n    %% Path 1: Malicious Insider Developer\n    P1_FACT1[\"Internal developer with IAM permissions\\nto create/update Lambda functions\"]\n    P1_FACT2[\"Overly-permissive Lambda execution role\\nexists in AWS account\"]\n    P1_A1[\"Enumerate existing IAM roles\\nand identify overly-permissive execution roles\"]\n    P1_A2[\"Inspect role policies to confirm access\\nto DynamoDB tables and S3 buckets\"]\n    P1_A3[\"Author malicious Lambda function code\\nwith data exfiltration logic\"]\n    P1_A4[\"Deploy malicious Lambda function\\nassigned to the overly-permissive role\"]\n    P1_A5[\"Invoke Lambda function to query DynamoDB\\nfor vehicle registration status and metadata\"]\n    P1_A6[\"Invoke Lambda function to list and download\\nvehicle registration documents from S3\"]\n    P1_A7[\"Exfiltrate data to external endpoint\\nor attacker-controlled S3 bucket\"]\n\n    P1_FACT1 --> P1_A1\n    P1_FACT2 --> P1_A1\n    P1_A1 --> P1_A2\n    P1_A2 --> P1_A3\n    P1_A3 --> P1_A4\n    P1_A4 --> P1_A5\n    P1_A4 --> P1_A6\n    P1_A5 --> P1_A7\n    P1_A6 --> P1_A7\n    P1_A7 --> GOAL\n\n    %% Path 2: Compromised CI/CD Pipeline\n    P2_FACT1[\"CI/CD pipeline with IAM permissions\\nto deploy Lambda functions\"]\n    P2_FACT2[\"Pipeline credentials or service account\\naccessible to attacker\"]\n    P2_A1[\"Compromise CI/CD pipeline via\\npoisoned dependency, repo injection,\\nor stolen service account credentials\"]\n    P2_A2[\"Modify pipeline configuration or inject\\nmalicious build stage\"]\n    P2_A3[\"Enumerate available Lambda execution\\nrole ARNs from pipeline environment\\nor AWS account\"]\n    P2_A4[\"Deploy trojanized Lambda function\\nthrough compromised pipeline\\nusing overly-permissive role ARN\"]\n    P2_A5[\"Trigger Lambda execution via\\nAPI Gateway, event source,\\nor direct invocation\"]\n    P2_A6_DDB[\"Lambda reads all vehicle registration\\nrecords and user data from DynamoDB\"]\n    P2_A6_S3[\"Lambda downloads vehicle registration\\ndocuments and sensitive objects from S3\"]\n    P2_A7[\"Exfiltrate harvested data via\\nHTTPS callback, DNS tunneling,\\nor cross-account S3 transfer\"]\n\n    P2_FACT1 --> P2_A1\n    P2_FACT2 --> P2_A1\n    P2_A1 --> P2_A2\n    P2_A2 --> P2_A3\n    P2_A3 --> P2_A4\n    P2_A4 --> P2_A5\n    P2_A5 --> P2_A6_DDB\n    P2_A5 --> P2_A6_S3\n    P2_A6_DDB --> P2_A7\n    P2_A6_S3 --> P2_A7\n    P2_A7 --> GOAL\n\n    %% Styling\n    classDef attack fill:#ffcccc\n    classDef goal fill:#ffcc99\n    classDef fact fill:#ccccff\n\n    class P1_A1,P1_A2,P1_A3,P1_A4,P1_A5,P1_A6,P1_A7 attack\n    class P2_A1,P2_A2,P2_A3,P2_A4,P2_A5,P2_A6_DDB,P2_A6_S3,P2_A7 attack\n    class GOAL goal\n    class P1_FACT1,P1_FACT2,P2_FACT1,P2_FACT2 fact\n```\n\n## Attack Path Descriptions\n\n### Path 1 \u2014 Malicious Insider Developer\nA developer with legitimate IAM permissions to create Lambda functions discovers overly-permissive execution roles in the account, crafts a malicious Lambda function that reads DynamoDB tables and S3 buckets containing vehicle registration data, and exfiltrates the data to an external location.\n\n### Path 2 \u2014 Compromised CI/CD Pipeline\nAn attacker compromises the CI/CD pipeline (via dependency poisoning, repository injection, or stolen credentials), injects a malicious Lambda deployment stage that leverages an existing overly-permissive execution role, and uses the deployed function to bulk-harvest and exfiltrate vehicle records and registration documents from both DynamoDB and S3.\n",
+      "validation": {
+        "is_valid": true,
+        "errors": [],
+        "warnings": [
+          "Only 2 attack nodes (recommended: 5+)",
+          "Only 1 fact nodes (recommended: 3+)"
+        ],
+        "node_counts": {
+          "attack": 2,
+          "goal": 1,
+          "fact": 1,
+          "mitigation": 0
+        },
+        "connection_count": 21,
+        "tech_mentions": 0
+      },
+      "ttc_mappings": [
+        {
+          "attack_step": "Exfiltrate data to external endpointnor attacker-controlled S3 bucket",
+          "technique_id": "T1567.002",
+          "technique_name": "Exfiltration to Cloud Storage",
+          "confidence": 0.793831362941083,
+          "tactics": [
+            "exfiltration"
+          ],
+          "reasoning": "Embedding similarity: 0.794"
+        },
+        {
+          "attack_step": "CICD pipeline with IAM permissionsnto deploy Lambda functions",
+          "technique_id": "T1648",
+          "technique_name": "Serverless Execution",
+          "confidence": 0.6613016938291764,
+          "tactics": [
+            "execution"
+          ],
+          "reasoning": "Embedding similarity: 0.661"
+        },
+        {
+          "attack_step": "Invoke Lambda function to list and downloadnvehicle registration documents from S3",
+          "technique_id": "T1119",
+          "technique_name": "Automated Collection",
+          "confidence": 0.6491597955134473,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.649"
+        },
+        {
+          "attack_step": "Unauthorized access to vehicle registration documents,nvehicle metadata, and user datan(Reduced Confidentiality)",
+          "technique_id": "T1530",
+          "technique_name": "Data from Cloud Storage",
+          "confidence": 0.5441972212589347,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.544"
+        },
+        {
+          "attack_step": "Pipeline credentials or service accountnaccessible to attacker",
+          "technique_id": "T1556",
+          "technique_name": "Modify Authentication Process",
+          "confidence": 0.8272206856768325,
+          "tactics": [
+            "credential-access",
+            "defense-evasion",
+            "persistence"
+          ],
+          "reasoning": "Embedding similarity: 0.827"
+        },
+        {
+          "attack_step": "Lambda downloads vehicle registrationndocuments and sensitive objects from S3",
+          "technique_id": "T1119",
+          "technique_name": "Automated Collection",
+          "confidence": 0.594481047830941,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.594"
+        },
+        {
+          "attack_step": "Internal developer with IAM permissionsnto createupdate Lambda functions",
+          "technique_id": "T1648",
+          "technique_name": "Serverless Execution",
+          "confidence": 0.6870863663869486,
+          "tactics": [
+            "execution"
+          ],
+          "reasoning": "Embedding similarity: 0.687"
+        },
+        {
+          "attack_step": "Deploy trojanized Lambda functionnthrough compromised pipelinenusing overly-permissive role ARN",
+          "technique_id": "T1218.009",
+          "technique_name": "Regsvcs/Regasm",
+          "confidence": 0.5621361693757091,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.562"
+        },
+        {
+          "attack_step": "Exfiltrate harvested data vianHTTPS callback, DNS tunneling,nor cross-account S3 transfer",
+          "technique_id": "T1048",
+          "technique_name": "Exfiltration Over Alternative Protocol",
+          "confidence": 0.9304687250936462,
+          "tactics": [
+            "exfiltration"
+          ],
+          "reasoning": "Embedding similarity: 0.930"
+        },
+        {
+          "attack_step": "Inspect role policies to confirm accessnto DynamoDB tables and S3 buckets",
+          "technique_id": "T1069.003",
+          "technique_name": "Cloud Groups",
+          "confidence": 0.8273915980896981,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.827"
+        },
+        {
+          "attack_step": "Overly-permissive Lambda execution rolenexists in AWS account",
+          "technique_id": "T1548.005",
+          "technique_name": "Temporary Elevated Cloud Access",
+          "confidence": 0.9133817483248016,
+          "tactics": [
+            "privilege-escalation",
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.913"
+        },
+        {
+          "attack_step": "Trigger Lambda execution vianAPI Gateway, event source,nor direct invocation",
+          "technique_id": "T1055.004",
+          "technique_name": "Asynchronous Procedure Call",
+          "confidence": 0.42436881173453694,
+          "tactics": [
+            "defense-evasion",
+            "privilege-escalation"
+          ],
+          "reasoning": "Embedding similarity: 0.424"
+        },
+        {
+          "attack_step": "Deploy malicious Lambda functionnassigned to the overly-permissive role",
+          "technique_id": "T1218.009",
+          "technique_name": "Regsvcs/Regasm",
+          "confidence": 0.5535679509199115,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.554"
+        },
+        {
+          "attack_step": "Invoke Lambda function to query DynamoDBnfor vehicle registration status and metadata",
+          "technique_id": "T1619",
+          "technique_name": "Cloud Storage Object Discovery",
+          "confidence": 0.44844352260857273,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.448"
+        },
+        {
+          "attack_step": "Author malicious Lambda function codenwith data exfiltration logic",
+          "technique_id": "T1567.001",
+          "technique_name": "Exfiltration to Code Repository",
+          "confidence": 0.6515151225053449,
+          "tactics": [
+            "exfiltration"
+          ],
+          "reasoning": "Embedding similarity: 0.652"
+        },
+        {
+          "attack_step": "Modify pipeline configuration or injectnmalicious build stage",
+          "technique_id": "T1127.001",
+          "technique_name": "MSBuild",
+          "confidence": 0.6743996341018732,
+          "tactics": [
+            "defense-evasion"
+          ],
+          "reasoning": "Embedding similarity: 0.674"
+        },
+        {
+          "attack_step": "Enumerate existing IAM rolesnand identify overly-permissive execution roles",
+          "technique_id": "T1069.001",
+          "technique_name": "Local Groups",
+          "confidence": 0.7034968577291301,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.703"
+        },
+        {
+          "attack_step": "Enumerate available Lambda executionnrole ARNs from pipeline environmentnor AWS account",
+          "technique_id": "T1069.003",
+          "technique_name": "Cloud Groups",
+          "confidence": 0.5860582547165756,
+          "tactics": [
+            "discovery"
+          ],
+          "reasoning": "Embedding similarity: 0.586"
+        },
+        {
+          "attack_step": "Compromise CICD pipeline vianpoisoned dependency, repo injection,nor stolen service account credentials",
+          "technique_id": "T1677",
+          "technique_name": "Poisoned Pipeline Execution",
+          "confidence": 0.6373336153185412,
+          "tactics": [
+            "execution"
+          ],
+          "reasoning": "Embedding similarity: 0.637"
+        },
+        {
+          "attack_step": "Lambda reads all vehicle registrationnrecords and user data from DynamoDB",
+          "technique_id": "T1119",
+          "technique_name": "Automated Collection",
+          "confidence": 0.46245429383990616,
+          "tactics": [
+            "collection"
+          ],
+          "reasoning": "Embedding similarity: 0.462"
+        }
+      ],
+      "mapping_count": 20
+    }
+  ],
+  "mapping_summary": {
+    "total_mappings": 80,
+    "successful_mappings": 80,
+    "threshold_used": 0.3,
+    "model": "local"
+  }
+}

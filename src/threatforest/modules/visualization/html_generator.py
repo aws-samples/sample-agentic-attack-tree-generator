@@ -49,12 +49,12 @@ class HTMLGenerator:
         
         # Initialize mitigation mapper to fetch mitigations
         from threatforest.config import config
-        from threatforest.modules.workflow.ttc_mappings import MitigationMapper
         mitigation_mapper = None
         try:
+            from threatforest.modules.workflow.ttc_mappings import MitigationMapper
             if config.stix_bundle_path and Path(config.stix_bundle_path).exists():
                 mitigation_mapper = MitigationMapper(str(config.stix_bundle_path))
-        except Exception as e:
+        except (ImportError, Exception) as e:
             self.logger.warning(f"Could not initialize mitigation mapper: {e}")
         
         # Convert structured data to visualization format

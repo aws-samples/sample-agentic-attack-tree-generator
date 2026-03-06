@@ -1,0 +1,179 @@
+%==============================================================================
+\section{Evaluation Framework}
+\label{sec:framework}
+%==============================================================================
+
+Our framework decomposes threat modeling evaluation into three independently measurable capabilities, each with automated metrics and SME scoring dimensions. The framework is implemented as a tracing infrastructure that captures evaluation data in production, enabling both retrospective analysis and forward-looking optimization.
+
+\subsection{Design Principles}
+
+\begin{enumerate}
+    \item \textbf{Capability separation.} Threat statement generation, attack tree generation, and TTP matching are evaluated independently with capability-specific metrics.
+    \item \textbf{Standardized scales.} All SME scores use a uniform 5-point categorical scale (Table~\ref{tab:scale}) to reduce cognitive load and improve inter-rater consistency.
+    \item \textbf{Hybrid measurement.} Automated metrics provide scalable, deterministic baselines; SME scores capture quality dimensions that resist automation.
+    \item \textbf{Optimization-ready data.} Every evaluation record is structured for direct consumption by prompt optimization frameworks.
+\end{enumerate}
+
+\begin{table}[t]
+\centering
+\caption{Standardized 5-point categorical scoring scale used across all evaluation dimensions.}
+\label{tab:scale}
+\begin{tabular}{@{}llr@{}}
+\toprule
+\textbf{Category} & \textbf{Description} & \textbf{Numeric Value} \\
+\midrule
+Excellent & Exceptional quality, no issues & 1.00 \\
+Good & Above average, minor issues & 0.75 \\
+Acceptable & Meets minimum requirements & 0.50 \\
+Poor & Below expectations, significant issues & 0.25 \\
+Unacceptable & Fails to meet requirements & 0.00 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%----------------------------------------------------------------------
+\subsection{Capability 1: Threat Statement Evaluation}
+\label{sec:threat-eval}
+%----------------------------------------------------------------------
+
+Threat statement evaluation addresses two distinct scenarios:
+
+\textbf{Generation mode.} When the system generates new threats from context, we evaluate:
+\begin{itemize}
+    \item \textit{Overall quality} --- holistic assessment of the generated threat set
+    \item \textit{Relevance to context} --- whether threats match the application's technology stack, architecture, and deployment model
+    \item \textit{Completeness} --- coverage across threat categories (STRIDE, CIA triad)
+    \item \textit{Technical accuracy} --- realism of threat sources, actions, and impacts
+    \item \textit{Hallucination score} --- absence of fabricated content
+\end{itemize}
+
+\textbf{Validation mode.} When the system processes existing threat statements, we additionally measure:
+\begin{equation}
+\text{hallucination\_rate} = 1.0 - \frac{|\text{invented threats}|}{|\text{total output threats}|}
+\end{equation}
+\begin{equation}
+\text{preservation\_score} = \frac{|\text{preserved threats}|}{|\text{total input threats}|}
+\end{equation}
+
+These metrics detect whether the system faithfully reproduces provided threats or introduces hallucinated content---a critical failure mode for validation workflows.
+
+%----------------------------------------------------------------------
+\subsection{Capability 2: Attack Tree Evaluation}
+\label{sec:tree-eval}
+%----------------------------------------------------------------------
+
+Attack tree evaluation combines automated structural metrics with SME quality scores.
+
+\subsubsection{Automated Metrics}
+
+We compute four structural metrics directly from the generated Mermaid output:
+
+\begin{itemize}
+    \item \textbf{Node count.} Total nodes in the attack tree, indicating complexity.
+    \item \textbf{Path count.} Number of distinct root-to-leaf attack paths.
+    \item \textbf{Max depth.} Longest path from root to leaf, indicating attack chain length.
+    \item \textbf{Branching factor.} Average children per non-leaf node.
+\end{itemize}
+
+\subsubsection{Phase Coverage}
+
+We detect MITRE ATT\&CK phases present in the attack tree by matching node descriptions against a keyword dictionary covering 12 standard phases (reconnaissance through impact). The phase coverage score is:
+\begin{equation}
+\text{phase\_coverage} = \frac{|\text{detected phases}|}{|\text{expected phases}|}
+\end{equation}
+
+where expected phases are determined by the threat context. Our keyword dictionary maps 130+ terms to the 12 ATT\&CK tactics, enabling automated detection without requiring explicit phase labels in the generated output.
+
+\subsubsection{SME Score Dimensions}
+
+SMEs evaluate attack trees on six dimensions using the standardized scale:
+
+\begin{table}[t]
+\centering
+\caption{Attack tree SME evaluation dimensions.}
+\label{tab:tree-scores}
+\begin{tabular}{@{}lp{7.5cm}@{}}
+\toprule
+\textbf{Dimension} & \textbf{Description} \\
+\midrule
+Overall quality & Holistic assessment of the attack tree \\
+Structural quality & Depth, branching, organization \\
+Technical realism & Feasibility of attack techniques \\
+Attack path logic & Logical progression from initial access to impact \\
+Completeness & Coverage of attack vectors and phases \\
+Actionability & Usefulness for defenders and security teams \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%----------------------------------------------------------------------
+\subsection{Capability 3: TTP Matching Evaluation}
+\label{sec:ttp-eval}
+%----------------------------------------------------------------------
+
+TTP matching evaluation measures how accurately the system maps attack tree nodes to MITRE ATT\&CK techniques. SMEs rate each mapping on a specialized 5-point scale:
+
+\begin{table}[t]
+\centering
+\caption{TTP mapping quality scale.}
+\label{tab:ttp-scale}
+\begin{tabular}{@{}llr@{}}
+\toprule
+\textbf{Category} & \textbf{Description} & \textbf{Value} \\
+\midrule
+Excellent & Precise, directly applicable mapping & 1.00 \\
+Good & Relevant technique, minor mismatch & 0.75 \\
+Acceptable & Broadly relevant technique & 0.50 \\
+Poor & Tangentially related technique & 0.25 \\
+No mapping & Incorrect or irrelevant technique & 0.00 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+We report standard information retrieval metrics: Precision@$K$ (fraction of top-$K$ mappings rated Good or better) and Mean Reciprocal Rank (MRR).
+
+%----------------------------------------------------------------------
+\subsection{Tracing Infrastructure}
+\label{sec:tracing}
+%----------------------------------------------------------------------
+
+The evaluation framework is implemented as a production tracing system rather than an offline evaluation script. This design decision ensures that every \threatforest{} execution---whether in development, testing, or production---produces evaluation-ready data.
+
+\subsubsection{Architecture}
+
+The tracing infrastructure consists of six components:
+
+\begin{enumerate}
+    \item \textbf{Interfaces} (\texttt{ITrace}, \texttt{ISpan}, \texttt{ITracingManager}) --- abstract base classes enabling dependency injection between Langfuse-backed and no-op implementations.
+    \item \textbf{Tracing Manager} --- singleton coordinator that creates traces with unique IDs and session grouping, attaching workflow metadata (model version, project path, timestamp).
+    \item \textbf{Score Definitions} --- 12 score dimensions across three capabilities, each with type validation, range checking, and category enforcement.
+    \item \textbf{Score Config Registry} --- manages Langfuse score configurations with idempotent registration, ensuring score definitions are synchronized with the tracing backend.
+    \item \textbf{Metrics Calculator} --- automated computation of structural metrics, phase coverage, and technique extraction from attack tree output.
+    \item \textbf{Export Pipeline} --- filters and exports scored traces to Langfuse Datasets, supporting filtering by trace type, review status, date range, and ground truth candidacy.
+\end{enumerate}
+
+\subsubsection{Resilient Design}
+
+The tracing system implements a resilient wrapper that catches and logs all Langfuse API errors without interrupting the threat modeling workflow. When Langfuse is unavailable, the system transparently falls back to no-op implementations, ensuring that tracing never degrades the user experience.
+
+\subsubsection{Data Schema}
+
+Each trace captures:
+\begin{itemize}
+    \item \textbf{Input context}: application name, technologies, architecture, deployment model
+    \item \textbf{Agent outputs}: generated threats, attack trees, TTP mappings per stage
+    \item \textbf{Generation metadata}: model version, prompt version, latency, token counts
+    \item \textbf{SME scores}: per-dimension categorical ratings with free-text feedback
+    \item \textbf{Automated metrics}: structural measurements and phase coverage
+\end{itemize}
+
+\subsubsection{Export Pipeline}
+
+The export pipeline transforms scored traces into Langfuse Dataset items with \texttt{input}/\texttt{expected\_output} pairs suitable for evaluation and optimization. Filters support:
+\begin{itemize}
+    \item Trace type: \texttt{threat\_statement}, \texttt{attack\_tree}, \texttt{ttp\_matching}
+    \item Review status: \texttt{pending\_review}, \texttt{reviewed}
+    \item Date range and ground truth candidacy
+\end{itemize}
+
+This pipeline directly produces the training data format required by DSPy optimizers, closing the loop between evaluation and optimization.

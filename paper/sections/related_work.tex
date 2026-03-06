@@ -1,0 +1,15 @@
+%==============================================================================
+\section{Related Work}
+%==============================================================================
+
+\textbf{Threat modeling tools.} Microsoft Threat Modeling Tool and OWASP Threat Dragon assist practitioners but automate little of the core reasoning. Recent LLM-based approaches generate threat statements from system descriptions \todo{cite}, but evaluate outputs only through case studies or informal expert review.
+
+\textbf{Attack tree generation.} Schneier~\cite{schneier1999attack} formalized attack trees as a threat analysis methodology. Automated generation has been explored through formal methods and graph-based approaches \todo{cite}, but evaluation remains ad hoc---typically limited to structural validity checks without quality assessment.
+
+\textbf{Security AI evaluation.} Benchmarks exist for offensive security capabilities \todo{cite PACEbench, CAIBench} and security knowledge \todo{cite SecQA}, but none address the evaluation of \emph{defensive} threat modeling outputs. The closest work evaluates incident response agents \todo{cite SIR-Bench}, which measures investigation quality rather than threat model quality.
+
+\textbf{LLM evaluation frameworks.} General-purpose LLM evaluation has matured significantly, with frameworks like DSPy~\cite{khattab2023dspy} enabling programmatic optimization through automated metrics. LLM-as-Judge approaches \todo{cite} provide scalable evaluation but raise reliability concerns in specialized domains. Our framework combines automated metrics with structured SME review to address domain-specific evaluation needs.
+
+\textbf{Prompt optimization.} MIPROv2~\cite{opsahlong2024miprov2} jointly optimizes instructions and few-shot demonstrations through Bayesian search. We design our evaluation framework to produce data directly consumable by such optimizers, closing the loop between evaluation and improvement.
+
+\textbf{Gap.} No prior work provides a systematic, multi-dimensional evaluation framework for automated threat modeling with structured data collection suitable for iterative optimization.
