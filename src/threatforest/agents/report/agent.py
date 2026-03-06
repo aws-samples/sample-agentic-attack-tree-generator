@@ -171,19 +171,23 @@ def _steps_to_mermaid(steps: list, mappings_by_step: dict, root_goal: str) -> st
             label += f" ({tid})"
         lines.append(f'    {safe}["{prefix}{label}"]')
 
-    # Edges — root steps connect from GOAL
-    for step in root_steps:
-        safe = id_map.get(step["id"], step["id"])
-        if root_goal:
-            lines.append(f'    {safe} --> GOAL')
-
+    # Edges — FACT nodes at top, flow down to GOAL at bottom
     for step in steps:
         pid = step.get("parent_id", "")
         sid = step.get("id", "")
         if pid:
             safe_from = id_map.get(pid, pid)
             safe_to = id_map.get(sid, sid)
-            lines.append(f"    {safe_to} --> {safe_from}")
+            lines.append(f"    {safe_from} --> {safe_to}")
+
+    # Root steps (FACT) connect down to their children (already handled above)
+    # Leaf steps connect down to GOAL
+    parent_ids = {s.get("parent_id", "") for s in steps if s.get("parent_id")}
+    for step in steps:
+        sid = step.get("id", "")
+        if sid not in parent_ids and root_goal:
+            safe = id_map.get(sid, sid)
+            lines.append(f'    {safe} --> GOAL')
 
     # Class definitions for node styling
     lines.append('    classDef goal fill:#ff6b6b,stroke:#c92a2a,color:#fff,stroke-width:2px')
