@@ -89,6 +89,29 @@ export async function saveConfig(config) {
   });
 }
 
+/** GET /api/config/langfuse → LangfuseConfig */
+export async function getLangfuseConfig() {
+  return request('/api/config/langfuse');
+}
+
+/** POST /api/config/langfuse → { success, message } */
+export async function saveLangfuseConfig(config) {
+  return request('/api/config/langfuse', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(config),
+  });
+}
+
+/** POST /api/config/langfuse/test → { success, message } */
+export async function testLangfuseConnection(config) {
+  return request('/api/config/langfuse/test', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(config),
+  });
+}
+
 /** POST /api/runs → { run_id } */
 export async function createRun(params) {
   return request('/api/runs', {

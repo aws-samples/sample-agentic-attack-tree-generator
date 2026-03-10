@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import CloudscapeShell from '../components/CloudscapeShell';
+import ContentLayout from '@cloudscape-design/components/content-layout';
 import Form from '@cloudscape-design/components/form';
 import FormField from '@cloudscape-design/components/form-field';
 import Input from '@cloudscape-design/components/input';
@@ -9,9 +10,13 @@ import Flashbar from '@cloudscape-design/components/flashbar';
 import Header from '@cloudscape-design/components/header';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import Container from '@cloudscape-design/components/container';
+import ColumnLayout from '@cloudscape-design/components/column-layout';
 import Box from '@cloudscape-design/components/box';
 import Spinner from '@cloudscape-design/components/spinner';
-import { getConfig, getProviders, testConnection, saveConfig } from '../api-client';
+import Toggle from '@cloudscape-design/components/toggle';
+import StatusIndicator from '@cloudscape-design/components/status-indicator';
+import Link from '@cloudscape-design/components/link';
+import { getConfig, getProviders, testConnection, saveConfig, getLangfuseConfig, saveLangfuseConfig, testLangfuseConnection } from '../api-client';
 
 // Model options per provider — mirrors model_configs.py from the CLI
 const PROVIDER_MODELS = {
@@ -53,15 +58,23 @@ export default function ConfigurePage() {
   const [flashItems, setFlashItems] = useState([]);
   const [testingConnection, setTestingConnection] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [langfuseEnabled, setLangfuseEnabled] = useState(false);
+  const [langfusePublicKey, setLangfusePublicKey] = useState('');
+  const [langfuseSecretKey, setLangfuseSecretKey] = useState('');
+  const [langfuseSecretKeyConfigured, setLangfuseSecretKeyConfigured] = useState(false);
+  const [langfuseHost, setLangfuseHost] = useState('https://cloud.langfuse.com');
+  const [savingLangfuse, setSavingLangfuse] = useState(false);
+  const [testingLangfuse, setTestingLangfuse] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadData() {
       try {
-        const [configData, providersData] = await Promise.all([
+        const [configData, providersData, langfuseData] = await Promise.all([
           getConfig(),
           getProviders(),
+          getLangfuseConfig(),
         ]);
 
         if (cancelled) return;
@@ -69,6 +82,11 @@ export default function ConfigurePage() {
         setAwsProfile(configData.aws_profile || '');
         setAwsRegion(configData.aws_region || 'us-east-1');
         setModelId(configData.model_id || '');
+
+        setLangfuseEnabled(langfuseData.enabled || false);
+        setLangfusePublicKey(langfuseData.public_key || '');
+        setLangfuseSecretKeyConfigured(langfuseData.secret_key_configured || false);
+        setLangfuseHost(langfuseData.host || 'https://cloud.langfuse.com');
 
         const options = (providersData.providers || []).map((p) => ({
           label: p,
@@ -81,7 +99,6 @@ export default function ConfigurePage() {
             label: configData.model_provider,
             value: configData.model_provider,
           });
-          // Set the model dropdown option if it matches a known model
           const models = PROVIDER_MODELS[configData.model_provider] || [];
           const match = models.find((m) => m.value === configData.model_id);
           if (match) {
@@ -171,6 +188,49 @@ export default function ConfigurePage() {
     }
   };
 
+  const handleSaveLangfuse = async () => {
+    setSavingLangfuse(true);
+    try {
+      const result = await saveLangfuseConfig({
+        enabled: langfuseEnabled,
+        public_key: langfusePublicKey || null,
+        secret_key: langfuseSecretKey || null,
+        host: langfuseHost,
+      });
+      addFlash(
+        result.success ? 'success' : 'error',
+        result.message || (result.success ? 'Langfuse configuration saved.' : 'Save failed.'),
+        'langfuse-save-result'
+      );
+      if (result.success) setLangfuseSecretKey('');
+    } catch (err) {
+      addFlash('error', err.message || 'Failed to save Langfuse configuration.', 'langfuse-save-result');
+    } finally {
+      setSavingLangfuse(false);
+    }
+  };
+
+  const handleTestLangfuse = async () => {
+    setTestingLangfuse(true);
+    try {
+      const result = await testLangfuseConnection({
+        enabled: true,
+        public_key: langfusePublicKey || null,
+        secret_key: langfuseSecretKey || null,
+        host: langfuseHost,
+      });
+      addFlash(
+        result.success ? 'success' : 'error',
+        result.message,
+        'langfuse-test-result'
+      );
+    } catch (err) {
+      addFlash('error', err.message || 'Langfuse connection test failed.', 'langfuse-test-result');
+    } finally {
+      setTestingLangfuse(false);
+    }
+  };
+
   if (loading) {
     return (
       <CloudscapeShell
@@ -195,80 +255,188 @@ export default function ConfigurePage() {
         { text: 'Configure', href: '/configure' },
       ]}
     >
-      <SpaceBetween size="l">
-        <Flashbar items={flashItems} />
-        <Form
-          header={<Header variant="h1">Configure</Header>}
-          actions={
-            <SpaceBetween direction="horizontal" size="xs">
-              <Button
-                onClick={handleTestConnection}
-                loading={testingConnection}
-              >
-                Test Connection
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleSave}
-                loading={saving}
-              >
-                Save Configuration
-              </Button>
-            </SpaceBetween>
-          }
-        >
-          <Container header={<Header variant="h2">AWS Settings</Header>}>
+      <ContentLayout
+        header={
+          <Header
+            variant="h1"
+            description="Manage your model provider, AWS credentials, and observability integrations."
+          >
+            Configure
+          </Header>
+        }
+      >
+        <SpaceBetween size="l">
+          <Flashbar items={flashItems} />
+
+          {/* Model & AWS Settings */}
+          <Form
+            actions={
+              <SpaceBetween direction="horizontal" size="xs">
+                <Button
+                  onClick={handleTestConnection}
+                  loading={testingConnection}
+                  iconName="status-positive"
+                >
+                  Test Connection
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={handleSave}
+                  loading={saving}
+                >
+                  Save Configuration
+                </Button>
+              </SpaceBetween>
+            }
+          >
             <SpaceBetween size="l">
-              <FormField label="AWS Profile">
-                <Input
-                  value={awsProfile}
-                  onChange={({ detail }) => setAwsProfile(detail.value)}
-                  placeholder="default"
-                />
-              </FormField>
-              <FormField label="AWS Region">
-                <Input
-                  value={awsRegion}
-                  onChange={({ detail }) => setAwsRegion(detail.value)}
-                  placeholder="us-east-1"
-                />
-              </FormField>
-              <FormField label="Model Provider">
-                <Select
-                  selectedOption={modelProvider}
-                  onChange={({ detail }) => {
-                    setModelProvider(detail.selectedOption);
-                    setModelId('');
-                    setModelIdOption(null);
-                  }}
-                  options={providerOptions}
-                  placeholder="Select a provider"
-                />
-              </FormField>
-              <FormField label="Model ID">
-                {modelProvider && (PROVIDER_MODELS[modelProvider.value] || []).length > 0 ? (
-                  <Select
-                    selectedOption={modelIdOption}
-                    onChange={({ detail }) => {
-                      setModelIdOption(detail.selectedOption);
-                      setModelId(detail.selectedOption.value);
-                    }}
-                    options={PROVIDER_MODELS[modelProvider.value]}
-                    placeholder="Select a model"
-                    filteringType="auto"
-                  />
-                ) : (
-                  <Input
-                    value={modelId}
-                    onChange={({ detail }) => setModelId(detail.value)}
-                    placeholder={modelProvider?.value === 'Ollama' ? 'e.g. llama3.1' : 'Enter model ID'}
-                  />
-                )}
-              </FormField>
+              <Container header={<Header variant="h2">Model settings</Header>}>
+                <SpaceBetween size="l">
+                  <ColumnLayout columns={2}>
+                    <FormField label="Model Provider">
+                      <Select
+                        selectedOption={modelProvider}
+                        onChange={({ detail }) => {
+                          setModelProvider(detail.selectedOption);
+                          setModelId('');
+                          setModelIdOption(null);
+                        }}
+                        options={providerOptions}
+                        placeholder="Select a provider"
+                      />
+                    </FormField>
+                    <FormField label="Model ID">
+                      {modelProvider && (PROVIDER_MODELS[modelProvider.value] || []).length > 0 ? (
+                        <Select
+                          selectedOption={modelIdOption}
+                          onChange={({ detail }) => {
+                            setModelIdOption(detail.selectedOption);
+                            setModelId(detail.selectedOption.value);
+                          }}
+                          options={PROVIDER_MODELS[modelProvider.value]}
+                          placeholder="Select a model"
+                          filteringType="auto"
+                        />
+                      ) : (
+                        <Input
+                          value={modelId}
+                          onChange={({ detail }) => setModelId(detail.value)}
+                          placeholder={modelProvider?.value === 'Ollama' ? 'e.g. llama3.1' : 'Enter model ID'}
+                        />
+                      )}
+                    </FormField>
+                  </ColumnLayout>
+                  <ColumnLayout columns={2}>
+                    <FormField label="AWS Profile">
+                      <Input
+                        value={awsProfile}
+                        onChange={({ detail }) => setAwsProfile(detail.value)}
+                        placeholder="default"
+                      />
+                    </FormField>
+                    <FormField label="AWS Region">
+                      <Input
+                        value={awsRegion}
+                        onChange={({ detail }) => setAwsRegion(detail.value)}
+                        placeholder="us-east-1"
+                      />
+                    </FormField>
+                  </ColumnLayout>
+                </SpaceBetween>
+              </Container>
             </SpaceBetween>
+          </Form>
+
+          {/* Langfuse Tracing */}
+          <Container
+            header={
+              <Header
+                variant="h2"
+                description="Trace and evaluate threat modeling workflows with Langfuse observability."
+                actions={
+                  <SpaceBetween direction="horizontal" size="xs">
+                    <Toggle
+                      checked={langfuseEnabled}
+                      onChange={({ detail }) => setLangfuseEnabled(detail.checked)}
+                    >
+                      {langfuseEnabled ? 'Enabled' : 'Disabled'}
+                    </Toggle>
+                  </SpaceBetween>
+                }
+                info={
+                  <Link
+                    variant="info"
+                    href="https://langfuse.com/docs"
+                    external
+                  >
+                    Info
+                  </Link>
+                }
+              >
+                Langfuse tracing
+              </Header>
+            }
+          >
+            {!langfuseEnabled ? (
+              <Box color="text-status-inactive" padding={{ vertical: 's' }}>
+                <StatusIndicator type="stopped">
+                  Langfuse tracing is disabled. Enable it to trace and score your threat modeling runs.
+                </StatusIndicator>
+              </Box>
+            ) : (
+              <SpaceBetween size="l">
+                <ColumnLayout columns={2}>
+                  <FormField label="Public Key">
+                    <Input
+                      value={langfusePublicKey}
+                      onChange={({ detail }) => setLangfusePublicKey(detail.value)}
+                      placeholder="pk-lf-..."
+                    />
+                  </FormField>
+                  <FormField
+                    label="Secret Key"
+                    description={langfuseSecretKeyConfigured && !langfuseSecretKey
+                      ? "A secret key is already configured. Enter a new value to replace it."
+                      : "Required when enabling Langfuse."}
+                  >
+                    <Input
+                      value={langfuseSecretKey}
+                      onChange={({ detail }) => setLangfuseSecretKey(detail.value)}
+                      placeholder={langfuseSecretKeyConfigured ? '••••••••••••••••' : 'sk-lf-...'}
+                      type="password"
+                    />
+                  </FormField>
+                </ColumnLayout>
+                <FormField label="Host">
+                  <Input
+                    value={langfuseHost}
+                    onChange={({ detail }) => setLangfuseHost(detail.value)}
+                    placeholder="https://cloud.langfuse.com"
+                  />
+                </FormField>
+                <Box float="right">
+                  <SpaceBetween direction="horizontal" size="xs">
+                    <Button
+                      onClick={handleTestLangfuse}
+                      loading={testingLangfuse}
+                      iconName="status-positive"
+                    >
+                      Test Connection
+                    </Button>
+                    <Button
+                      variant="primary"
+                      onClick={handleSaveLangfuse}
+                      loading={savingLangfuse}
+                    >
+                      Save Langfuse Settings
+                    </Button>
+                  </SpaceBetween>
+                </Box>
+              </SpaceBetween>
+            )}
           </Container>
-        </Form>
-      </SpaceBetween>
+        </SpaceBetween>
+      </ContentLayout>
     </CloudscapeShell>
   );
 }
