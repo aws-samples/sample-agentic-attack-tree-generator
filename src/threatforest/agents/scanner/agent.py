@@ -10,6 +10,7 @@ from threatforest.modules.core.providers.provider_factory import create_model
 from threatforest.config import config
 from threatforest.tools.sandboxed_file import make_sandboxed_file_read, make_sandboxed_file_write
 from threatforest.tools.structural_analyzer import make_structural_analyzer
+from threatforest.agents.tracing_session import trace_attrs
 
 STATE_DIR = ".threatforest/state"
 STATE_FILE = "scanner_context.json"
@@ -57,6 +58,7 @@ def create_scanner_agent(repo_path: str) -> Agent:
         system_prompt=system_prompt,
         tools=tools,
         callback_handler=null_callback_handler(),
+        trace_attributes=trace_attrs("scanner"),
     )
 
 

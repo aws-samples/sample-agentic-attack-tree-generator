@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Callable, Optional
 
 from threatforest.agents.scanner.agent import STATE_DIR
+from threatforest.agents.tracing_session import trace_attrs
 
 import threading
 
@@ -106,6 +107,7 @@ async def _process_single_threat(
         system_prompt=tree_prompt,
         tools=tree_tools,
         callback_handler=null_callback_handler(),
+        trace_attributes=trace_attrs(f"tree-T{threat_idx:03d}"),
     )
 
     # Run tree generation (sync agent call in async context via thread)
@@ -208,6 +210,7 @@ async def _process_single_threat(
         system_prompt=ttp_prompt,
         tools=ttp_tools,
         callback_handler=null_callback_handler(),
+        trace_attributes=trace_attrs(f"ttp-T{threat_idx:03d}"),
     )
 
     await asyncio.to_thread(
@@ -249,6 +252,7 @@ async def _process_single_threat(
         system_prompt=mit_prompt,
         tools=mit_tools,
         callback_handler=null_callback_handler(),
+        trace_attributes=trace_attrs(f"mitigation-T{threat_idx:03d}"),
     )
 
     await asyncio.to_thread(
