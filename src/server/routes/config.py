@@ -15,6 +15,8 @@ from server.models import (
     ConfigSaveRequest,
     ConfigTestRequest,
     ConfigTestResponse,
+    LangfuseConfigResponse,
+    LangfuseConfigSaveRequest,
     ProvidersResponse,
 )
 
@@ -282,3 +284,83 @@ async def save_config(request: ConfigSaveRequest) -> ConfigTestResponse:
     set_config(None)
 
     return ConfigTestResponse(success=True, message="Configuration saved successfully.")
+
+
+# ---------------------------------------------------------------------------
+# Langfuse configuration
+# ---------------------------------------------------------------------------
+
+def _get_env_manager():
+    """Lazily import and return an EnvManager instance."""
+    import sys
+    from pathlib import Path as _Path
+
+    repo_root = _Path(__file__).resolve().parent.parent.parent.parent
+    tf_src = str(repo_root / "src")
+    if tf_src not in sys.path:
+        sys.path.insert(0, tf_src)
+
+    from threatforest.modules.utils.env_manager import EnvManager  # type: ignore[import-untyped]
+    return EnvManager()
+
+
+@router.get("/config/langfuse", response_model=LangfuseConfigResponse)
+async def read_langfuse_config() -> LangfuseConfigResponse:
+    """Return the current Langfuse tracing configuration."""
+    env = _get_env_manager()
+    return LangfuseConfigResponse(
+        enabled=env.get_value("LANGFUSE_ENABLED") == "true",
+        public_key=env.get_value("LANGFUSE_PUBLIC_KEY"),
+        secret_key_configured=bool(env.get_value("LANGFUSE_SECRET_KEY")),
+        host=env.get_value("LANGFUSE_HOST") or "https://cloud.langfuse.com",
+    )
+
+
+@router.post("/config/langfuse/test", response_model=ConfigTestResponse)
+async def test_langfuse_config(request: LangfuseConfigSaveRequest) -> ConfigTestResponse:
+    """Test Langfuse connection using the provided or stored credentials."""
+    env = _get_env_manager()
+    public_key = request.public_key or env.get_value("LANGFUSE_PUBLIC_KEY")
+    secret_key = request.secret_key or env.get_value("LANGFUSE_SECRET_KEY")
+    host = request.host or env.get_value("LANGFUSE_HOST") or "https://cloud.langfuse.com"
+
+    if not public_key or not secret_key:
+        return ConfigTestResponse(
+            success=False,
+            message="Public key and secret key are required to test the connection.",
+        )
+
+    try:
+        from langfuse import Langfuse  # type: ignore[import-untyped]
+
+        client = Langfuse(public_key=public_key, secret_key=secret_key, host=host)
+        client.auth_check()
+        client.flush()
+        return ConfigTestResponse(success=True, message="Langfuse connection successful.")
+    except ImportError:
+        return ConfigTestResponse(
+            success=False,
+            message="langfuse package is not installed. Install it with: pip install langfuse",
+        )
+    except Exception as exc:
+        return ConfigTestResponse(success=False, message=f"Langfuse connection failed: {exc}")
+
+
+@router.post("/config/langfuse", response_model=ConfigTestResponse)
+async def save_langfuse_config(request: LangfuseConfigSaveRequest) -> ConfigTestResponse:
+    """Save Langfuse tracing configuration."""
+    if request.enabled and (not request.public_key or not request.secret_key):
+        raise HTTPException(
+            status_code=400,
+            detail="Public key and secret key are required when enabling Langfuse.",
+        )
+
+    env = _get_env_manager()
+    env.set_value("LANGFUSE_ENABLED", "true" if request.enabled else "false")
+    if request.public_key:
+        env.set_value("LANGFUSE_PUBLIC_KEY", request.public_key)
+    if request.secret_key:
+        env.set_value("LANGFUSE_SECRET_KEY", request.secret_key)
+    env.set_value("LANGFUSE_HOST", request.host)
+
+    return ConfigTestResponse(success=True, message="Langfuse configuration saved.")

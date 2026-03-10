@@ -15,9 +15,12 @@ vi.mock('../src/api-client', () => ({
   getProviders: vi.fn(),
   testConnection: vi.fn(),
   saveConfig: vi.fn(),
+  getLangfuseConfig: vi.fn(),
+  saveLangfuseConfig: vi.fn(),
+  testLangfuseConnection: vi.fn(),
 }));
 
-import { getConfig, getProviders, testConnection, saveConfig } from '../src/api-client';
+import { getConfig, getProviders, testConnection, saveConfig, getLangfuseConfig, saveLangfuseConfig } from '../src/api-client';
 
 function renderPage() {
   return render(
@@ -38,6 +41,11 @@ describe('ConfigurePage', () => {
     });
     getProviders.mockResolvedValue({
       providers: ['AWS Bedrock', 'Anthropic', 'OpenAI', 'Google Gemini', 'Ollama'],
+    });
+    getLangfuseConfig.mockResolvedValue({
+      enabled: false,
+      public_key: null,
+      host: 'https://cloud.langfuse.com',
     });
   });
 

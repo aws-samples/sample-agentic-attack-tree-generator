@@ -111,3 +111,21 @@ class ConfigSaveRequest(BaseModel):
     provider: str
     model_id: str
     aws_profile: str | None = None
+
+
+class LangfuseConfigResponse(BaseModel):
+    """Current Langfuse tracing configuration."""
+
+    enabled: bool = False
+    public_key: str | None = None
+    secret_key_configured: bool = False
+    host: str = "https://cloud.langfuse.com"
+
+
+class LangfuseConfigSaveRequest(BaseModel):
+    """Request to save Langfuse tracing configuration."""
+
+    enabled: bool
+    public_key: str | None = None
+    secret_key: str | None = None
+    host: str = "https://cloud.langfuse.com"
