@@ -19,6 +19,39 @@ from server.models import RunConfig
 from server.run_manager import OrchestratorExecutor, ProgressEvent
 
 
+_otel_initialized = False
+
+
+def _setup_langfuse_otel() -> None:
+    """Configure Strands OTEL exporter to send traces to Langfuse."""
+    global _otel_initialized
+    import os
+    import base64
+
+    public_key = os.environ.get("LANGFUSE_PUBLIC_KEY")
+    secret_key = os.environ.get("LANGFUSE_SECRET_KEY")
+    enabled = os.environ.get("LANGFUSE_ENABLED", "false").lower() == "true"
+    host = os.environ.get("LANGFUSE_HOST", "https://cloud.langfuse.com")
+
+    if not enabled or not public_key or not secret_key:
+        return
+
+    # Set OTEL env vars for Langfuse
+    auth = base64.b64encode(f"{public_key}:{secret_key}".encode()).decode()
+    os.environ["OTEL_EXPORTER_OTLP_ENDPOINT"] = f"{host}/api/public/otel"
+    os.environ["OTEL_EXPORTER_OTLP_HEADERS"] = f"Authorization=Basic {auth}"
+
+    if _otel_initialized:
+        return
+    _otel_initialized = True
+
+    try:
+        from strands.telemetry import StrandsTelemetry
+        StrandsTelemetry().setup_otlp_exporter()
+    except ImportError:
+        pass
+
+
 def _load_config_yaml(workspace_dir: Path) -> dict[str, Any]:
     config_path = workspace_dir / ".threatforest" / "config.yaml"
     if not config_path.is_file():
@@ -174,6 +207,15 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
             actual_engine_root = workspace_dir
         _sync_config_to_engine(workspace_dir, actual_engine_root)
 
+        # 3a. Load .env so Langfuse env vars are available to the pipeline
+        from dotenv import load_dotenv as _load_dotenv
+        for env_path in (
+            actual_engine_root / ".threatforest" / ".env",
+            workspace_dir / ".threatforest" / ".env",
+        ):
+            if env_path.is_file():
+                _load_dotenv(dotenv_path=str(env_path), override=True)
+
         # 3b. Reset Config singleton
         try:
             from threatforest.config import Config as _TFConfig
@@ -182,6 +224,16 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
             _TFConfig._config_path = None
         except (ImportError, AttributeError):
             pass
+
+        # 3c. Reset TracingManager singleton so it picks up fresh env vars
+        try:
+            from threatforest.tracing.manager import TracingManager as _TM
+            _TM.reset()
+        except (ImportError, AttributeError):
+            pass
+
+        # 3d. Set up Langfuse OTEL tracing for Strands agents
+        _setup_langfuse_otel()
 
         # 4. Run the graph pipeline with progress streaming
         from threatforest.agents.graph import build_graph

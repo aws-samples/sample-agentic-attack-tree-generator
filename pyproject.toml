@@ -72,6 +72,7 @@ dependencies = [
     "strands-agents[llamaapi]",
     "strands-agents[ollama]",
     "strands-agents[openai]",
+    "strands-agents[otel]",
     "strands-agents[sagemaker]",
     "strands-agents-tools>0.2.0",
     "torch>=2.9.0",
