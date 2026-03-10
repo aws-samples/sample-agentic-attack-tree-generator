@@ -9,6 +9,7 @@ from threatforest.modules.core.providers.provider_factory import create_model
 from threatforest.config import config
 from threatforest.tools.sandboxed_file import make_sandboxed_file_read, make_sandboxed_file_write
 from threatforest.agents.scanner.agent import STATE_DIR
+from threatforest.agents.tracing_session import trace_attrs
 
 STATE_FILE = "mitigations.json"
 
@@ -56,6 +57,7 @@ def create_mitigation_agent(repo_path: str) -> Agent:
         system_prompt=system_prompt,
         tools=tools,
         callback_handler=null_callback_handler(),
+        trace_attributes=trace_attrs("mitigation"),
     )
 
 

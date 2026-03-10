@@ -235,6 +235,10 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
         # 3d. Set up Langfuse OTEL tracing for Strands agents
         _setup_langfuse_otel()
 
+        # 3e. Initialize tracing session so all agents share the same session ID
+        from threatforest.agents.tracing_session import init_session
+        session_id = init_session()
+
         # 4. Run the graph pipeline with progress streaming
         from threatforest.agents.graph import build_graph
         from strands.multiagent.base import Status
