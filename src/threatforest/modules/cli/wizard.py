@@ -807,6 +807,22 @@ This will execute a complete security analysis:
                     # Try to authenticate
                     client.auth_check()
                     self.console.print("[green]✓[/green] Connection successful!")
+                    
+                    # Auto-register score configs
+                    try:
+                        from threatforest.tracing.config import LangfuseConfig
+                        from threatforest.tracing.score_configs import ScoreConfigRegistry
+                        lf_config = LangfuseConfig(
+                            enabled=True,
+                            public_key=public_key,
+                            secret_key=secret_key,
+                            host=host or 'https://cloud.langfuse.com',
+                        )
+                        registry = ScoreConfigRegistry(lf_config)
+                        registered = registry.register_all_score_definitions()
+                        self.console.print(f"[green]✓[/green] Registered {len(registered)} score config(s) with Langfuse")
+                    except Exception as e:
+                        self.console.print(f"[yellow]⚠️  Score config registration failed: {e}[/yellow]")
                 except ImportError:
                     self.console.print("[yellow]⚠️  Langfuse package not installed[/yellow]")
                     self.console.print("[dim]Install with: pip install langfuse[/dim]")

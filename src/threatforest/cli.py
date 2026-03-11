@@ -640,6 +640,22 @@ def config_langfuse(enable, public_key, secret_key, host, test, register_scores,
                 title="Langfuse Connected",
                 border_style="green"
             ))
+            
+            # Auto-register score configs on successful connection
+            try:
+                from threatforest.tracing.config import LangfuseConfig
+                from threatforest.tracing.score_configs import ScoreConfigRegistry
+                lf_config = LangfuseConfig(
+                    enabled=True,
+                    public_key=test_public,
+                    secret_key=test_secret,
+                    host=test_host,
+                )
+                registry = ScoreConfigRegistry(lf_config)
+                registered = registry.register_all_score_definitions()
+                console.print(f"[green]✓[/green] Registered {len(registered)} score config(s) with Langfuse")
+            except Exception as e:
+                console.print(f"[yellow]⚠️  Score config registration failed: {e}[/yellow]")
         except ImportError:
             console.print("[red]Error:[/red] Langfuse package not installed")
             console.print("[dim]Install with: pip install langfuse[/dim]\n")
