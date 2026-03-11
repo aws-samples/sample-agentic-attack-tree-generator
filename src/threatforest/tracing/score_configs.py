@@ -28,6 +28,7 @@ from threatforest.tracing.scores import (
     THREAT_STATEMENT_SCORES,
     ATTACK_TREE_SCORES,
     TTP_MAPPING_SCORES,
+    MITIGATION_SCORES,
     TTP_SCORE_VALUES,
     get_all_score_definitions,
 )
@@ -421,6 +422,13 @@ class ScoreConfigRegistry:
         # Register TTP mapping scores
         prefix = "ttp_" if include_prefix else ""
         for score_def in TTP_MAPPING_SCORES:
+            config = self.register_score_definition(score_def, prefix)
+            if config:
+                registered[config.name] = config
+        
+        # Register mitigation scores
+        prefix = "mitigation_" if include_prefix else ""
+        for score_def in MITIGATION_SCORES:
             config = self.register_score_definition(score_def, prefix)
             if config:
                 registered[config.name] = config

@@ -263,6 +263,39 @@ TTP_MAPPING_SCORES: List[ScoreDefinition] = [
 
 
 # =============================================================================
+# Mitigation Score Definitions
+# =============================================================================
+# These scores evaluate the quality of generated mitigations.
+
+MITIGATION_SCORES: List[ScoreDefinition] = [
+    ScoreDefinition(
+        name="actionability",
+        score_type=ScoreType.CATEGORICAL,
+        description="Whether the mitigation provides concrete, implementable steps",
+        categories=STANDARD_CATEGORIES
+    ),
+    ScoreDefinition(
+        name="specificity",
+        score_type=ScoreType.CATEGORICAL,
+        description="How specific the mitigation is to the identified threat and tech stack",
+        categories=STANDARD_CATEGORIES
+    ),
+    ScoreDefinition(
+        name="coverage",
+        score_type=ScoreType.CATEGORICAL,
+        description="Whether mitigations address all identified attack paths",
+        categories=STANDARD_CATEGORIES
+    ),
+    ScoreDefinition(
+        name="technical_accuracy",
+        score_type=ScoreType.CATEGORICAL,
+        description="Correctness of recommended controls and configurations",
+        categories=STANDARD_CATEGORIES
+    ),
+]
+
+
+# =============================================================================
 # Score Value Mappings
 # =============================================================================
 # Maps categorical scores to numeric values for aggregation and analysis.
@@ -344,4 +377,4 @@ def get_all_score_definitions() -> List[ScoreDefinition]:
         >>> len(all_scores)
         12
     """
-    return THREAT_STATEMENT_SCORES + ATTACK_TREE_SCORES + TTP_MAPPING_SCORES
+    return THREAT_STATEMENT_SCORES + ATTACK_TREE_SCORES + TTP_MAPPING_SCORES + MITIGATION_SCORES
