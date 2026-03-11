@@ -386,4 +386,12 @@ async def run_graph(repo_path: str) -> dict:
     }
     if failed:
         output["error"] = "; ".join(failed)
+
+    # Flush OTEL spans before returning so traces reach Langfuse
+    try:
+        from opentelemetry import trace as _trace_api
+        _trace_api.get_tracer_provider().force_flush(timeout_millis=10000)
+    except Exception:
+        pass
+
     return output
