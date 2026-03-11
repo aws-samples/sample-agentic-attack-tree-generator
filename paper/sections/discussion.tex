@@ -1,37 +1,36 @@
 %==============================================================================
-\section{Discussion}
+\section{Discussion and Conclusion}
+\label{sec:discussion}
 %==============================================================================
 
-\subsection{Framework Design Decisions}
+\subsection{Design Tradeoffs}
 
-\textbf{Categorical vs.\ numeric scales.} We chose a 5-point categorical scale over continuous numeric scores to reduce SME cognitive load and improve inter-rater reliability. Categorical labels (``excellent'' through ``unacceptable'') provide clearer anchoring than arbitrary numeric ranges, while the fixed mapping to $[0, 1]$ preserves compatibility with optimization objectives.
+\textbf{Parallel vs.\ sequential execution.} The parallel fan-out for attack tree generation provides significant speedup but prevents inter-threat context sharing. A sequential approach could identify cross-cutting attack paths (e.g., a compromised IAM role enabling multiple threats), but at $N\times$ cost. We chose parallelism as the default, noting that cross-threat analysis could be added as a post-processing consolidation step.
 
-\textbf{Production tracing vs.\ offline evaluation.} Embedding evaluation in the production tracing system---rather than building a separate evaluation harness---ensures that every execution produces evaluation-ready data. This eliminates the common gap between ``how the system runs'' and ``how the system is evaluated.''
+\textbf{Hybrid TTP mapping.} Pure embedding retrieval is fast and deterministic but lacks contextual reasoning. Pure LLM mapping avoids the embedding model entirely but is expensive (one LLM call per step) and prone to hallucinating non-existent technique IDs. Our hybrid approach uses the embedding for efficient candidate retrieval and the LLM only for refinement, keeping costs proportional to the override rate rather than the total step count.
 
-\textbf{Capability separation.} Evaluating threat statements, attack trees, and TTP mappings independently allows targeted optimization of each agent without confounding effects. A system may excel at threat identification but produce poor attack trees; unified scores would mask this.
+\textbf{File-based state passing.} Agents communicate through JSON files rather than in-memory message passing. This adds I/O overhead but provides debuggability (every intermediate output is inspectable), resumability (a failed pipeline can restart from the last successful stage), and simplicity in parallel execution (no shared-memory synchronization).
 
 \subsection{Limitations}
 
-\begin{itemize}
-    \item \textbf{SME availability.} The framework requires security domain experts for scoring. Scaling evaluation beyond a small number of domains requires either more SMEs or a calibrated automated evaluator.
-    \item \textbf{Keyword-based phase detection.} The automated phase coverage metric relies on keyword matching, which may miss novel phrasings or produce false positives for ambiguous terms.
-    \item \textbf{Domain coverage.} Our baseline evaluation covers five domains. Broader coverage is needed to assess generalization.
-    \item \textbf{Inter-rater reliability.} We have not yet measured agreement across multiple SMEs on the same outputs. This is planned as part of the baseline collection.
-    \item \textbf{Optimization results.} The preliminary optimization experiment was inconclusive due to insufficient data. Meaningful optimization results require the larger dataset enabled by this framework.
-\end{itemize}
+\textbf{Evaluation scope.} Our evaluation uses sample applications rather than production systems. While these applications represent diverse cloud architectures, they may not capture the full complexity of real-world deployments with legacy components, multi-cloud configurations, or custom middleware.
 
-\subsection{Broader Impact}
+\textbf{Model dependence.} All experiments use a single model family (Claude via AWS Bedrock). Performance may vary across model providers, and the system's effectiveness is bounded by the underlying model's security knowledge.
 
-By establishing measurable baselines for automated threat modeling, this framework enables the security community to objectively compare tools and track progress. The open-source implementation and standardized scoring rubrics lower the barrier for other researchers to evaluate their own systems against the same criteria.
+\textbf{SME availability.} The evaluation framework requires security experts for scoring, which limits the scale of evaluation. \todo{Report actual SME pool size and inter-rater reliability.}
 
-However, quantitative evaluation of threat models carries risks. Over-optimization for specific metrics may produce outputs that score well but miss novel threats outside the evaluation taxonomy. We recommend that automated evaluation always be complemented by periodic expert review of edge cases.
+\textbf{ATT\&CK coverage.} MITRE ATT\&CK, while comprehensive, has known gaps in cloud-native, container, and serverless attack techniques. Mappings to these domains may be less precise.
 
-%==============================================================================
-\section{Conclusion}
-%==============================================================================
+\subsection{Future Work}
 
-We presented an evaluation framework for automated threat modeling that decomposes quality into three independently measurable capabilities---threat statement generation, attack tree generation, and TTP matching---with 12 score dimensions, automated structural metrics, and SME review protocols. The framework is implemented as a production tracing infrastructure on OpenTelemetry and Langfuse, ensuring that every system execution produces evaluation-ready data.
+\textbf{Automated attack matrix ingestion.} We plan to extend beyond MITRE ATT\&CK by ingesting additional threat frameworks---the Wiz cloud threat matrix~\cite{wiz-cloud-matrix}, AWS Threat Technique Catalog (TTC), OWASP attack patterns, and CAPEC~\cite{capec}. A unified STIX-based knowledge graph would normalize techniques across matrices, increasing coverage for cloud-native attack surfaces that MITRE alone underrepresents.
 
-Our key insight is that \emph{evaluation infrastructure is a prerequisite for optimization}. Without standardized metrics, structured data collection, and export pipelines, there is no path from ``the system works'' to ``the system improves.'' By designing the evaluation framework first, we establish the foundation for iterative prompt optimization via DSPy's MIPROv2, where each cycle of SME scoring produces training data for the next optimization round.
+\textbf{Domain-specific embedding fine-tuning.} The TTP ground truth dataset built through our evaluation framework (\S\ref{sec:evaluation}) provides SME-labeled correct/incorrect mappings. These labels can be used to fine-tune a custom security embedding model starting from ATTACK-BERT, improving retrieval accuracy for the specific threat domains \threatforest{} encounters and reducing the LLM reviewer's override rate over time.
 
-We report baseline measurements across \todo{N} domains and outline a concrete roadmap from evaluation to optimization. To our knowledge, this is the first comprehensive evaluation framework for automated threat modeling, and we release it as open source to enable reproducible research in this emerging area.
+\textbf{Prompt optimization.} The SME-scored traces captured by our observability infrastructure are directly compatible with DSPy's MIPROv2 optimizer~\cite{opsahlong2024miprov2}, which can jointly optimize instructions and few-shot demonstrations for multi-stage LM programs. Each scored trace provides a training signal for the corresponding pipeline stage.
+
+\textbf{Automated evaluation.} To reduce dependence on SME availability, we plan to develop LLM-as-a-judge evaluators calibrated against the SME-scored ground truth, enabling continuous evaluation at scale.
+
+\subsection{Conclusion}
+
+We presented \threatforest{}, a multi-agent system that automates threat modeling from source code repositories to MITRE ATT\&CK-mapped attack trees with evidence-based mitigations. Our hybrid TTP mapping approach combines domain-specific embeddings with LLM refinement, and our verifier pattern provides quality gates without LLM cost. The accompanying evaluation framework with 16 scoring dimensions and Langfuse-based observability enables systematic measurement of threat modeling quality. \todo{Summarize key results.} To our knowledge, this is the first end-to-end automated threat modeling system with structured evaluation, establishing baselines against which future systems can be measured.

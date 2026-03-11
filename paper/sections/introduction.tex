@@ -2,30 +2,18 @@
 \section{Introduction}
 %==============================================================================
 
-Threat modeling is a cornerstone of secure software development~\cite{shostack2014threat}, requiring practitioners to systematically identify threats, analyze attack vectors, and propose mitigations. As cloud-native architectures grow in complexity, manual threat modeling becomes increasingly impractical---a single system may expose hundreds of attack surfaces across multiple services, each requiring domain-specific security expertise.
+Threat modeling is a cornerstone of secure software development~\cite{shostack2014threat}, requiring practitioners to systematically identify threats, analyze attack vectors, and propose mitigations. As cloud-native architectures grow in complexity---a single system may span dozens of managed services, each with distinct access control models, encryption configurations, and network boundaries---manual threat modeling becomes increasingly impractical. Industry surveys consistently report that organizations either skip threat modeling entirely or perform it only for the most critical systems, leaving significant attack surface unanalyzed.
 
-Large language models (LLMs) offer a path toward automating this process. Recent multi-agent systems can generate threat statements, construct attack trees~\cite{schneier1999attack}, and map findings to frameworks like MITRE ATT\&CK~\cite{strom2018mitre}. However, a fundamental question remains unanswered: \emph{how do we measure whether automated threat models are any good?}
+Existing tools address fragments of this problem. Microsoft Threat Modeling Tool~\cite{microsoft-tmt} and OWASP Threat Dragon~\cite{owasp-threatdragon} provide structured diagramming but automate little of the core reasoning. AWS Threat Composer~\cite{aws-threatcomposer} offers guided threat statement authoring but requires manual input for each threat. Recent work has explored using large language models (LLMs) for threat identification~\cite{threatmodeling-llm2024,canllmsthreatmodel2025}, but these approaches typically stop at threat enumeration---they do not produce structured attack trees, map to standardized frameworks like MITRE ATT\&CK~\cite{strom2018mitre}, or generate actionable mitigations.
 
-Unlike code generation---where correctness can be verified by compilation and test suites---threat modeling quality is inherently multi-dimensional and subjective. A generated attack tree may be syntactically valid yet unrealistic, structurally complete yet missing critical attack phases, or technically accurate yet unhelpful for defenders. No existing benchmark or evaluation methodology addresses this challenge.
+Attack trees, introduced by Schneier~\cite{schneier1999attack}, provide a formal structure for modeling how an adversary achieves a goal through a hierarchy of sub-goals and concrete techniques. When combined with MITRE ATT\&CK technique mappings, attack trees become directly actionable: each leaf node maps to a known adversary behavior with documented detection and mitigation strategies. However, constructing these enriched attack trees manually requires deep expertise in both the target system and the threat landscape.
 
-We identify three gaps in the current landscape:
-
-\textbf{No standardized evaluation dimensions.} Existing work evaluates threat modeling tools informally, typically through case studies or user surveys. There is no agreed-upon set of quality dimensions, scoring scales, or evaluation protocols.
-
-\textbf{No separation of capabilities.} Automated threat modeling involves distinct sub-tasks---generating threat statements, constructing attack trees, mapping to TTP frameworks---each requiring different evaluation criteria. Existing approaches conflate these into a single quality judgment.
-
-\textbf{No infrastructure for iterative improvement.} Without structured data collection and scoring, there is no path from evaluation to optimization. Improving prompt quality requires ground truth datasets that do not yet exist.
-
-We address these gaps with an evaluation framework for \threatforest{}, a multi-agent threat modeling system. Our contributions are:
+We present \threatforest{}, a multi-agent system that automates the full threat modeling pipeline: from source code repository to MITRE ATT\&CK-mapped attack trees with evidence-based mitigations. Our contributions are:
 
 \begin{enumerate}
-    \item \textbf{Multi-dimensional evaluation taxonomy.} We decompose threat modeling quality into three capabilities---threat statement generation, attack tree generation, and TTP matching---with 12 score dimensions across a standardized 5-point categorical scale.
+    \item \textbf{End-to-end pipeline.} A six-stage agent pipeline that takes a code repository as input and produces structured attack trees, TTP mappings, and mitigations, orchestrated as a directed graph with verification gates and retry semantics (\S\ref{sec:architecture}).
 
-    \item \textbf{Hybrid evaluation methodology.} We combine automated structural metrics (node count, path coverage, phase detection, syntax validation) with SME scoring protocols, enabling both scalable measurement and expert validation.
+    \item \textbf{Hybrid TTP mapping.} A two-phase approach combining domain-specific embeddings (ATTACK-BERT) for candidate retrieval with an LLM reviewer for contextual refinement, achieving higher accuracy than either approach alone (\S\ref{sec:ttp}).
 
-    \item \textbf{Tracing infrastructure.} We implement the framework as a production tracing system built on OpenTelemetry and Langfuse, capturing every agent interaction with structured metadata, scores, and export pipelines for dataset curation.
-
-    \item \textbf{Baseline measurements.} We report the first quantitative baselines for automated threat modeling quality across \todo{N} diverse domains.
-
-    \item \textbf{Optimization roadmap.} We describe how the evaluation framework enables iterative prompt optimization via DSPy's MIPROv2~\cite{opsahlong2024miprov2}, where SME-scored traces feed directly into reflective optimization cycles.
+    \item \textbf{Evaluation framework.} A 16-dimension scoring framework with observability infrastructure enabling both automated structural metrics and SME review through Langfuse annotation queues (\S\ref{sec:evaluation}).
 \end{enumerate}

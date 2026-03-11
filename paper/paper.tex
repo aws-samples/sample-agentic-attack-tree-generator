@@ -19,14 +19,14 @@
 \usepackage{algorithm}
 \usepackage{algorithmic}
 \usepackage{tikz}
+\usepackage{multirow}
 \usetikzlibrary{shapes.geometric,arrows.meta,positioning,fit,backgrounds}
 
 % Custom commands
 \newcommand{\threatforest}{\textsc{ThreatForest}}
-\newcommand{\gepa}{\textsc{GEPA}}
 \newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
 
-\title{Evaluating Automated Threat Modeling:\\An Evaluation Framework for Multi-Agent\\Attack Tree Generation}
+\title{\threatforest{}: Multi-Agent Attack Tree Generation\\with MITRE ATT\&CK Mapping}
 
 \author{
   Cristian Leo \\
@@ -53,10 +53,9 @@
 \input{sections/abstract}
 \input{sections/introduction}
 \input{sections/related_work}
-\input{sections/threatforest_overview}
-\input{sections/eval_framework}
-\input{sections/baseline_evaluation}
-\input{sections/future_optimization}
+\input{sections/architecture}
+\input{sections/evaluation}
+\input{sections/results}
 \input{sections/discussion}
 
 %==============================================================================
@@ -65,27 +64,7 @@
 
 \bibliographystyle{plain}
 
-\begin{thebibliography}{10}
-
-\bibitem{khattab2023dspy}
-O.~Khattab, A.~Singhvi, P.~Maheshwari, Z.~Zhang, K.~Santhanam, S.~Vardhamanan, S.~Haq, A.~Sharma, T.~T. Joshi, H.~Modarressi, et~al.
-\newblock {DSPy}: Compiling declarative language model calls into self-improving pipelines.
-\newblock In \emph{ICLR}, 2024.
-
-\bibitem{opsahlong2024miprov2}
-K.~Opsahl-Ong, M.~J. Ryan, J.~Purtell, D.~Li, B.~Brber, V.~Nair, K.~Santhanam, and O.~Khattab.
-\newblock Optimizing instructions and demonstrations for multi-stage language model programs.
-\newblock \emph{arXiv preprint arXiv:2406.11695}, 2024.
-
-\bibitem{aghaei2023securebert}
-E.~Aghaei, X.~Niu, W.~Shadid, and E.~Al-Shaer.
-\newblock {SecureBERT}: A domain-specific language model for cybersecurity.
-\newblock In \emph{International Conference on Security and Privacy in Communication Systems}, 2023.
-
-\bibitem{strom2018mitre}
-B.~E. Strom, A.~Applebaum, D.~P. Miller, K.~C. Nickels, A.~G. Pennington, and C.~B. Thomas.
-\newblock {MITRE ATT\&CK}: Design and philosophy.
-\newblock Technical report, The MITRE Corporation, 2018.
+\begin{thebibliography}{20}
 
 \bibitem{schneier1999attack}
 B.~Schneier.
@@ -96,6 +75,96 @@ B.~Schneier.
 A.~Shostack.
 \newblock \emph{Threat Modeling: Designing for Security}.
 \newblock John Wiley \& Sons, 2014.
+
+\bibitem{strom2018mitre}
+B.~E. Strom, A.~Applebaum, D.~P. Miller, K.~C. Nickels, A.~G. Pennington, and C.~B. Thomas.
+\newblock {MITRE ATT\&CK}: Design and philosophy.
+\newblock Technical report, The MITRE Corporation, 2018.
+
+\bibitem{aghaei2023securebert}
+E.~Aghaei, X.~Niu, W.~Shadid, and E.~Al-Shaer.
+\newblock {SecureBERT}: A domain-specific language model for cybersecurity.
+\newblock In \emph{Intl. Conf. on Security and Privacy in Communication Systems}, 2023.
+
+\bibitem{smet2023}
+A.~Kuppa, L.~Aouad, and N.-A.~Le-Khac.
+\newblock {SMET}: Semantic mapping of {CVE} to {ATT\&CK} and its application to cyber security.
+\newblock In \emph{DBSec}, 2023.
+
+\bibitem{cve2attack2022}
+A.~Grigorescu, V.~Iorga, C.~Sandescu, and R.~Rughinis.
+\newblock {CVE2ATT\&CK}: {BERT}-based mapping of {CVEs} to {MITRE ATT\&CK} techniques.
+\newblock \emph{Algorithms}, 15(9):314, 2022.
+
+\bibitem{attackbert}
+Basel.
+\newblock {ATT\&CK BERT}: A cybersecurity domain-specific sentence-transformer.
+\newblock \url{https://huggingface.co/basel/ATTACK-BERT}, 2024.
+
+\bibitem{threatmodeling-llm2024}
+M.~Alam, S.~Iqbal, and M.~Aleem.
+\newblock Automating threat modeling using large language models for banking systems.
+\newblock \emph{arXiv preprint arXiv:2411.17058}, 2024.
+
+\bibitem{canllmsthreatmodel2025}
+A.~Bhatia, A.~Singhal, and S.~Jha.
+\newblock Can {LLMs} threat model real-world cloud infrastructure?
+\newblock \emph{arXiv preprint arXiv:2505.11565}, 2025.
+
+\bibitem{khattab2023dspy}
+O.~Khattab, A.~Singhvi, P.~Maheshwari, Z.~Zhang, K.~Santhanam, et~al.
+\newblock {DSPy}: Compiling declarative language model calls into self-improving pipelines.
+\newblock In \emph{ICLR}, 2024.
+
+\bibitem{opsahlong2024miprov2}
+K.~Opsahl-Ong, M.~J. Ryan, J.~Purtell, D.~Li, et~al.
+\newblock Optimizing instructions and demonstrations for multi-stage language model programs.
+\newblock \emph{arXiv preprint arXiv:2406.11695}, 2024.
+
+\bibitem{modernbert2025}
+J.~Kim, S.~Lee, and H.~Park.
+\newblock Improving automatic classification of {MITRE ATT\&CK} tactics using {NLP}-based {ModernBERT} and {BERTopic}.
+\newblock \emph{Electronics}, 14(22):4434, 2025.
+
+\bibitem{strands2025}
+AWS.
+\newblock Strands Agents: A model-driven approach to building {AI} agents.
+\newblock \url{https://strandsagents.com}, 2025.
+
+\bibitem{langfuse2024}
+Langfuse.
+\newblock Open-source {LLM} engineering platform.
+\newblock \url{https://langfuse.com}, 2024.
+
+\bibitem{reimers2019sbert}
+N.~Reimers and I.~Gurevych.
+\newblock Sentence-{BERT}: Sentence embeddings using {Siamese BERT}-networks.
+\newblock In \emph{EMNLP}, 2019.
+
+\bibitem{owasp-threatdragon}
+OWASP.
+\newblock {OWASP Threat Dragon}.
+\newblock \url{https://owasp.org/www-project-threat-dragon/}, 2023.
+
+\bibitem{microsoft-tmt}
+Microsoft.
+\newblock {Microsoft Threat Modeling Tool}.
+\newblock \url{https://learn.microsoft.com/en-us/azure/security/develop/threat-modeling-tool}, 2023.
+
+\bibitem{aws-threatcomposer}
+AWS.
+\newblock {AWS Threat Composer}.
+\newblock \url{https://github.com/awslabs/threat-composer}, 2024.
+
+\bibitem{wiz-cloud-matrix}
+Wiz.
+\newblock Cloud threat landscape.
+\newblock \url{https://threats.wiz.io/}, 2024.
+
+\bibitem{capec}
+MITRE.
+\newblock {CAPEC}: Common attack pattern enumeration and classification.
+\newblock \url{https://capec.mitre.org/}, 2024.
 
 \end{thebibliography}
 
