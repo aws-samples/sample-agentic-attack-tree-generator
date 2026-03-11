@@ -57,7 +57,7 @@ def push_subgraph_trace(node_id: str, repo_path: str) -> None:
     traces = {
         "scanner_verifier": lambda: _scanner_trace(sd),
         "threat_verifier": lambda: _threat_trace(sd),
-        "parallel_verifier": lambda: _parallel_trace(sd),
+        "parallel_verifier": lambda: _parallel_traces(sd),
     }
 
     builder = traces.get(node_id)
@@ -65,14 +65,17 @@ def push_subgraph_trace(node_id: str, repo_path: str) -> None:
         return
 
     try:
-        name, input_data, output_data, tags = builder()
-        _client.trace(
-            name=name,
-            session_id=_session_id,
-            input=input_data,
-            output=output_data,
-            tags=["threatforest", "annotation"] + tags,
-        )
+        result = builder()
+        # builder returns a single tuple or a list of tuples
+        items = result if isinstance(result, list) else [result]
+        for name, input_data, output_data, tags in items:
+            _client.trace(
+                name=name,
+                session_id=_session_id,
+                input=input_data,
+                output=output_data,
+                tags=["threatforest", "annotation"] + tags,
+            )
     except Exception as e:
         logger.warning("Failed to push subgraph trace for %s: %s", node_id, e)
 
@@ -98,17 +101,32 @@ def _threat_trace(sd: Path):
     )
 
 
-def _parallel_trace(sd: Path):
+def _parallel_traces(sd: Path):
     threats = _read_json(sd / "threats.json")
+    scanner_ctx = _read_json(sd / "scanner_context.json")
     trees = _read_json(sd / "attack_trees.json")
     mappings = _read_json(sd / "ttp_mappings.json")
     mitigations = _read_json(sd / "mitigations.json")
-    return (
-        "attack-tree-pipeline",
-        threats,
-        {"attack_trees": trees, "ttp_mappings": mappings, "mitigations": mitigations},
-        ["attack-tree", "ttp", "mitigation"],
-    )
+    return [
+        (
+            "attack-tree-generation",
+            threats,
+            trees,
+            ["attack-tree"],
+        ),
+        (
+            "ttp-mapping",
+            trees,
+            mappings,
+            ["ttp"],
+        ),
+        (
+            "mitigation-generation",
+            {"attack_trees": trees, "ttp_mappings": mappings, "scanner_context": scanner_ctx},
+            mitigations,
+            ["mitigation"],
+        ),
+    ]
 
 
 def flush() -> None:
