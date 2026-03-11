@@ -177,7 +177,10 @@ async def run_graph(repo_path: str) -> dict:
 
     from threatforest.agents.tracing_session import init_session, setup_langfuse_otel
     setup_langfuse_otel()
-    init_session()
+    sid = init_session()
+
+    from threatforest.agents import annotation_traces
+    annotation_traces.init(sid)
 
     console = Console()
 
@@ -354,6 +357,7 @@ async def run_graph(repo_path: str) -> dict:
                 current_node = ""
                 prev_tool_name = None
                 live.update(_render())
+                annotation_traces.push_subgraph_trace(nid, repo_path)
 
             elif etype == "multiagent_node_stream":
                 nested = event.get("event", {})
@@ -393,5 +397,6 @@ async def run_graph(repo_path: str) -> dict:
         _trace_api.get_tracer_provider().force_flush(timeout_millis=10000)
     except Exception:
         pass
+    annotation_traces.flush()
 
     return output
