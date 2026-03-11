@@ -146,7 +146,9 @@ Clean input/output pairs per subgraph, pushed via the Langfuse SDK for SME revie
 |---|---|---|---|
 | `scanner` | Task description | `scanner_context.json` | `scanner`, `annotation` |
 | `threat-generation` | Scanner context | `threats.json` | `threat`, `annotation` |
-| `attack-tree-pipeline` | Threats | Attack trees + TTP mappings + mitigations | `attack-tree`, `ttp`, `mitigation`, `annotation` |
+| `attack-tree-generation` | Threats | `attack_trees.json` | `attack-tree`, `annotation` |
+| `ttp-mapping` | Attack trees | `ttp_mappings.json` | `ttp`, `annotation` |
+| `mitigation-generation` | Attack trees + TTP mappings + scanner context | `mitigations.json` | `mitigation`, `annotation` |
 
 These traces are designed for annotation queues — filter by the `annotation` tag in Langfuse.
 
