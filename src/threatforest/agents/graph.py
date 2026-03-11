@@ -175,6 +175,10 @@ async def run_graph(repo_path: str) -> dict:
     from rich.text import Text
     from rich.table import Table
 
+    from threatforest.agents.tracing_session import init_session, setup_langfuse_otel
+    setup_langfuse_otel()
+    init_session()
+
     console = Console()
 
     graph = build_graph(repo_path)

@@ -49,10 +49,7 @@ def _setup_langfuse_otel() -> None:
         from strands.telemetry import StrandsTelemetry
         StrandsTelemetry().setup_otlp_exporter()
     except ImportError:
-        pass
-
-
-def _load_config_yaml(workspace_dir: Path) -> dict[str, Any]:
+        passdef _load_config_yaml(workspace_dir: Path) -> dict[str, Any]:
     config_path = workspace_dir / ".threatforest" / "config.yaml"
     if not config_path.is_file():
         raise RuntimeError(
@@ -233,10 +230,10 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
             pass
 
         # 3d. Set up Langfuse OTEL tracing for Strands agents
-        _setup_langfuse_otel()
+        from threatforest.agents.tracing_session import setup_langfuse_otel, init_session
+        setup_langfuse_otel()
 
         # 3e. Initialize tracing session so all agents share the same session ID
-        from threatforest.agents.tracing_session import init_session
         session_id = init_session()
 
         # 4. Run the graph pipeline with progress streaming
