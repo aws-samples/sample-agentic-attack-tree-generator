@@ -40,6 +40,8 @@ from rich.console import Console
 _loading_console = Console()
 with _loading_console.status("[bold cyan]🌳 Initializing ThreatForest...", spinner="dots"):
     from threatforest.config import ROOT_DIR, config
+    from threatforest.agents.tracing_session import setup_langfuse_otel
+    setup_langfuse_otel()
     from threatforest.modules.cli import CLIDisplay, CLIWizard, WorkflowRunner
     from threatforest.modules.utils.logger import ThreatForestLogger
 
