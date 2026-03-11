@@ -130,11 +130,21 @@ def _steps_to_mermaid(steps: list, mappings_by_step: dict, root_goal: str) -> st
     """Convert structured steps to a mermaid graph TD diagram."""
     lines = ["graph TD"]
 
-    def _label(text, max_len=60):
-        text = text.replace('"', "'").replace("\n", " ")
-        if len(text) > max_len:
-            text = text[:max_len] + "..."
-        return text
+    def _label(text):
+        text = text.replace('"', "'").replace("\n", " ").strip()
+        # Use \\n for mermaid line breaks inside node labels
+        words = text.split()
+        result = []
+        line = ""
+        for w in words:
+            if len(line) + len(w) > 40:
+                result.append(line)
+                line = w
+            else:
+                line = f"{line} {w}" if line else w
+        if line:
+            result.append(line)
+        return "\\n".join(result)
 
     # Map step IDs to simple mermaid-safe IDs (no hyphens)
     id_map = {}
@@ -147,31 +157,20 @@ def _steps_to_mermaid(steps: list, mappings_by_step: dict, root_goal: str) -> st
     if root_goal:
         lines.append(f'    GOAL["GOAL: {_label(root_goal)}"]')
 
+    # Identify root (fact) steps and leaf steps
     root_steps = [s for s in steps if not s.get("parent_id")]
-
-    root_ids = {s.get("id", "") for s in root_steps}
-    leaf_ids = set()
-    parent_ids = {s.get("parent_id", "") for s in steps if s.get("parent_id")}
-    for step in steps:
-        sid = step.get("id", "")
-        if sid not in parent_ids:
-            leaf_ids.add(sid)
+    child_ids = {s.get("parent_id") for s in steps if s.get("parent_id")}
+    leaf_steps = [s for s in steps if s.get("id") not in child_ids and s.get("parent_id")]
 
     for step in steps:
         sid = step.get("id", "")
         desc = step.get("description", sid)
-        mapping = mappings_by_step.get(sid, {})
-        tid = mapping.get("technique_id", "")
         safe = id_map.get(sid, sid)
 
-        is_root = sid in root_ids
-        prefix = "FACT: " if is_root else ""
         label = _label(step.get("title") or desc)
-        if tid:
-            label += f" ({tid})"
-        lines.append(f'    {safe}["{prefix}{label}"]')
+        lines.append(f'    {safe}["{label}"]')
 
-    # Edges — FACT nodes at top, flow down to GOAL at bottom
+    # Edges: parent → child (top-down flow: fact at top, GOAL at bottom)
     for step in steps:
         pid = step.get("parent_id", "")
         sid = step.get("id", "")
@@ -180,26 +179,24 @@ def _steps_to_mermaid(steps: list, mappings_by_step: dict, root_goal: str) -> st
             safe_to = id_map.get(sid, sid)
             lines.append(f"    {safe_from} --> {safe_to}")
 
-    # Root steps (FACT) connect down to their children (already handled above)
-    # Leaf steps connect down to GOAL
-    parent_ids = {s.get("parent_id", "") for s in steps if s.get("parent_id")}
-    for step in steps:
-        sid = step.get("id", "")
-        if sid not in parent_ids and root_goal:
-            safe = id_map.get(sid, sid)
+    # Connect leaf steps to GOAL at the bottom
+    if root_goal:
+        for step in leaf_steps:
+            safe = id_map.get(step["id"], step["id"])
             lines.append(f'    {safe} --> GOAL')
+        # If no leaf steps, connect root steps to GOAL as fallback
+        if not leaf_steps:
+            for step in root_steps:
+                safe = id_map.get(step["id"], step["id"])
+                lines.append(f'    {safe} --> GOAL')
 
     # Class definitions for node styling
     lines.append('    classDef goal fill:#ff6b6b,stroke:#c92a2a,color:#fff,stroke-width:2px')
     lines.append('    classDef attack fill:#ffd43b,stroke:#f08c00,stroke-width:2px')
-    lines.append('    classDef fact fill:#d0ebff,stroke:#1971c2,stroke-width:2px')
     lines.append('    class GOAL goal')
-    attack_ids = [id_map.get(s.get("id", ""), "") for s in steps if s.get("id", "") not in root_ids]
-    fact_ids = [id_map.get(s.get("id", ""), "") for s in steps if s.get("id", "") in root_ids]
-    if attack_ids:
-        lines.append(f'    class {",".join(attack_ids)} attack')
-    if fact_ids:
-        lines.append(f'    class {",".join(fact_ids)} fact')
+    all_step_ids = [id_map.get(s.get("id", ""), "") for s in steps]
+    if all_step_ids:
+        lines.append(f'    class {",".join(all_step_ids)} attack')
 
     return "\n".join(lines)
 
@@ -265,8 +262,9 @@ def _build_attack_trees_for_ui(state_dir: Path, threats: list) -> list:
             title = step.get("title", "")
             step_entry = {
                 "node_id": safe_id,
-                "label": title or (desc[:47] + "..." if len(desc) > 50 else desc),
+                "label": title or desc,
                 "description": desc,
+                "category": step.get("category", ""),
             }
             if mit:
                 tree_mitigations.append({
@@ -312,6 +310,58 @@ def _build_attack_trees_for_ui(state_dir: Path, threats: list) -> list:
     return trees
 
 
+def _build_short_summary(
+    project_name: str,
+    scanner_ctx: dict,
+    threat_count: int,
+    high_sev: int,
+) -> str:
+    """Build a concise ≤150-word summary for the applications listing page.
+
+    Captures the project name, cloud provider, key services, and threat
+    statistics in a single readable sentence.
+    """
+    provider = (scanner_ctx.get("cloud_provider") or "").upper()
+    services = scanner_ctx.get("services", [])
+    tech_stack = scanner_ctx.get("tech_stack", "")
+
+    parts: list[str] = []
+
+    # Opening — project name + provider + stack
+    opener = project_name
+    if provider:
+        opener += f" ({provider}"
+        if tech_stack:
+            opener += f", {tech_stack}"
+        opener += ")"
+    elif tech_stack:
+        opener += f" ({tech_stack})"
+    parts.append(opener)
+
+    # Key services (max 5)
+    if services:
+        svc_str = ", ".join(services[:5])
+        if len(services) > 5:
+            svc_str += f" +{len(services) - 5} more"
+        parts.append(f"using {svc_str}")
+
+    # Threat stats
+    if threat_count:
+        threat_part = f"with {threat_count} identified threat{'s' if threat_count != 1 else ''}"
+        if high_sev:
+            threat_part += f" ({high_sev} high/critical)"
+        parts.append(threat_part)
+
+    summary = " ".join(parts) + "."
+
+    # Safety truncation at word boundary if somehow exceeds ~150 words
+    words = summary.split()
+    if len(words) > 150:
+        summary = " ".join(words[:150]) + "..."
+
+    return summary
+
+
 def _generate_html_dashboard(repo_path: str) -> None:
     """Wrap the markdown report in an HTML dashboard and write registry metadata."""
     output_dir = Path(repo_path) / OUTPUT_DIR
@@ -345,17 +395,21 @@ def _generate_html_dashboard(repo_path: str) -> None:
     except (FileNotFoundError, _json.JSONDecodeError):
         pass
 
+    project_name = Path(repo_path).name
+    short_summary = _build_short_summary(project_name, scanner_ctx, threat_count, high_sev)
+
     metadata = {
         "metadata": {
             "generator": "ThreatForest",
             "version": "2.0",
         },
         "project_info": {
-            "application_name": Path(repo_path).name,
+            "application_name": project_name,
             "technologies": scanner_ctx.get("services", []),
             "deployment_environment": scanner_ctx.get("cloud_provider", ""),
             "summary": f"{scanner_ctx.get('cloud_provider', '').upper()} application using {scanner_ctx.get('tech_stack', 'N/A')[:80]}. "
                        f"Services: {', '.join(scanner_ctx.get('services', [])[:5])}.",
+            "short_summary": short_summary,
         },
         "status": "complete",
         "threat_count": threat_count,

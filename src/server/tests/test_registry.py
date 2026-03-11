@@ -14,7 +14,7 @@ from server.registry import ApplicationRegistry, slugify
 # Helpers
 # ---------------------------------------------------------------------------
 
-ATTACK_TREES = Path("threatforest") / "attack_trees"
+ATTACK_TREES = Path(".threatforest") / "output"
 
 
 def _make_app(

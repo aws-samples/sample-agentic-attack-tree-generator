@@ -1,6 +1,7 @@
 """Scanner Agent — explores a repository and builds ProjectContext."""
 
 import json
+import os
 from pathlib import Path
 
 from strands import Agent
@@ -25,7 +26,7 @@ def _count_source_files(repo_path: str) -> int:
     source_exts = {".py", ".js", ".ts", ".java", ".go", ".rb", ".rs", ".c", ".cpp", ".cs", ".php"}
     skip_dirs = {".git", "node_modules", "__pycache__", ".venv", "venv", "dist", "build", "target"}
     count = 0
-    for root, dirs, files in Path(repo_path).walk():
+    for root, dirs, files in os.walk(repo_path):
         dirs[:] = [d for d in dirs if d not in skip_dirs]
         count += sum(1 for f in files if Path(f).suffix.lower() in source_exts)
         if count >= 50:

@@ -32,7 +32,7 @@ PBT_SETTINGS = settings(
 # Constants
 # ---------------------------------------------------------------------------
 
-ATTACK_TREES_REL = Path("threatforest") / "attack_trees"
+ATTACK_TREES_REL = Path(".threatforest") / "output"
 METADATA_FILE = "threatforest_data.json"
 
 # ---------------------------------------------------------------------------

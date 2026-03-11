@@ -8,7 +8,7 @@ import FormField from '@cloudscape-design/components/form-field';
 import Button from '@cloudscape-design/components/button';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import Grid from '@cloudscape-design/components/grid';
-import ExpandableSection from '@cloudscape-design/components/expandable-section';
+import Popover from '@cloudscape-design/components/popover';
 import { aggregateMitigations } from '../utils/mitigation-aggregator';
 import {
   filterMitigations,
@@ -33,38 +33,76 @@ const COLUMN_DEFINITIONS = [
   {
     id: "name",
     header: "Mitigation",
-    cell: (item) => {
-      if (item.name.length <= 80) return <span style={{ fontSize: '13px' }}>{item.name}</span>;
-      return (
-        <ExpandableSection headerText={item.name.slice(0, 80) + '…'} variant="footer" headerAriaLabel="Expand mitigation">
-          <Box fontSize="body-s" color="text-body-secondary">{item.name}</Box>
-        </ExpandableSection>
-      );
-    },
+    cell: (item) => item.name,
     sortingField: "name",
-    width: 250,
-    minWidth: 180,
+    width: 200,
+    minWidth: 140,
   },
   {
     id: "description",
     header: "Implementation Guidance",
     cell: (item) => {
       if (!item.description) return "—";
-      if (item.description.length <= 100) return <span style={{ fontSize: '13px' }}>{item.description}</span>;
-      const brief = item.description.slice(0, 100) + '…';
+      // Split numbered steps (1. xxx 2. xxx) into a list
       const steps = item.description.split(/(?=\d+\.\s)/).filter(Boolean);
+      if (steps.length > 1) {
+        return (
+          <div style={{ whiteSpace: 'normal', wordBreak: 'break-word', fontSize: '13px', lineHeight: '1.7' }}>
+            {steps.map((s, i) => {
+              const stepText = s.replace(/^\d+\.\s*/, '');
+              // Extract **bold title:** pattern
+              const boldMatch = stepText.match(/^\*\*(.+?)\*\*[:\s]*(.*)/s);
+              if (boldMatch) {
+                const title = boldMatch[1];
+                const detail = boldMatch[2].trim();
+                // Also render inline `code` in detail
+                return (
+                  <div key={i} style={{ marginBottom: '4px' }}>
+                    <Popover
+                      position="right"
+                      size="large"
+                      triggerType="custom"
+                      content={
+                        <div style={{ maxWidth: 480, maxHeight: 320, overflow: 'auto', fontSize: '13px', lineHeight: '1.5', whiteSpace: 'normal', wordBreak: 'break-word' }}>
+                          <div style={{ fontWeight: 700, marginBottom: 6, color: '#0972d3' }}>{title}</div>
+                          <div style={{ color: '#414d5c' }}>{renderFormattedText(detail)}</div>
+                        </div>
+                      }
+                    >
+                      <span style={{ color: '#0972d3', cursor: 'pointer', fontWeight: 600, textDecoration: 'none', borderBottom: '1px dashed #0972d3' }}>
+                        {i + 1}. {title}
+                      </span>
+                    </Popover>
+                  </div>
+                );
+              }
+              // Fallback for steps without bold pattern
+              return (
+                <div key={i} style={{ marginBottom: '4px' }}>
+                  <Popover
+                    position="right"
+                    size="large"
+                    triggerType="custom"
+                    content={
+                      <div style={{ maxWidth: 480, maxHeight: 320, overflow: 'auto', fontSize: '13px', lineHeight: '1.5', whiteSpace: 'normal', wordBreak: 'break-word', color: '#414d5c' }}>
+                        {renderFormattedText(stepText)}
+                      </div>
+                    }
+                  >
+                    <span style={{ color: '#0972d3', cursor: 'pointer', textDecoration: 'none', borderBottom: '1px dashed #0972d3' }}>
+                      {i + 1}. {stepText.length > 60 ? stepText.slice(0, 60) + '…' : stepText}
+                    </span>
+                  </Popover>
+                </div>
+              );
+            })}
+          </div>
+        );
+      }
       return (
-        <ExpandableSection headerText={brief} variant="footer" headerAriaLabel="Expand guidance">
-          {steps.length > 1 ? (
-            <ol style={{ margin: '4px 0', paddingLeft: '20px', fontSize: '13px', lineHeight: '1.6' }}>
-              {steps.map((s, i) => (
-                <li key={i} style={{ marginBottom: '6px' }}>{s.replace(/^\d+\.\s*/, '')}</li>
-              ))}
-            </ol>
-          ) : (
-            <Box fontSize="body-s" color="text-body-secondary">{item.description}</Box>
-          )}
-        </ExpandableSection>
+        <div style={{ whiteSpace: "normal", wordBreak: "break-word" }}>
+          {renderFormattedText(item.description)}
+        </div>
       );
     },
     minWidth: 200,
@@ -84,19 +122,16 @@ const COLUMN_DEFINITIONS = [
     header: "Evidence",
     cell: (item) => {
       if (!item.evidence || item.evidence.length === 0) return "—";
-      const brief = `${item.evidence.length} source${item.evidence.length > 1 ? 's' : ''}: ${item.evidence[0].source_type}`;
       return (
-        <ExpandableSection headerText={brief} variant="footer" headerAriaLabel="Expand evidence">
-          <div style={{ fontSize: '12px' }}>
-            {item.evidence.map((e, i) => (
-              <div key={i} style={{ marginBottom: '6px', padding: '4px 0', borderBottom: i < item.evidence.length - 1 ? '1px solid #e9ebed' : 'none' }}>
-                <Badge color="grey">{e.source_type}</Badge>{' '}
-                <span style={{ color: '#5f6b7a' }}>{e.source_ref}</span>
-                {e.relevance && <div style={{ color: '#687078', fontStyle: 'italic', marginTop: '2px' }}>{e.relevance}</div>}
-              </div>
-            ))}
-          </div>
-        </ExpandableSection>
+        <div style={{ whiteSpace: "normal", wordBreak: "break-word" }}>
+          {item.evidence.map((e, i) => (
+            <div key={i} style={{ marginBottom: '4px', fontSize: '12px' }}>
+              <Badge color="grey">{e.source_type}</Badge>{' '}
+              <span style={{ color: '#5f6b7a' }}>{e.source_ref}</span>
+              {e.relevance && <div style={{ color: '#687078', fontStyle: 'italic' }}>{e.relevance}</div>}
+            </div>
+          ))}
+        </div>
       );
     },
     minWidth: 200,
@@ -120,13 +155,58 @@ const COLUMN_DEFINITIONS = [
 ];
 
 
+/**
+ * Render text with inline formatting:
+ * - **bold** → <strong>
+ * - `code` → <code>
+ */
+function renderFormattedText(text) {
+  if (!text) return null;
+  // Split on **bold** and `code` patterns, preserving delimiters
+  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i}>{part.slice(2, -2)}</strong>;
+    }
+    if (part.startsWith('`') && part.endsWith('`')) {
+      return (
+        <code key={i} style={{ background: '#f2f3f3', padding: '1px 5px', borderRadius: 3, fontSize: '12px', fontFamily: 'monospace' }}>
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+    return part;
+  });
+}
+
 export default function MitigationsTable({ attackTree }) {
-  const mitigations = useMemo(() => {
-    const raw = aggregateMitigations(attackTree);
-    // Sort by priority: 1 (critical) first, null/undefined last
-    const order = { 1: 0, 2: 1, 3: 2, critical: 0, high: 1, medium: 2, low: 3 };
-    return raw.sort((a, b) => (order[a.priority] ?? 99) - (order[b.priority] ?? 99));
-  }, [attackTree]);
+  const mitigations = useMemo(() => aggregateMitigations(attackTree), [attackTree]);
+
+  // --- Column widths state for resizable columns ---
+  const [columnWidths, setColumnWidths] = useState(() =>
+    COLUMN_DEFINITIONS.reduce((acc, col) => {
+      if (col.width) acc[col.id] = col.width;
+      return acc;
+    }, {})
+  );
+
+  const handleColumnWidthsChange = ({ detail }) => {
+    const updated = {};
+    for (const w of detail.widths) {
+      updated[w.id] = w.width;
+    }
+    setColumnWidths(prev => ({ ...prev, ...updated }));
+  };
+
+  // Apply current widths to column definitions
+  const resizableColumns = useMemo(
+    () =>
+      COLUMN_DEFINITIONS.map(col => ({
+        ...col,
+        width: columnWidths[col.id] || col.width,
+      })),
+    [columnWidths]
+  );
 
   // --- Task 2.1: Filter state ---
   const [selectedAttackStep, setSelectedAttackStep] = useState(null);
@@ -215,8 +295,10 @@ export default function MitigationsTable({ attackTree }) {
 
       {/* Table */}
       <Table
-        columnDefinitions={COLUMN_DEFINITIONS}
+        columnDefinitions={resizableColumns}
         items={filteredMitigations}
+        resizableColumns
+        onColumnWidthsChange={handleColumnWidthsChange}
         header={
           <Header variant="h3" counter={counterText}>
             Mitigations Summary
