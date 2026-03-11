@@ -49,7 +49,10 @@ def _setup_langfuse_otel() -> None:
         from strands.telemetry import StrandsTelemetry
         StrandsTelemetry().setup_otlp_exporter()
     except ImportError:
-        passdef _load_config_yaml(workspace_dir: Path) -> dict[str, Any]:
+        pass
+
+
+def _load_config_yaml(workspace_dir: Path) -> dict[str, Any]:
     config_path = workspace_dir / ".threatforest" / "config.yaml"
     if not config_path.is_file():
         raise RuntimeError(
