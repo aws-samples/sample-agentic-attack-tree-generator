@@ -60,8 +60,8 @@ export function parseClassDefs(mermaidCode) {
 export function computeDagreLayout(nodes, edges, options = {}) {
   const {
     direction = 'TB',
-    nodeWidth = 200,
-    nodeHeight = 50,
+    nodeWidth = 260,
+    nodeHeight = 60,
     nodeSep = 50,
     rankSep = 80,
   } = options;
@@ -99,8 +99,12 @@ export function adaptToReactFlow(parserOutput, attackTree, classDefs = {}) {
 
   // Build lookup maps for enrichment
   const stepMap = {};
+  const stepCategoryMap = {};
   for (const step of attackSteps) {
     stepMap[step.node_id] = step.description;
+    if (step.category) {
+      stepCategoryMap[step.node_id] = step.category;
+    }
   }
 
   // Map parser nodes → React Flow nodes
@@ -139,7 +143,7 @@ export function adaptToReactFlow(parserOutput, attackTree, classDefs = {}) {
       data: {
         label: label,
         nodeId: node.id,
-        category: classDefs[node.id] || 'default',
+        category: stepCategoryMap[node.id] || classDefs[node.id] || 'default',
         description: desc,
         ttcMappings: nodeMappings,
         mitigations: nodeMitigations,

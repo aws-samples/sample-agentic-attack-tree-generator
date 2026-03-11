@@ -51,6 +51,52 @@ def verify_tree_output(state_file: str, scanner_state_file: str = "") -> tuple[b
         if roots == 0:
             return False, f"Tree {tree_id} has no root step (step with empty parent_id)"
 
+        # --- Fact node check ---
+        # The first step must be the fact node: category="fact", parent_id="",
+        # and all other steps must trace back to it.
+        first_step = steps[0]
+        first_step_category = first_step.get("category", "")
+        first_step_parent = first_step.get("parent_id", "")
+
+        if first_step_category != "fact":
+            return False, (
+                f"Tree {tree_id}: first step '{first_step.get('id')}' must be the fact node "
+                f"(category='fact') but has category='{first_step_category}'. "
+                f"Every attack tree must start with a fact node derived from the threat statement."
+            )
+
+        if first_step_parent != "":
+            return False, (
+                f"Tree {tree_id}: fact node '{first_step.get('id')}' must have "
+                f"parent_id='' but has parent_id='{first_step_parent}'"
+            )
+
+        # Verify exactly one fact node exists
+        fact_nodes = [s for s in steps if s.get("category") == "fact"]
+        if len(fact_nodes) > 1:
+            fact_ids = [s.get("id") for s in fact_nodes]
+            return False, (
+                f"Tree {tree_id}: expected exactly 1 fact node but found {len(fact_nodes)}: {fact_ids}"
+            )
+
+        # Verify all non-fact steps eventually trace back to the fact node
+        fact_id = first_step.get("id")
+        parent_map = {s.get("id"): s.get("parent_id", "") for s in steps}
+        for step in steps[1:]:
+            sid = step.get("id")
+            visited = set()
+            current = sid
+            while current and current != fact_id:
+                if current in visited:
+                    return False, f"Tree {tree_id}: cycle detected involving step '{sid}'"
+                visited.add(current)
+                current = parent_map.get(current, "")
+            if current != fact_id:
+                return False, (
+                    f"Tree {tree_id}: step '{sid}' does not trace back to "
+                    f"the fact node '{fact_id}'"
+                )
+
     # --- Feasibility check (optional, needs scanner context) ---
     if scanner_state_file:
         scanner_path = Path(scanner_state_file)

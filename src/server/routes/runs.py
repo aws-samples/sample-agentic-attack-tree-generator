@@ -48,9 +48,23 @@ async def create_run(config: RunConfig) -> RunResponse:
     Validates the project path, delegates to RunManager, and returns
     a 202 with the generated run_id.
 
+    Also registers the project's parent directory as a registry scan path
+    so that the completed run's output will be discoverable by the
+    applications API.
+
     - **400** if the project path does not exist or is not a directory
     - **500** if no orchestrator executor is configured
     """
+    # Ensure the project's parent directory is a registry scan path so
+    # the application will be discoverable after the pipeline finishes.
+    from server.routes.applications import get_registry
+
+    project = Path(config.project_path).expanduser().resolve()
+    parent_dir = project.parent
+    registry = get_registry()
+    if parent_dir.is_dir() and parent_dir not in registry.scan_paths:
+        registry.scan_paths.append(parent_dir)
+
     manager = get_run_manager()
     try:
         run_id = manager.start_run(config)

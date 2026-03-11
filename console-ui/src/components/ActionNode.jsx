@@ -28,7 +28,7 @@ export default function ActionNode({ data, selected }) {
       <div
         data-testid="action-node"
         style={{
-          width: 240,
+          width: 260,
           borderRadius: 6,
           border: selected ? '2px solid #42A5F5' : '1px solid #424242',
           overflow: 'hidden',
@@ -76,8 +76,9 @@ export default function ActionNode({ data, selected }) {
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             display: '-webkit-box',
-            WebkitLineClamp: 3,
+            WebkitLineClamp: 4,
             WebkitBoxOrient: 'vertical',
+            wordBreak: 'break-word',
           }}>
             {data?.label || 'Unnamed'}
           </div>

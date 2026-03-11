@@ -41,6 +41,7 @@ Write a JSON object to the state file with this structure:
 ```json
 {
   "tech_stack": "Python/FastAPI with PostgreSQL, deployed on AWS ECS",
+  "industry": "telecommunications",
   "cloud_provider": "aws",
   "services": ["ECS", "RDS", "S3", "Cognito"],
   "auth_mechanisms": ["JWT tokens via Cognito", "API key for service-to-service"],
@@ -59,6 +60,7 @@ Write a JSON object to the state file with this structure:
 ```
 
 For `cloud_provider`, use: "aws", "gcp", "azure", "hybrid" (multiple providers), or "none".
+For `industry`, use: "healthcare", "media", "financial services", "energy", "automotive", "manufacturing" 
 
 ## Important
 

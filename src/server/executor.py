@@ -261,9 +261,36 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
             poll_task = None
 
             async def _poll_parallel_progress():
-                """Poll parallel pipeline progress and forward to WebSocket."""
+                """Hybrid poller: in-memory stage detection + filesystem scanning.
+
+                1. Uses in-memory get_parallel_progress() to detect the dominant
+                   sub-stage and drive UI stage transitions.
+                2. Scans .threatforest/state/ for per-threat file completions
+                   to emit granular sub-step messages (e.g., "🌳 Attack tree
+                   3 of 12 generated").
+                """
+                nonlocal current_stage
+                import re as _re
                 from threatforest.agents.parallel import get_parallel_progress
+
+                _SUBSTAGE_RANK = {"🌳 Tree": 0, "📐 TTP Embed": 1, "🤖 TTP Review": 2, "🛡️ Mitigation": 3}
+                _RANK_TO_UI = {0: "Attack Tree Generation", 1: "TTP Enrichment", 2: "TTP Enrichment", 3: "Mitigation Mapping"}
+
+                # Filesystem-based per-threat file tracking
+                state_dir = Path(project_path) / ".threatforest" / "state"
+                seen_files: set[str] = set()
+
+                # Map per-threat file suffix → (UI stage, emoji, human label)
+                _FILE_TYPE_MAP = {
+                    "attack_trees":     ("Attack Tree Generation", "🌳", "Attack tree for threat {n} generated"),
+                    "ttp_candidates":   ("TTP Enrichment",         "📐", "TTP embedding for threat {n} complete"),
+                    "ttp_mappings":     ("TTP Enrichment",         "🤖", "TTP mapping for threat {n} reviewed"),
+                    "mitigations":      ("Mitigation Mapping",     "🛡️", "Mitigations for threat {n} generated"),
+                }
+
+                active_ui_stage = "Attack Tree Generation"
                 tick = 0
+
                 while True:
                     await asyncio.sleep(1)
                     tick += 1
@@ -281,6 +308,57 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
                         ))
                         continue
 
+                    # --- 1. In-memory dominant stage detection ---
+                    max_rank = 0
+                    for i in range(total):
+                        if i in pp.get("completed_threats", set()):
+                            continue
+                        ts = threat_status.get(i, {})
+                        stage_name = ts.get("stage", "")
+                        rank = _SUBSTAGE_RANK.get(stage_name, 0)
+                        if rank > max_rank:
+                            max_rank = rank
+
+                    dominant_ui_stage = _RANK_TO_UI.get(max_rank, "Attack Tree Generation")
+
+                    # Emit stage transition if the dominant phase has advanced
+                    if dominant_ui_stage != active_ui_stage:
+                        progress_callback(ProgressEvent(
+                            event_type="stage_complete",
+                            stage=active_ui_stage,
+                            percentage=100,
+                            message=f"{active_ui_stage} complete",
+                        ))
+                        active_ui_stage = dominant_ui_stage
+                        current_stage = active_ui_stage
+                        progress_callback(ProgressEvent(
+                            event_type="stage_start",
+                            stage=active_ui_stage,
+                            percentage=0,
+                            message=f"Starting {active_ui_stage}",
+                        ))
+
+                    # --- 2. Filesystem scan for granular per-threat progress ---
+                    latest_message = None
+                    try:
+                        current_files = {f.name for f in state_dir.iterdir() if f.is_file()}
+                    except (OSError, PermissionError):
+                        current_files = set()
+
+                    new_files = sorted(current_files - seen_files)
+                    for filename in new_files:
+                        # Match per-threat files: t3_attack_trees.json
+                        m = _re.match(r't(\d+)_(.+)\.json$', filename)
+                        if m:
+                            threat_idx = int(m.group(1))
+                            file_type = m.group(2)
+                            if file_type in _FILE_TYPE_MAP:
+                                _stage, _emoji, _template = _FILE_TYPE_MAP[file_type]
+                                latest_message = f"{_emoji} {_template.format(n=threat_idx + 1)}"
+
+                    seen_files = current_files
+
+                    # --- 3. Combined progress event ---
                     pct = int(100 * done / total)
 
                     # Build per-worker status for the UI
@@ -294,11 +372,15 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
                         else:
                             workers.append({"id": i, "status": "pending", "stage": "⏳ Queued"})
 
+                    # Use the most recent file-based message if available,
+                    # otherwise fall back to the overall count
+                    message = latest_message or f"{done}/{total} threats completed"
+
                     progress_callback(ProgressEvent(
                         event_type="stage_progress",
                         stage=current_stage,
                         percentage=pct,
-                        message=f"{done}/{total} threats completed",
+                        message=message,
                         details={"workers": workers, "total": total, "completed": done},
                     ))
 
@@ -336,10 +418,13 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
 
                 elif etype == "multiagent_node_stop":
                     nid = event.get("node_id", "")
-                    # When parallel pipeline completes, send all intermediate stages with summaries
+                    # When parallel pipeline completes, finalize whatever
+                    # stage the poller left us in and ensure all three
+                    # parallel sub-stages are marked complete.
                     if nid == "parallel_pipeline" and poll_task:
                         poll_task.cancel()
                         poll_task = None
+
                         ps = _get_stage_summary(project_path, "parallel_pipeline")
                         findings = ps.get("findings", []) if ps else []
                         stage_findings = {
@@ -347,7 +432,26 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
                             "TTP Enrichment": findings[1:2],
                             "Mitigation Mapping": findings[2:],
                         }
-                        for stage_name in ["Attack Tree Generation", "TTP Enrichment", "Mitigation Mapping"]:
+
+                        # The poller may have already transitioned through
+                        # some stages. Only emit start+complete for stages
+                        # that the poller hasn't reached yet, plus complete
+                        # the current active stage.
+                        all_parallel_stages = ["Attack Tree Generation", "TTP Enrichment", "Mitigation Mapping"]
+                        current_idx = all_parallel_stages.index(current_stage) if current_stage in all_parallel_stages else -1
+
+                        # Complete the currently active stage
+                        if current_stage in all_parallel_stages:
+                            progress_callback(ProgressEvent(
+                                event_type="stage_complete",
+                                stage=current_stage,
+                                percentage=100,
+                                message=f"{current_stage} complete",
+                                details={"findings": stage_findings.get(current_stage, [])},
+                            ))
+
+                        # Fast-forward any remaining stages that the poller didn't reach
+                        for stage_name in all_parallel_stages[current_idx + 1:]:
                             progress_callback(ProgressEvent(
                                 event_type="stage_start",
                                 stage=stage_name,
@@ -361,6 +465,7 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
                                 message=f"{stage_name} complete",
                                 details={"findings": stage_findings.get(stage_name, [])},
                             ))
+
                         current_stage = "Mitigation Mapping"
 
                     prev_node_id = nid

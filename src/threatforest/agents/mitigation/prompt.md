@@ -26,9 +26,26 @@ This way partial results survive if you hit a limit.
 
 ## Quality Rules
 
+### Basics
 - Reference specific services, components, or files — no generic boilerplate
 - Priority: 1 = critical, 2 = high, 3 = medium
 - Every mitigation must have at least one Evidence entry
+
+### Technology & Context Relevance
+- Every mitigation must be directly relevant to the specific technologies in the application's stack. Do not suggest mitigations for technologies the application does not use.
+- Consider **how** and **where** the technology is deployed — a mitigation for a public-facing API Gateway is different from one for an internal microservice, even if they share the same underlying framework.
+- Reference actual component names, service configurations, and deployment patterns from the scanner context rather than offering generic security advice.
+
+### Mitigation Validation
+Before finalizing each mitigation, consider the following questions to ensure completeness and relevance:
+
+- **Encryption** — Do we need to add encryption, and if so, at what layer? (transport via TLS, application-level, or field-level encryption for sensitive fields?)
+- **Monitoring & Alerting** — Should we implement additional monitoring or alerting for this threat? Consider CloudWatch alarms, CloudTrail logging, or application-level audit trails.
+- **AWS-Native Controls** — Are there AWS-native services that directly address this technique? (e.g., GuardDuty for threat detection, Macie for data classification, WAF for web exploits, KMS for key management, IAM policies for access control)
+- **Least Privilege** — Do we need to update IAM policies or tighten least-privilege access? Consider both user-level and service-to-service role permissions.
+- **Input/Output Safety** — Should we add input validation, output encoding, or parameterized queries? Identify the specific entry points and data flows involved.
+- **Network Segmentation** — Is there a need for network segmentation or additional security groups/NACLs to isolate the affected components?
+- **Effort vs. Impact** — Are there quick wins (e.g., enabling a WAF rule, tightening an IAM policy) vs. longer-term architectural changes (e.g., migrating to a zero-trust model, re-designing data flows)? When both exist, include the quick win as the primary mitigation and note the longer-term change in `implementation_guidance`.
 
 ## Output format (each line appended separately)
 

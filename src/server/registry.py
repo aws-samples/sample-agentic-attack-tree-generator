@@ -26,16 +26,20 @@ class ApplicationRegistry:
     Each scan path is expected to contain project directories.  A project is
     recognised when it contains the marker file:
 
-        ``{project_dir}/threatforest/attack_trees/threatforest_data.json``
+        ``{project_dir}/.threatforest/output/threatforest_data.json``
 
-    Version directories are the *subdirectories* inside
-    ``{project_dir}/threatforest/attack_trees/`` (excluding the JSON file
-    itself).  Each version directory represents a single ThreatForest run.
+    The ``.threatforest/output/`` directory may exist at the top level of
+    the project directory, or within a subdirectory (e.g., when a user
+    points to a parent repo that contains the actual application in a
+    child folder).  The registry searches recursively for the first
+    ``.threatforest/output/`` containing ``threatforest_data.json``.
+
+    Version directories are the *subdirectories* inside the output
+    directory (excluding the JSON file itself).  Each version directory
+    represents a single ThreatForest run.
     """
 
     ATTACK_TREES_REL = Path(".threatforest") / "output"
-    # Also check legacy path for pre-v2 samples
-    LEGACY_REL = Path("threatforest") / "attack_trees"
     METADATA_FILE = "threatforest_data.json"
     DASHBOARD_FILE = "attack_trees_dashboard.html"
 
@@ -46,20 +50,74 @@ class ApplicationRegistry:
     # Public API
     # ------------------------------------------------------------------
 
+    # Maximum depth to search for .threatforest inside a project directory.
+    # Covers cases like project_dir/sub_app/.threatforest/output/
+    _MAX_SEARCH_DEPTH = 3
+
     def _find_metadata(self, project_dir: Path) -> Path | None:
-        """Find metadata file — check v2 path first, then legacy."""
-        for rel in (self.ATTACK_TREES_REL, self.LEGACY_REL):
-            p = project_dir / rel / self.METADATA_FILE
-            if p.is_file():
-                return p
-        return None
+        """Find metadata file, searching subdirectories if not at top level.
+
+        Checks project_dir/.threatforest/output/ first, then searches
+        up to ``_MAX_SEARCH_DEPTH`` levels deep for any
+        ``.threatforest/output/`` directory containing the metadata file.
+        """
+        # 1. Check top-level first (fast path)
+        top = project_dir / self.ATTACK_TREES_REL / self.METADATA_FILE
+        if top.is_file():
+            return top
+
+        # 2. Depth-limited search for .threatforest/output/ in subdirectories
+        result = self._find_threatforest_file(project_dir, self.METADATA_FILE)
+        return result
 
     def _find_output_dir(self, project_dir: Path) -> Path | None:
-        """Find the output directory containing metadata."""
-        for rel in (self.ATTACK_TREES_REL, self.LEGACY_REL):
-            d = project_dir / rel
-            if (d / self.METADATA_FILE).is_file():
-                return d
+        """Find the output directory containing metadata.
+
+        Checks project_dir/.threatforest/output/ first, then searches
+        up to ``_MAX_SEARCH_DEPTH`` levels deep for any
+        ``.threatforest/output/`` directory containing the metadata file.
+        """
+        # 1. Check top-level first (fast path)
+        d = project_dir / self.ATTACK_TREES_REL
+        if (d / self.METADATA_FILE).is_file():
+            return d
+
+        # 2. Depth-limited search for .threatforest/output/ in subdirectories
+        metadata_path = self._find_threatforest_file(project_dir, self.METADATA_FILE)
+        if metadata_path is not None:
+            return metadata_path.parent
+
+        return None
+
+    def _find_threatforest_file(self, root: Path, filename: str, _depth: int = 0) -> Path | None:
+        """Depth-limited search for .threatforest/output/{filename}.
+
+        Searches up to ``_MAX_SEARCH_DEPTH`` directory levels below *root*
+        to avoid expensive recursive scans on large directory trees (e.g.,
+        the user's home directory).
+        """
+        if _depth >= self._MAX_SEARCH_DEPTH:
+            return None
+
+        try:
+            children = sorted(root.iterdir())
+        except (PermissionError, OSError):
+            return None
+
+        for child in children:
+            if not child.is_dir():
+                continue
+            if child.name == ".threatforest":
+                candidate = child / "output" / filename
+                if candidate.is_file():
+                    return candidate
+            else:
+                # Recurse into non-hidden subdirectories only
+                if not child.name.startswith("."):
+                    result = self._find_threatforest_file(child, filename, _depth + 1)
+                    if result is not None:
+                        return result
+
         return None
 
     def discover_applications(self) -> list[ApplicationSummary]:

@@ -19,7 +19,7 @@ def _create_app_tree(root: Path, app_name: str, versions: list[dict] | None = No
     Returns the project directory path.
     """
     project_dir = root / app_name
-    attack_trees = project_dir / "threatforest" / "attack_trees"
+    attack_trees = project_dir / ".threatforest" / "output"
     attack_trees.mkdir(parents=True)
 
     metadata = {
