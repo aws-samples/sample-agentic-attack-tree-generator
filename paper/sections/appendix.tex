@@ -5,50 +5,54 @@
 \section{Score Definitions Reference}
 \label{app:scores}
 
-Table~\ref{tab:all-scores} lists all 12 score dimensions defined in the evaluation framework.
+Table~\ref{tab:all-scores} lists all 16 score definitions registered with Langfuse.
 
 \begin{table}[h]
 \centering
-\caption{Complete score dimension reference.}
+\small
+\caption{Complete score definitions. All use the 5-point categorical scale unless noted.}
 \label{tab:all-scores}
-\begin{tabular}{@{}llll@{}}
+\begin{tabular}{llp{7cm}}
 \toprule
-\textbf{Capability} & \textbf{Dimension} & \textbf{Type} & \textbf{Scale} \\
+\textbf{Prefix} & \textbf{Name} & \textbf{Description} \\
 \midrule
-Threat Statement & overall\_quality & Categorical & 5-point \\
-Threat Statement & relevance\_to\_context & Categorical & 5-point \\
-Threat Statement & completeness & Categorical & 5-point \\
-Threat Statement & technical\_accuracy & Categorical & 5-point \\
-Threat Statement & hallucination\_score & Categorical & 5-point \\
+\multirow{5}{*}{threat\_} & overall\_quality & Holistic assessment of generated threats \\
+& relevance\_to\_context & Match to application context \\
+& completeness & Coverage of threat categories \\
+& technical\_accuracy & Technical correctness \\
+& hallucination\_score & Absence of fabricated content \\
 \midrule
-Attack Tree & overall\_quality & Categorical & 5-point \\
-Attack Tree & structural\_quality & Categorical & 5-point \\
-Attack Tree & technical\_realism & Categorical & 5-point \\
-Attack Tree & attack\_path\_logic & Categorical & 5-point \\
-Attack Tree & completeness & Categorical & 5-point \\
-Attack Tree & actionability & Categorical & 5-point \\
+\multirow{6}{*}{attack\_tree\_} & overall\_quality & Holistic assessment of the attack tree \\
+& structural\_quality & Depth, branching, organization \\
+& technical\_realism & Feasibility of attack techniques \\
+& attack\_path\_logic & Logical progression from access to impact \\
+& completeness & Coverage of attack vectors and phases \\
+& actionability & Usefulness for defenders \\
 \midrule
-TTP Matching & mapping\_quality & Categorical & 5-point$^*$ \\
+ttp\_ & mapping\_quality & Quality of MITRE ATT\&CK technique mapping$^*$ \\
+\midrule
+\multirow{4}{*}{mitigation\_} & actionability & Concrete, implementable steps \\
+& specificity & Tailored to identified threat and tech stack \\
+& coverage & Addresses all identified attack paths \\
+& technical\_accuracy & Correctness of recommended controls \\
 \bottomrule
+\multicolumn{3}{l}{\footnotesize $^*$Uses specialized scale: excellent, good, acceptable, poor, no\_mapping.}
 \end{tabular}
-
-\vspace{0.5em}
-{\small $^*$TTP matching uses ``no\_mapping'' instead of ``unacceptable'' as the lowest category.}
 \end{table}
 
-\section{Phase Detection Keywords}
-\label{app:phases}
+\section{Cosine Similarity for TTP Retrieval}
+\label{app:cosine}
 
-The automated phase coverage metric matches attack tree node descriptions against keyword lists for 12 MITRE ATT\&CK tactics. The dictionary contains 130+ terms. Representative examples:
+Given an attack step description $d_i$ and ATT\&CK technique description $t_j$, ATTACK-BERT produces embedding vectors $\mathbf{e}(d_i), \mathbf{e}(t_j) \in \mathbb{R}^{768}$. The cosine similarity is:
 
-\begin{itemize}
-    \item \textbf{Initial Access}: phishing, exploit public, drive-by, supply chain, valid accounts
-    \item \textbf{Privilege Escalation}: escalate, elevate, admin, root, UAC bypass, token
-    \item \textbf{Lateral Movement}: pivot, spread, pass the hash, RDP, SSH, remote service
-    \item \textbf{Exfiltration}: exfiltrate, transfer, upload, data theft, steal data
-\end{itemize}
+\begin{equation}
+\text{sim}(d_i, t_j) = \frac{\sum_{k=1}^{768} e_k(d_i) \cdot e_k(t_j)}{\sqrt{\sum_{k=1}^{768} e_k(d_i)^2} \cdot \sqrt{\sum_{k=1}^{768} e_k(t_j)^2}}
+\end{equation}
 
-\section{Tracing Data Schema}
-\label{app:schema}
+The top-$K$ candidates are retrieved by sorting all $M$ techniques by descending similarity and selecting the first $K$ entries above threshold $\tau$:
 
-\todo{Include the full JSON schema for evaluation records}
+\begin{equation}
+\text{candidates}(d_i) = \{t_j \mid \text{sim}(d_i, t_j) \geq \tau\} \text{ sorted by } \text{sim}(d_i, t_j) \text{ desc, truncated to } K
+\end{equation}
+
+In our experiments, $K=5$ and $\tau=0.3$.

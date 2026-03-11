@@ -1,0 +1,122 @@
+%==============================================================================
+\section{Results}
+\label{sec:results}
+%==============================================================================
+
+We evaluate \threatforest{} on \todo{N} sample applications spanning diverse cloud architectures. All experiments use Claude Opus 4.6 via AWS Bedrock with ATTACK-BERT for TTP embedding retrieval.
+
+%----------------------------------------------------------------------
+\subsection{Pipeline Output Summary}
+%----------------------------------------------------------------------
+
+Table~\ref{tab:pipeline-summary} summarizes the pipeline outputs across domains.
+
+\begin{table}[t]
+\centering
+\caption{Pipeline output summary across application domains.}
+\label{tab:pipeline-summary}
+\begin{tabular}{lrrrrrr}
+\toprule
+\textbf{Domain} & \textbf{Threats} & \textbf{Trees} & \textbf{Steps} & \textbf{TTPs} & \textbf{Unique} & \textbf{Mitigations} \\
+\midrule
+S3 Multi-Tenant SaaS & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
+Healthcare (HCLS) & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
+IoT Device Mgmt & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
+Vehicle Platform & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
+\todo{More domains} & & & & & & \\
+\midrule
+\textbf{Average} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%----------------------------------------------------------------------
+\subsection{Structural Quality Metrics}
+%----------------------------------------------------------------------
+
+Table~\ref{tab:structural} reports automated structural metrics.
+
+\begin{table}[t]
+\centering
+\caption{Structural quality metrics across domains.}
+\label{tab:structural}
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Domain} & \textbf{Avg Depth} & \textbf{Avg Steps/Tree} & \textbf{Technique Diversity} & \textbf{Phase Coverage} \\
+\midrule
+S3 Multi-Tenant SaaS & \todo{} & \todo{} & \todo{} & \todo{} \\
+Healthcare (HCLS) & \todo{} & \todo{} & \todo{} & \todo{} \\
+IoT Device Mgmt & \todo{} & \todo{} & \todo{} & \todo{} \\
+Vehicle Platform & \todo{} & \todo{} & \todo{} & \todo{} \\
+\midrule
+\textbf{Average} & \todo{} & \todo{} & \todo{} & \todo{} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%----------------------------------------------------------------------
+\subsection{TTP Mapping Analysis}
+%----------------------------------------------------------------------
+
+Table~\ref{tab:ttp} analyzes the hybrid TTP mapping approach.
+
+\begin{table}[t]
+\centering
+\caption{TTP mapping analysis. Embedding accuracy is top-1 precision before LLM review; post-review accuracy is measured against SME labels.}
+\label{tab:ttp}
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Domain} & \textbf{Total Mappings} & \textbf{Override Rate} & \textbf{Embedding Acc.} & \textbf{Post-Review Acc.} \\
+\midrule
+S3 Multi-Tenant SaaS & \todo{} & \todo{} & \todo{} & \todo{} \\
+Healthcare (HCLS) & \todo{} & \todo{} & \todo{} & \todo{} \\
+IoT Device Mgmt & \todo{} & \todo{} & \todo{} & \todo{} \\
+Vehicle Platform & \todo{} & \todo{} & \todo{} & \todo{} \\
+\midrule
+\textbf{Average} & \todo{} & \todo{} & \todo{} & \todo{} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The override rate measures how often the LLM reviewer changed the embedding's top-1 selection. A high override rate indicates the embedding model struggles with the domain; a low rate with high post-review accuracy suggests the embedding is reliable and the reviewer adds marginal value.
+
+%----------------------------------------------------------------------
+\subsection{SME Evaluation Scores}
+%----------------------------------------------------------------------
+
+\todo{Table with SME scores per dimension, per domain. Median and IQR across reviewers. Include inter-rater reliability (Cohen's $\kappa$ or Krippendorff's $\alpha$).}
+
+\begin{table}[t]
+\centering
+\caption{SME evaluation scores (median) across domains. Scale: 1.0 = Excellent, 0.0 = Unacceptable.}
+\label{tab:sme-scores}
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Dimension} & \textbf{S3} & \textbf{HCLS} & \textbf{IoT} & \textbf{Vehicle} \\
+\midrule
+\multicolumn{5}{l}{\emph{Threat Statements}} \\
+\quad Overall Quality & \todo{} & \todo{} & \todo{} & \todo{} \\
+\quad Relevance & \todo{} & \todo{} & \todo{} & \todo{} \\
+\quad Completeness & \todo{} & \todo{} & \todo{} & \todo{} \\
+\quad Technical Accuracy & \todo{} & \todo{} & \todo{} & \todo{} \\
+\quad Hallucination & \todo{} & \todo{} & \todo{} & \todo{} \\
+\midrule
+\multicolumn{5}{l}{\emph{Attack Trees}} \\
+\quad Overall Quality & \todo{} & \todo{} & \todo{} & \todo{} \\
+\quad Structural Quality & \todo{} & \todo{} & \todo{} & \todo{} \\
+\quad Technical Realism & \todo{} & \todo{} & \todo{} & \todo{} \\
+\quad Attack Path Logic & \todo{} & \todo{} & \todo{} & \todo{} \\
+\quad Completeness & \todo{} & \todo{} & \todo{} & \todo{} \\
+\quad Actionability & \todo{} & \todo{} & \todo{} & \todo{} \\
+\midrule
+\multicolumn{5}{l}{\emph{TTP Mapping}} \\
+\quad Mapping Quality & \todo{} & \todo{} & \todo{} & \todo{} \\
+\midrule
+\multicolumn{5}{l}{\emph{Mitigations}} \\
+\quad Actionability & \todo{} & \todo{} & \todo{} & \todo{} \\
+\quad Specificity & \todo{} & \todo{} & \todo{} & \todo{} \\
+\quad Coverage & \todo{} & \todo{} & \todo{} & \todo{} \\
+\quad Technical Accuracy & \todo{} & \todo{} & \todo{} & \todo{} \\
+\bottomrule
+\end{tabular}
+\end{table}
