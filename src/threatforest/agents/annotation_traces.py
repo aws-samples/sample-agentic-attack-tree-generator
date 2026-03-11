@@ -136,3 +136,70 @@ def flush() -> None:
             _client.flush()
         except Exception:
             pass
+
+
+def push_ttp_dataset_items(repo_path: str, dataset_name: str = "ttp-mappings") -> int:
+    """Push individual TTP mappings as Langfuse dataset items for SME labeling.
+
+    Each item has the attack step description as input and the mapped technique
+    as output. expected_output is left empty for SMEs to label as correct/incorrect.
+
+    Returns the number of items created.
+    """
+    if not _client:
+        return 0
+
+    sd = Path(repo_path) / STATE_DIR
+    trees_data = _read_json(sd / "attack_trees.json") or {}
+    mappings_data = _read_json(sd / "ttp_mappings.json") or {}
+
+    # Build step lookup: id → {title, description}
+    steps = {}
+    for tree in trees_data.get("attack_trees", []):
+        for step in tree.get("steps", []):
+            steps[step["id"]] = {
+                "title": step.get("title", ""),
+                "description": step.get("description", ""),
+            }
+
+    # Ensure dataset exists
+    try:
+        _client.create_dataset(
+            name=dataset_name,
+            description="TTP embedding mappings for SME review. Label expected_output as {\"correct\": true/false}.",
+        )
+    except Exception:
+        pass  # already exists
+
+    # Create a trace to link items to
+    trace = _client.trace(
+        name="ttp-dataset-export",
+        session_id=_session_id,
+        tags=["threatforest", "ttp-dataset"],
+    )
+
+    count = 0
+    for mapping in mappings_data.get("ttp_mappings", []):
+        step_id = mapping.get("attack_step_id", "")
+        step = steps.get(step_id, {})
+
+        _client.create_dataset_item(
+            dataset_name=dataset_name,
+            input={
+                "attack_step_id": step_id,
+                "attack_step_title": step.get("title", ""),
+                "attack_step_description": step.get("description", ""),
+            },
+            expected_output=None,
+            metadata={
+                "technique_id": mapping.get("technique_id", ""),
+                "technique_name": mapping.get("technique_name", ""),
+                "similarity_score": mapping.get("similarity_score"),
+                "reviewer_overrode_top1": mapping.get("reviewer_overrode_top1", False),
+                "reviewer_reasoning": mapping.get("reviewer_reasoning", ""),
+            },
+            source_trace_id=trace.id,
+        )
+        count += 1
+
+    return count
