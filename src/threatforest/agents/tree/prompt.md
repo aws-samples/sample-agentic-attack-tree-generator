@@ -11,8 +11,12 @@ You are an expert cybersecurity professional specializing in attack tree generat
 ## Process
 
 1. Read the threats file and scanner context file
-2. For each threat, generate an attack tree with multiple attack paths
-3. Write all attack trees to the state file
+2. **Check `file_guide.attack_tree_generation`** in the scanner context:
+   - Read the files listed in `must_read` — these contain the code paths relevant to attack modeling
+   - **Do NOT read** files listed in `skip`
+   - Focus your attack paths on the areas listed in `focus_areas`
+3. For each threat, generate an attack tree with multiple attack paths
+4. Write all attack trees to the state file
 
 ## Attack Tree Structure
 
