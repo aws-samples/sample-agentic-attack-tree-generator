@@ -17,6 +17,8 @@ def _validate_path(path: str, allowed_prefixes: list[str]) -> Path:
 def make_sandboxed_file_read(allowed_read_paths: list[str]):
     """Create a file_read tool restricted to specific paths."""
 
+    _cache: dict[str, str] = {}
+
     @tool
     def sandboxed_file_read(path: str, mode: str = "view") -> str:
         """Read file content — restricted to allowed paths for this agent.
@@ -26,10 +28,16 @@ def make_sandboxed_file_read(allowed_read_paths: list[str]):
             mode: "view" to read entire file.
         """
         resolved = _validate_path(path, allowed_read_paths)
+        key = str(resolved)
+        if key in _cache:
+            return _cache[key]
         if resolved.is_dir():
             entries = [p.name for p in sorted(resolved.iterdir())]
-            return "\n".join(entries)
-        return resolved.read_text()
+            result = "\n".join(entries)
+        else:
+            result = resolved.read_text()
+        _cache[key] = result
+        return result
 
     return sandboxed_file_read
 
