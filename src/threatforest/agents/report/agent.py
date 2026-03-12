@@ -238,6 +238,11 @@ def _build_attack_trees_for_ui(state_dir: Path, threats: list) -> list:
         if tid:
             threat_map[tid] = t
 
+    # Count trees per threat_id so we can disambiguate duplicates
+    from collections import Counter
+    tree_count_by_threat = Counter(t.get("threat_id", "") for t in tree_data)
+    tree_index_by_threat: dict[str, int] = {}
+
     for tree in tree_data:
         threat_id = tree.get("threat_id", "")
         threat = threat_map.get(threat_id, {})
@@ -291,8 +296,16 @@ def _build_attack_trees_for_ui(state_dir: Path, threats: list) -> list:
                 }
                 ttc_mappings.append(mapping_entry)
 
+        # Build a unique display threat_id when a threat has multiple trees
+        if tree_count_by_threat[threat_id] > 1:
+            idx = tree_index_by_threat.get(threat_id, 0) + 1
+            tree_index_by_threat[threat_id] = idx
+            display_threat_id = f"{threat_id} [AttackTree - {idx}]"
+        else:
+            display_threat_id = threat_id
+
         trees.append({
-            "threat_id": threat_id,
+            "threat_id": display_threat_id,
             "threat_category": threat.get("category") or threat.get("title") or threat.get("name") or threat.get("description", "")[:80],
             "threat_description": threat.get("description", ""),
             "threat_statement": threat.get("description", ""),
