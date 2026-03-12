@@ -30,7 +30,7 @@ def make_sandboxed_file_read(allowed_read_paths: list[str]):
         resolved = _validate_path(path, allowed_read_paths)
         key = str(resolved)
         if key in _cache:
-            return _cache[key]
+            return f"[CACHED — already read this file]\n{_cache[key]}"
         if resolved.is_dir():
             entries = [p.name for p in sorted(resolved.iterdir())]
             result = "\n".join(entries)
