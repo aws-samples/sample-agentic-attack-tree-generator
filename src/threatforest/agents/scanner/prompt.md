@@ -23,9 +23,18 @@ Your output is the single source of truth these agents use. If you miss somethin
 
 ## Analysis Strategy
 
+### Adapting to Repository Size
+
+**Minimal repos (1-5 files):** The repository may contain only documentation — a README, a DFD diagram, architecture notes, or even photos of a whiteboard. This is valid input. Read everything available, extract whatever security context you can, and work with what exists. Do NOT keep searching for code that isn't there. If the repo has an image file (.png, .jpg), note it in `files_analyzed` but you cannot read binary files — rely on any accompanying text descriptions.
+
+**Small repos (<50 source files):** Read all security-relevant files. You likely need only 2-3 tool calls total.
+
+**Large repos (50+ source files):** Be selective — follow the phased approach below.
+
 ### Phase 1: Orientation (1-2 tool calls)
 1. List the root directory to understand project structure.
 2. Read README and any architecture/design docs.
+3. **If the repo has fewer than 10 files total, read them all in one batch and skip to writing output.**
 
 ### Phase 2: Security-Critical Files (2-4 tool calls)
 Read in priority order — stop when you have sufficient context:
@@ -34,12 +43,12 @@ Read in priority order — stop when you have sufficient context:
 3. **Auth & access control**: IAM policies, RBAC configs, OAuth setup, API key management
 4. **Data layer**: DB schemas, data models, storage configs, encryption settings
 
-### Phase 3: Selective Deep Dives (only if needed)
+### Phase 3: Selective Deep Dives (only if needed for large repos)
 - Service-to-service communication (gRPC, SQS, EventBridge, Kafka configs)
 - Network configs (VPC, security groups, WAF rules)
 - Secrets management (env vars, parameter store references)
 
-### Do NOT read:
+### Do NOT read (unless the repo has fewer than 10 files — then read everything):
 - UI components, stylesheets, CSS, frontend rendering logic
 - Test files, test fixtures, mocks
 - Generated code, lock files (package-lock.json, yarn.lock)
