@@ -5,7 +5,7 @@ from pathlib import Path
 
 from threatforest.types.project import ProjectContext
 
-REQUIRED_FIELDS = ["tech_stack", "cloud_provider", "services", "auth_mechanisms", "files_analyzed"]
+REQUIRED_FIELDS = ["tech_stack", "cloud_provider", "services", "auth_mechanisms", "files_analyzed", "file_guide"]
 
 
 def verify_scanner_output(state_file: str) -> tuple[bool, str]:
