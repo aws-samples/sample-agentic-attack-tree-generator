@@ -97,7 +97,7 @@ async def _process_single_threat(
     )
 
     tree_tools = [
-        make_sandboxed_file_read([scanner_file, threats_file]),
+        make_sandboxed_file_read([scanner_file, threats_file, repo_path]),
         make_sandboxed_file_write([tree_out_str]),
     ]
 
@@ -200,7 +200,7 @@ async def _process_single_threat(
     )
 
     ttp_tools = [
-        make_sandboxed_file_read([str(summary_file)]),
+        make_sandboxed_file_read([str(summary_file), scanner_file]),
         make_sandboxed_file_write([str(mappings_file)]),
         get_ttp_alternatives,
     ]
@@ -243,7 +243,7 @@ async def _process_single_threat(
     )
 
     mit_tools = [
-        make_sandboxed_file_read([str(mit_mappings_file), scanner_file, tree_out_str]),
+        make_sandboxed_file_read([str(mit_mappings_file), scanner_file, tree_out_str, repo_path]),
         make_sandboxed_file_write([str(mit_out)]),
     ]
 
