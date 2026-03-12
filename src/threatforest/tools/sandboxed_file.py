@@ -7,7 +7,21 @@ from strands import tool
 
 def _validate_path(path: str, allowed_prefixes: list[str]) -> Path:
     """Resolve path and check it falls within allowed prefixes."""
-    resolved = Path(path).resolve()
+    p = Path(path)
+    if not p.is_absolute():
+        # Resolve relative paths against each allowed prefix until one works
+        for prefix in allowed_prefixes:
+            candidate = (Path(prefix).resolve() / p)
+            if candidate.exists():
+                p = candidate
+                break
+        else:
+            # No match found, try first directory prefix as default base
+            for prefix in allowed_prefixes:
+                if Path(prefix).resolve().is_dir():
+                    p = Path(prefix).resolve() / p
+                    break
+    resolved = p.resolve()
     for prefix in allowed_prefixes:
         if resolved.is_relative_to(Path(prefix).resolve()):
             return resolved
@@ -15,7 +29,10 @@ def _validate_path(path: str, allowed_prefixes: list[str]) -> Path:
 
 
 def make_sandboxed_file_read(allowed_read_paths: list[str]):
-    """Create a file_read tool restricted to specific paths."""
+    """Create a file_read tool restricted to specific paths.
+
+    Relative paths are automatically resolved against the allowed directories.
+    """
 
     _cache: dict[str, str] = {}
 
@@ -24,7 +41,7 @@ def make_sandboxed_file_read(allowed_read_paths: list[str]):
         """Read file content — restricted to allowed paths for this agent.
 
         Args:
-            path: Path to the file to read.
+            path: Path to the file to read (can be relative to the project root).
             mode: "view" to read entire file.
         """
         resolved = _validate_path(path, allowed_read_paths)
