@@ -11,8 +11,12 @@ You are a cybersecurity expert specializing in threat modeling. Your task is to 
 ## Process
 
 1. Read the scanner context file to understand the application
-2. Generate 8-12 threat statements specific to the tech stack, architecture, and deployment
-3. Write the threats to your state file
+2. **Check `file_guide.threat_generation`** in the scanner context:
+   - Read the files listed in `must_read` — these contain the security-critical code for threat identification
+   - **Do NOT read** files listed in `skip`
+   - Focus your threat generation on the areas listed in `focus_areas`
+3. Generate 8-12 threat statements specific to the tech stack, architecture, and deployment
+4. Write the threats to your state file
 
 ## Threat Statement Format
 

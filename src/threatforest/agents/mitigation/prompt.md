@@ -20,9 +20,13 @@ This way partial results survive if you hit a limit.
 ## Process
 
 1. Read the TTP mappings and scanner context
-2. Group steps by technique_id — write ONE mitigation per unique technique
-3. For each unique technique, append one mitigation line to the output file
-4. Close the JSON array
+2. **Check `file_guide.mitigation_generation`** in the scanner context:
+   - Read the files listed in `must_read` — these contain the infrastructure and config relevant to recommending controls
+   - **Do NOT read** files listed in `skip`
+   - Focus your mitigations on the areas listed in `focus_areas`
+3. Group steps by technique_id — write ONE mitigation per unique technique
+4. For each unique technique, append one mitigation line to the output file
+5. Close the JSON array
 
 ## Quality Rules
 
