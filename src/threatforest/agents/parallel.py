@@ -47,6 +47,96 @@ def _mark_threat_complete(threat_idx: int):
         _progress["completed_count"] = len(completed)
 
 
+async def _run_ttp_review(
+    ttp_candidates: list[dict],
+    state_dir: Path,
+    prefix: str,
+    scanner_file: str,
+    threat_idx: int,
+    total_threats: int,
+) -> tuple[list[dict], list[Path]]:
+    """Run the LLM-based TTP reviewer for one threat's candidates.
+
+    Returns (ttp_mappings, temp_files_to_cleanup).
+    """
+    from strands import Agent, tool
+    from strands.handlers import null_callback_handler
+    from threatforest.modules.core.providers.provider_factory import create_model
+    from threatforest.config import config
+    from threatforest.tools.sandboxed_file import make_sandboxed_file_read, make_sandboxed_file_write
+
+    _update_progress(total_threats, threat_idx, "🤖 TTP Review")
+
+    summary = []
+    for c in ttp_candidates:
+        top1 = c["top_k"][0] if c.get("top_k") else {}
+        summary.append({
+            "attack_step_id": c["attack_step_id"],
+            "attack_step_description": c.get("attack_step_description", ""),
+            "technique_id": top1.get("technique_id", ""),
+            "technique_name": top1.get("technique_name", ""),
+            "similarity_score": top1.get("similarity_score", 0),
+        })
+
+    summary_file = state_dir / f"{prefix}_ttp_top1.json"
+    summary_file.write_text(json.dumps({"ttp_top1": summary}, indent=2))
+
+    candidates_file = state_dir / f"{prefix}_ttp_candidates.json"
+    candidates_file.write_text(json.dumps({"ttp_candidates": ttp_candidates}, indent=2))
+
+    mappings_file = state_dir / f"{prefix}_ttp_mappings.json"
+
+    @tool
+    def get_ttp_alternatives(attack_step_id: str) -> str:
+        """Get top-5 alternative TTP candidates for a step that looks wrongly mapped.
+
+        Args:
+            attack_step_id: The ID of the attack step.
+        """
+        data = json.loads(candidates_file.read_text())
+        for c in data.get("ttp_candidates", []):
+            if c["attack_step_id"] == attack_step_id:
+                return json.dumps(c["top_k"], indent=2)
+        return f"No candidates found for {attack_step_id}"
+
+    ttp_prompt = (Path(__file__).parent / "ttp" / "prompt.md").read_text()
+    ttp_prompt += (
+        f"\n\n## Paths\n"
+        f"- TTP top-1 mappings: `{summary_file}`\n"
+        f"- Write output to: `{mappings_file}`\n"
+    )
+
+    ttp_tools = [
+        make_sandboxed_file_read([str(summary_file), scanner_file]),
+        make_sandboxed_file_write([str(mappings_file)]),
+        get_ttp_alternatives,
+    ]
+
+    ttp_agent = Agent(
+        model=create_model(config, temperature=0),
+        system_prompt=ttp_prompt,
+        tools=ttp_tools,
+        callback_handler=null_callback_handler(),
+        trace_attributes=trace_attrs(f"ttp-T{threat_idx:03d}"),
+    )
+
+    await asyncio.to_thread(
+        ttp_agent,
+        "Read the top-1 TTP mappings. Review each one. If any look wrong, "
+        "use get_ttp_alternatives. Write all final mappings to the state file.",
+    )
+
+    ttp_mappings = []
+    if mappings_file.exists():
+        try:
+            raw = mappings_file.read_text().replace(",\n]", "\n]").replace(",]", "]")
+            ttp_mappings = json.loads(raw).get("ttp_mappings", [])
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    return ttp_mappings, [summary_file, candidates_file, mappings_file]
+
+
 async def _process_single_threat(
     threat: dict,
     threat_idx: int,
@@ -54,12 +144,12 @@ async def _process_single_threat(
     repo_path: str,
     scanner_context: dict,
 ) -> dict:
-    """Run tree → ttp_embed → ttp_review → mitigation for one threat.
+    """Run tree → ttp_embed → mitigation for one threat.
 
     Returns a dict with keys: attack_trees, ttp_candidates, ttp_mappings, mitigations.
+    Note: TTP reviewer step is currently disabled — embedding top-1 is used directly.
     """
     from threatforest.agents.tree.agent import create_tree_agent
-    from threatforest.agents.ttp.reviewer import create_ttp_reviewer
     from threatforest.agents.mitigation.agent import create_mitigation_agent
     from threatforest.modules.workflow.ttc_mappings.matcher import TTCMatcher
 
@@ -154,77 +244,27 @@ async def _process_single_threat(
                 "top_k": top_k,
             })
 
-    # --- TTP review (LLM) ---
-    _update_progress(total_threats, threat_idx, "🤖 TTP Review")
-    # Write top-1 summary for reviewer
-    summary = []
+    # --- TTP review (LLM) — DISABLED ---
+    # To re-enable, uncomment the call below and remove the direct promotion block.
+    # ttp_mappings, review_temp_files = await _run_ttp_review(
+    #     ttp_candidates, state_dir, prefix, scanner_file, threat_idx,
+    #     total_threats,
+    # )
+
+    # Promote embedding top-1 directly (no LLM review)
+    ttp_mappings = []
     for c in ttp_candidates:
         top1 = c["top_k"][0] if c.get("top_k") else {}
-        summary.append({
-            "attack_step_id": c["attack_step_id"],
-            "attack_step_description": c.get("attack_step_description", ""),
-            "technique_id": top1.get("technique_id", ""),
-            "technique_name": top1.get("technique_name", ""),
-            "similarity_score": top1.get("similarity_score", 0),
-        })
-
-    summary_file = state_dir / f"{prefix}_ttp_top1.json"
-    summary_file.write_text(json.dumps({"ttp_top1": summary}, indent=2))
-
-    candidates_file = state_dir / f"{prefix}_ttp_candidates.json"
-    candidates_file.write_text(json.dumps({"ttp_candidates": ttp_candidates}, indent=2))
-
-    mappings_file = state_dir / f"{prefix}_ttp_mappings.json"
-
-    # Build alternatives tool for this threat's candidates
-    from strands import tool
-
-    @tool
-    def get_ttp_alternatives(attack_step_id: str) -> str:
-        """Get top-5 alternative TTP candidates for a step that looks wrongly mapped.
-
-        Args:
-            attack_step_id: The ID of the attack step.
-        """
-        data = json.loads(candidates_file.read_text())
-        for c in data.get("ttp_candidates", []):
-            if c["attack_step_id"] == attack_step_id:
-                return json.dumps(c["top_k"], indent=2)
-        return f"No candidates found for {attack_step_id}"
-
-    ttp_prompt = (Path(__file__).parent / "ttp" / "prompt.md").read_text()
-    ttp_prompt += (
-        f"\n\n## Paths\n"
-        f"- TTP top-1 mappings: `{summary_file}`\n"
-        f"- Write output to: `{mappings_file}`\n"
-    )
-
-    ttp_tools = [
-        make_sandboxed_file_read([str(summary_file), scanner_file]),
-        make_sandboxed_file_write([str(mappings_file)]),
-        get_ttp_alternatives,
-    ]
-
-    ttp_agent = Agent(
-        model=create_model(config, temperature=0),
-        system_prompt=ttp_prompt,
-        tools=ttp_tools,
-        callback_handler=null_callback_handler(),
-        trace_attributes=trace_attrs(f"ttp-T{threat_idx:03d}"),
-    )
-
-    await asyncio.to_thread(
-        ttp_agent,
-        "Read the top-1 TTP mappings. Review each one. If any look wrong, use get_ttp_alternatives. Write all final mappings to the state file."
-    )
-
-    ttp_mappings = []
-    if mappings_file.exists():
-        try:
-            raw = mappings_file.read_text().replace(",\n]", "\n]").replace(",]", "]")
-            ttp_mappings = json.loads(raw).get("ttp_mappings", [])
-        except (json.JSONDecodeError, OSError):
-            pass
+        if top1.get("technique_id"):
+            ttp_mappings.append({
+                "attack_step_id": c["attack_step_id"],
+                "technique_id": top1["technique_id"],
+                "technique_name": top1.get("technique_name", ""),
+                "similarity_score": top1.get("similarity_score", 0),
+                "reviewer_overrode_top1": False,
+                "reviewer_reasoning": "",
+            })
+    review_temp_files = []
 
     # --- Mitigation (LLM) ---
     _update_progress(total_threats, threat_idx, "🛡️ Mitigation")
@@ -269,7 +309,7 @@ async def _process_single_threat(
             pass
 
     # Cleanup temp files
-    for f in [single_threats_file, summary_file, candidates_file, mappings_file, mit_mappings_file, mit_out, tree_out]:
+    for f in [single_threats_file, mit_mappings_file, mit_out, tree_out] + review_temp_files:
         try:
             f.unlink(missing_ok=True)
         except OSError:
