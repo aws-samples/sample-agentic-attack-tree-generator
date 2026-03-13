@@ -13,7 +13,6 @@ class ApplicationSummary(BaseModel):
     description: str
     version_count: int
     last_run_date: str
-    dashboard_path: str | None = None
 
 
 class VersionSummary(BaseModel):
@@ -25,7 +24,6 @@ class VersionSummary(BaseModel):
     threat_count: int
     high_severity_count: int = 0
     categories: list[str]
-    dashboard_path: str | None = None
 
 
 class RunConfig(BaseModel):
@@ -78,7 +76,6 @@ class RunState(BaseModel):
     started_at: str
     completed_at: str | None = None
     output_dir: str | None = None
-    dashboard_path: str | None = None
     error: str | None = None
 
 

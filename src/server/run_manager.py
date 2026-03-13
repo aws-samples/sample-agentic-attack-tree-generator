@@ -17,7 +17,6 @@ from pathlib import Path
 from typing import Any, Callable, Protocol
 
 from server.models import RunConfig, RunState
-from server.stencil_injector import inject_stencil_references
 
 logger = logging.getLogger(__name__)
 
@@ -218,11 +217,6 @@ class RunManager:
             state.status = "complete"
             state.completed_at = datetime.now(tz=timezone.utc).isoformat()
             state.output_dir = result.get("output_dir")
-            state.dashboard_path = result.get("dashboard_path")
-
-            # Post-process: inject Stencil CDN into generated dashboard HTML
-            if state.dashboard_path:
-                inject_stencil_references(state.dashboard_path)
 
             _push_event(ProgressEvent(
                 event_type="stage_complete",
@@ -231,7 +225,6 @@ class RunManager:
                 message="Pipeline completed successfully",
                 details={
                     "output_dir": state.output_dir,
-                    "dashboard_path": state.dashboard_path,
                     "app_id": result.get("app_id", ""),
                 },
             ))

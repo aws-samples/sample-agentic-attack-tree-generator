@@ -521,15 +521,10 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
         result = asyncio.run(_run())
 
         output_dir = str(Path(project_path) / ".threatforest" / "output")
-        dashboard_path = ""
-        candidate = Path(output_dir) / "attack_trees_dashboard.html"
-        if candidate.is_file():
-            dashboard_path = str(candidate)
 
         project_name = Path(config.project_path).name
         return {
             "output_dir": output_dir,
-            "dashboard_path": dashboard_path,
             "app_id": _slugify(project_name),
         }
 
