@@ -9,7 +9,6 @@ import time
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
-from fastapi.responses import FileResponse
 
 from server.models import RunConfig, RunResponse
 from server.run_manager import RunManager
@@ -73,21 +72,6 @@ async def create_run(config: RunConfig) -> RunResponse:
     except RuntimeError as exc:
         raise HTTPException(status_code=500, detail=str(exc))
     return RunResponse(run_id=run_id)
-
-
-@router.get("/runs/{run_id}/dashboard")
-async def get_run_dashboard(run_id: str) -> FileResponse:
-    """Serve the generated dashboard HTML file for a completed run."""
-    manager = get_run_manager()
-    state = manager.active_runs.get(run_id)
-    if not state:
-        raise HTTPException(status_code=404, detail="Run not found")
-    if not state.dashboard_path:
-        raise HTTPException(status_code=404, detail="No dashboard available for this run")
-    dashboard = Path(state.dashboard_path)
-    if not dashboard.is_file():
-        raise HTTPException(status_code=404, detail="Dashboard file not found on disk")
-    return FileResponse(str(dashboard), media_type="text/html")
 
 
 @ws_router.websocket("/ws/runs/{run_id}")

@@ -380,7 +380,6 @@ def _generate_html_dashboard(repo_path: str) -> None:
     output_dir = Path(repo_path) / OUTPUT_DIR
     state_dir = Path(repo_path) / ".threatforest" / "state"
     md_file = output_dir / OUTPUT_FILE
-    html_file = output_dir / "attack_trees_dashboard.html"
 
     if not md_file.exists():
         return
@@ -443,33 +442,4 @@ def _generate_html_dashboard(repo_path: str) -> None:
 
     (registry_dir / "threatforest_data.json").write_text(_json.dumps(metadata, indent=2))
 
-    # Copy dashboard to registry location too
-    md_content = md_file.read_text()
-    escaped = _json.dumps(md_content)
 
-    html = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ThreatForest Report</title>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<style>
-  body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 900px; margin: 0 auto; padding: 2rem; background: #0d1117; color: #c9d1d9; }}
-  h1, h2, h3 {{ color: #58a6ff; }}
-  table {{ border-collapse: collapse; width: 100%; margin: 1rem 0; }}
-  th, td {{ border: 1px solid #30363d; padding: 8px 12px; text-align: left; }}
-  th {{ background: #161b22; }}
-  code {{ background: #161b22; padding: 2px 6px; border-radius: 3px; }}
-  pre {{ background: #161b22; padding: 1rem; border-radius: 6px; overflow-x: auto; }}
-</style>
-</head>
-<body>
-<div id="content"></div>
-<script>
-  document.getElementById('content').innerHTML = marked.parse({escaped});
-</script>
-</body>
-</html>"""
-
-    html_file.write_text(html)

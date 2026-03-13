@@ -379,22 +379,6 @@ def run(project_path, threat_model, mode, input_dir, output_dir):
             if output_directory:
                 logger.info(f"Output directory: {output_directory}")
                 console.print(f"\n📁 [bold cyan]Output Directory:[/bold cyan] {output_directory}\n")
-                
-                # Show and open HTML dashboard
-                dashboard_path = Path(output_directory) / "attack_trees_dashboard.html"
-                if dashboard_path.exists():
-                    console.print(f"📊 [bold green]Interactive Dashboard:[/bold green] {dashboard_path}")
-                    
-                    # Auto-open in browser
-                    try:
-                        console.print(f"   [dim]Opening in browser...[/dim]")
-                        dashboard_uri = dashboard_path.resolve().as_uri()
-                        webbrowser.open(dashboard_uri)
-                        console.print(f"   [green]✓ Dashboard opened in browser[/green]\n")
-                    except Exception as e:
-                        logger.warning(f"Failed to auto-open browser: {e}")
-                        console.print(f"   [yellow]Could not auto-open browser[/yellow]")
-                        console.print(f"   [dim]Open manually: {dashboard_path}[/dim]\n")
             else:
                 logger.warning("No output directory found in result")
                 console.print("\n[yellow]⚠️  Output directory information not available[/yellow]\n")

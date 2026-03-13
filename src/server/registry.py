@@ -41,7 +41,6 @@ class ApplicationRegistry:
 
     ATTACK_TREES_REL = Path(".threatforest") / "output"
     METADATA_FILE = "threatforest_data.json"
-    DASHBOARD_FILE = "attack_trees_dashboard.html"
 
     def __init__(self, scan_paths: list[Path]) -> None:
         self.scan_paths = scan_paths
@@ -172,17 +171,6 @@ class ApplicationRegistry:
                     mtime, tz=timezone.utc
                 ).isoformat()
 
-                # Build dashboard_path for flat layout
-                dashboard_path: str | None = None
-                dashboard_file = attack_trees_dir / self.DASHBOARD_FILE
-                if dashboard_file.is_file() and scan_path is not None:
-                    try:
-                        dashboard_path = str(
-                            dashboard_file.relative_to(scan_path)
-                        )
-                    except ValueError:
-                        pass
-
                 versions.append(
                     VersionSummary(
                         id="latest",
@@ -191,7 +179,6 @@ class ApplicationRegistry:
                         threat_count=metadata.get("threat_count", 0) or (metadata.get("extraction_summary") or {}).get("total_threats", 0),
                         high_severity_count=metadata.get("high_severity_count", 0) or (metadata.get("extraction_summary") or {}).get("high_severity_count", 0),
                         categories=metadata.get("categories", []),
-                        dashboard_path=dashboard_path,
                     )
                 )
 
@@ -234,8 +221,6 @@ class ApplicationRegistry:
             d for d in attack_trees_dir.iterdir() if d.is_dir()
         ]
 
-        dashboard_path: str | None = None
-
         if version_dirs:
             # Versioned layout
             last_run_date = self._latest_run_date(version_dirs)
@@ -247,18 +232,6 @@ class ApplicationRegistry:
             last_run_date = datetime.fromtimestamp(
                 mtime, tz=timezone.utc
             ).isoformat()
-            # Check for dashboard file in flat layout
-            dashboard_file = attack_trees_dir / self.DASHBOARD_FILE
-            if dashboard_file.is_file():
-                # Build a URL-friendly path relative to the scan root
-                if scan_path:
-                    try:
-                        rel = dashboard_file.relative_to(scan_path)
-                        dashboard_path = "/dashboards/" + str(rel)
-                    except ValueError:
-                        dashboard_path = str(dashboard_file)
-                else:
-                    dashboard_path = str(dashboard_file)
 
         # Extract name and description — check multiple possible locations
         # in the threatforest_data.json structure
@@ -279,7 +252,6 @@ class ApplicationRegistry:
             description=description,
             version_count=version_count,
             last_run_date=last_run_date,
-            dashboard_path=dashboard_path,
         )
 
     def _build_version_summary(
@@ -309,15 +281,6 @@ class ApplicationRegistry:
         categories = metadata.get("categories", [])
         status = metadata.get("status", "complete")
 
-        # Check for dashboard file in the version directory
-        dashboard_path: str | None = None
-        dashboard_file = version_dir / self.DASHBOARD_FILE
-        if dashboard_file.is_file() and scan_path is not None:
-            try:
-                dashboard_path = str(dashboard_file.relative_to(scan_path))
-            except ValueError:
-                pass
-
         return VersionSummary(
             id=version_dir.name,
             run_date=run_date,
@@ -325,7 +288,6 @@ class ApplicationRegistry:
             threat_count=threat_count,
             high_severity_count=high_severity_count,
             categories=categories,
-            dashboard_path=dashboard_path,
         )
 
     # ------------------------------------------------------------------

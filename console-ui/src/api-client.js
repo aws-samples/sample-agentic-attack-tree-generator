@@ -121,11 +121,6 @@ export async function createRun(params) {
   });
 }
 
-/** Returns the dashboard URL string for a given run. */
-export function getDashboardUrl(runId) {
-  return `/api/runs/${encodeURIComponent(runId)}/dashboard`;
-}
-
 // ---------------------------------------------------------------------------
 // WebSocket
 // ---------------------------------------------------------------------------
