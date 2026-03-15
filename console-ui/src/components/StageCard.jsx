@@ -100,26 +100,45 @@ export default function StageCard({
         </Box>
       )}
 
-      {/* Row 5: Parallel workers */}
+      {/* Row 5: Parallel workers with phase legend */}
       {isInProgress && workers && workers.length > 0 && (
-        <div style={{ marginTop: '8px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '6px' }} data-testid="parallel-workers">
-          {workers.map((w) => (
-            <div key={w.id} style={{
-              padding: '6px 10px',
-              borderRadius: '6px',
-              fontSize: '12px',
-              background: w.status === 'completed' ? '#f0fdf4' : w.status === 'in-progress' ? '#eff6ff' : '#f9fafb',
-              border: `1px solid ${w.status === 'completed' ? '#bbf7d0' : w.status === 'in-progress' ? '#bfdbfe' : '#e5e7eb'}`,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}>
-              <span>{w.status === 'completed' ? '✅' : w.status === 'in-progress' ? '⚡' : '⏳'}</span>
-              <span style={{ fontWeight: w.status === 'in-progress' ? 600 : 400, color: w.status === 'pending' ? '#9ca3af' : '#1f2937' }}>
-                T{w.id + 1}: {w.stage}{w.detail ? ` — ${w.detail.slice(0, 40)}` : ''}
-              </span>
-            </div>
-          ))}
+        <div style={{ marginTop: '8px' }} data-testid="parallel-workers">
+          {/* Phase legend */}
+          <div style={{
+            display: 'flex',
+            gap: '16px',
+            marginBottom: '8px',
+            padding: '6px 10px',
+            background: '#f9fafb',
+            borderRadius: '6px',
+            fontSize: '11px',
+            color: '#6b7280',
+          }} data-testid="phase-legend">
+            <span>🌳 Attack Tree</span>
+            <span>📐 TTP Embedding</span>
+            <span>🤖 TTP Review</span>
+            <span>🛡️ Mitigations</span>
+            <span>✅ Complete</span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '6px' }}>
+            {workers.map((w) => (
+              <div key={w.id} style={{
+                padding: '6px 10px',
+                borderRadius: '6px',
+                fontSize: '12px',
+                background: w.status === 'completed' ? '#f0fdf4' : w.status === 'in-progress' ? '#eff6ff' : '#f9fafb',
+                border: `1px solid ${w.status === 'completed' ? '#bbf7d0' : w.status === 'in-progress' ? '#bfdbfe' : '#e5e7eb'}`,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}>
+                <span>{w.status === 'completed' ? '✅' : w.status === 'in-progress' ? '⚡' : '⏳'}</span>
+                <span style={{ fontWeight: w.status === 'in-progress' ? 600 : 400, color: w.status === 'pending' ? '#9ca3af' : '#1f2937' }}>
+                  T{w.id + 1}: {w.stage}{w.detail ? ` — ${w.detail.slice(0, 40)}` : ''}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

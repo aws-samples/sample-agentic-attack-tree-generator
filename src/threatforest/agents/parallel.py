@@ -65,7 +65,7 @@ async def _run_ttp_review(
     from threatforest.config import config
     from threatforest.tools.sandboxed_file import make_sandboxed_file_read, make_sandboxed_file_write
 
-    _update_progress(total_threats, threat_idx, "🤖 TTP Review")
+    _update_progress(total_threats, threat_idx, "🤖 TTP review")
 
     summary = []
     for c in ttp_candidates:
@@ -157,7 +157,7 @@ async def _process_single_threat(
     prefix = f"t{threat_idx}"
 
     # --- Tree generation ---
-    _update_progress(total_threats, threat_idx, "🌳 Tree", threat.get("name", threat.get("description", ""))[:50])
+    _update_progress(total_threats, threat_idx, "🌳 Building attack tree")
 
     # Write single-threat input for this sub-pipeline
     single_threats_file = state_dir / f"{prefix}_threats.json"
@@ -217,7 +217,7 @@ async def _process_single_threat(
         return {"attack_trees": [], "ttp_candidates": [], "ttp_mappings": [], "mitigations": []}
 
     # --- TTP embedding (no LLM) ---
-    _update_progress(total_threats, threat_idx, "📐 TTP Embed")
+    _update_progress(total_threats, threat_idx, "📐 TTP embedding")
     steps = []
     step_ids = []
     for tree in trees:
@@ -267,7 +267,7 @@ async def _process_single_threat(
     review_temp_files = []
 
     # --- Mitigation (LLM) ---
-    _update_progress(total_threats, threat_idx, "🛡️ Mitigation")
+    _update_progress(total_threats, threat_idx, "🛡️ Defining relevant mitigations")
     mit_mappings_file = state_dir / f"{prefix}_mitigations_input.json"
     mit_mappings_file.write_text(json.dumps({"ttp_mappings": ttp_mappings}, indent=2))
 

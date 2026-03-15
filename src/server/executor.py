@@ -93,23 +93,19 @@ def _slugify(name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
 
 
+# Map graph node IDs to UI stage names.
+# The parallel_pipeline node now maps to a single "Parallel Analysis" stage
+# instead of the old 3 separate stages (Attack Tree Generation, TTP Enrichment,
+# Mitigation Mapping) which were misleading since they all run concurrently.
 NODE_LABELS = {
     "scanner": "Repository Analysis",
     "scanner_verifier": "Repository Analysis",
     "threat": "Threat Generation",
     "threat_verifier": "Threat Generation",
-    "parallel_pipeline": "Attack Tree Generation",
-    "parallel_verifier": "Attack Tree Generation",
+    "parallel_pipeline": "Parallel Analysis",
+    "parallel_verifier": "Parallel Analysis",
     "report": "Dashboard Generation",
     "report_verifier": "Dashboard Generation",
-}
-
-# Map parallel pipeline internal stages to frontend stage names
-PARALLEL_STAGE_MAP = {
-    "🌳 Tree": "Attack Tree Generation",
-    "📐 TTP Embed": "TTP Enrichment",
-    "🤖 TTP Review": "TTP Enrichment",
-    "🛡️ Mitigation": "Mitigation Mapping",
 }
 
 # Expected tool calls per node (for progress estimation)
@@ -122,11 +118,29 @@ NODE_TOOL_ESTIMATES = {
     "report_verifier": 1,
 }
 
-# Human-readable descriptions for tool names
+# Human-readable descriptions for tool names (generic fallback)
 TOOL_DESCRIPTIONS = {
     "structural_analyzer": "📂 Scanning project structure",
     "sandboxed_file_read": "📄 Reading project files",
     "sandboxed_file_write": "💾 Writing analysis results",
+}
+
+# Node-specific tool descriptions for more informative progress messages
+NODE_TOOL_DESCRIPTIONS = {
+    "scanner": {
+        "sandboxed_file_read": "📄 Reading project files",
+        "sandboxed_file_write": "💾 Saving scanner analysis",
+        "structural_analyzer": "📂 Scanning project structure",
+    },
+    "threat": {
+        "sandboxed_file_read": "📖 Reading scanner context for threat analysis",
+        "sandboxed_file_write": "💾 Writing threat statements",
+        "structural_analyzer": "🔍 Deep-scanning project for threat surface",
+    },
+    "report": {
+        "sandboxed_file_read": "📄 Reading analysis results",
+        "sandboxed_file_write": "📝 Generating dashboard report",
+    },
 }
 
 
@@ -261,34 +275,26 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
             poll_task = None
 
             async def _poll_parallel_progress():
-                """Hybrid poller: in-memory stage detection + filesystem scanning.
+                """Poll parallel pipeline progress and emit updates.
 
-                1. Uses in-memory get_parallel_progress() to detect the dominant
-                   sub-stage and drive UI stage transitions.
-                2. Scans .threatforest/state/ for per-threat file completions
-                   to emit granular sub-step messages (e.g., "🌳 Attack tree
-                   3 of 12 generated").
+                Emits progress on the single "Parallel Analysis" stage with
+                per-threat worker status and filesystem-based sub-step messages.
+                No stage transitions -- all parallel work is one UI stage.
                 """
-                nonlocal current_stage
                 import re as _re
                 from threatforest.agents.parallel import get_parallel_progress
 
-                _SUBSTAGE_RANK = {"🌳 Tree": 0, "📐 TTP Embed": 1, "🤖 TTP Review": 2, "🛡️ Mitigation": 3}
-                _RANK_TO_UI = {0: "Attack Tree Generation", 1: "TTP Enrichment", 2: "TTP Enrichment", 3: "Mitigation Mapping"}
-
-                # Filesystem-based per-threat file tracking
                 state_dir = Path(project_path) / ".threatforest" / "state"
                 seen_files: set[str] = set()
 
-                # Map per-threat file suffix → (UI stage, emoji, human label)
+                # Map per-threat file suffix to (emoji, human label)
                 _FILE_TYPE_MAP = {
-                    "attack_trees":     ("Attack Tree Generation", "🌳", "Attack tree for threat {n} generated"),
-                    "ttp_candidates":   ("TTP Enrichment",         "📐", "TTP embedding for threat {n} complete"),
-                    "ttp_mappings":     ("TTP Enrichment",         "🤖", "TTP mapping for threat {n} reviewed"),
-                    "mitigations":      ("Mitigation Mapping",     "🛡️", "Mitigations for threat {n} generated"),
+                    "attack_trees":     ("\U0001f333", "Attack tree for threat {n} generated"),
+                    "ttp_candidates":   ("\U0001f4d0", "TTP embedding for threat {n} complete"),
+                    "ttp_mappings":     ("\U0001f916", "TTP mapping for threat {n} reviewed"),
+                    "mitigations":      ("\U0001f6e1\ufe0f", "Mitigations for threat {n} generated"),
                 }
 
-                active_ui_stage = "Attack Tree Generation"
                 tick = 0
 
                 while True:
@@ -302,43 +308,13 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
                     if not total:
                         progress_callback(ProgressEvent(
                             event_type="stage_progress",
-                            stage=current_stage,
+                            stage="Parallel Analysis",
                             percentage=min(5, tick),
-                            message="⏳ Initializing parallel pipeline…",
+                            message="\u23f3 Initializing parallel pipeline\u2026",
                         ))
                         continue
 
-                    # --- 1. In-memory dominant stage detection ---
-                    max_rank = 0
-                    for i in range(total):
-                        if i in pp.get("completed_threats", set()):
-                            continue
-                        ts = threat_status.get(i, {})
-                        stage_name = ts.get("stage", "")
-                        rank = _SUBSTAGE_RANK.get(stage_name, 0)
-                        if rank > max_rank:
-                            max_rank = rank
-
-                    dominant_ui_stage = _RANK_TO_UI.get(max_rank, "Attack Tree Generation")
-
-                    # Emit stage transition if the dominant phase has advanced
-                    if dominant_ui_stage != active_ui_stage:
-                        progress_callback(ProgressEvent(
-                            event_type="stage_complete",
-                            stage=active_ui_stage,
-                            percentage=100,
-                            message=f"{active_ui_stage} complete",
-                        ))
-                        active_ui_stage = dominant_ui_stage
-                        current_stage = active_ui_stage
-                        progress_callback(ProgressEvent(
-                            event_type="stage_start",
-                            stage=active_ui_stage,
-                            percentage=0,
-                            message=f"Starting {active_ui_stage}",
-                        ))
-
-                    # --- 2. Filesystem scan for granular per-threat progress ---
+                    # --- Filesystem scan for granular per-threat progress ---
                     latest_message = None
                     try:
                         current_files = {f.name for f in state_dir.iterdir() if f.is_file()}
@@ -347,38 +323,34 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
 
                     new_files = sorted(current_files - seen_files)
                     for filename in new_files:
-                        # Match per-threat files: t3_attack_trees.json
                         m = _re.match(r't(\d+)_(.+)\.json$', filename)
                         if m:
                             threat_idx = int(m.group(1))
                             file_type = m.group(2)
                             if file_type in _FILE_TYPE_MAP:
-                                _stage, _emoji, _template = _FILE_TYPE_MAP[file_type]
+                                _emoji, _template = _FILE_TYPE_MAP[file_type]
                                 latest_message = f"{_emoji} {_template.format(n=threat_idx + 1)}"
 
                     seen_files = current_files
 
-                    # --- 3. Combined progress event ---
+                    # --- Progress event with per-worker status ---
                     pct = int(100 * done / total)
 
-                    # Build per-worker status for the UI
                     workers = []
                     for i in range(total):
                         if i in pp.get("completed_threats", set()):
-                            workers.append({"id": i, "status": "completed", "stage": "✅ Done"})
+                            workers.append({"id": i, "status": "completed", "stage": "\u2705 Done"})
                         elif i in threat_status:
                             ts = threat_status[i]
                             workers.append({"id": i, "status": "in-progress", "stage": ts.get("stage", ""), "detail": ts.get("detail", "")})
                         else:
-                            workers.append({"id": i, "status": "pending", "stage": "⏳ Queued"})
+                            workers.append({"id": i, "status": "pending", "stage": "\u23f3 Queued"})
 
-                    # Use the most recent file-based message if available,
-                    # otherwise fall back to the overall count
                     message = latest_message or f"{done}/{total} threats completed"
 
                     progress_callback(ProgressEvent(
                         event_type="stage_progress",
-                        stage=current_stage,
+                        stage="Parallel Analysis",
                         percentage=pct,
                         message=message,
                         details={"workers": workers, "total": total, "completed": done},
@@ -418,55 +390,13 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
 
                 elif etype == "multiagent_node_stop":
                     nid = event.get("node_id", "")
-                    # When parallel pipeline completes, finalize whatever
-                    # stage the poller left us in and ensure all three
-                    # parallel sub-stages are marked complete.
+                    # When parallel pipeline completes, cancel the poller.
+                    # The stage_complete for "Parallel Analysis" will be
+                    # emitted by the normal node transition logic when the
+                    # next node (report) starts, or by the final cleanup.
                     if nid == "parallel_pipeline" and poll_task:
                         poll_task.cancel()
                         poll_task = None
-
-                        ps = _get_stage_summary(project_path, "parallel_pipeline")
-                        findings = ps.get("findings", []) if ps else []
-                        stage_findings = {
-                            "Attack Tree Generation": findings[:1],
-                            "TTP Enrichment": findings[1:2],
-                            "Mitigation Mapping": findings[2:],
-                        }
-
-                        # The poller may have already transitioned through
-                        # some stages. Only emit start+complete for stages
-                        # that the poller hasn't reached yet, plus complete
-                        # the current active stage.
-                        all_parallel_stages = ["Attack Tree Generation", "TTP Enrichment", "Mitigation Mapping"]
-                        current_idx = all_parallel_stages.index(current_stage) if current_stage in all_parallel_stages else -1
-
-                        # Complete the currently active stage
-                        if current_stage in all_parallel_stages:
-                            progress_callback(ProgressEvent(
-                                event_type="stage_complete",
-                                stage=current_stage,
-                                percentage=100,
-                                message=f"{current_stage} complete",
-                                details={"findings": stage_findings.get(current_stage, [])},
-                            ))
-
-                        # Fast-forward any remaining stages that the poller didn't reach
-                        for stage_name in all_parallel_stages[current_idx + 1:]:
-                            progress_callback(ProgressEvent(
-                                event_type="stage_start",
-                                stage=stage_name,
-                                percentage=0,
-                                message=f"Starting {stage_name}",
-                            ))
-                            progress_callback(ProgressEvent(
-                                event_type="stage_complete",
-                                stage=stage_name,
-                                percentage=100,
-                                message=f"{stage_name} complete",
-                                details={"findings": stage_findings.get(stage_name, [])},
-                            ))
-
-                        current_stage = "Mitigation Mapping"
 
                     prev_node_id = nid
 
@@ -492,15 +422,37 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
                                     parts = str(raw_path).replace("\\", "/").split("/")
                                     file_path = "/".join(parts[-2:]) if len(parts) > 1 else parts[-1]
 
-                            sub_step = TOOL_DESCRIPTIONS.get(tool_name, tool_name)
+                            # Use node-specific descriptions, fallback to generic
+                            node_descs = NODE_TOOL_DESCRIPTIONS.get(current_node_id, {})
+                            sub_step = node_descs.get(tool_name, TOOL_DESCRIPTIONS.get(tool_name, tool_name))
                             if file_path:
                                 sub_step += f" — {file_path}"
+
+                            # For threat generation: when writing, show specific message
+                            if current_node_id == "threat" and tool_name == "sandboxed_file_write":
+                                sub_step = "🧠 Writing threat statements…"
+                                pct = 90
 
                             progress_callback(ProgressEvent(
                                 event_type="stage_progress",
                                 stage=current_stage,
                                 percentage=pct,
                                 message=sub_step,
+                            ))
+
+                        # For threat/report: emit "thinking" progress during long LLM phases
+                        if (current_node_id in ("threat", "report") and tool_count >= 1
+                                and tool_count <= 2 and not tool_name):
+                            thinking_msgs = {
+                                "threat": "🧠 Analyzing threat surface and generating statements…",
+                                "report": "📝 Compiling analysis into dashboard…",
+                            }
+                            thinking_pct = min(80, 20 + tool_count * 15)
+                            progress_callback(ProgressEvent(
+                                event_type="stage_progress",
+                                stage=current_stage,
+                                percentage=thinking_pct,
+                                message=thinking_msgs.get(current_node_id, "Processing…"),
                             ))
 
                 if "result" in event:

@@ -61,6 +61,7 @@ Write a JSON object to the state file with this structure:
 
 ```json
 {
+  "description": "A serverless manufacturing platform on AWS using Lambda, API Gateway, S3, and DynamoDB. It handles IoT sensor ingestion and exposes a REST API authenticated via Cognito JWT tokens.",
   "tech_stack": "AWS CDK 2.x (TypeScript) deploying Node.js Lambda, Python Lambda, API Gateway, S3, DynamoDB",
   "industry": "manufacturing",
   "cloud_provider": "aws",
@@ -150,6 +151,7 @@ Write a JSON object to the state file with this structure:
 
 ## Key Guidelines
 
+- **`description`** must be a plain-English summary of the application in 50 words or fewer — what it does, its deployment environment, and key technologies. Written for a non-technical audience. No bullet points, no security findings.
 - **`file_guide` is critical.** Downstream agents use it to decide what to read. Be specific — include file paths and why each matters.
 - **`critical_findings`** should list the most impactful security issues you found. These directly seed threat generation.
 - **`trust_boundaries`** define where threats originate. Be explicit about what's authenticated vs. unauthenticated.

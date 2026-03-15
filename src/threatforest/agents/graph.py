@@ -32,7 +32,10 @@ class FunctionAgent(MultiAgentBase):
         self.id = node_id
 
     async def invoke_async(self, task, invocation_state=None, **kwargs):
-        result_str = self.fn(self.repo_path)
+        import asyncio
+        # Run blocking functions in a thread so the event loop stays free
+        # for polling tasks (e.g., parallel pipeline progress poller).
+        result_str = await asyncio.to_thread(self.fn, self.repo_path)
         # Build a minimal AgentResult-like object
         agent_result = _make_agent_result(str(result_str or "done"))
         return MultiAgentResult(

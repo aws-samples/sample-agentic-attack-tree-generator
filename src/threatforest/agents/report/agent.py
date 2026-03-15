@@ -408,7 +408,10 @@ def _generate_html_dashboard(repo_path: str) -> None:
         pass
 
     project_name = Path(repo_path).name
-    short_summary = _build_short_summary(project_name, scanner_ctx, threat_count, high_sev)
+    short_summary = (
+        scanner_ctx.get("description")
+        or _build_short_summary(project_name, scanner_ctx, threat_count, high_sev)
+    )
 
     metadata = {
         "metadata": {
@@ -419,6 +422,7 @@ def _generate_html_dashboard(repo_path: str) -> None:
             "application_name": project_name,
             "technologies": scanner_ctx.get("services", []),
             "deployment_environment": scanner_ctx.get("cloud_provider", ""),
+            "industry": scanner_ctx.get("industry", ""),
             "summary": f"{scanner_ctx.get('cloud_provider', '').upper()} application using {scanner_ctx.get('tech_stack', 'N/A')[:80]}. "
                        f"Services: {', '.join(scanner_ctx.get('services', [])[:5])}.",
             "short_summary": short_summary,

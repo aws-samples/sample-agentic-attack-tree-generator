@@ -40,9 +40,8 @@ function ProjectOverview({ projectInfo }) {
       <SpaceBetween size="m">
         <ColumnLayout columns={2} variant="text-grid">
           <div><Box variant="awsui-key-label">Application Name</Box><div>{pi.application_name || '—'}</div></div>
-          <div><Box variant="awsui-key-label">Architecture Type</Box><div>{pi.architecture_type || '—'}</div></div>
           <div><Box variant="awsui-key-label">Deployment Environment</Box><div>{pi.deployment_environment || '—'}</div></div>
-          <div><Box variant="awsui-key-label">Industry Sector</Box><div>{pi.sector || '—'}</div></div>
+          <div><Box variant="awsui-key-label">Industry Sector</Box><div>{pi.industry || '—'}</div></div>
         </ColumnLayout>
         {techs.length > 0 && (
           <div>
