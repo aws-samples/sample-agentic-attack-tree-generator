@@ -91,13 +91,12 @@ describe('RunProgressPage', () => {
     expect(mockWsInstance.close).toHaveBeenCalled();
   });
 
-  it('renders all 5 pipeline stages', () => {
+  it('renders all 4 pipeline stages', () => {
     renderPage();
     const stages = [
       'Repository Analysis',
-      'Attack Tree Generation',
-      'TTP Enrichment',
-      'Mitigation Mapping',
+      'Threat Generation',
+      'Parallel Analysis',
       'Dashboard Generation',
     ];
     stages.forEach((stage) => {
@@ -259,7 +258,7 @@ describe('RunProgressPage', () => {
     sendWsMessage({ type: 'stage_start', stage: 'tree_generation' });
 
     await waitFor(() => {
-      expect(screen.getAllByText(/Stage started: Attack Tree Generation/).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/Stage started: Parallel Analysis/).length).toBeGreaterThan(0);
     });
   });
 

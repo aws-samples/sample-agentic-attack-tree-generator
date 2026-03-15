@@ -15,27 +15,23 @@ import { connectRunWebSocket } from '../api-client';
 const STAGES = [
   'Repository Analysis',
   'Threat Generation',
-  'Attack Tree Generation',
-  'TTP Enrichment',
-  'Mitigation Mapping',
+  'Parallel Analysis',
   'Dashboard Generation',
 ];
 
 const stageIndexMap = {
   'Repository Analysis': 0,
   'Threat Generation': 1,
-  'Attack Tree Generation': 2,
-  'TTP Enrichment': 3,
-  'Mitigation Mapping': 4,
-  'Dashboard Generation': 5,
+  'Parallel Analysis': 2,
+  'Dashboard Generation': 3,
   // Fallback internal names
   setup: 0,
   context_analysis: 0,
   extraction: 0,
   tree_generation: 2,
-  ttc_enrichment: 3,
-  mitigation: 4,
-  summary: 5,
+  ttc_enrichment: 2,
+  mitigation: 2,
+  summary: 3,
 };
 
 function resolveStageIndex(stageName) {
