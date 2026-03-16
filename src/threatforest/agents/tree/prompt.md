@@ -15,8 +15,10 @@ You are an expert cybersecurity professional specializing in attack tree generat
    - Read the files listed in `must_read` — these contain the code paths relevant to attack modeling
    - **Do NOT read** files listed in `skip`
    - Focus your attack paths on the areas listed in `focus_areas`
-3. For each threat, generate an attack tree with multiple attack paths
+3. For each threat, generate exactly **one** attack tree that contains **all** attack paths for that threat as branches under a single fact node
 4. Write all attack trees to the state file
+
+**CRITICAL: One tree per threat.** Do NOT create multiple separate trees for the same threat. If a threat has several attack vectors (e.g., prompt injection AND cost exhaustion AND XSS), model them as parallel branches within a single wide tree, all sharing the same fact node. Wider and deeper trees are preferred over many shallow trees.
 
 ## Attack Tree Structure
 
@@ -64,7 +66,8 @@ Write a JSON object to the state file:
 ## Guidelines
 
 ### Tree Structure
-- Each tree should have 4-8 steps — enough detail to be useful, not so much it's noise
+- Generate exactly **one** tree per threat — combine all attack vectors as branches under the single fact node
+- Each tree should have 6-15 steps — wide enough to cover multiple attack paths, deep enough to be actionable
 - Steps must be specific to the actual tech stack (reference real services, frameworks, protocols)
 - Every non-root step must have a `parent_id` referencing another step in the same tree
 - Root steps have `parent_id: ""`

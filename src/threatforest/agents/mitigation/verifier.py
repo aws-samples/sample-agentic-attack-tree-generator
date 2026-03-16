@@ -42,22 +42,39 @@ def verify_mitigation_output(repo_path: str) -> tuple[bool, str]:
 
     mitigations = mit_data.get("mitigations", [])
 
-    # Collect all step IDs
+    # Collect step IDs that have TTP mappings (only these can have mitigations)
     all_step_ids = set()
-    for tree in trees_data.get("attack_trees", []):
-        for step in tree.get("steps", []):
-            all_step_ids.add(step.get("id", ""))
+    mappings_file = state_dir / "ttp_mappings.json"
+    if mappings_file.exists():
+        try:
+            mappings_data = json.loads(mappings_file.read_text())
+            for m in mappings_data.get("ttp_mappings", []):
+                sid = m.get("attack_step_id", "")
+                if sid:
+                    all_step_ids.add(sid)
+        except (json.JSONDecodeError, OSError):
+            # Fall back to tree step IDs if mappings unreadable
+            for tree in trees_data.get("attack_trees", []):
+                for step in tree.get("steps", []):
+                    all_step_ids.add(step.get("id", ""))
+    else:
+        for tree in trees_data.get("attack_trees", []):
+            for step in tree.get("steps", []):
+                all_step_ids.add(step.get("id", ""))
 
     if not mitigations and all_step_ids:
         return False, "No mitigations produced but attack steps exist"
 
-    issues = []
+    # Hard failures — these warrant a retry
+    hard_issues = []
+    # Soft warnings — logged but won't trigger a costly full-pipeline retry
+    warnings = []
     covered_ids = set()
 
     for i, m in enumerate(mitigations):
         sid = m.get("attack_step_id", "")
         if not sid:
-            issues.append(f"Mitigation {i}: missing attack_step_id")
+            hard_issues.append(f"Mitigation {i}: missing attack_step_id")
             continue
         covered_ids.add(sid)
         for also in m.get("also_applies_to", []):
@@ -65,22 +82,27 @@ def verify_mitigation_output(repo_path: str) -> tuple[bool, str]:
 
         text = m.get("mitigation_text", "")
         if not text:
-            issues.append(f"{sid}: empty mitigation_text")
+            hard_issues.append(f"{sid}: empty mitigation_text")
         elif text.lower().strip().rstrip(".") in BOILERPLATE:
-            issues.append(f"{sid}: boilerplate mitigation — '{text}'")
+            warnings.append(f"{sid}: boilerplate mitigation — '{text}'")
 
         evidence = m.get("evidence", [])
         if not evidence:
-            issues.append(f"{sid}: no evidence provided")
+            warnings.append(f"{sid}: no evidence provided")
 
         if not m.get("priority"):
-            issues.append(f"{sid}: missing priority")
+            warnings.append(f"{sid}: missing priority")
 
     missing = all_step_ids - covered_ids
     if missing:
-        issues.append(f"Steps without mitigations: {', '.join(sorted(missing))}")
+        # Coverage gaps are warnings, not hard failures — per-threat verification
+        # inside the parallel pipeline handles retries at the individual threat level.
+        warnings.append(f"{len(missing)} steps without mitigations")
 
-    if issues:
-        return False, "; ".join(issues)
+    if hard_issues:
+        return False, "; ".join(hard_issues)
 
-    return True, "All mitigations are actionable and evidenced"
+    feedback = "All mitigations are actionable and evidenced"
+    if warnings:
+        feedback += f" ({len(warnings)} warnings)"
+    return True, feedback

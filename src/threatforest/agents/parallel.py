@@ -227,7 +227,8 @@ async def _process_single_threat(
 
     ttp_candidates = []
     if steps:
-        matcher = TTCMatcher(min_similarity=0.2)
+        from threatforest.config import config as _cfg
+        matcher = TTCMatcher(min_similarity=_cfg.ttc_threshold)
         results = matcher.match_steps(steps, top_k=3)
         step_to_matches = {r["attack_step"]: r["matches"] for r in results}
 
@@ -266,7 +267,11 @@ async def _process_single_threat(
             })
     review_temp_files = []
 
-    # --- Mitigation (LLM) ---
+    # Filter out techniques known to be irrelevant for cloud/serverless workloads
+    _CLOUD_TTP_BLOCKLIST = {"T1014", "T1548.002", "T1088", "T1553.001"}
+    ttp_mappings = [m for m in ttp_mappings if m["technique_id"] not in _CLOUD_TTP_BLOCKLIST]
+
+    # --- Mitigation (LLM) with per-threat retry ---
     _update_progress(total_threats, threat_idx, "🛡️ Defining relevant mitigations")
     mit_mappings_file = state_dir / f"{prefix}_mitigations_input.json"
     mit_mappings_file.write_text(json.dumps({"ttp_mappings": ttp_mappings}, indent=2))
@@ -287,26 +292,51 @@ async def _process_single_threat(
         make_sandboxed_file_write([str(mit_out)]),
     ]
 
-    mit_agent = Agent(
-        model=create_model(config, temperature=0),
-        system_prompt=mit_prompt,
-        tools=mit_tools,
-        callback_handler=null_callback_handler(),
-        trace_attributes=trace_attrs(f"mitigation-T{threat_idx:03d}"),
-    )
-
-    await asyncio.to_thread(
-        mit_agent,
-        "Read the TTP mappings and scanner context. For each unique technique, write an actionable mitigation with evidence. Write to the state file."
-    )
-
+    mapped_step_ids = {m["attack_step_id"] for m in ttp_mappings if m.get("attack_step_id")}
+    max_mit_attempts = 2
     mitigations = []
-    if mit_out.exists():
-        try:
-            raw = mit_out.read_text().replace(",\n]", "\n]").replace(",]", "]")
-            mitigations = json.loads(raw).get("mitigations", [])
-        except (json.JSONDecodeError, OSError):
-            pass
+
+    for attempt in range(max_mit_attempts):
+        if mit_out.exists():
+            mit_out.unlink()
+
+        mit_agent = Agent(
+            model=create_model(config, temperature=0),
+            system_prompt=mit_prompt,
+            tools=mit_tools,
+            callback_handler=null_callback_handler(),
+            trace_attributes=trace_attrs(f"mitigation-T{threat_idx:03d}"),
+        )
+
+        feedback = "" if attempt == 0 else (
+            f" IMPORTANT: Your previous attempt was missing mitigations for some attack steps. "
+            f"Make sure every technique in the TTP mappings file has a mitigation."
+        )
+
+        await asyncio.to_thread(
+            mit_agent,
+            f"Read the TTP mappings and scanner context. For each unique technique, write an actionable mitigation with evidence. Write to the state file.{feedback}"
+        )
+
+        mitigations = []
+        if mit_out.exists():
+            try:
+                raw = mit_out.read_text().replace(",\n]", "\n]").replace(",]", "]")
+                mitigations = json.loads(raw).get("mitigations", [])
+            except (json.JSONDecodeError, OSError):
+                pass
+
+        # Quick per-threat verification: check that mapped steps are covered
+        covered = set()
+        for m in mitigations:
+            sid = m.get("attack_step_id", "")
+            if sid:
+                covered.add(sid)
+            covered.update(m.get("also_applies_to", []))
+
+        missing = mapped_step_ids - covered
+        if not missing or not mitigations:
+            break  # Pass or no mitigations possible
 
     # Cleanup temp files
     for f in [single_threats_file, mit_mappings_file, mit_out, tree_out] + review_temp_files:
@@ -323,6 +353,109 @@ async def _process_single_threat(
         "ttp_mappings": ttp_mappings,
         "mitigations": mitigations,
     }
+
+
+def _renumber_trees(trees: list[dict], start_idx: int = 1) -> tuple[list[dict], dict[str, str]]:
+    """Renumber attack tree IDs starting from start_idx.
+
+    Returns (renumbered_trees, old_step_id_to_new_step_id_map).
+    """
+    renumbered = []
+    id_map: dict[str, str] = {}
+
+    for global_idx, tree in enumerate(trees, start=start_idx):
+        old_tree_id = tree.get("id", f"AT{global_idx:03d}")
+        new_tree_id = f"AT{global_idx:03d}"
+        old_prefix = old_tree_id + "-"
+        new_prefix = new_tree_id + "-"
+
+        new_steps = []
+        for step in tree.get("steps", []):
+            old_sid = step.get("id", "")
+            new_sid = new_prefix + old_sid[len(old_prefix):] if old_sid.startswith(old_prefix) else old_sid
+            id_map[old_sid] = new_sid
+
+            new_step = dict(step)
+            new_step["id"] = new_sid
+            old_parent = step.get("parent_id", "")
+            if old_parent and old_parent.startswith(old_prefix):
+                new_step["parent_id"] = new_prefix + old_parent[len(old_prefix):]
+            new_steps.append(new_step)
+
+        new_tree = dict(tree)
+        new_tree["id"] = new_tree_id
+        new_tree["steps"] = new_steps
+        renumbered.append(new_tree)
+
+    return renumbered, id_map
+
+
+def _remap_step_ids(items: list[dict], id_map: dict[str, str]) -> list[dict]:
+    """Remap attack_step_id and also_applies_to fields using the id_map."""
+    remapped = []
+    for item in items:
+        new_item = dict(item)
+        old_id = item.get("attack_step_id", "")
+        if old_id in id_map:
+            new_item["attack_step_id"] = id_map[old_id]
+        also = item.get("also_applies_to", [])
+        if also:
+            new_item["also_applies_to"] = [id_map.get(s, s) for s in also]
+        remapped.append(new_item)
+    return remapped
+
+
+def _consolidate_mitigations(mitigations: list[dict], ttp_mappings: list[dict]) -> list[dict]:
+    """Merge per-technique duplicate mitigations across all threat pipelines.
+
+    Groups by technique_id, keeps the highest-priority representative,
+    and ensures every attack step that maps to the same technique is covered
+    via also_applies_to (using ttp_mappings as the source of truth).
+    """
+    from collections import defaultdict
+
+    # Build technique_id → all step IDs from ttp_mappings
+    technique_to_steps: dict[str, set[str]] = defaultdict(set)
+    for m in ttp_mappings:
+        tid = m.get("technique_id", "")
+        sid = m.get("attack_step_id", "")
+        if tid and sid:
+            technique_to_steps[tid].add(sid)
+
+    by_technique: dict[str, list[dict]] = defaultdict(list)
+    no_technique = []
+
+    for m in mitigations:
+        tid = m.get("technique_id", "")
+        if tid:
+            by_technique[tid].append(m)
+        else:
+            no_technique.append(m)
+
+    consolidated = []
+    for tid, group in by_technique.items():
+        rep = min(group, key=lambda x: x.get("priority", 99))
+
+        # Collect step IDs from mitigations themselves
+        all_step_ids: set[str] = set()
+        for m in group:
+            sid = m.get("attack_step_id", "")
+            if sid:
+                all_step_ids.add(sid)
+            all_step_ids.update(m.get("also_applies_to", []))
+
+        # Add ALL steps that map to this technique (from ttp_mappings)
+        all_step_ids.update(technique_to_steps.get(tid, set()))
+
+        all_step_ids.discard(rep.get("attack_step_id", ""))
+        all_step_ids.discard("")
+
+        new_rep = dict(rep)
+        new_rep["also_applies_to"] = sorted(all_step_ids)
+        consolidated.append(new_rep)
+
+    consolidated.extend(no_technique)
+    return consolidated
 
 
 def run_parallel_pipeline(repo_path: str) -> str:
@@ -365,19 +498,35 @@ def run_parallel_pipeline(repo_path: str) -> str:
         # No running loop — safe to use asyncio.run directly
         results = asyncio.run(_run_all())
 
-    # Merge results
+    # Merge results with per-result renumbering.
+    # Each per-threat pipeline produces trees starting from AT001, so we must
+    # renumber each result's trees separately to build a correct id_map before
+    # remapping that result's candidates/mappings/mitigations.
     all_trees = []
     all_candidates = []
     all_mappings = []
     all_mitigations = []
+    global_tree_idx = 0
 
     for r in results:
         if isinstance(r, Exception):
             continue
-        all_trees.extend(r.get("attack_trees", []))
-        all_candidates.extend(r.get("ttp_candidates", []))
-        all_mappings.extend(r.get("ttp_mappings", []))
-        all_mitigations.extend(r.get("mitigations", []))
+        r_trees = r.get("attack_trees", [])
+        r_candidates = r.get("ttp_candidates", [])
+        r_mappings = r.get("ttp_mappings", [])
+        r_mitigations = r.get("mitigations", [])
+
+        # Renumber this result's trees with a global offset
+        renumbered, id_map = _renumber_trees(r_trees, start_idx=global_tree_idx + 1)
+        global_tree_idx += len(renumbered)
+
+        all_trees.extend(renumbered)
+        all_candidates.extend(_remap_step_ids(r_candidates, id_map))
+        all_mappings.extend(_remap_step_ids(r_mappings, id_map))
+        all_mitigations.extend(_remap_step_ids(r_mitigations, id_map))
+
+    # Consolidate duplicate mitigations (same technique across different threats)
+    all_mitigations = _consolidate_mitigations(all_mitigations, all_mappings)
 
     (state_dir / "attack_trees.json").write_text(json.dumps({"attack_trees": all_trees}, indent=2))
     (state_dir / "ttp_candidates.json").write_text(json.dumps({"ttp_candidates": all_candidates}, indent=2))

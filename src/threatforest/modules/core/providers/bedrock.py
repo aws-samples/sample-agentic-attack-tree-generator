@@ -8,17 +8,19 @@ from threatforest.modules.utils.env_manager import EnvManager
 def create_bedrock_model(config, temperature: float = 0):
     """
     Create Bedrock model from config
-    
+
     Args:
         config: Config object with bedrock settings
         temperature: Model temperature (default 0)
-        
+
     Returns:
         Configured BedrockModel
-        
+
     Raises:
         ValueError: If AWS credentials are invalid or expired
     """
+    import warnings
+    warnings.filterwarnings("ignore", message="cache_prompt is deprecated")
     bedrock_config = config.bedrock
     
     # Get AWS credentials from environment variables using EnvManager
@@ -77,7 +79,8 @@ def create_bedrock_model(config, temperature: float = 0):
         model_id=bedrock_config['model_id'],
         boto_session=session,
         boto_client_config=_bedrock_client_config(),
-        temperature=temperature
+        temperature=temperature,
+        cache_prompt="default",
     )
     
     return model
