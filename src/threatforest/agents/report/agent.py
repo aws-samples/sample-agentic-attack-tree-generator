@@ -92,19 +92,69 @@ def run_report_generator(repo_path: str) -> str:
         lines.append(f"| {step} | {m.get('technique_id', '')} | {m.get('technique_name', '')} | {m.get('similarity_score', 0):.2f} |")
     lines.append("")
 
-    # Mitigations
+    # Mitigations — grouped by remediation type
     lines.append("## Mitigations")
+
+    REMEDIATION_LABELS = {
+        "quick_win": "Quick Wins",
+        "short_term": "Short Term",
+        "medium_term": "Medium Term",
+        "long_term": "Long Term",
+        "monitoring": "Monitoring & Detection",
+    }
+    REMEDIATION_ORDER = ["quick_win", "short_term", "medium_term", "long_term", "monitoring"]
+
+    # Summary table
+    lines.append("| Priority | Mitigation | Remediation | Technique |")
+    lines.append("|----------|-----------|-------------|-----------|")
     sorted_mits = sorted(mitigations, key=lambda m: m.get("priority", 99))
     for m in sorted_mits:
         pri = m.get("priority", "?")
-        lines.append(f"### [{pri}] {m.get('mitigation_text', '')[:100]}")
-        if m.get("implementation_guidance"):
-            lines.append(f"\n{m['implementation_guidance']}")
-        if m.get("evidence"):
-            lines.append("\n**Evidence**:")
-            for e in m["evidence"]:
-                lines.append(f"- [{e.get('source_type', '')}] {e.get('source_ref', '')}: {e.get('relevance', '')}")
-        lines.append("")
+        rtype = m.get("remediation_type", "")
+        label = REMEDIATION_LABELS.get(rtype, rtype or "—")
+        text = m.get("mitigation_text", "")[:80]
+        tid = m.get("technique_id", "")
+        lines.append(f"| {pri} | {text} | {label} | {tid} |")
+    lines.append("")
+
+    # Detailed sections grouped by remediation type
+    from collections import defaultdict as _defaultdict
+    by_rtype = _defaultdict(list)
+    for m in sorted_mits:
+        rtype = m.get("remediation_type", "other")
+        by_rtype[rtype].append(m)
+
+    for rtype in REMEDIATION_ORDER:
+        group = by_rtype.pop(rtype, [])
+        if not group:
+            continue
+        lines.append(f"### {REMEDIATION_LABELS.get(rtype, rtype)}")
+        for m in group:
+            pri = m.get("priority", "?")
+            lines.append(f"#### [P{pri}] {m.get('mitigation_text', '')[:100]}")
+            if m.get("implementation_guidance"):
+                lines.append(f"\n{m['implementation_guidance']}")
+            if m.get("evidence"):
+                lines.append("\n**Evidence**:")
+                for e in m["evidence"]:
+                    lines.append(f"- [{e.get('source_type', '')}] {e.get('source_ref', '')}: {e.get('relevance', '')}")
+            lines.append("")
+
+    # Any remaining without a recognized remediation_type
+    for rtype, group in by_rtype.items():
+        if not group:
+            continue
+        lines.append(f"### {REMEDIATION_LABELS.get(rtype, rtype.replace('_', ' ').title())}")
+        for m in group:
+            pri = m.get("priority", "?")
+            lines.append(f"#### [P{pri}] {m.get('mitigation_text', '')[:100]}")
+            if m.get("implementation_guidance"):
+                lines.append(f"\n{m['implementation_guidance']}")
+            if m.get("evidence"):
+                lines.append("\n**Evidence**:")
+                for e in m["evidence"]:
+                    lines.append(f"- [{e.get('source_type', '')}] {e.get('source_ref', '')}: {e.get('relevance', '')}")
+            lines.append("")
 
     # Coverage Summary
     lines.append("## Coverage Summary")
@@ -278,6 +328,7 @@ def _build_attack_trees_for_ui(state_dir: Path, threats: list) -> list:
                     "attack_step": safe_id,
                     "priority": mit.get("priority", 3),
                     "technique_id": mit.get("technique_id", ""),
+                    "remediation_type": mit.get("remediation_type", ""),
                     "evidence": mit.get("evidence", []),
                 })
             attack_steps_ui.append(step_entry)
