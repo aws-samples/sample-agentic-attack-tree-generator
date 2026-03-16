@@ -8,6 +8,10 @@
 
 Get comprehensive threat models for your application, with autonomous AI agents that analyze, generate, and visualize attack trees mapped to MITRE ATT&CK
 
+<div style="text-align: center; margin: 2rem auto;">
+    <img src="assets/images/threatforest-landingpage.png" alt="ThreatForest Demo" style="max-width: 100%; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+</div>
+
 [Get Started](getting-started/index.md){ .md-button .md-button--primary }
 
 <p style="font-size: 1rem; opacity: 0.8; margin-top: 1rem;">
@@ -26,7 +30,7 @@ Get comprehensive threat models for your application, with autonomous AI agents 
   <div class="expandable-card">
     <div class="card-title">🤖 Autonomous Agents</div>
     <div class="card-content">
-      <p>Three specialized AI agents work together using Strands community tools to explore your repository, parse threats, and generate comprehensive attack trees</p>
+      <p>A pipeline of specialized AI agents developed by threat modeling and data science experts, built on the Strands framework — scanner, threat identifier, attack tree generator, TTP mapper, and mitigation advisor — run automatically in sequence with parallel per-threat processing</p>
     </div>
   </div>
 
@@ -40,7 +44,7 @@ Get comprehensive threat models for your application, with autonomous AI agents 
   <div class="expandable-card">
     <div class="card-title">📊 Interactive Dashboards</div>
     <div class="card-content">
-      <p>Explore threats visually with interactive HTML dashboards powered by vis-network, complete with filtering and real-time search</p>
+      <p>Explore threats visually with interactive dashboards, complete with filtering and real-time search</p>
     </div>
   </div>
 
@@ -57,43 +61,41 @@ Get comprehensive threat models for your application, with autonomous AI agents 
 Generate comprehensive attack trees in minutes:
 
 !!! tip "Prerequisites"
-    Before starting, ensure you have [Python 3.11+ and AWS Bedrock access](getting-started/index.md#prerequisites).
+    Before starting, ensure you have [Python 3.11+ and an LLM provider configured](getting-started/index.md). AWS Bedrock is fully supported and recommended.
 
 <div style="text-align: center; margin: 2rem auto;">
-    <img src="assets/images/ThreatForestE2E.gif" alt="ThreatForest Demo" style="max-width: 100%; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+    <img src="assets/images/ThreatForestE2E-short.gif" alt="ThreatForest Demo" style="max-width: 100%; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
 </div>
 
 ---
 
 ## 🎯 Key Features
 
-### Intelligent Analysis
+**Intelligent Analysis**
 
 <div class="feature-grid" markdown>
 
-!!! success "Repository Exploration"
-    **RepositoryAnalysisAgent** autonomously navigates your project using Strands tools (`file_read`, `editor`, `image_reader`) to discover:
-    
+!!! success "Repository Scanning"
+    **Scanner Agent** autonomously navigates your project using Strands tools to discover:
+
     - Architecture diagrams and documentation
-    - Technology stack and dependencies
+    - Technology stack and cloud provider
     - Data flows and trust boundaries
-    - Security objectives and constraints
+    - Auth mechanisms and entry points
 
-!!! info "Threat Processing"
-    **ParserAgent** intelligently parses threat statements from:
-    
-    - ThreatComposer workspaces (.tc.json)
+!!! info "Threat Identification"
+    **Threat Agent** reads scanner context and produces a structured threat list from:
+
+    - ThreatComposer workspaces (`.tc.json`)
     - JSON, YAML, and Markdown formats
-    - Mixed format documents
-    - Legacy threat model files
+    - AI-generated threats when no file exists
 
-!!! tip "AI Generation"
-    **ThreatGenerationAgent** creates contextual threats when none exist, analyzing:
-    
-    - Application architecture
-    - Technology vulnerabilities
-    - Common attack patterns
-    - Industry-specific risks
+!!! tip "Parallel Analysis"
+    **Per-threat pipeline** runs concurrently for every identified threat:
+
+    - Attack tree generation
+    - MITRE ATT&CK TTP mapping (ATTACK-BERT embeddings)
+    - Mitigation recommendations
 
 </div>
 
@@ -133,12 +135,12 @@ Generate comprehensive attack trees in minutes:
 
 ## 📊 What You Get
 
-### Interactive Dashboard ⭐ PRIMARY OUTPUT
+**⭐ Interactive Dashboard**
 
 <div class="screenshot-container" markdown>
 
 ![ThreatForest Dashboard](assets/images/InteractiveDashboardOutputWalkthrough.gif)
-*Interactive dashboard with network graph visualization*
+*Interactive dashboard with graph visualization*
 
 **Features:**
 
@@ -156,7 +158,7 @@ Generate comprehensive attack trees in minutes:
 ## 🔒 Privacy & Security
 
 !!! warning "Data Privacy"
-    ThreatForest relies on LLM providers to send application details that you provide sends application details to AWS Bedrock for analysis. AWS Bedrock provides enterprise-grade data handling. For alternative providers (experimental), review their data handling policies.
+    ThreatForest sends application context to your configured LLM provider for analysis. AWS Bedrock provides enterprise-grade data handling. For other providers, review their data policies.
 
 **Best Practices:**
 

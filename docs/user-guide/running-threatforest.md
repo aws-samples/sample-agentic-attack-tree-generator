@@ -1,151 +1,95 @@
 # Running ThreatForest
 
-This guide explains how to run ThreatForest using the interactive wizard, what happens during analysis, and how to manage your workflow.
+ThreatForest has two interfaces: a **web console** (default) and a **terminal wizard** (`--tui`). Both run the same analysis pipeline.
 
-## Launching ThreatForest
+---
 
-The interactive wizard is the primary way to run ThreatForest:
+## Web Console (Default)
 
 ```bash
 threatforest
 ```
 
-This launches a guided interface that walks you through the entire analysis process.
+Opens `http://localhost:8000` in your browser automatically.
 
-## The Interactive Wizard
+**Options:**
 
-### Welcome Screen
-
-When you launch ThreatForest for the first time, you'll see:
-
-<!-- TODO: Add welcome screen GIF -->
-![ThreatForest Welcome Screen](../assets/images/InitialWelcomeScreenAndLaunchingThreatForest.gif)
-*Initial welcome screen and wizard launch*
-
-The wizard will guide you through the initial setup and then the analysis workflow.
-
-### Step 1: Workflow Selection
-
-Choose your workflow mode:
-
-**Full Analysis** (Recommended)
-- Complete end-to-end threat modeling
-- Analyzes your project from scratch
-- Generates attack trees with MITRE ATT&CK mappings
-- Includes mitigation recommendations
-- Creates interactive dashboard
-
-This is what most users need and what this guide focuses on.
-
-### Step 2: Project Path
-
-Enter the path to your project directory:
-
-![Project Path Selection](../assets/images/ProjectPathSelection.gif)
-
-**What ThreatForest Looks For:**
-- ThreatComposer files (`*.tc.json`)
-- Documentation (`README.md`, `ARCHITECTURE.md`)
-- Architecture diagrams (PNG, PDF, Mermaid)
-- Threat model files (JSON, YAML, Markdown)
-
-### Step 3: AWS Configuration
-
-If using AWS Bedrock, you'll be prompted for AWS details:
-
-![AWS Configuration](../assets/images/AWSConfig.gif)
-
-**What's Happening:**
-- ThreatForest uses your AWS profile credentials
-- Validates access to AWS Bedrock
-- Confirms the selected model is available
-
-### Step 4: Model Selection
-
-Choose your AI model:
-
-![Model Selection](../assets/images/ModelSelection.gif)
-
-### Step 5: Confirmation
-
-Review your settings before starting:
-
-![Analysis Summary](../assets/images/LaunchingWizardStartWorkflow.gif)
-
-## During Analysis
-
-### Progress Tracking
-
-Once analysis begins, you'll see real-time progress:
-
-![Analysis Progress](../assets/images/AnalysisProgress.gif)
-
-**What Each Stage Does:**
-
-1. **Setup & Validation** - Validates configuration and project structure
-2. **Context Analysis** - Discovers and categorizes project files
-3. **Information Extraction** - Analyzes documentation and diagrams
-4. **Attack Tree Generation** - Creates detailed attack trees for each threat
-5. **TTP Enrichment** - Maps attack steps to MITRE ATT&CK techniques
-6. **Mitigation Mapping** - Adds security controls and recommendations
-7. **Report Generation** - Creates dashboard and analysis report
-
-### Individual Threat Progress
-
-For each threat being processed:
-
-```
-Processing Threat: T001 - SQL Injection in Login Form
-├─ Analyzing threat context...                    ✓
-├─ Generating attack paths...                     ✓
-│  ├─ Path 1: Direct SQL injection               ✓
-│  ├─ Path 2: Blind SQL injection                ✓
-│  └─ Path 3: Second-order SQL injection         ✓
-├─ Mapping MITRE ATT&CK techniques...            ✓
-├─ Adding mitigation recommendations...           ✓
-└─ Writing attack tree file...                    ✓
-
-Completed in 45 seconds
+```bash
+threatforest --port 8001          # use a different port
+threatforest --host 0.0.0.0       # bind to all interfaces
 ```
 
-### Estimated Time Remaining
+### Pages
 
-ThreatForest shows estimated completion time:
+#### Applications
+Lists all discovered projects from your home directory and the included `sample-applications/`. Select a project to view its runs and results.
 
+#### New Run
+Start a new analysis for the selected application. Specify the project path and click **Start Analysis**.
+
+#### Run Progress
+Live view of the pipeline as it executes — shows each stage completing in real time:
+
+1. **Scanner Agent** — explores repo structure
+2. **Threat Agent** — identifies threats
+3. **Parallel Pipeline** — attack trees, TTP mapping, mitigations (all threats run concurrently)
+4. **Report Generator** — compiles final outputs
+
+#### Application Detail / Version Detail
+Browse past runs, view generated attack trees, MITRE ATT&CK mappings, and mitigations.
+
+#### Configure
+Set your LLM provider credentials and Langfuse tracing without touching the config file. See [Configuration](../getting-started/configuration.md).
+
+---
+
+## Terminal Mode
+
+```bash
+threatforest --tui
 ```
-⏱️ Estimated Time Remaining: 3 minutes
 
-Based on:
-- 5 threats to process
-- 2 threats completed (avg 40s each)
-- 3 threats remaining
-```
+An interactive wizard in the terminal. Useful for headless environments or scripted workflows.
+
+The wizard guides you through:
+
+1. **Mode selection** — Full analysis, or update credentials/model settings
+2. **Project path** — Path to the project to analyze
+3. **Threat file** — Optionally provide an existing threat file
+4. **Confirmation** — Review settings before starting
+
+Progress is shown inline as each pipeline stage completes.
+
+---
+
+## Pipeline Stages
+
+Regardless of interface, every run executes the same 4-stage pipeline:
+
+| Stage | What Happens |
+|---|---|
+| **Scanner** | Explores repo; identifies tech stack, cloud provider, services, auth mechanisms |
+| **Threat** | Reads scanner context; produces structured threat list |
+| **Parallel Pipeline** | For each threat concurrently: generates attack tree, maps TTPs, adds mitigations |
+| **Report** | Deterministic compilation into dashboard, report, and JSON export |
+
+Each stage has a verifier — if the output is invalid, the stage retries automatically.
+
+---
 
 ## When Analysis Completes
 
-### Success Message
+Results are written to `.threatforest/output/` inside your project:
 
-![Analysis Complete](../assets/images/AnalysisComplete.gif)
+- `threat_model_report.md` — executive summary
+- `threatforest_data.json` — structured JSON export
 
-### Next Steps
+To explore the interactive visualization — attack trees, MITRE ATT&CK mappings, and mitigations — open the run in the web console dashboard.
 
-After completion, you can:
+[→ Understanding Results](understanding-results.md)
 
-1. **View Dashboard** - Interactive HTML visualization
-2. **Read Attack Trees** - Individual markdown files
-3. **Export Data** - JSON file for automation
-4. **Review Report** - Executive summary
-
-**Learn More:**
-- [Understanding Your Results](understanding-results.md) - Explore all outputs
-- [How ThreatForest Works](../how-it-works.md) - Technical deep dive
+---
 
 ## Handling Errors
 
-ThreatForest includes automatic error handling and recovery. Common errors are documented in the [FAQ Troubleshooting section](../faq.md#troubleshooting).
-
-## Next Steps
-
-- **[Understanding Your Results](understanding-results.md)** - Explore generated outputs
-- **[Preparing Your Project](preparing-your-project.md)** - Optimize your inputs
-- **[How ThreatForest Works](../how-it-works.md)** - Learn about the internals
+ThreatForest retries failed stages automatically. For persistent issues, check the [FAQ Troubleshooting section](../faq.md#troubleshooting).

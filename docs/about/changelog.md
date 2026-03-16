@@ -4,6 +4,11 @@
 
 To upgrade ThreatForest to the latest version:
 
+**Using uv:**
+```bash
+uv tool upgrade threatforest
+```
+
 **Using pipx:**
 ```bash
 pipx upgrade threatforest
@@ -14,18 +19,23 @@ pipx upgrade threatforest
 pip install --upgrade threatforest
 ```
 
-**From source:**
-```bash
-cd ThreatForest
-git pull
-pip install --upgrade .
-```
+---
+
+## Version 1.0.0
+
+**Release Date:** TBD
+
+### What's New
+
+- **Web Console UI** — Browser-based interface for running analyses, viewing results, and managing configuration without touching the CLI
+- **Langfuse tracing** — Optional observability integration for tracing agent runs, reviewing outputs, and building evaluation datasets
+- **Agent verifiers** — Each pipeline stage now includes a verifier that checks output quality and automatically retries if the result is invalid, improving accuracy and consistency across runs
 
 ---
 
-## Version 0.1.0 (Initial Release)
+## Version 0.0.1
 
-**Release Date:** TBD
+**Release Date:** December 4, 2024
 
 ### Features
 
@@ -33,15 +43,5 @@ pip install --upgrade .
 - AI-powered threat modeling and attack tree generation
 - MITRE ATT&CK framework integration
 - Support for multiple LLM providers (AWS Bedrock, Anthropic, OpenAI, Gemini, Ollama)
-- Interactive HTML dashboard for visualizing attack trees
-- ThreatComposer file support
-- Autonomous repository analysis using Strands framework
-- Multi-stage workflow with state management
-
-### Known Issues
-
-- None reported yet
-
-### Breaking Changes
-
-- N/A (initial release)
+- Autonomous repository analysis using the Strands framework
+- Multi-stage pipeline with state management

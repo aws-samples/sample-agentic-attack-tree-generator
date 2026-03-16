@@ -6,88 +6,79 @@ ThreatForest is built on a modular architecture that combines autonomous AI agen
 
 ```mermaid
 graph LR
-    A[User] --> B[ThreatForest CLI]
-    B --> C[Orchestrator]
-    C <--> D[RepositoryAnalysisAgent]
-    C <--> E[ParserAgent]
-    C <--> F[ThreatGenerationAgent]
-    C <--> G[AttackTreeGeneratorAgent]
+    A[User] --> B[Web Console\nhttp://localhost:8000]
+    A --> C[threatforest --tui]
+    B --> D[FastAPI Server]
+    C --> E[CLI Wizard]
+    D --> F[Strands Graph]
+    E --> F
 
-    D --> H[(Strands Tools)]
-    E --> H
-    F --> H
+    F --> G[Scanner Agent]
+    G --> H[Threat Agent]
+    H --> I[Parallel Pipeline]
 
-    G --> I[TTP Matcher]
-    I --> J[MITRE ATT&CK<br/>Graph]
+    I --> J[Tree Agent]
+    I --> K[TTP Mapper\nATTACK-BERT]
+    I --> L[Mitigation Agent]
 
-    I --> K[MitigationMapper]
-    K --> L[(STIX Bundle)]
+    J --> M[Report Generator]
+    K --> M
+    L --> M
 
-    G --> M[HTML Generator]
-    M --> N[📊 Dashboard]
+    M --> N[Dashboard\n+ Report + JSON]
 
-    style C fill:#15803d,color:#fff
-    style D fill:#6366f1,color:#fff
-    style E fill:#6366f1,color:#fff
-    style F fill:#6366f1,color:#fff
+    style D fill:#15803d,color:#fff
+    style F fill:#15803d,color:#fff
     style G fill:#6366f1,color:#fff
+    style H fill:#6366f1,color:#fff
+    style J fill:#6366f1,color:#fff
+    style K fill:#3b82f6,color:#fff
+    style L fill:#6366f1,color:#fff
+    style M fill:#6366f1,color:#fff
     style N fill:#dc2626,color:#fff
 ```
 
 ## Key Components
 
-### Orchestrator
-The central coordinator that manages the entire threat modeling workflow. It handles:
+### Web Console
+A FastAPI server with a React SPA served at `http://localhost:8000`. It handles:
 
-- **Stage Coordination**: Sequences agent execution and tool operations
-- **Error Handling**: Manages failures and provides recovery mechanisms
-- **Progress Tracking**: Reports real-time status to users
+- **Application Registry**: discovers projects in your home directory and `sample-applications/`
+- **Run Management**: spawns analysis runs in background threads, streams progress over WebSocket
+- **Configuration UI**: edit provider settings and Langfuse credentials from the browser
 
+### Strands Graph
+The v2 pipeline, defined in `agents/graph.py`. Each node is a Strands agent or function wrapped as a `GraphNode`. Verifier nodes run after each stage — if verification fails, the graph retries that stage automatically.
 
-### Autonomous Agents
-Powered by AWS Labs' [Strands](https://github.com/awslabs/strands) framework, three specialized agents work together:
+### Agents
 
-- **RepositoryAnalysisAgent**: Explores project files using Strands community tools to understand architecture and identify security-relevant information
-- **ParserAgent**: Intelligently parses threat statements from various formats (ThreatComposer, JSON, YAML, Markdown)
-- **ThreatGenerationAgent**: Creates contextual threats when none exist by analyzing application architecture
-- **AttackTreeGeneratorAgent**: Utilizes all the context provided to generate relevant attack steps
+- **Scanner Agent**: explores the repository with sandboxed file tools; writes `scanner_context.json` (tech stack, cloud provider, services, auth mechanisms)
+- **Threat Agent**: reads scanner context and produces a structured `threats.json` list
+- **Tree Agent**: generates detailed attack trees per threat; writes `attack_trees.json`
+- **TTP Mapper**: uses ATTACK-BERT sentence embeddings to match attack steps against the bundled MITRE ATT&CK STIX graph; writes `ttp_mappings.json`
+- **Mitigation Agent**: maps identified techniques to MITRE mitigation controls; writes `mitigations.json`
+- **Report Generator**: deterministic (no LLM) — compiles state files into the final dashboard and report
 
+All threats in the parallel pipeline run **concurrently** via `asyncio.gather`.
 
 ### TTP Matcher
-Implements semantic similarity matching to map attack steps to MITRE ATT&CK techniques using:
+Semantic similarity matching using:
 
-- **Vector Embeddings**: Sentence transformers for semantic understanding
-- **Graph Integration**: MITRE ATT&CK knowledge graph navigation
-- **Confidence Scoring**: Multi-factor relevance assessment
-
-
-### Mitigation Mapper
-Maps identified threats to STIX-based mitigations using:
-
-- **STIX Bundle Processing**: Parses MITRE's ATT&CK STIX data
-- **Course of Action Extraction**: Links techniques to mitigation strategies
-- **Contextual Recommendations**: Tailors mitigations to specific threats
-
-
-### Visualization Engine
-Generates interactive HTML dashboards featuring:
-
-- **Network Graphs**: Interactive vis-network visualizations
-- **Real-time Filtering**: Dynamic search and category filtering
-- **MITRE Integration**: Direct links to technique documentation
-- **Export Capabilities**: JSON data export for further analysis
+- **Embedding model**: `basel/ATTACK-BERT` (sentence-transformers)
+- **STIX bundle**: bundled `enterprise-attack-18.0.json`
+- **Graph cache**: `.threatforest/graphs/mitre_attack_graph_<model>.json` (built once, reused)
+- **Threshold**: configurable via `embeddings.ttc_threshold` (default `0.3`)
 
 
 ## Data Flow
 
-The threat modeling workflow follows a structured pipeline:
-
-1. **Discovery Phase**: RepositoryAnalysisAgent explores the project
-2. **Parsing Phase**: ParserAgent extracts or generates threat statements
-3. **Generation Phase**: AttackTreeGenerator creates attack trees for each threat
-4. **Enrichment Phase**: TTP Matcher maps attack steps to MITRE ATT&CK
-5. **Mitigation Phase**: MitigationMapper identifies defensive strategies
-6. **Visualization Phase**: HTML Generator creates interactive dashboards
+1. **Scanner** — explores repo, writes `scanner_context.json`
+2. **Threat** — reads scanner context, writes `threats.json`
+3. **Parallel Pipeline** — fan-out per threat (concurrent):
+   - Tree Agent → `attack_trees.json`
+   - TTP Mapper → `ttp_mappings.json`
+   - Mitigation Agent → `mitigations.json`
+4. **Report** — compiles state files into `output/`
 
 
 ## Technology Stack
@@ -96,13 +87,17 @@ The threat modeling workflow follows a structured pipeline:
 - **Strands**: AWS Labs' agentic framework for autonomous AI agents
 - **Python 3.11+**: Modern Python with type hints and async support
 
+### Web Console
+- **FastAPI + uvicorn**: REST API and WebSocket server
+- **React**: SPA front-end (Vite build, served as static files)
+
 ### AI/ML Components
 - **Sentence Transformers**: Semantic similarity and embeddings
 - **PyTorch**: Neural network backend for embeddings
 - **scikit-learn**: Vector similarity calculations
 
 ### Security Frameworks
-- **MITRE ATT&CK**: Enterprise attack patterns and techniques
+- **MITRE ATT&CK v18.0**: Enterprise attack patterns and techniques
 - **STIX 2.0**: Structured Threat Information Expression
 
 ### Visualization
@@ -110,17 +105,17 @@ The threat modeling workflow follows a structured pipeline:
 - **HTML/CSS/JS**: Modern web technologies for dashboards
 
 ### LLM Providers
-- AWS Bedrock
+- AWS Bedrock (recommended)
 - Anthropic Claude
 - OpenAI GPT
 - Google Gemini
 - Ollama (local)
 - LiteLLM (proxy)
+- AWS SageMaker
 
 ## Design Principles
 
 ### Modularity
-
 Each component is independently testable and replaceable, enabling:
 
 - Easy updates to individual modules
@@ -128,7 +123,6 @@ Each component is independently testable and replaceable, enabling:
 - Custom workflow configurations
 
 ### Autonomy
-
 Agents operate independently using Strands tools, reducing manual intervention and enabling:
 
 - Automated repository exploration
@@ -136,7 +130,6 @@ Agents operate independently using Strands tools, reducing manual intervention a
 - Context-aware threat generation
 
 ### Extensibility
-
 The architecture supports custom extensions:
 
 - Custom agents for specialized analysis
@@ -145,7 +138,6 @@ The architecture supports custom extensions:
 - Integration with CI/CD pipelines
 
 ### Privacy-First
-
 Data handling prioritizes user privacy:
 
 - No data storage beyond local outputs

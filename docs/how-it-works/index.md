@@ -1,60 +1,66 @@
 # How ThreatForest Works
 
 !!! tip "TL;DR - Quick Summary"
-    ThreatForest uses a 7-stage AI-powered pipeline to transform your project into comprehensive attack trees:
-    
-    1. **Setup** - Validates configuration
-    2. **Discovery** - Finds threat models, docs, diagrams
-    3. **Extraction** - AI analyzes application context
-    4. **Generation** - Creates detailed attack trees
-    5. **Enrichment** - Maps to MITRE ATT&CK techniques
-    6. **Mitigation** - Adds security controls
-    7. **Reporting** - Generates interactive dashboard
-    
-    **Time**: 5-9 minutes depending on project size  
-    **Output**: Attack trees, dashboard, JSON export, analysis report
+    ThreatForest uses a 4-stage AI pipeline to transform your project into comprehensive attack trees:
+
+    1. **Scanner** — explores repo, identifies tech stack and architecture
+    2. **Threat** — produces a structured threat list
+    3. **Parallel Pipeline** — for every threat concurrently: attack tree + TTP mapping + mitigations
+    4. **Report** — compiles outputs into dashboard, report, and JSON export
+
+    **Time**: 5-30 minutes depending on project size and model
+    **Output**: Interactive dashboard, markdown report, JSON export
 
 ## Overview
 
-ThreatForest uses a multi-stage workflow powered by the Strands agentic framework to transform your application context into comprehensive security analysis. The complete analysis includes attack tree generation, MITRE ATT&CK mapping, and mitigation recommendations—all in a single integrated pipeline.
+ThreatForest uses a Strands Graph to orchestrate specialized agents. Each stage writes state files that the next stage reads. The parallel pipeline runs all threats concurrently for speed.
 
-## The Multi-Stage Workflow
-
-### Workflow Diagram
+## Pipeline Overview
 
 ```mermaid
 graph TB
-    Start([Start Workflow]) --> Setup[Setup & Validation]
-    Setup --> Context[Context Analysis]
-    Context --> Extract[Information Extraction]
-    Extract --> Generate[Attack Tree Generation]
-    Generate --> Enrich[TTP Enrichment]
-    Enrich --> Mitigate[Mitigation Mapping]
-    Mitigate --> Summary[Generate Reports]
-    Summary --> End([Complete])
+    Start([Start]) --> Scanner[Scanner Agent]
+    Scanner --> ScanVerify{Verify}
+    ScanVerify -->|pass| Threat[Threat Agent]
+    ScanVerify -->|fail| Scanner
+    Threat --> ThreatVerify{Verify}
+    ThreatVerify -->|pass| Parallel[Parallel Pipeline]
+    ThreatVerify -->|fail| Threat
+    Parallel --> ParVerify{Verify}
+    ParVerify -->|pass| Report[Report Generator]
+    ParVerify -->|fail| Parallel
+    Report --> End([Complete])
 
-    Context -.->|Discovers| Files[Project Files<br/>• Threat Models<br/>• Documentation<br/>• Diagrams<br/>• Architecture]
+    Scanner -.->|writes| SC[scanner_context.json]
+    Threat -.->|writes| TH[threats.json]
+    Parallel -.->|writes| PP[attack_trees.json\nttp_mappings.json\nmitigations.json]
+    Report -.->|writes| OUT[dashboard + report + JSON]
 
-    Extract -.->|Uses LLM| AI1[AI Analysis<br/>• Extract threats<br/>• Identify assets<br/>• Understand context]
-
-    Generate -.->|Uses LLM| AI2[AI Generation<br/>• Create attack trees<br/>• Define attack paths<br/>• Assess impact]
-
-    Enrich -.->|Maps to| MITRE[MITRE ATT&CK<br/>• Technique IDs<br/>• Tactics<br/>• Procedures]
-
-    Mitigate -.->|Adds| Controls[Security Controls<br/>• Preventive measures<br/>• Detective controls<br/>• Response actions]
-
-    Summary -.->|Creates| Output[Output Files<br/>• Attack tree markdown<br/>• Interactive dashboard<br/>• JSON export<br/>• Analysis report]
-
-    style Start fill:#10b981,stroke:#059669,stroke-width:3px,color:#fff
-    style End fill:#10b981,stroke:#059669,stroke-width:3px,color:#fff
-    style AI1 fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#000
-    style AI2 fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#000
-    style MITRE fill:#3b82f6,stroke:#2563eb,stroke-width:2px,color:#fff
-    style Controls fill:#ec4899,stroke:#db2777,stroke-width:2px,color:#fff
-    style Output fill:#8b5cf6,stroke:#7c3aed,stroke-width:2px,color:#fff
+    style Scanner fill:#6366f1,color:#fff
+    style Threat fill:#6366f1,color:#fff
+    style Parallel fill:#15803d,color:#fff
+    style Report fill:#6366f1,color:#fff
+    style End fill:#10b981,color:#fff
+    style OUT fill:#dc2626,color:#fff
 ```
 
-[→ Learn More About Report Generation](phases.md#phase-4-report-generation)
+### Parallel Pipeline (per threat, concurrent)
+
+```mermaid
+graph LR
+    T[Threat N] --> Tree[Tree Agent]
+    T --> TTP[TTP Mapper\nATTACK-BERT]
+    Tree --> Mit[Mitigation Agent]
+    TTP --> Mit
+
+    style Tree fill:#6366f1,color:#fff
+    style TTP fill:#3b82f6,color:#fff
+    style Mit fill:#6366f1,color:#fff
+```
+
+All threats run through the parallel pipeline at the same time via `asyncio.gather`.
+
+[→ Detailed phase breakdown](phases.md)
 
 ## Best Practices for Optimal Results
 
