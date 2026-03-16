@@ -4,19 +4,23 @@ After ThreatForest completes analysis, you'll have a comprehensive set of output
 
 ## Output Directory Structure
 
-ThreatForest creates a `threatforest/` directory in your project:
+ThreatForest creates a `.threatforest/` directory inside your project:
 
 ```
 project/
-└── threatforest/
-    └── attack_trees/
-        ├── .threatforest_state.json          # State tracking
-        ├── attack_tree_T001_sql_injection.md # Individual attack trees
-        ├── attack_tree_T002_xss_attack.md
-        ├── attack_tree_T003_auth_bypass.md
-        ├── attack_trees_dashboard.html       # ⭐ Interactive visualization
-        ├── threatforest_data.json            # JSON export
-        └── threatforest_analysis_report.md   # Summary report
+└── .threatforest/
+    ├── config.yaml              # Configuration
+    ├── .env                     # Secrets (API keys, Langfuse)
+    ├── state/                   # Intermediate state files
+    │   ├── scanner_context.json
+    │   ├── threats.json
+    │   ├── attack_trees.json
+    │   ├── ttp_mappings.json
+    │   └── mitigations.json
+    └── output/                  # Final outputs
+        ├── attack_trees_dashboard.html   # ⭐ Interactive visualization
+        ├── threat_model_report.md        # Executive summary
+        └── threatforest_data.json        # JSON export
 ```
 
 ## Interactive Dashboard ⭐ PRIMARY INTERFACE
@@ -25,15 +29,17 @@ The HTML dashboard is your main way to explore results.
 
 ### Opening the Dashboard
 
+The web console links directly to the dashboard from the run results page. Or open it manually:
+
 ```bash
 # Mac
-open ./project/threatforest/attack_trees/attack_trees_dashboard.html
+open ./project/.threatforest/output/attack_trees_dashboard.html
 
 # Linux
-xdg-open ./project/threatforest/attack_trees/attack_trees_dashboard.html
+xdg-open ./project/.threatforest/output/attack_trees_dashboard.html
 
 # Windows
-start ./project/threatforest/attack_trees/attack_trees_dashboard.html
+start ./project/.threatforest/output/attack_trees_dashboard.html
 ```
 
 ### Dashboard Overview
@@ -157,97 +163,20 @@ The dashboard provides:
 - ✅ Safari 14+
 - ✅ Edge 90+
 
-## Individual Attack Tree Files
+## State Files
 
-Each threat gets a dedicated markdown file with complete details.
+Intermediate outputs are written to `.threatforest/state/` after each pipeline stage:
 
-### File Pattern
+| File | Written by | Contents |
+|---|---|---|
+| `scanner_context.json` | Scanner Agent | Tech stack, cloud provider, services, auth mechanisms |
+| `threats.json` | Threat Agent | Structured threat list |
+| `attack_trees.json` | Tree Agent | Attack trees with steps per threat |
+| `ttp_mappings.json` | TTP Mapper | MITRE technique mappings with confidence scores |
+| `mitigations.json` | Mitigation Agent | MITRE mitigation controls per technique |
 
-`attack_tree_T###_*.md`
-
-### Contents
-
-**Threat Metadata:**
-
-- ID and title
-- Severity level
-- STRIDE category
-- Affected components
-
-**Attack Paths:**
-
-- Multiple paths per threat
-- Step-by-step sequences
-- Prerequisites for each step
-- Impact and likelihood ratings
-
-**MITRE ATT&CK Mappings:**
-
-- Technique IDs and names
-- Tactic categorization
-- Confidence scores
-- Technique descriptions
-
-**Mitigations:**
-
-- Security control recommendations
-- Implementation guidance
-- Best practices
-- Priority rankings
-
-**Mermaid Diagrams:**
-
-- Visual attack tree representation
-- Shows attack flow and dependencies
-
-### Example Structure
-
-```markdown
-# Attack Tree: SQL Injection in User Login
-
-**Threat ID:** T001
-**Severity:** High
-**Category:** Injection
-
-## Description
-Attacker exploits insufficient input validation in the login form...
-
-## Attack Paths
-
-### Path 1: Direct SQL Injection via Login Form
-
-**Likelihood:** High | **Impact:** Critical
-
-**Attack Steps:**
-
-1. Identify login endpoint
-   - **MITRE ATT&CK:** T1190 - Exploit Public-Facing Application
-   - **Prerequisites:** Login form accessible
-   - **Mitigation:** M1050 - Exploit Protection
-
-2. Test for SQL injection
-   - **MITRE ATT&CK:** T1190 - Exploit Public-Facing Application
-   - **Prerequisites:** Input validation not implemented
-   - **Mitigation:** M1027 - Password Policies
-
-3. Craft bypass payload
-   - **MITRE ATT&CK:** T1078 - Valid Accounts
-   - **Prerequisites:** Error messages reveal structure
-   - **Mitigation:** M1027 - Password Policies
-
-...
-
-## Mermaid Diagram
-[Visual representation]
-```
-
-### Use Cases
-
-- Security code reviews
-- Developer training materials
-- Penetration testing guidance
-- Security documentation
-- Version control tracking
+!!! info
+    State files are preserved between runs. Re-running ThreatForest on the same project overwrites them.
 
 ## JSON Data Export
 
@@ -379,20 +308,8 @@ requiring immediate attention.
 - Audit documentation
 - Compliance reporting
 
-## State File
-
-**File:** `.threatforest_state.json`
-
-**Purpose:** Tracks workflow progress for resume capability.
-
-**Contains:**
-
-- Processed threats
-- Current progress
-- Timestamp information
-- Configuration snapshot
-
-**Note:** Automatically managed by ThreatForest. Do not edit manually.
+!!! note "State files"
+    State files in `.threatforest/state/` are managed automatically. Do not edit them manually. They are preserved between runs — re-running overwrites them with fresh output.
 
 ## Working with Results
 
@@ -402,11 +319,11 @@ requiring immediate attention.
 
 ```bash
 # Commit threat models
-git add threats/*.tc.json
+git add *.tc.json
 git commit -m "Update threat model"
 
 # Commit generated outputs
-git add threatforest/
+git add .threatforest/output/
 git commit -m "Update threat analysis"
 
 # Tag releases
@@ -436,13 +353,9 @@ git tag -a v1.0-threat-analysis -m "Initial threat analysis"
 ### Comparing Versions
 
 ```bash
-# Compare attack trees
-diff threatforest/attack_trees/attack_tree_T001.md \
-     threatforest-old/attack_trees/attack_tree_T001.md
-
-# Compare JSON data
-jq -S . threatforest/attack_trees/threatforest_data.json > current.json
-jq -S . threatforest-old/attack_trees/threatforest_data.json > previous.json
+# Compare JSON exports between runs
+jq -S . .threatforest/output/threatforest_data.json > current.json
+jq -S . .threatforest-backup/output/threatforest_data.json > previous.json
 diff current.json previous.json
 ```
 
@@ -477,4 +390,4 @@ Having issues with results or the dashboard? Check the [FAQ Troubleshooting sect
 
 - **[Running ThreatForest](running-threatforest.md)** - Learn the analysis process
 - **[Preparing Your Project](preparing-your-project.md)** - Optimize inputs
-- **[How ThreatForest Works](../how-it-works.md)** - Technical deep dive
+- **[How ThreatForest Works](../how-it-works/index.md)** - Technical deep dive

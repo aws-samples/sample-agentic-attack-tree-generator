@@ -54,6 +54,26 @@ _DEFAULT_CONFIG = ConfigResponse(
 # Module-level config — overridable via set_config() for testing
 _config: ConfigResponse | None = None
 
+# Root directory of the repo (src/server/routes/config.py → src/server/routes → src/server → src → repo)
+_REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
+
+
+def _resolve_config_path() -> Path:
+    """Find config.yaml using the same resolution order as the pipeline Config class.
+
+    Priority:
+    1. ``.threatforest/config.yaml`` in the current working directory
+    2. ``<repo_root>/.threatforest/config.yaml`` (where the CLI writes by default)
+
+    Returns the first existing path, or the ROOT_DIR path if neither exists
+    (so save_config creates the file in the canonical CLI location).
+    """
+    cwd_config = Path(".threatforest") / "config.yaml"
+    if cwd_config.is_file():
+        return cwd_config
+    root_config = _REPO_ROOT / ".threatforest" / "config.yaml"
+    return root_config
+
 
 def _load_config_from_yaml(path: Path) -> ConfigResponse:
     """Parse a .threatforest/config.yaml file into a ConfigResponse."""
@@ -89,13 +109,13 @@ def get_config() -> ConfigResponse:
 
     Resolution order:
     1. Explicitly set config (via ``set_config``)
-    2. ``.threatforest/config.yaml`` in the current working directory
+    2. ``.threatforest/config.yaml`` — CWD first, then repo root (matches CLI)
     3. Hard-coded defaults
     """
     if _config is not None:
         return _config
 
-    config_path = Path(".threatforest") / "config.yaml"
+    config_path = _resolve_config_path()
     if config_path.is_file():
         return _load_config_from_yaml(config_path)
 
@@ -253,8 +273,8 @@ async def save_config(request: ConfigSaveRequest) -> ConfigTestResponse:
             f"Available: {', '.join(AVAILABLE_PROVIDERS)}",
         )
 
-    config_dir = Path(".threatforest")
-    config_path = config_dir / "config.yaml"
+    config_path = _resolve_config_path()
+    config_dir = config_path.parent
 
     # Build the provider section
     provider_section: dict[str, Any] = {"model_id": request.model_id}
@@ -280,8 +300,23 @@ async def save_config(request: ConfigSaveRequest) -> ConfigTestResponse:
     except OSError as exc:
         raise HTTPException(status_code=500, detail=f"Failed to write config: {exc}") from exc
 
-    # Reset cached config so next read picks up the new file
+    # Reset the route-level cache so next GET /config reflects the new file
     set_config(None)
+
+    # Reset the pipeline Config singleton so the next run reloads from disk
+    try:
+        import sys
+        from pathlib import Path as _Path
+
+        repo_root = _Path(__file__).resolve().parent.parent.parent.parent
+        tf_src = str(repo_root / "src")
+        if tf_src not in sys.path:
+            sys.path.insert(0, tf_src)
+
+        from threatforest.config import config as tf_config  # type: ignore[import-untyped]
+        tf_config.reset()
+    except Exception:
+        pass  # Non-fatal: pipeline will pick up the file on restart if reset fails
 
     return ConfigTestResponse(success=True, message="Configuration saved successfully.")
 

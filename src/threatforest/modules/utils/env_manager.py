@@ -38,6 +38,9 @@ class EnvManager:
 
     def set_value(self, key: str, value: str):
         """Set value in .env file"""
+        # Update in-memory environment so get_value reflects the change immediately
+        os.environ[key] = value
+
         # Read existing .env
         lines = []
         key_found = False

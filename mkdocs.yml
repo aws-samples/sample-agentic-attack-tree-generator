@@ -178,8 +178,10 @@ markdown_extensions:
 nav:
   - Home: index.md
   
-  - Getting Started: getting-started/index.md
-  
+  - Getting Started:
+    - Overview: getting-started/index.md
+    - Configuration: getting-started/configuration.md
+
   - User Guide:
     - Overview: user-guide/index.md
     - Preparing Your Project: user-guide/preparing-your-project.md

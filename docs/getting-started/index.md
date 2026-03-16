@@ -6,78 +6,79 @@ Welcome to ThreatForest! This guide will help you get up and running with AI-pow
 
 ### Step 1: Install ThreatForest
 
-=== "pipx (Recommended)"
+=== "uv (Recommended)"
+
+    ```bash
+    # Install uv if you don't have it
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+
+    # Clone and run — uv handles the environment automatically
+    git clone https://github.com/aws-samples/sample-agentic-attack-tree-generator.git
+    cd sample-agentic-attack-tree-generator
+    uv run threatforest
+    ```
+
+=== "pipx"
 
     ```bash
     # Install pipx if you don't have it
     python3 -m pip install --user pipx
     python3 -m pipx ensurepath
-    
+
     # Install ThreatForest
     git clone https://github.com/aws-samples/sample-agentic-attack-tree-generator.git
-    cd ThreatForest
+    cd sample-agentic-attack-tree-generator
     pipx install .
-    
+
     # Run ThreatForest
     threatforest
     ```
 
-=== "pip (Traditional)"
+=== "pip"
 
     ```bash
     # Clone repository
     git clone https://github.com/aws-samples/sample-agentic-attack-tree-generator.git
-    cd ThreatForest
-    
+    cd sample-agentic-attack-tree-generator
+
     # Create virtual environment
     python3 -m venv venv
     source venv/bin/activate  # On Windows: venv\Scripts\activate
-    
+
     # Install
     pip install .
-    
+
     # Run ThreatForest
     threatforest
     ```
 
-### Step 2: Configure AWS Bedrock
+### Step 2: Configure your LLM provider
 
-!!! warning "Prerequisites"
-    **AWS Account with Bedrock access (Recommended - fully tested and supported)**
-    
-    Requires AWS Profile with IAM permissions for:
-    
-    - `bedrock:Converse`
-    - `bedrock:ConverseStream`
+!!! warning "AWS Bedrock recommended"
+    AWS Bedrock is fully tested and supported. Other providers (Anthropic, OpenAI, Gemini, Ollama, SageMaker) are experimental.
+
+=== "AWS Bedrock"
+
+    Configure an AWS profile with IAM permissions for:
+
     - `bedrock:InvokeModel`
-    
-    **Note:** Other providers (Anthropic, OpenAI, Google Gemini, Ollama) are experimental and not fully validated.
+    - `bedrock:InvokeModelWithResponseStream`
 
-Configure your AWS credentials for Bedrock access:
+    ```bash
+    aws configure --profile your-profile-name
+    aws bedrock list-foundation-models --region us-east-1 --profile your-profile-name
+    ```
 
-**Option 1: AWS Profile (Recommended)**
+=== "Other providers"
 
-Configure an AWS profile that the ThreatForest wizard will use:
+    Set your API key for Anthropic, OpenAI, or Gemini — or point to a local Ollama instance.
+    See [Configuration](configuration.md) for all provider options.
+
+Run the configuration wizard (or use the **Configure** page in the web console):
 
 ```bash
-# Configure AWS profile
-aws configure --profile your-profile-name
-# AWS Access Key ID: [your-access-key]
-# AWS Secret Access Key: [your-secret-key]
-# Default region name: us-east-1
-# Default output format: json
-
-# Test Bedrock access
-aws bedrock list-foundation-models --region us-east-1 --profile your-profile-name
+threatforest config init
 ```
-
-When you run `threatforest`, the wizard will prompt you to:
-- Select your AWS profile name
-- Specify the AWS region (e.g., us-east-1)
-
-**Option 2: AWS Access Keys (Alternative)**
-
-Alternatively, you can provide AWS access keys directly when prompted by the wizard.
 
 ### Step 3: Prepare Your Project
 
@@ -100,19 +101,26 @@ your-project/
 
 ### Step 4: Run Your First Analysis
 
-```bash
-# Launch the interactive wizard
-threatforest
-```
+=== "Web Console (default)"
 
-The wizard will guide you through:
+    ```bash
+    threatforest
+    ```
 
-1. **Workflow Selection** - Choose Full Analysis, Enrichment, or Mitigation
-2. **Project Location** - Specify project directory path
-3. **AWS Configuration** - Select AWS profile (if using Bedrock)
-4. **Model Selection** - Choose AI model
-5. **Execution** - Watch real-time progress
-6. **Results** - View summary and output files
+    Opens the web console at `http://localhost:8000` automatically. From there:
+
+    1. Go to **Applications** and select your project
+    2. Click **New Run** to start an analysis
+    3. Watch real-time progress on the **Run** page
+    4. View results in the interactive dashboard when complete
+
+=== "Terminal (TUI)"
+
+    ```bash
+    threatforest --tui
+    ```
+
+    Launches the interactive terminal wizard. Follow the prompts to select a project path and start the analysis.
 
 ---
 
@@ -126,7 +134,7 @@ Now that you have ThreatForest installed, explore these guides:
 
     ---
 
-    Learn to use the interactive wizard and manage your workflow
+    Web console, terminal mode, and CLI options
 
     [→ Learn More](../user-guide/running-threatforest.md)
 
@@ -146,13 +154,13 @@ Now that you have ThreatForest installed, explore these guides:
 
     [→ Explore Results](../user-guide/understanding-results.md)
 
--   ⚙️ __How It Works__
+-   ⚙️ __Configuration__
 
     ---
 
-    Technical deep dive into the analysis pipeline
+    LLM providers, config file, and advanced settings
 
-    [→ Technical Details](../how-it-works.md)
+    [→ Configure](configuration.md)
 
 </div>
 

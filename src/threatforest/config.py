@@ -70,6 +70,15 @@ class Config:
         with open(self._config_path, "r") as f:
             self._config = yaml.safe_load(f)
 
+    def reset(self):
+        """Clear cached config so it reloads from disk on next access.
+
+        Called by the web console after saving configuration so the next
+        pipeline run picks up the updated config.yaml.
+        """
+        self._config = None
+        self._config_path = None
+
     def get(self, key: str, default: Any = None) -> Any:
         """Get configuration value by dot-notation key (e.g., 'data.stix_bundle')"""
         # Lazy load config on first access

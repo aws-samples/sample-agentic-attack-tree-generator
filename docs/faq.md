@@ -11,7 +11,7 @@
 
 === "Getting Started"
     - [What are the prerequisites?](#what-are-the-prerequisites)
-    - [How do I install?](#how-do-i-install-threatforest)
+    - [How do I install?](getting-started/index.md)
     - [Can I try without AWS?](#can-i-try-threatforest-without-aws)
 
 === "Features"
@@ -103,7 +103,7 @@ Yes! ThreatForest supports multiple providers:
 - **OpenAI** - Direct API access
 - **Google Gemini** - Direct API access
 
-Configure in the wizard or `config.yaml`.
+Configure via `threatforest config init` or the **Configure** page in the web console. See [Configuration](getting-started/configuration.md).
 
 ---
 
@@ -154,7 +154,7 @@ MITRE ATT&CK is a framework of adversary tactics and techniques. ThreatForest ma
 
 This helps you understand attacks in standardized terminology and plan defenses using industry best practices.
 
-[→ How It Works](how-it-works/index.md#phase-2-ttp-enrichment)
+[→ How It Works](how-it-works/index.md)
 
 ### How accurate is the AI-generated content?
 
@@ -198,7 +198,7 @@ This helps you understand attacks in standardized terminology and plan defenses 
 - ✅ **AWS Bedrock** - Enterprise data handling
 - ⚠️ **Others** - Review provider policies
 
-[→ Data Privacy Guide](index.md#data-privacy-considerations)
+[→ Data Privacy](index.md#privacy-security)
 
 ### How do I protect sensitive information?
 
@@ -332,29 +332,29 @@ aws bedrock list-foundation-models --region us-east-1
 ### Manual Recovery: State Corruption
 
 !!! question "Problem"
-    Analysis state file is corrupted or you need to restart analysis
+    Analysis state is corrupted or you need to restart from scratch
 
 **Solution:**
 
 ```bash
-# Delete state file and restart
-rm project/threatforest/attack_trees/.threatforest_state.json
-threatforest
+# Delete state directory and restart
+rm -rf project/.threatforest/state/
+threatforest run --project-path ./project
 ```
 
 ### Manual Recovery: Partial Results
 
 !!! question "Problem"
-    Analysis stopped mid-way and you want to check progress or resume
+    Analysis stopped mid-way and you want to check progress
 
 **Solution:**
 
 ```bash
-# Review state file to identify completed threats
-cat project/threatforest/attack_trees/.threatforest_state.json
+# Review state files to see what completed
+ls project/.threatforest/state/
 
-# Resume or restart as needed
-threatforest  # Will detect existing state and offer to resume
+# Restart the run
+threatforest run --project-path ./project
 ```
 
 ### Can I customize the output format?
@@ -367,7 +367,7 @@ Yes! ThreatForest generates:
 
 You can modify templates and parse JSON for custom reporting.
 
-[→ Customization Guide](advanced/customization.md)
+[→ Understanding Results](user-guide/understanding-results.md)
 
 ---
 

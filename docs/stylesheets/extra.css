@@ -1,1 +1,12 @@
 /* ThreatForest Custom Styles - Minimal overrides only */
+
+/* Extend the green left-border indicator on the integrated TOC to section pages.
+   Material's default only targets direct children of the primary nav list,
+   so pages nested inside sections (User Guide, Getting Started, etc.) don't get it. */
+.md-nav--integrated .md-nav__list .md-nav__item--active .md-nav--secondary {
+    border-left: .05rem solid var(--md-primary-fg-color);
+}
+[dir=rtl] .md-nav--integrated .md-nav__list .md-nav__item--active .md-nav--secondary {
+    border-right: .05rem solid var(--md-primary-fg-color);
+    border-left: none;
+}
