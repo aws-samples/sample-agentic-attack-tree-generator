@@ -56,6 +56,12 @@ Write a JSON object to the state file:
 
 ## Guidelines
 
+### Avoiding Duplicate Threats
+Before finalizing your threat list, review it for overlapping threats:
+- Two threats are duplicates if they describe the same attacker action against the same component, even if worded differently (e.g., "exhaust token quotas" and "incur unbounded costs" via the same unauthenticated endpoint are the same threat)
+- For each duplicate pair, merge them into a single, more precise threat. Use the higher-severity entry as the base and incorporate specificity from the other
+- The final list must have no two threats where one is a subset of the other
+
 ### Priority Distribution
 - 3-4 High priority threats (critical: auth bypass, RCE, data exfiltration)
 - 4-6 Medium priority threats (important: SSRF, privilege escalation, misconfig)

@@ -38,7 +38,8 @@ def run_ttp_embedding(repo_path: str, top_k: int = 3) -> str:
     # Use existing matcher infrastructure
     from threatforest.modules.workflow.ttc_mappings.matcher import TTCMatcher
 
-    matcher = TTCMatcher(min_similarity=0.2)
+    from threatforest.config import config as _cfg
+    matcher = TTCMatcher(min_similarity=_cfg.ttc_threshold)
     results = matcher.match_steps(steps, top_k=top_k)
 
     # Build candidates keyed by step
