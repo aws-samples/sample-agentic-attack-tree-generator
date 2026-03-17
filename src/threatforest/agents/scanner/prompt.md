@@ -10,7 +10,7 @@ Your output is the single source of truth these agents use. If you miss somethin
 
 ## Tools Available
 
-- **sandboxed_file_read**: Read file or directory contents. Use `mode="view"`. Use this for directory listings — it returns actual file names.
+- **sandboxed_file_read**: Read file or directory contents. Use `mode="view"`. Use this for directory listings — it returns actual file names. **Supports PDF and Office documents** — the tool will load them as document blocks that you can read directly.
 - **structural_analyzer**: View directory trees (`command="view"`) and search for text (`command="find_line"`).
 - **sandboxed_file_write**: Write your output to the state file.
 
@@ -25,7 +25,7 @@ Your output is the single source of truth these agents use. If you miss somethin
 
 ### Adapting to Repository Size
 
-**Minimal repos (1-5 files):** The repository may contain only documentation — a README, a DFD diagram, architecture notes, or even photos of a whiteboard. This is valid input. Read everything available, extract whatever security context you can, and work with what exists. Do NOT keep searching for code that isn't there. If the repo has an image file (.png, .jpg), note it in `files_analyzed` but you cannot read binary files — rely on any accompanying text descriptions.
+**Minimal repos (1-5 files):** The repository may contain only documentation — a README, a DFD diagram, architecture notes, PDFs, or even photos of a whiteboard. This is valid input. Read everything available, extract whatever security context you can, and work with what exists. Do NOT keep searching for code that isn't there. **PDF and Office documents are readable** — use `sandboxed_file_read` on them directly. If the repo has an image file (.png, .jpg), note it in `files_analyzed` but you cannot read image files — rely on any accompanying text descriptions.
 
 **Small repos (<50 source files):** Read all security-relevant files. You likely need only 2-3 tool calls total.
 
@@ -52,7 +52,7 @@ Read in priority order — stop when you have sufficient context:
 - UI components, stylesheets, CSS, frontend rendering logic
 - Test files, test fixtures, mocks
 - Generated code, lock files (package-lock.json, yarn.lock)
-- Static assets, images, fonts, sample data/PDFs
+- Static assets, images, fonts, sample data
 - Boilerplate with no security logic
 
 ## Output

@@ -1,8 +1,11 @@
 """Sandboxed file read/write tools with per-agent path restrictions."""
 
+import uuid
 from pathlib import Path
 
 from strands import tool
+
+DOCUMENT_EXTENSIONS = {".pdf", ".doc", ".docx", ".xls", ".xlsx", ".csv"}
 
 
 def _validate_path(path: str, allowed_prefixes: list[str]) -> Path:
@@ -34,10 +37,10 @@ def make_sandboxed_file_read(allowed_read_paths: list[str]):
     Relative paths are automatically resolved against the allowed directories.
     """
 
-    _cache: dict[str, str] = {}
+    _cache: dict[str, object] = {}
 
     @tool
-    def sandboxed_file_read(path: str, mode: str = "view") -> str:
+    def sandboxed_file_read(path: str, mode: str = "view"):
         """Read file content — restricted to allowed paths for this agent.
 
         Args:
@@ -47,12 +50,29 @@ def make_sandboxed_file_read(allowed_read_paths: list[str]):
         resolved = _validate_path(path, allowed_read_paths)
         key = str(resolved)
         if key in _cache:
-            return f"[CACHED — already read this file]\n{_cache[key]}"
+            cached = _cache[key]
+            if isinstance(cached, dict):
+                return cached
+            return f"[CACHED — already read this file]\n{cached}"
         if resolved.is_dir():
             entries = [p.name for p in sorted(resolved.iterdir())]
             result = "\n".join(entries)
-        else:
-            result = resolved.read_text()
+            _cache[key] = result
+            return result
+        if resolved.suffix.lower() in DOCUMENT_EXTENSIONS:
+            fmt = resolved.suffix.lower().lstrip(".")
+            name = f"{resolved.stem}-{uuid.uuid4().hex[:8]}"
+            content_bytes = resolved.read_bytes()
+            doc_result = {
+                "status": "success",
+                "content": [
+                    {"document": {"name": name, "format": fmt, "source": {"bytes": content_bytes}}},
+                    {"text": f"Document loaded: {resolved.name} ({len(content_bytes)} bytes, format: {fmt})"},
+                ],
+            }
+            _cache[key] = doc_result
+            return doc_result
+        result = resolved.read_text()
         _cache[key] = result
         return result
 
