@@ -18,12 +18,17 @@ STATE_FILE = "scanner_context.json"
 
 
 def resolve_state_dir(repo_path: str, run_dir: str | None = None) -> Path:
-    """Return the state directory — uses *run_dir*/state if provided, else legacy path."""
+    """Return the state directory — uses *run_dir*/state if provided, else legacy path.
+
+    Only creates the directory when *run_dir* is given (centralized runs).
+    The legacy fallback returns the path without creating it so that scanned
+    projects are never polluted with a ``.threatforest/`` folder.
+    """
     if run_dir:
         sd = Path(run_dir) / "state"
+        sd.mkdir(parents=True, exist_ok=True)
     else:
         sd = Path(repo_path) / STATE_DIR
-    sd.mkdir(parents=True, exist_ok=True)
     return sd
 
 

@@ -46,12 +46,15 @@ def _read_json(path: Path) -> Any:
         return None
 
 
-def push_subgraph_trace(node_id: str, repo_path: str) -> None:
+def push_subgraph_trace(node_id: str, repo_path: str, run_dir: str | None = None) -> None:
     """Create a Langfuse trace for a completed subgraph node."""
     if not _client:
         return
 
-    sd = Path(repo_path) / STATE_DIR
+    if run_dir:
+        sd = Path(run_dir) / "state"
+    else:
+        sd = Path(repo_path) / STATE_DIR
 
     # Map node pairs to a single subgraph trace (only push on verifier completion)
     traces = {
@@ -138,7 +141,7 @@ def flush() -> None:
             pass
 
 
-def push_ttp_dataset_items(repo_path: str, dataset_name: str = "ttp-mappings") -> int:
+def push_ttp_dataset_items(repo_path: str, dataset_name: str = "ttp-mappings", run_dir: str | None = None) -> int:
     """Push individual TTP mappings as Langfuse dataset items for SME labeling.
 
     Each item has the attack step description as input and the mapped technique
@@ -149,7 +152,10 @@ def push_ttp_dataset_items(repo_path: str, dataset_name: str = "ttp-mappings") -
     if not _client:
         return 0
 
-    sd = Path(repo_path) / STATE_DIR
+    if run_dir:
+        sd = Path(run_dir) / "state"
+    else:
+        sd = Path(repo_path) / STATE_DIR
     trees_data = _read_json(sd / "attack_trees.json") or {}
     mappings_data = _read_json(sd / "ttp_mappings.json") or {}
 

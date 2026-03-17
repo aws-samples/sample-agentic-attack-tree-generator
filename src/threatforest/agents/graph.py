@@ -400,9 +400,9 @@ async def run_graph(repo_path: str, run_dir: str | None = None) -> dict:
                 current_node = ""
                 prev_tool_name = None
                 live.update(_render())
-                annotation_traces.push_subgraph_trace(nid, repo_path)
+                annotation_traces.push_subgraph_trace(nid, repo_path, run_dir=run_dir)
                 if nid == "parallel_verifier":
-                    annotation_traces.push_ttp_dataset_items(repo_path)
+                    annotation_traces.push_ttp_dataset_items(repo_path, run_dir=run_dir)
 
             elif etype == "multiagent_node_stream":
                 nested = event.get("event", {})
