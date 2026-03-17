@@ -144,10 +144,13 @@ NODE_TOOL_DESCRIPTIONS = {
 }
 
 
-def _get_stage_summary(project_path: str, node_id: str) -> dict | None:
+def _get_stage_summary(project_path: str, node_id: str, run_dir: str | None = None) -> dict | None:
     """Read state files and return a summary dict for the completed node."""
     import json as _json
-    sd = Path(project_path) / ".threatforest" / "state"
+    if run_dir:
+        sd = Path(run_dir) / "state"
+    else:
+        sd = Path(project_path) / ".threatforest" / "state"
     try:
         if node_id in ("scanner", "scanner_verifier"):
             d = _json.loads((sd / "scanner_context.json").read_text())
@@ -256,6 +259,7 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
         # 4. Run the graph pipeline with progress streaming
         from threatforest.agents.graph import build_graph
         from strands.multiagent.base import Status
+        from server.registry import create_run_directory, slugify
 
         project_path = str(Path(config.project_path).expanduser().resolve())
         if not Path(project_path).is_dir():
@@ -263,7 +267,12 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
             candidate = workspace_dir / config.project_path
             if candidate.is_dir():
                 project_path = str(candidate.resolve())
-        graph = build_graph(project_path)
+
+        # Create centralized run directory under .threatforest/runs/
+        run_dir, project_dir = create_run_directory(project_path)
+        run_dir_str = str(run_dir)
+
+        graph = build_graph(project_path, run_dir=run_dir_str)
 
         async def _run():
             current_stage = ""
@@ -284,7 +293,7 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
                 import re as _re
                 from threatforest.agents.parallel import get_parallel_progress
 
-                state_dir = Path(project_path) / ".threatforest" / "state"
+                state_dir = Path(run_dir_str) / "state"
                 seen_files: set[str] = set()
 
                 # Map per-threat file suffix to (emoji, human label)
@@ -368,7 +377,7 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
                     if stage != current_stage:
                         if current_stage:
                             # Send completion with summary for the previous stage
-                            prev_summary = _get_stage_summary(project_path, prev_node_id) if prev_node_id else None
+                            prev_summary = _get_stage_summary(project_path, prev_node_id, run_dir=run_dir_str) if prev_node_id else None
                             progress_callback(ProgressEvent(
                                 event_type="stage_complete",
                                 stage=current_stage,
@@ -459,7 +468,7 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
                     result = event["result"]
 
             if current_stage:
-                final_summary = _get_stage_summary(project_path, prev_node_id) if prev_node_id else None
+                final_summary = _get_stage_summary(project_path, prev_node_id, run_dir=run_dir_str) if prev_node_id else None
                 progress_callback(ProgressEvent(
                     event_type="stage_complete",
                     stage=current_stage,
@@ -472,12 +481,27 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
 
         result = asyncio.run(_run())
 
-        output_dir = str(Path(project_path) / ".threatforest" / "output")
+        output_dir = str(run_dir / "output")
 
-        project_name = Path(config.project_path).name
+        # Update metadata.json description from scan output
+        try:
+            import json as _json
+            data_file = run_dir / "output" / "threatforest_data.json"
+            if data_file.is_file():
+                data = _json.loads(data_file.read_text(encoding="utf-8"))
+                short_summary = (data.get("project_info") or {}).get("short_summary", "")
+                if short_summary:
+                    meta_file = project_dir / "metadata.json"
+                    if meta_file.is_file():
+                        meta = _json.loads(meta_file.read_text(encoding="utf-8"))
+                        meta["description"] = short_summary
+                        meta_file.write_text(_json.dumps(meta, indent=2), encoding="utf-8")
+        except Exception:
+            pass
+
         return {
             "output_dir": output_dir,
-            "app_id": _slugify(project_name),
+            "app_id": slugify(project_dir.name),
         }
 
     return executor

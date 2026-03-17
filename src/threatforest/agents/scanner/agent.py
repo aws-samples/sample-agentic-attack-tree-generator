@@ -13,8 +13,18 @@ from threatforest.tools.sandboxed_file import make_sandboxed_file_read, make_san
 from threatforest.tools.structural_analyzer import make_structural_analyzer
 from threatforest.agents.tracing_session import trace_attrs
 
-STATE_DIR = ".threatforest/state"
+STATE_DIR = ".threatforest/state"  # legacy default, overridden by run_dir
 STATE_FILE = "scanner_context.json"
+
+
+def resolve_state_dir(repo_path: str, run_dir: str | None = None) -> Path:
+    """Return the state directory — uses *run_dir*/state if provided, else legacy path."""
+    if run_dir:
+        sd = Path(run_dir) / "state"
+    else:
+        sd = Path(repo_path) / STATE_DIR
+    sd.mkdir(parents=True, exist_ok=True)
+    return sd
 
 
 def _load_prompt() -> str:
@@ -34,10 +44,9 @@ def _count_source_files(repo_path: str) -> int:
     return count
 
 
-def create_scanner_agent(repo_path: str) -> Agent:
+def create_scanner_agent(repo_path: str, run_dir: str | None = None) -> Agent:
     """Create a Scanner Agent scoped to the given repository."""
-    state_dir = Path(repo_path) / STATE_DIR
-    state_dir.mkdir(parents=True, exist_ok=True)
+    state_dir = resolve_state_dir(repo_path, run_dir)
     state_file = str(state_dir / STATE_FILE)
 
     tools = [
@@ -63,9 +72,9 @@ def create_scanner_agent(repo_path: str) -> Agent:
     )
 
 
-def run_scanner(repo_path: str) -> str:
+def run_scanner(repo_path: str, run_dir: str | None = None) -> str:
     """Run the Scanner Agent and return the state file path."""
-    agent = create_scanner_agent(repo_path)
+    agent = create_scanner_agent(repo_path, run_dir=run_dir)
     agent("Analyze this repository and write the project context to the state file.")
-    state_file = str(Path(repo_path) / STATE_DIR / STATE_FILE)
-    return state_file
+    state_dir = resolve_state_dir(repo_path, run_dir)
+    return str(state_dir / STATE_FILE)

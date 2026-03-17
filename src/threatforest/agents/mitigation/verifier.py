@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-from threatforest.agents.scanner.agent import STATE_DIR
+from threatforest.agents.scanner.agent import STATE_DIR, resolve_state_dir
 
 BOILERPLATE = {
     "implement proper access controls",
@@ -16,13 +16,13 @@ BOILERPLATE = {
 }
 
 
-def verify_mitigation_output(repo_path: str) -> tuple[bool, str]:
+def verify_mitigation_output(repo_path: str, run_dir: str | None = None) -> tuple[bool, str]:
     """Verify mitigations are actionable, specific, and evidenced.
 
     Returns:
         (passed, feedback)
     """
-    state_dir = Path(repo_path) / STATE_DIR
+    state_dir = resolve_state_dir(repo_path, run_dir)
     mit_file = state_dir / "mitigations.json"
     trees_file = state_dir / "attack_trees.json"
 

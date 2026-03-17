@@ -13,7 +13,8 @@ from strands.multiagent.graph import Graph, GraphNode, GraphEdge, GraphState
 from strands.agent.agent_result import AgentResult
 from strands.types.content import ContentBlock
 
-from threatforest.agents.scanner.agent import STATE_DIR
+from threatforest.agents.scanner.agent import STATE_DIR, resolve_state_dir
+from threatforest.agents.report.agent import _resolve_output_dir
 
 
 # ---------------------------------------------------------------------------
@@ -23,26 +24,27 @@ from threatforest.agents.scanner.agent import STATE_DIR
 class FunctionAgent(MultiAgentBase):
     """Wraps a plain function so it can be used as a GraphNode executor.
 
-    The function receives (repo_path, task_text) and returns a result string.
+    The function receives (repo_path) and returns a result string.
+    When *run_dir* is set, the function is called as fn(repo_path, run_dir=run_dir).
     """
 
-    def __init__(self, fn, repo_path: str, node_id: str):
+    def __init__(self, fn, repo_path: str, node_id: str, run_dir: str | None = None):
         self.fn = fn
         self.repo_path = repo_path
+        self.run_dir = run_dir
         self.id = node_id
 
     async def invoke_async(self, task, invocation_state=None, **kwargs):
         import asyncio
-        # Run blocking functions in a thread so the event loop stays free
-        # for polling tasks (e.g., parallel pipeline progress poller).
-        result_str = await asyncio.to_thread(self.fn, self.repo_path)
-        # Build a minimal AgentResult-like object
+        if self.run_dir:
+            result_str = await asyncio.to_thread(self.fn, self.repo_path, run_dir=self.run_dir)
+        else:
+            result_str = await asyncio.to_thread(self.fn, self.repo_path)
         agent_result = _make_agent_result(str(result_str or "done"))
         return MultiAgentResult(
             status=Status.COMPLETED,
             results={self.id: NodeResult(result=agent_result, status=Status.COMPLETED)},
         )
-
 
 def _make_agent_result(text: str) -> AgentResult:
     """Create a minimal AgentResult from a text string."""
@@ -57,8 +59,9 @@ def _make_agent_result(text: str) -> AgentResult:
 # Conditional helpers
 # ---------------------------------------------------------------------------
 
-def _is_aws_project(repo_path: str) -> bool:
-    ctx_file = Path(repo_path) / STATE_DIR / "scanner_context.json"
+def _is_aws_project(repo_path: str, run_dir: str | None = None) -> bool:
+    state_dir = resolve_state_dir(repo_path, run_dir)
+    ctx_file = state_dir / "scanner_context.json"
     if not ctx_file.exists():
         return False
     try:
@@ -67,8 +70,17 @@ def _is_aws_project(repo_path: str) -> bool:
         return False
 
 
-def _verifier_passed(repo_path: str, verifier_fn) -> bool:
-    passed, _ = verifier_fn(repo_path)
+def _verifier_passed(repo_path: str, verifier_fn, run_dir: str | None = None) -> bool:
+    if run_dir:
+        passed, _ = verifier_fn(repo_path, run_dir=run_dir)
+    else:
+        passed, _ = verifier_fn(repo_path)
+    return passed
+
+
+def _verifier_passed_file(verifier_fn, file_path: str) -> bool:
+    """For verifiers that take a file path instead of repo_path (scanner, threat)."""
+    passed, _ = verifier_fn(file_path)
     return passed
 
 
@@ -76,7 +88,7 @@ def _verifier_passed(repo_path: str, verifier_fn) -> bool:
 # Graph builder
 # ---------------------------------------------------------------------------
 
-def build_graph(repo_path: str) -> Graph:
+def build_graph(repo_path: str, run_dir: str | None = None) -> Graph:
     """Build the full ThreatForest graph for a repository."""
     from threatforest.agents.scanner.agent import create_scanner_agent
     from threatforest.agents.scanner.verifier import verify_scanner_output
@@ -87,70 +99,94 @@ def build_graph(repo_path: str) -> Graph:
     from threatforest.agents.report.agent import run_report_generator
     from threatforest.agents.report.verifier import verify_report_output
 
-    state_dir = Path(repo_path) / STATE_DIR
-    state_dir.mkdir(parents=True, exist_ok=True)
+    state_dir = resolve_state_dir(repo_path, run_dir)
 
     # --- Nodes ---
-    scanner = GraphNode("scanner", create_scanner_agent(repo_path))
+    scanner = GraphNode("scanner", create_scanner_agent(repo_path, run_dir=run_dir))
+
+    def _verify_scanner(rp, run_dir=run_dir):
+        sd = resolve_state_dir(rp, run_dir)
+        return verify_scanner_output(str(sd / "scanner_context.json"))
+
     scanner_v = GraphNode("scanner_verifier", FunctionAgent(
-        lambda rp: verify_scanner_output(str(Path(rp) / STATE_DIR / "scanner_context.json")),
-        repo_path, "scanner_verifier",
+        lambda rp, **kw: _verify_scanner(rp),
+        repo_path, "scanner_verifier", run_dir=run_dir,
     ))
 
-    threat = GraphNode("threat", create_threat_agent(repo_path))
+    threat = GraphNode("threat", create_threat_agent(repo_path, run_dir=run_dir))
+
+    def _verify_threat(rp, run_dir=run_dir):
+        sd = resolve_state_dir(rp, run_dir)
+        return verify_threat_output(str(sd / "threats.json"))
+
     threat_v = GraphNode("threat_verifier", FunctionAgent(
-        lambda rp: verify_threat_output(str(Path(rp) / STATE_DIR / "threats.json")),
-        repo_path, "threat_verifier",
+        lambda rp, **kw: _verify_threat(rp),
+        repo_path, "threat_verifier", run_dir=run_dir,
     ))
 
     # Parallel fan-out: tree → ttp → mitigation per threat
     parallel = GraphNode("parallel_pipeline", FunctionAgent(
-        run_parallel_pipeline, repo_path, "parallel_pipeline",
+        run_parallel_pipeline, repo_path, "parallel_pipeline", run_dir=run_dir,
     ))
     parallel_v = GraphNode("parallel_verifier", FunctionAgent(
-        lambda rp: verify_mitigation_output(rp),
-        repo_path, "parallel_verifier",
+        lambda rp, **kw: verify_mitigation_output(rp, run_dir=kw.get("run_dir")),
+        repo_path, "parallel_verifier", run_dir=run_dir,
     ))
 
     report = GraphNode("report", FunctionAgent(
-        run_report_generator, repo_path, "report",
+        run_report_generator, repo_path, "report", run_dir=run_dir,
     ))
     report_v = GraphNode("report_verifier", FunctionAgent(
-        lambda rp: verify_report_output(rp),
-        repo_path, "report_verifier",
+        lambda rp, **kw: verify_report_output(rp, run_dir=kw.get("run_dir")),
+        repo_path, "report_verifier", run_dir=run_dir,
     ))
 
     # --- Edges ---
+    def _scanner_ok(s):
+        sd = resolve_state_dir(repo_path, run_dir)
+        return _verifier_passed_file(verify_scanner_output, str(sd / "scanner_context.json"))
+
+    def _scanner_fail(s):
+        return not _scanner_ok(s)
+
+    def _threat_ok(s):
+        sd = resolve_state_dir(repo_path, run_dir)
+        return _verifier_passed_file(verify_threat_output, str(sd / "threats.json"))
+
+    def _threat_fail(s):
+        return not _threat_ok(s)
+
+    def _parallel_ok(s):
+        return _verifier_passed(repo_path, verify_mitigation_output, run_dir=run_dir)
+
+    def _parallel_fail(s):
+        return not _parallel_ok(s)
+
+    def _report_ok(s):
+        return _verifier_passed(repo_path, verify_report_output, run_dir=run_dir)
+
+    def _report_fail(s):
+        return not _report_ok(s)
+
     edges = {
         # Scanner → Threat (sequential, fast)
         GraphEdge(scanner, scanner_v),
-        GraphEdge(scanner_v, threat,
-                  condition=lambda s: _verifier_passed(repo_path,
-                      lambda rp: verify_scanner_output(str(Path(rp) / STATE_DIR / "scanner_context.json")))),
+        GraphEdge(scanner_v, threat, condition=_scanner_ok),
         GraphEdge(threat, threat_v),
 
         # Threat → Parallel pipeline (fan-out)
-        GraphEdge(threat_v, parallel,
-                  condition=lambda s: _verifier_passed(repo_path,
-                      lambda rp: verify_threat_output(str(Path(rp) / STATE_DIR / "threats.json")))),
+        GraphEdge(threat_v, parallel, condition=_threat_ok),
         GraphEdge(parallel, parallel_v),
 
         # Parallel → Report
-        GraphEdge(parallel_v, report,
-                  condition=lambda s: _verifier_passed(repo_path, lambda rp: verify_mitigation_output(rp))),
+        GraphEdge(parallel_v, report, condition=_parallel_ok),
         GraphEdge(report, report_v),
 
         # Retry edges
-        GraphEdge(scanner_v, scanner,
-                  condition=lambda s: not _verifier_passed(repo_path,
-                      lambda rp: verify_scanner_output(str(Path(rp) / STATE_DIR / "scanner_context.json")))),
-        GraphEdge(threat_v, threat,
-                  condition=lambda s: not _verifier_passed(repo_path,
-                      lambda rp: verify_threat_output(str(Path(rp) / STATE_DIR / "threats.json")))),
-        GraphEdge(parallel_v, parallel,
-                  condition=lambda s: not _verifier_passed(repo_path, lambda rp: verify_mitigation_output(rp))),
-        GraphEdge(report_v, report,
-                  condition=lambda s: not _verifier_passed(repo_path, lambda rp: verify_report_output(rp))),
+        GraphEdge(scanner_v, scanner, condition=_scanner_fail),
+        GraphEdge(threat_v, threat, condition=_threat_fail),
+        GraphEdge(parallel_v, parallel, condition=_parallel_fail),
+        GraphEdge(report_v, report, condition=_report_fail),
     }
 
     nodes = {
@@ -164,13 +200,13 @@ def build_graph(repo_path: str) -> Graph:
         nodes=nodes,
         edges=edges,
         entry_points={scanner},
-        max_node_executions=50,  # total budget across all nodes (14 nodes × ~3 each + retries)
+        max_node_executions=50,
         reset_on_revisit=True,
         id="threatforest",
     )
 
 
-async def run_graph(repo_path: str) -> dict:
+async def run_graph(repo_path: str, run_dir: str | None = None) -> dict:
     """Run the full ThreatForest graph and return the result."""
     import time as _time
     from rich.console import Console
@@ -187,7 +223,11 @@ async def run_graph(repo_path: str) -> dict:
 
     console = Console()
 
-    graph = build_graph(repo_path)
+    graph = build_graph(repo_path, run_dir=run_dir)
+
+    # Resolve dirs for reading state/output in _node_summary
+    _state_dir = resolve_state_dir(repo_path, run_dir)
+    _output_dir = _resolve_output_dir(repo_path, run_dir)
 
     NODE_LABELS = {
         "scanner": "🔍 Scanner Agent",
@@ -202,7 +242,7 @@ async def run_graph(repo_path: str) -> dict:
 
     def _node_summary(nid: str) -> list[str]:
         """Read state files to produce summary lines for a completed node."""
-        sd = Path(repo_path) / STATE_DIR
+        sd = _state_dir
         try:
             if nid == "scanner":
                 d = json.loads((sd / "scanner_context.json").read_text())
@@ -258,17 +298,17 @@ async def run_graph(repo_path: str) -> dict:
                 return lines
             elif nid == "parallel_verifier":
                 from threatforest.agents.mitigation.verifier import verify_mitigation_output
-                ok, msg = verify_mitigation_output(repo_path)
+                ok, msg = verify_mitigation_output(repo_path, run_dir=run_dir)
                 return [f"{'PASS' if ok else 'FAIL'}: {msg}"]
             elif nid == "report":
-                f = Path(repo_path) / ".threatforest/output/threat_model_report.md"
+                f = _output_dir / "threat_model_report.md"
                 if f.exists():
                     content = f.read_text()
                     sections = [l for l in content.splitlines() if l.startswith("## ")]
                     return [f"Report written · {len(content.splitlines())} lines · {len(sections)} sections"]
             elif nid == "report_verifier":
                 from threatforest.agents.report.verifier import verify_report_output
-                ok, msg = verify_report_output(repo_path)
+                ok, msg = verify_report_output(repo_path, run_dir=run_dir)
                 return [f"{'PASS' if ok else 'FAIL'}: {msg}"]
         except Exception:
             pass
@@ -390,8 +430,8 @@ async def run_graph(repo_path: str) -> dict:
     output = {
         "status": "success" if result.status == Status.COMPLETED else "failed",
         "execution_count": result.execution_count,
-        "output_dir": str(Path(repo_path) / ".threatforest" / "output"),
-        "output_directory": str(Path(repo_path) / ".threatforest" / "output"),
+        "output_dir": str(_output_dir),
+        "output_directory": str(_output_dir),
     }
     if failed:
         output["error"] = "; ".join(failed)

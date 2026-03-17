@@ -6,16 +6,16 @@ Checks that every attack step in every tree has exactly one final TTP mapping.
 import json
 from pathlib import Path
 
-from threatforest.agents.scanner.agent import STATE_DIR
+from threatforest.agents.scanner.agent import STATE_DIR, resolve_state_dir
 
 
-def verify_ttp_coverage(repo_path: str) -> tuple[bool, str]:
+def verify_ttp_coverage(repo_path: str, run_dir: str | None = None) -> tuple[bool, str]:
     """Check that every attack step has a TTP mapping.
 
     Returns:
         (passed, feedback)
     """
-    state_dir = Path(repo_path) / STATE_DIR
+    state_dir = resolve_state_dir(repo_path, run_dir)
     trees_file = state_dir / "attack_trees.json"
     mappings_file = state_dir / "ttp_mappings.json"
 

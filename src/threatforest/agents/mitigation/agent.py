@@ -8,7 +8,7 @@ from strands.handlers import null_callback_handler
 from threatforest.modules.core.providers.provider_factory import create_model
 from threatforest.config import config
 from threatforest.tools.sandboxed_file import make_sandboxed_file_read, make_sandboxed_file_write
-from threatforest.agents.scanner.agent import STATE_DIR
+from threatforest.agents.scanner.agent import STATE_DIR, resolve_state_dir
 from threatforest.agents.tracing_session import trace_attrs
 
 STATE_FILE = "mitigations.json"
@@ -18,9 +18,9 @@ def _load_prompt() -> str:
     return (Path(__file__).parent / "prompt.md").read_text()
 
 
-def create_mitigation_agent(repo_path: str) -> Agent:
+def create_mitigation_agent(repo_path: str, run_dir: str | None = None) -> Agent:
     """Create a Mitigation Agent."""
-    state_dir = Path(repo_path) / STATE_DIR
+    state_dir = resolve_state_dir(repo_path, run_dir)
 
     read_files = [
         str(state_dir / "ttp_mappings.json"),
@@ -61,8 +61,9 @@ def create_mitigation_agent(repo_path: str) -> Agent:
     )
 
 
-def run_mitigation_agent(repo_path: str) -> str:
+def run_mitigation_agent(repo_path: str, run_dir: str | None = None) -> str:
     """Run the Mitigation Agent and return the state file path."""
-    agent = create_mitigation_agent(repo_path)
+    agent = create_mitigation_agent(repo_path, run_dir=run_dir)
     agent("Read all state files. For each attack step, synthesize an actionable mitigation with evidence. Write to the state file.")
-    return str(Path(repo_path) / STATE_DIR / STATE_FILE)
+    state_dir = resolve_state_dir(repo_path, run_dir)
+    return str(state_dir / STATE_FILE)

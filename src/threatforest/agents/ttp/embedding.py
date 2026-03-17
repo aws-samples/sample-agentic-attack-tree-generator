@@ -7,18 +7,18 @@ find top-K technique candidates via cosine similarity.
 import json
 from pathlib import Path
 
-from threatforest.agents.scanner.agent import STATE_DIR
+from threatforest.agents.scanner.agent import STATE_DIR, resolve_state_dir
 
 
 STATE_FILE = "ttp_candidates.json"
 
 
-def run_ttp_embedding(repo_path: str, top_k: int = 3) -> str:
+def run_ttp_embedding(repo_path: str, top_k: int = 3, run_dir: str | None = None) -> str:
     """Run embedding-based TTP matching and write candidates to state file.
 
     Returns the state file path.
     """
-    state_dir = Path(repo_path) / STATE_DIR
+    state_dir = resolve_state_dir(repo_path, run_dir)
     trees_file = state_dir / "attack_trees.json"
     out_file = state_dir / STATE_FILE
 

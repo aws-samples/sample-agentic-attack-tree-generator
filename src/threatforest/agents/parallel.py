@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 from typing import Any, Callable, Optional
 
-from threatforest.agents.scanner.agent import STATE_DIR
+from threatforest.agents.scanner.agent import STATE_DIR, resolve_state_dir
 from threatforest.agents.tracing_session import trace_attrs
 
 import threading
@@ -54,6 +54,7 @@ async def _run_ttp_review(
     scanner_file: str,
     threat_idx: int,
     total_threats: int,
+    run_dir: str | None = None,
 ) -> tuple[list[dict], list[Path]]:
     """Run the LLM-based TTP reviewer for one threat's candidates.
 
@@ -143,6 +144,7 @@ async def _process_single_threat(
     total_threats: int,
     repo_path: str,
     scanner_context: dict,
+    run_dir: str | None = None,
 ) -> dict:
     """Run tree → ttp_embed → mitigation for one threat.
 
@@ -153,7 +155,7 @@ async def _process_single_threat(
     from threatforest.agents.mitigation.agent import create_mitigation_agent
     from threatforest.modules.workflow.ttc_mappings.matcher import TTCMatcher
 
-    state_dir = Path(repo_path) / STATE_DIR
+    state_dir = resolve_state_dir(repo_path, run_dir)
     prefix = f"t{threat_idx}"
 
     # --- Tree generation ---
@@ -458,13 +460,13 @@ def _consolidate_mitigations(mitigations: list[dict], ttp_mappings: list[dict]) 
     return consolidated
 
 
-def run_parallel_pipeline(repo_path: str) -> str:
+def run_parallel_pipeline(repo_path: str, run_dir: str | None = None) -> str:
     """Fan out tree/ttp/mitigation across threats, merge results.
 
     Works both from a running event loop (server) and standalone (CLI).
     Returns the path to the merged mitigations file.
     """
-    state_dir = Path(repo_path) / STATE_DIR
+    state_dir = resolve_state_dir(repo_path, run_dir)
     threats_file = state_dir / "threats.json"
     scanner_file = state_dir / "scanner_context.json"
 
@@ -482,7 +484,7 @@ def run_parallel_pipeline(repo_path: str) -> str:
 
     async def _run_all():
         tasks = [
-            _process_single_threat(threat, i, len(threats), repo_path, scanner_context)
+            _process_single_threat(threat, i, len(threats), repo_path, scanner_context, run_dir=run_dir)
             for i, threat in enumerate(threats)
         ]
         return await asyncio.gather(*tasks, return_exceptions=True)

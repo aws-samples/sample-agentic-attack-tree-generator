@@ -7,14 +7,15 @@ Non-AWS projects skip this entirely.
 import json
 from pathlib import Path
 
-from threatforest.agents.scanner.agent import STATE_DIR
+from threatforest.agents.scanner.agent import STATE_DIR, resolve_state_dir
 
 STATE_FILE = "control_candidates.json"
 
 
-def _is_aws_project(repo_path: str) -> bool:
+def _is_aws_project(repo_path: str, run_dir: str | None = None) -> bool:
     """Check scanner context for AWS cloud provider."""
-    ctx_file = Path(repo_path) / STATE_DIR / "scanner_context.json"
+    state_dir = resolve_state_dir(repo_path, run_dir)
+    ctx_file = state_dir / "scanner_context.json"
     if not ctx_file.exists():
         return False
     try:
@@ -24,15 +25,15 @@ def _is_aws_project(repo_path: str) -> bool:
         return False
 
 
-def run_control_embedding(repo_path: str, top_k: int = 5) -> str | None:
+def run_control_embedding(repo_path: str, top_k: int = 5, run_dir: str | None = None) -> str | None:
     """Run control embedding search. Returns state file path, or None if skipped.
 
     Skipped for non-AWS projects (architecture: conditional edge).
     """
-    state_dir = Path(repo_path) / STATE_DIR
+    state_dir = resolve_state_dir(repo_path, run_dir)
     out_file = state_dir / STATE_FILE
 
-    if not _is_aws_project(repo_path):
+    if not _is_aws_project(repo_path, run_dir=run_dir):
         return None
 
     # Load attack steps from trees

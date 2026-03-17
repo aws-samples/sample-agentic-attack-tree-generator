@@ -6,10 +6,20 @@ Compiles all state files into a structured Markdown report.
 import json
 from pathlib import Path
 
-from threatforest.agents.scanner.agent import STATE_DIR
+from threatforest.agents.scanner.agent import STATE_DIR, resolve_state_dir
 
-OUTPUT_DIR = ".threatforest/output"
+OUTPUT_DIR = ".threatforest/output"  # legacy default, overridden by run_dir
 OUTPUT_FILE = "threat_model_report.md"
+
+
+def _resolve_output_dir(repo_path: str, run_dir: str | None = None) -> Path:
+    """Return the output directory — uses *run_dir*/output if provided, else legacy path."""
+    if run_dir:
+        od = Path(run_dir) / "output"
+    else:
+        od = Path(repo_path) / OUTPUT_DIR
+    od.mkdir(parents=True, exist_ok=True)
+    return od
 
 
 def _read_json(path: Path) -> dict:
@@ -21,11 +31,10 @@ def _read_json(path: Path) -> dict:
         return {}
 
 
-def run_report_generator(repo_path: str) -> str:
+def run_report_generator(repo_path: str, run_dir: str | None = None) -> str:
     """Generate the threat model report from state files. No LLM needed."""
-    state_dir = Path(repo_path) / STATE_DIR
-    output_dir = Path(repo_path) / OUTPUT_DIR
-    output_dir.mkdir(parents=True, exist_ok=True)
+    state_dir = resolve_state_dir(repo_path, run_dir)
+    output_dir = _resolve_output_dir(repo_path, run_dir)
 
     scanner = _read_json(state_dir / "scanner_context.json")
     threats_data = _read_json(state_dir / "threats.json")
@@ -171,7 +180,7 @@ def run_report_generator(repo_path: str) -> str:
     (output_dir / OUTPUT_FILE).write_text(report)
 
     # Generate HTML dashboard and registry metadata
-    _generate_html_dashboard(repo_path)
+    _generate_html_dashboard(repo_path, run_dir=run_dir)
 
     return str(output_dir / OUTPUT_FILE)
 
@@ -426,10 +435,10 @@ def _build_short_summary(
     return summary
 
 
-def _generate_html_dashboard(repo_path: str) -> None:
+def _generate_html_dashboard(repo_path: str, run_dir: str | None = None) -> None:
     """Wrap the markdown report in an HTML dashboard and write registry metadata."""
-    output_dir = Path(repo_path) / OUTPUT_DIR
-    state_dir = Path(repo_path) / ".threatforest" / "state"
+    output_dir = _resolve_output_dir(repo_path, run_dir)
+    state_dir = resolve_state_dir(repo_path, run_dir)
     md_file = output_dir / OUTPUT_FILE
 
     if not md_file.exists():

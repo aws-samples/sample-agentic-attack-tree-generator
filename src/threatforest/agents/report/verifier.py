@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from threatforest.agents.report.agent import OUTPUT_DIR, OUTPUT_FILE
+from threatforest.agents.report.agent import OUTPUT_DIR, OUTPUT_FILE, _resolve_output_dir
 
 REQUIRED_SECTIONS = [
     "Executive Summary",
@@ -15,13 +15,13 @@ REQUIRED_SECTIONS = [
 ]
 
 
-def verify_report_output(repo_path: str) -> tuple[bool, str]:
+def verify_report_output(repo_path: str, run_dir: str | None = None) -> tuple[bool, str]:
     """Verify the report contains all required sections.
 
     Returns:
         (passed, feedback)
     """
-    report_file = Path(repo_path) / OUTPUT_DIR / OUTPUT_FILE
+    report_file = _resolve_output_dir(repo_path, run_dir) / OUTPUT_FILE
 
     if not report_file.exists():
         return False, "Report file does not exist"

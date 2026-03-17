@@ -9,7 +9,7 @@ from threatforest.modules.core.providers.provider_factory import create_model
 from threatforest.config import config
 from threatforest.tools.sandboxed_file import make_sandboxed_file_read, make_sandboxed_file_write
 from threatforest.tools.structural_analyzer import make_structural_analyzer
-from threatforest.agents.scanner.agent import STATE_DIR
+from threatforest.agents.scanner.agent import STATE_DIR, resolve_state_dir
 from threatforest.agents.tracing_session import trace_attrs
 
 STATE_FILE = "attack_trees.json"
@@ -19,9 +19,9 @@ def _load_prompt() -> str:
     return (Path(__file__).parent / "prompt.md").read_text()
 
 
-def create_tree_agent(repo_path: str) -> Agent:
+def create_tree_agent(repo_path: str, run_dir: str | None = None) -> Agent:
     """Create a Tree Generator Agent scoped to the given repository."""
-    state_dir = Path(repo_path) / STATE_DIR
+    state_dir = resolve_state_dir(repo_path, run_dir)
 
     scanner_state = str(state_dir / "scanner_context.json")
     threats_state = str(state_dir / "threats.json")
@@ -52,8 +52,9 @@ def create_tree_agent(repo_path: str) -> Agent:
     )
 
 
-def run_tree_agent(repo_path: str) -> str:
+def run_tree_agent(repo_path: str, run_dir: str | None = None) -> str:
     """Run the Tree Generator and return the state file path."""
-    agent = create_tree_agent(repo_path)
+    agent = create_tree_agent(repo_path, run_dir=run_dir)
     agent("Read the threats and scanner context, then generate attack trees. Write them to the state file.")
-    return str(Path(repo_path) / STATE_DIR / STATE_FILE)
+    state_dir = resolve_state_dir(repo_path, run_dir)
+    return str(state_dir / STATE_FILE)
