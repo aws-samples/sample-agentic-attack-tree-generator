@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import platform
+import subprocess
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Query
+from pydantic import BaseModel
 
 from server.filesystem import (
     FilesystemBrowser,
@@ -51,3 +54,59 @@ async def browse_filesystem(
         raise HTTPException(status_code=403, detail=str(exc))
     except NotADirectoryError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+
+
+class PickerResponse(BaseModel):
+    path: str | None
+
+
+def _native_pick_directory() -> str | None:
+    """Open the OS-native directory picker and return the selected path."""
+    system = platform.system()
+    try:
+        if system == "Darwin":
+            result = subprocess.run(
+                ["osascript", "-e", 'POSIX path of (choose folder with prompt "Select project directory")'],
+                capture_output=True, text=True, timeout=120,
+            )
+            if result.returncode == 0:
+                return result.stdout.strip().rstrip("/")
+        elif system == "Linux":
+            for cmd in [
+                ["zenity", "--file-selection", "--directory", "--title=Select project directory"],
+                ["kdialog", "--getexistingdirectory", str(Path.home()), "--title", "Select project directory"],
+            ]:
+                try:
+                    result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+                    if result.returncode == 0:
+                        return result.stdout.strip()
+                except FileNotFoundError:
+                    continue
+        elif system == "Windows":
+            ps_script = (
+                "Add-Type -AssemblyName System.Windows.Forms; "
+                "$d = New-Object System.Windows.Forms.FolderBrowserDialog; "
+                "$d.Description = 'Select project directory'; "
+                "if ($d.ShowDialog() -eq 'OK') { $d.SelectedPath }"
+            )
+            result = subprocess.run(
+                ["powershell", "-Command", ps_script],
+                capture_output=True, text=True, timeout=120,
+            )
+            if result.returncode == 0 and result.stdout.strip():
+                return result.stdout.strip()
+    except (subprocess.TimeoutExpired, OSError):
+        pass
+    return None
+
+
+@router.post("/filesystem/pick-directory", response_model=PickerResponse)
+async def pick_directory() -> PickerResponse:
+    """Open the OS-native directory picker dialog.
+
+    Returns the selected path or null if the user cancelled.
+    This runs synchronously (blocks until the user picks or cancels).
+    """
+    import asyncio
+    path = await asyncio.to_thread(_native_pick_directory)
+    return PickerResponse(path=path)

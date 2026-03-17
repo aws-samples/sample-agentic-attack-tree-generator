@@ -112,6 +112,16 @@ export async function testLangfuseConnection(config) {
   });
 }
 
+/** GET /api/filesystem/browse?path=... → DirectoryListing */
+export async function browseFilesystem(path) {
+  return request(`/api/filesystem/browse?path=${encodeURIComponent(path)}`);
+}
+
+/** POST /api/filesystem/pick-directory → { path: string | null } */
+export async function pickDirectory() {
+  return request('/api/filesystem/pick-directory', { method: 'POST' });
+}
+
 /** POST /api/runs → { run_id } */
 export async function createRun(params) {
   return request('/api/runs', {

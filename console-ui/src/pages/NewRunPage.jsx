@@ -13,6 +13,7 @@ import SpaceBetween from '@cloudscape-design/components/space-between';
 import ColumnLayout from '@cloudscape-design/components/column-layout';
 import Spinner from '@cloudscape-design/components/spinner';
 import { getConfig, createRun } from '../api-client';
+import DirectoryPicker from '../components/DirectoryPicker';
 
 export default function NewRunPage() {
   const navigate = useNavigate();
@@ -95,13 +96,13 @@ export default function NewRunPage() {
           <FormField
             label="Project directory path"
             errorText={projectPathError}
-            description="Enter the path to the project directory to analyze."
+            description="Enter the path or browse to the project directory to analyze."
           >
-            <Input
+            <DirectoryPicker
               value={projectPath}
-              onChange={({ detail }) => {
-                setProjectPath(detail.value);
-                if (detail.value.trim()) setProjectPathError('');
+              onChange={(val) => {
+                setProjectPath(val);
+                if (val.trim()) setProjectPathError('');
               }}
               placeholder="/path/to/project"
             />
