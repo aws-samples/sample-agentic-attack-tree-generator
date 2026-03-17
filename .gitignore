@@ -200,5 +200,6 @@ console-ui/dist/
 sample-applications/iam-identity-center-team/
 sample-applications/sample-scientific-meeting-transcription/
 
-# Paper (kept locally only)
+# Kept locally only
 paper/
+sample-applications/
