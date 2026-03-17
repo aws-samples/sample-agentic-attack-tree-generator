@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
@@ -14,7 +15,7 @@ from server.registry import ApplicationRegistry
 router = APIRouter()
 
 # Default registry — will be reconfigured by app.py at startup
-_registry = ApplicationRegistry(scan_paths=[Path.home()])
+_registry = ApplicationRegistry()
 
 
 def get_registry() -> ApplicationRegistry:
@@ -24,12 +25,6 @@ def get_registry() -> ApplicationRegistry:
 
 def set_registry(registry: ApplicationRegistry) -> None:
     """Replace the module-level ApplicationRegistry (called by app.py at startup)."""
-    global _registry
-    _registry = registry
-
-
-def set_registry(registry: ApplicationRegistry) -> None:
-    """Replace the module-level ApplicationRegistry (useful for testing)."""
     global _registry
     _registry = registry
 
@@ -69,33 +64,24 @@ async def list_versions(app_id: str) -> dict:
 
 @router.delete("/applications/{app_id}")
 async def delete_application(app_id: str) -> dict:
-    """Delete a ThreatForest application by removing its threatforest/ directory.
+    """Delete a ThreatForest application by removing its folder from .threatforest/runs/.
 
     - **404** if the application is not found
     - **500** if deletion fails
     """
-    import shutil
-
     registry = get_registry()
-    attack_trees_dir, scan_path = registry._find_attack_trees_dir(app_id)
+    project_dir = registry.get_project_dir(app_id)
 
-    if attack_trees_dir is None:
+    if project_dir is None:
         raise HTTPException(status_code=404, detail=f"Application '{app_id}' not found")
 
-    # Delete the .threatforest/ or threatforest/ directory
-    # attack_trees_dir is either .threatforest/output/ or threatforest/attack_trees/
-    # We want to delete the top-level threatforest dir
-    if attack_trees_dir.parent.name in ("threatforest", ".threatforest"):
-        target = attack_trees_dir.parent
-    else:
-        target = attack_trees_dir
-
     try:
-        shutil.rmtree(str(target))
+        shutil.rmtree(str(project_dir))
     except OSError as exc:
         raise HTTPException(status_code=500, detail=f"Failed to delete: {exc}")
 
     return {"success": True, "message": f"Application '{app_id}' deleted successfully"}
+
 
 @router.get("/applications/{app_id}/versions/{version_id}/data")
 async def get_version_data(app_id: str, version_id: str) -> JSONResponse:
@@ -105,33 +91,12 @@ async def get_version_data(app_id: str, version_id: str) -> JSONResponse:
     - **500** if the JSON file is malformed
     """
     registry = get_registry()
-    attack_trees_dir, _scan_path = registry._find_attack_trees_dir(app_id)
+    data_file = registry.get_version_data_path(app_id, version_id)
 
-    if attack_trees_dir is None:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Application '{app_id}' not found",
-        )
-
-    # Resolve the version directory.
-    # Versioned layout: attack_trees/{version_id}/threatforest_data.json
-    # Flat layout: attack_trees/threatforest_data.json (version_id is "latest")
-    version_dir = attack_trees_dir / version_id
-    if version_dir.is_dir():
-        data_file = version_dir / registry.METADATA_FILE
-    elif version_id == "latest" or version_id == attack_trees_dir.parent.parent.name:
-        # Flat layout — data file lives directly in attack_trees/
-        data_file = attack_trees_dir / registry.METADATA_FILE
-    else:
+    if data_file is None:
         raise HTTPException(
             status_code=404,
             detail=f"Version '{version_id}' not found for application '{app_id}'",
-        )
-
-    if not data_file.is_file():
-        raise HTTPException(
-            status_code=404,
-            detail="Threat data unavailable for this version",
         )
 
     raw = data_file.read_text(encoding="utf-8")
@@ -144,18 +109,16 @@ async def get_version_data(app_id: str, version_id: str) -> JSONResponse:
         )
 
     # Enrich TTC mappings with mitigations from STIX bundle (if available)
-    # and clean up fields for the frontend
     for tree in data.get("attack_trees", []):
         for mapping in tree.get("ttc_mappings", []):
             technique_id = mapping.get("technique_id", "")
-            # Add MITRE URL
             if technique_id and "technique_url" not in mapping:
                 tech_url_id = technique_id.replace(".", "/")
-                mapping["technique_url"] = f"https://attack.mitre.org/techniques/{tech_url_id}/"
-            # Remove reasoning field (contains "Embedding similarity" which we don't want to show)
+                mapping["technique_url"] = (
+                    f"https://attack.mitre.org/techniques/{tech_url_id}/"
+                )
             mapping.pop("reasoning", None)
 
-    # Try to enrich with mitigations from STIX bundle
     try:
         from threatforest.config import config
         from threatforest.modules.workflow.ttc_mappings import MitigationMapper
@@ -164,7 +127,6 @@ async def get_version_data(app_id: str, version_id: str) -> JSONResponse:
         stix_path = getattr(config, "stix_bundle_path", None)
         if stix_path and _Path(stix_path).exists():
             mapper = MitigationMapper(str(stix_path))
-            enriched_count = 0
             for tree in data.get("attack_trees", []):
                 for mapping in tree.get("ttc_mappings", []):
                     technique_id = mapping.get("technique_id", "")
@@ -172,10 +134,10 @@ async def get_version_data(app_id: str, version_id: str) -> JSONResponse:
                         mits = mapper.get_mitigations(technique_id)
                         if mits:
                             mapping["mitigations"] = mits
-                            enriched_count += 1
     except Exception as _enrich_err:
         import logging
-        logging.getLogger("threatforest.api").warning(f"Mitigation enrichment failed: {_enrich_err}")
+        logging.getLogger("threatforest.api").warning(
+            f"Mitigation enrichment failed: {_enrich_err}"
+        )
 
     return JSONResponse(content=data)
-

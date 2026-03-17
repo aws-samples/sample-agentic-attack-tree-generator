@@ -9,7 +9,7 @@ from strands.handlers import null_callback_handler
 from threatforest.modules.core.providers.provider_factory import create_model
 from threatforest.config import config
 from threatforest.tools.sandboxed_file import make_sandboxed_file_read, make_sandboxed_file_write
-from threatforest.agents.scanner.agent import STATE_DIR
+from threatforest.agents.scanner.agent import STATE_DIR, resolve_state_dir
 from threatforest.agents.tracing_session import trace_attrs
 
 STATE_FILE = "ttp_mappings.json"
@@ -19,9 +19,10 @@ def _load_prompt() -> str:
     return (Path(__file__).parent / "prompt.md").read_text()
 
 
-def _make_alternatives_tool(repo_path: str):
+def _make_alternatives_tool(repo_path: str, run_dir: str | None = None):
     """Tool that lets the reviewer drill into top-K candidates for a specific step."""
-    candidates_file = Path(repo_path) / STATE_DIR / "ttp_candidates.json"
+    state_dir = resolve_state_dir(repo_path, run_dir)
+    candidates_file = state_dir / "ttp_candidates.json"
 
     @tool
     def get_ttp_alternatives(attack_step_id: str) -> str:
@@ -39,9 +40,9 @@ def _make_alternatives_tool(repo_path: str):
     return get_ttp_alternatives
 
 
-def create_ttp_reviewer(repo_path: str) -> Agent:
+def create_ttp_reviewer(repo_path: str, run_dir: str | None = None) -> Agent:
     """Create a TTP Reviewer Agent."""
-    state_dir = Path(repo_path) / STATE_DIR
+    state_dir = resolve_state_dir(repo_path, run_dir)
 
     summary_file = str(state_dir / "ttp_top1_summary.json")
     mappings_file = str(state_dir / STATE_FILE)
@@ -49,7 +50,7 @@ def create_ttp_reviewer(repo_path: str) -> Agent:
     tools = [
         make_sandboxed_file_read([summary_file]),
         make_sandboxed_file_write([mappings_file]),
-        _make_alternatives_tool(repo_path),
+        _make_alternatives_tool(repo_path, run_dir=run_dir),
     ]
 
     system_prompt = _load_prompt()
@@ -70,8 +71,9 @@ def create_ttp_reviewer(repo_path: str) -> Agent:
     )
 
 
-def run_ttp_reviewer(repo_path: str) -> str:
+def run_ttp_reviewer(repo_path: str, run_dir: str | None = None) -> str:
     """Run the TTP Reviewer and return the state file path."""
-    agent = create_ttp_reviewer(repo_path)
+    agent = create_ttp_reviewer(repo_path, run_dir=run_dir)
     agent("Read the top-1 TTP mappings. Review each one. If any look wrong, use get_ttp_alternatives to check alternatives. Write all final mappings to the state file.")
-    return str(Path(repo_path) / STATE_DIR / STATE_FILE)
+    state_dir = resolve_state_dir(repo_path, run_dir)
+    return str(state_dir / STATE_FILE)

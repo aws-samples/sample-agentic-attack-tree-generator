@@ -5,6 +5,7 @@ from typing import Dict, Any, Optional
 from rich.console import Console
 
 from threatforest.agents.graph import run_graph
+from server.registry import create_run_directory
 
 
 class WorkflowRunner:
@@ -20,4 +21,5 @@ class WorkflowRunner:
     ) -> Dict[str, Any]:
         """Execute full workflow via the v2 graph pipeline."""
         abs_path = str(Path(project_path).expanduser().resolve())
-        return asyncio.run(run_graph(abs_path))
+        run_dir, project_dir = create_run_directory(abs_path)
+        return asyncio.run(run_graph(abs_path, run_dir=str(run_dir)))

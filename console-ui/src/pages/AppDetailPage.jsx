@@ -106,19 +106,28 @@ export default function AppDetailPage() {
   });
 
   // API returns VersionSummary with field "id" (not "version_id")
+  const latestVersionId = sortedVersions.length > 0 ? sortedVersions[0].id : null;
+
   const columnDefinitions = [
     {
       id: 'version_id',
       header: 'Version ID',
       sortingField: 'id',
-      cell: (item) => (
-        <Link onFollow={(e) => {
-          e.preventDefault();
-          navigate(`/applications/${appId}/versions/${item.id}`);
-        }}>
-          {item.id}
-        </Link>
-      ),
+      cell: (item) => {
+        const isLatest = item.id === latestVersionId;
+        const label = isLatest ? 'Latest' : item.id;
+        const target = isLatest
+          ? `/applications/${appId}/versions/latest`
+          : `/applications/${appId}/versions/${item.id}`;
+        return (
+          <Link onFollow={(e) => {
+            e.preventDefault();
+            navigate(target);
+          }}>
+            {label}
+          </Link>
+        );
+      },
     },
     {
       id: 'run_date',

@@ -61,18 +61,10 @@ repo_root = _find_repo_root()
 executor = create_orchestrator_executor(repo_root)
 set_run_manager(RunManager(executor=executor))
 
-# Configure application registry — scan home dir, repo sample-applications, and cwd
+# Configure application registry — uses centralized .threatforest/runs/
 from server.registry import ApplicationRegistry
 
-_scan_paths = [Path.home()]
-if (repo_root / "sample-applications").is_dir():
-    _scan_paths.append(repo_root / "sample-applications")
-# Also scan cwd/sample-applications in case cwd != repo_root
-_cwd_samples = Path.cwd() / "sample-applications"
-if _cwd_samples.is_dir() and _cwd_samples not in _scan_paths:
-    _scan_paths.append(_cwd_samples)
-
-set_registry(ApplicationRegistry(scan_paths=_scan_paths))
+set_registry(ApplicationRegistry())
 
 sample_apps_dir = repo_root / "sample-applications"
 if sample_apps_dir.is_dir():
