@@ -78,14 +78,16 @@ export function aggregateMitigations(attackTree) {
    */
   function addMitigation(mit, stepLabel) {
     if (!mit || typeof mit !== 'object') return;
-    const name = mit.name || mit.mitigation || '';
+    const name = mit.mitigation_text || mit.name || mit.mitigation || '';
     if (!name) return;
 
-    const description = mit.description || mit.details || '';
+    const description = mit.implementation_guidance || mit.description || mit.details || '';
+    const remediationType = mit.remediation_type || '';
 
     if (!mitigationMap.has(name)) {
       mitigationMap.set(name, {
         description,
+        remediationType,
         attackSteps: new Set(),
         priority: mit.priority || null,
         techniqueId: mit.technique_id || '',
@@ -96,6 +98,9 @@ export function aggregateMitigations(attackTree) {
     const entry = mitigationMap.get(name);
     if (!entry.description && description) {
       entry.description = description;
+    }
+    if (!entry.remediationType && remediationType) {
+      entry.remediationType = remediationType;
     }
     if (!entry.priority && mit.priority) {
       entry.priority = mit.priority;
@@ -123,11 +128,13 @@ export function aggregateMitigations(attackTree) {
   }
 
   // 2. Collect from ttc_mappings[].mitigations
+  // Skip STIX reference mitigations (generic MITRE controls with only name/description/relationship_description)
   for (const mapping of ttcMappings) {
     const stepRef = mapping.attack_step || '';
     const stepLabel = resolveStepLabel(stepRef, labelMap);
     if (Array.isArray(mapping.mitigations)) {
       for (const mit of mapping.mitigations) {
+        if (mit.relationship_description && !mit.priority) continue;
         addMitigation(mit, stepLabel);
       }
     }
@@ -146,6 +153,7 @@ export function aggregateMitigations(attackTree) {
     result.push({
       name,
       description: entry.description,
+      remediationType: entry.remediationType,
       attackSteps: [...entry.attackSteps].filter(Boolean),
       priority: entry.priority,
       techniqueId: entry.techniqueId,

@@ -7,7 +7,7 @@ from strands.handlers import null_callback_handler
 
 from threatforest.modules.core.providers.provider_factory import create_model
 from threatforest.config import config
-from threatforest.tools.sandboxed_file import make_sandboxed_file_read, make_sandboxed_file_write
+from threatforest.tools.sandboxed_file import make_sandboxed_file_read, make_store_mitigations
 from threatforest.agents.scanner.agent import STATE_DIR, resolve_state_dir
 from threatforest.agents.tracing_session import trace_attrs
 
@@ -37,7 +37,7 @@ def create_mitigation_agent(repo_path: str, run_dir: str | None = None) -> Agent
 
     tools = [
         make_sandboxed_file_read(read_files),
-        make_sandboxed_file_write([out_file]),
+        make_store_mitigations(out_file),
     ]
 
     system_prompt = _load_prompt()
@@ -47,7 +47,7 @@ def create_mitigation_agent(repo_path: str, run_dir: str | None = None) -> Agent
         f"- Scanner context: `{state_dir / 'scanner_context.json'}`\n"
         f"- Attack trees: `{state_dir / 'attack_trees.json'}`\n"
         f"- Control candidates (if exists): `{controls_file}`\n"
-        f"- Write output to: `{out_file}`\n"
+        f"- Output: call `store_mitigations` (path is preconfigured)\n"
     )
 
     model = create_model(config, temperature=0)
@@ -64,6 +64,6 @@ def create_mitigation_agent(repo_path: str, run_dir: str | None = None) -> Agent
 def run_mitigation_agent(repo_path: str, run_dir: str | None = None) -> str:
     """Run the Mitigation Agent and return the state file path."""
     agent = create_mitigation_agent(repo_path, run_dir=run_dir)
-    agent("Read all state files. For each attack step, synthesize an actionable mitigation with evidence. Write to the state file.")
+    agent("Read all state files. For each unique technique, synthesize an actionable mitigation with evidence. Call store_mitigations with the complete list.")
     state_dir = resolve_state_dir(repo_path, run_dir)
     return str(state_dir / STATE_FILE)

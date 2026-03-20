@@ -9,6 +9,7 @@ import Button from '@cloudscape-design/components/button';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import Grid from '@cloudscape-design/components/grid';
 import Popover from '@cloudscape-design/components/popover';
+import ExpandableSection from '@cloudscape-design/components/expandable-section';
 import { aggregateMitigations } from '../utils/mitigation-aggregator';
 import {
   filterMitigations,
@@ -17,6 +18,14 @@ import {
 } from '../utils/mitigation-filter';
 
 const PRIORITY_COLORS = { 1: 'red', 2: 'red', 3: 'blue', high: 'red', critical: 'red', medium: 'blue', low: 'grey' };
+
+const REMEDIATION_LABELS = {
+  quick_win: { label: 'Quick Win', color: 'green' },
+  short_term: { label: 'Short Term', color: 'blue' },
+  medium_term: { label: 'Medium Term', color: 'blue' },
+  long_term: { label: 'Long Term', color: 'grey' },
+  monitoring: { label: 'Monitoring', color: 'grey' },
+};
 
 const COLUMN_DEFINITIONS = [
   {
@@ -31,81 +40,34 @@ const COLUMN_DEFINITIONS = [
     width: 90,
   },
   {
-    id: "name",
-    header: "Mitigation",
-    cell: (item) => item.name,
-    sortingField: "name",
-    width: 200,
-    minWidth: 140,
+    id: "remediationType",
+    header: "Type",
+    cell: (item) => {
+      const rt = item.remediationType;
+      if (!rt) return "—";
+      const info = REMEDIATION_LABELS[rt] || { label: rt, color: 'grey' };
+      return <Badge color={info.color}>{info.label}</Badge>;
+    },
+    sortingField: "remediationType",
+    width: 110,
   },
   {
-    id: "description",
-    header: "Implementation Guidance",
-    cell: (item) => {
-      if (!item.description) return "—";
-      // Split numbered steps (1. xxx 2. xxx) into a list
-      const steps = item.description.split(/(?=\d+\.\s)/).filter(Boolean);
-      if (steps.length > 1) {
-        return (
-          <div style={{ whiteSpace: 'normal', wordBreak: 'break-word', fontSize: '13px', lineHeight: '1.7' }}>
-            {steps.map((s, i) => {
-              const stepText = s.replace(/^\d+\.\s*/, '');
-              // Extract **bold title:** pattern
-              const boldMatch = stepText.match(/^\*\*(.+?)\*\*[:\s]*(.*)/s);
-              if (boldMatch) {
-                const title = boldMatch[1];
-                const detail = boldMatch[2].trim();
-                // Also render inline `code` in detail
-                return (
-                  <div key={i} style={{ marginBottom: '4px' }}>
-                    <Popover
-                      position="right"
-                      size="large"
-                      triggerType="custom"
-                      content={
-                        <div style={{ maxWidth: 480, maxHeight: 320, overflow: 'auto', fontSize: '13px', lineHeight: '1.5', whiteSpace: 'normal', wordBreak: 'break-word' }}>
-                          <div style={{ fontWeight: 700, marginBottom: 6, color: '#0972d3' }}>{title}</div>
-                          <div style={{ color: '#414d5c' }}>{renderFormattedText(detail)}</div>
-                        </div>
-                      }
-                    >
-                      <span style={{ color: '#0972d3', cursor: 'pointer', fontWeight: 600, textDecoration: 'none', borderBottom: '1px dashed #0972d3' }}>
-                        {i + 1}. {title}
-                      </span>
-                    </Popover>
-                  </div>
-                );
-              }
-              // Fallback for steps without bold pattern
-              return (
-                <div key={i} style={{ marginBottom: '4px' }}>
-                  <Popover
-                    position="right"
-                    size="large"
-                    triggerType="custom"
-                    content={
-                      <div style={{ maxWidth: 480, maxHeight: 320, overflow: 'auto', fontSize: '13px', lineHeight: '1.5', whiteSpace: 'normal', wordBreak: 'break-word', color: '#414d5c' }}>
-                        {renderFormattedText(stepText)}
-                      </div>
-                    }
-                  >
-                    <span style={{ color: '#0972d3', cursor: 'pointer', textDecoration: 'none', borderBottom: '1px dashed #0972d3' }}>
-                      {i + 1}. {stepText.length > 60 ? stepText.slice(0, 60) + '…' : stepText}
-                    </span>
-                  </Popover>
-                </div>
-              );
-            })}
-          </div>
-        );
-      }
-      return (
-        <div style={{ whiteSpace: "normal", wordBreak: "break-word" }}>
-          {renderFormattedText(item.description)}
-        </div>
-      );
-    },
-    minWidth: 200,
+    id: "name",
+    header: "Mitigation",
+    cell: (item) => (
+      <div style={{ whiteSpace: "normal", wordBreak: "break-word" }}>
+        <div style={{ fontWeight: 600 }}>{item.name}</div>
+        {item.description && (
+          <ExpandableSection headerText="Implementation guidance" variant="footer">
+            <div style={{ fontSize: '13px', lineHeight: '1.6', color: '#414d5c' }}>
+              {renderFormattedText(item.description)}
+            </div>
+          </ExpandableSection>
+        )}
+      </div>
+    ),
+    sortingField: "name",
+    minWidth: 300,
   },
   {
     id: "technique",
@@ -123,18 +85,20 @@ const COLUMN_DEFINITIONS = [
     cell: (item) => {
       if (!item.evidence || item.evidence.length === 0) return "—";
       return (
-        <div style={{ whiteSpace: "normal", wordBreak: "break-word" }}>
-          {item.evidence.map((e, i) => (
-            <div key={i} style={{ marginBottom: '4px', fontSize: '12px' }}>
-              <Badge color="grey">{e.source_type}</Badge>{' '}
-              <span style={{ color: '#5f6b7a' }}>{e.source_ref}</span>
-              {e.relevance && <div style={{ color: '#687078', fontStyle: 'italic' }}>{e.relevance}</div>}
-            </div>
-          ))}
-        </div>
+        <ExpandableSection headerText={`${item.evidence.length} source${item.evidence.length > 1 ? 's' : ''}`} variant="footer">
+          <div style={{ whiteSpace: "normal", wordBreak: "break-word" }}>
+            {item.evidence.map((e, i) => (
+              <div key={i} style={{ marginBottom: '4px', fontSize: '12px' }}>
+                <Badge color="grey">{e.source_type}</Badge>{' '}
+                <span style={{ color: '#5f6b7a' }}>{e.source_ref}</span>
+                {e.relevance && <div style={{ color: '#687078', fontStyle: 'italic' }}>{e.relevance}</div>}
+              </div>
+            ))}
+          </div>
+        </ExpandableSection>
       );
     },
-    minWidth: 200,
+    minWidth: 150,
   },
   {
     id: "attackSteps",
@@ -235,6 +199,27 @@ export default function MitigationsTable({ attackTree }) {
     [mitigations, selectedAttackStep, selectedMitigation]
   );
 
+  // --- Sorting state ---
+  const [sortingColumn, setSortingColumn] = useState(COLUMN_DEFINITIONS[0]); // default: priority
+  const [sortingDescending, setSortingDescending] = useState(false);
+
+  const REMEDIATION_ORDER = { quick_win: 0, short_term: 1, medium_term: 2, long_term: 3, monitoring: 4 };
+
+  const sortedMitigations = useMemo(() => {
+    if (!sortingColumn?.sortingField) return filteredMitigations;
+    const field = sortingColumn.sortingField;
+    const sorted = [...filteredMitigations].sort((a, b) => {
+      const aVal = a[field] ?? '';
+      const bVal = b[field] ?? '';
+      if (field === 'remediationType') {
+        return (REMEDIATION_ORDER[aVal] ?? 99) - (REMEDIATION_ORDER[bVal] ?? 99);
+      }
+      if (typeof aVal === 'number' && typeof bVal === 'number') return aVal - bVal;
+      return String(aVal).localeCompare(String(bVal));
+    });
+    return sortingDescending ? sorted.reverse() : sorted;
+  }, [filteredMitigations, sortingColumn, sortingDescending]);
+
   // Header counter: show "filtered of total" when a filter is active
   const isFiltered = selectedAttackStep !== null || selectedMitigation !== null;
   const counterText = isFiltered
@@ -296,7 +281,13 @@ export default function MitigationsTable({ attackTree }) {
       {/* Table */}
       <Table
         columnDefinitions={resizableColumns}
-        items={filteredMitigations}
+        items={sortedMitigations}
+        sortingColumn={sortingColumn}
+        sortingDescending={sortingDescending}
+        onSortingChange={({ detail }) => {
+          setSortingColumn(detail.sortingColumn);
+          setSortingDescending(detail.isDescending);
+        }}
         resizableColumns
         onColumnWidthsChange={handleColumnWidthsChange}
         header={

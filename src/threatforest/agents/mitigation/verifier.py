@@ -15,6 +15,8 @@ BOILERPLATE = {
     "implement monitoring and logging",
 }
 
+VALID_REMEDIATION_TYPES = {"quick_win", "short_term", "medium_term", "long_term", "monitoring"}
+
 
 def verify_mitigation_output(repo_path: str, run_dir: str | None = None) -> tuple[bool, str]:
     """Verify mitigations are actionable, specific, and evidenced.
@@ -92,6 +94,12 @@ def verify_mitigation_output(repo_path: str, run_dir: str | None = None) -> tupl
 
         if not m.get("priority"):
             warnings.append(f"{sid}: missing priority")
+
+        rtype = m.get("remediation_type", "")
+        if not rtype:
+            hard_issues.append(f"{sid}: missing remediation_type")
+        elif rtype not in VALID_REMEDIATION_TYPES:
+            hard_issues.append(f"{sid}: invalid remediation_type '{rtype}' — must be one of {VALID_REMEDIATION_TYPES}")
 
     missing = all_step_ids - covered_ids
     if missing:

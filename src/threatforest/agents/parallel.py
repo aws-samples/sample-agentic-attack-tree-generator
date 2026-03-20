@@ -169,7 +169,7 @@ async def _process_single_threat(
     tree_out = state_dir / f"{prefix}_attack_trees.json"
 
     # Patch the agent's write path to the per-threat file
-    from threatforest.tools.sandboxed_file import make_sandboxed_file_read, make_sandboxed_file_write
+    from threatforest.tools.sandboxed_file import make_sandboxed_file_read, make_sandboxed_file_write, make_store_mitigations
     from strands import Agent
     from strands.handlers import null_callback_handler
     from threatforest.modules.core.providers.provider_factory import create_model
@@ -286,12 +286,12 @@ async def _process_single_threat(
         f"- TTP mappings: `{mit_mappings_file}`\n"
         f"- Scanner context: `{scanner_file}`\n"
         f"- Attack trees: `{tree_out_str}`\n"
-        f"- Write output to: `{mit_out}`\n"
+        f"- Output: call `store_mitigations` (path is preconfigured)\n"
     )
 
     mit_tools = [
         make_sandboxed_file_read([str(mit_mappings_file), scanner_file, tree_out_str, repo_path]),
-        make_sandboxed_file_write([str(mit_out)]),
+        make_store_mitigations(str(mit_out)),
     ]
 
     mapped_step_ids = {m["attack_step_id"] for m in ttp_mappings if m.get("attack_step_id")}
@@ -317,7 +317,7 @@ async def _process_single_threat(
 
         await asyncio.to_thread(
             mit_agent,
-            f"Read the TTP mappings and scanner context. For each unique technique, write an actionable mitigation with evidence. Write to the state file.{feedback}"
+            f"Read the TTP mappings and scanner context. For each unique technique, synthesize an actionable mitigation with evidence. Call store_mitigations with the complete list.{feedback}"
         )
 
         mitigations = []
@@ -457,6 +457,7 @@ def _consolidate_mitigations(mitigations: list[dict], ttp_mappings: list[dict]) 
         consolidated.append(new_rep)
 
     consolidated.extend(no_technique)
+
     return consolidated
 
 

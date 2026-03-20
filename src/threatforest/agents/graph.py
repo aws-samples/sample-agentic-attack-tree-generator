@@ -200,7 +200,7 @@ def build_graph(repo_path: str, run_dir: str | None = None) -> Graph:
         nodes=nodes,
         edges=edges,
         entry_points={scanner},
-        max_node_executions=50,
+        max_node_executions=24,
         reset_on_revisit=True,
         id="threatforest",
     )
