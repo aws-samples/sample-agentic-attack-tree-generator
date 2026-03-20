@@ -339,20 +339,20 @@ class ITrace(ABC):
         categorical evaluations.
         
         Args:
-            name: Score dimension name (e.g., "mapping_quality").
-            category: The categorical value (e.g., "excellent", "good", "poor").
+            name: Score dimension name (e.g., "mapping_accuracy").
+            category: The categorical value (e.g., "good", "bad").
             allowed_categories: List of valid category values.
             comment: Optional comment explaining the score.
-        
+
         Raises:
             ValueError: If category is not in allowed_categories.
-        
+
         Example:
             >>> trace.add_categorical_score(
-            ...     "mapping_quality",
-            ...     "excellent",
-            ...     ["excellent", "good", "poor", "no_mapping"],
-            ...     "Perfect technique match"
+            ...     "mapping_accuracy",
+            ...     "good",
+            ...     ["good", "bad"],
+            ...     "Correct technique match"
             ... )
         """
         pass

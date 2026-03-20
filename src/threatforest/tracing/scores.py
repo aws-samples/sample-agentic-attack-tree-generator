@@ -245,18 +245,15 @@ ATTACK_TREE_SCORES: List[ScoreDefinition] = [
 # Note: Uses a specialized scale with "no_mapping" instead of "unacceptable"
 
 TTP_CATEGORIES: List[str] = [
-    "excellent",
     "good",
-    "acceptable",
-    "poor",
-    "no_mapping"
+    "bad",
 ]
 
 TTP_MAPPING_SCORES: List[ScoreDefinition] = [
     ScoreDefinition(
-        name="mapping_quality",
+        name="mapping_accuracy",
         score_type=ScoreType.CATEGORICAL,
-        description="Quality of MITRE ATT&CK technique mapping",
+        description="SME-scored accuracy of MITRE ATT&CK technique mapping (good = correct, bad = incorrect)",
         categories=TTP_CATEGORIES
     ),
 ]
@@ -301,11 +298,8 @@ MITIGATION_SCORES: List[ScoreDefinition] = [
 # Maps categorical scores to numeric values for aggregation and analysis.
 
 TTP_SCORE_VALUES: dict[str, float] = {
-    "excellent": 1.0,
-    "good": 0.75,
-    "acceptable": 0.5,
-    "poor": 0.25,
-    "no_mapping": 0.0
+    "good": 1.0,
+    "bad": 0.0,
 }
 
 
@@ -352,10 +346,10 @@ def get_ttp_numeric_value(category: str) -> float:
         ValueError: If the category is not valid
         
     Example:
-        >>> get_ttp_numeric_value("excellent")
-        1.0
         >>> get_ttp_numeric_value("good")
-        0.66
+        1.0
+        >>> get_ttp_numeric_value("bad")
+        0.0
     """
     if category not in TTP_SCORE_VALUES:
         raise ValueError(
