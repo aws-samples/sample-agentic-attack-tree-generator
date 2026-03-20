@@ -114,6 +114,7 @@ include = ["threatforest*", "server*"]
 threatforest = [
     "*.yaml",
     "prompts/*.md",
+    "agents/**/*.md",
     "data/**/*.json",
     "modules/visualization/templates/*",
     "console_ui/**/*.html",
