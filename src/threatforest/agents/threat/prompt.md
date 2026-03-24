@@ -43,7 +43,7 @@ Write a JSON object to the state file:
 {
   "threats": [
     {
-      "id": "T001",
+      "id": "TS001",
       "title": "SQL Injection via API",
       "description": "A malicious attacker with network access can perform SQL injection attacks against the REST API, which leads to unauthorized data access, resulting in reduced confidentiality of customer database.",
       "priority": "high",

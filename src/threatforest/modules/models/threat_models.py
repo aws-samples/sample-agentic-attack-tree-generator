@@ -7,7 +7,7 @@ class ThreatModel(BaseModel):
     """Individual threat extracted from threat file"""
     
     id: str = Field(
-        description="Unique threat identifier (e.g., T001, T002, uuid)"
+        description="Unique threat identifier (e.g., TS001, TS002, uuid)"
     )
     statement: str = Field(
         description="Full threat statement describing the threat"

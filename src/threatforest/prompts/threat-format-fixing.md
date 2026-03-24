@@ -18,7 +18,7 @@ Please reformat ALL threats in this document to use this EXACT format structure:
 
 ### High Priority Threats
 
-#### T001 - [Descriptive Category Name]
+#### TS001 - [Descriptive Category Name]
 
 **Threat Statement**: A [threat source] with [prerequisites], can [threat action], which leads to [threat impact], resulting in [reduced goal] of [impacted assets].
 
@@ -33,28 +33,28 @@ Please reformat ALL threats in this document to use this EXACT format structure:
 
 ---
 
-#### T002 - [Next Category Name]
+#### TS002 - [Next Category Name]
 
 [Same format for next threat]
 
 ### Medium Priority Threats
 
-#### T00X - [Category Name]
+#### TS00X - [Category Name]
 
 [Same format for Medium priority threats with sequential T numbers]
 
 ### Low Priority Threats
 
-#### T00Y - [Category Name]
+#### TS00Y - [Category Name]
 
 [Same format for Low priority threats with sequential T numbers]
 
 CRITICAL REQUIREMENTS:
-1. Use SEQUENTIAL T001, T002, T003... identifiers (NOT UUIDs or original IDs)
+1. Use SEQUENTIAL TS001, TS002, TS003... identifiers (NOT UUIDs or original IDs)
 2. Use descriptive category names (e.g., "Data Breach", "Authentication", "Injection Attack") NOT generic ones
 3. Ensure threat statements follow the exact syntax: "A [source] with [prerequisites], can [action], which leads to [impact], resulting in [reduced goal] of [assets]"
 4. Group threats by priority (High, Medium, Low)
 5. Include all structured fields for each threat
 6. Use consistent markdown formatting with --- separators
 
-Return a complete markdown document with properly formatted threat statements using sequential T001, T002, etc. identifiers.
+Return a complete markdown document with properly formatted threat statements using sequential TS001, TS002, etc. identifiers.

@@ -30,7 +30,7 @@ Determine the file format based on:
 
 ### Step 3: Extract Threats
 Look for threat statements with these common fields:
-- **id** / **threatId**: Unique identifier (e.g., T001, T002)
+- **id** / **threatId**: Unique identifier (e.g., TS001, TS002)
 - **statement** / **description**: The threat statement text
 - **priority** / **severity**: High, Medium, or Low
 - **category**: Threat category/type
@@ -50,7 +50,7 @@ Convert all threats to a consistent format regardless of source format.
 {
   "threats": [
     {
-      "id": "T001",
+      "id": "TS001",
       "statement": "...",
       "priority": "High",
       "category": "Authentication"
@@ -62,7 +62,7 @@ Convert all threats to a consistent format regardless of source format.
 ### YAML Format
 ```yaml
 threats:
-  - id: T001
+  - id: TS001
     statement: "..."
     priority: High
     category: Authentication
@@ -71,7 +71,7 @@ threats:
 ### Markdown Format
 Look for patterns like:
 ```markdown
-## Threat T001: [Title]
+## Threat TS001: [Title]
 
 **Priority:** High
 **Category:** Authentication
@@ -104,7 +104,7 @@ Return your findings as a JSON array with this structure:
 ```json
 [
   {
-    "id": "T001",
+    "id": "TS001",
     "description": "Full threat statement text",
     "severity": "High",
     "category": "Authentication",
@@ -116,7 +116,7 @@ Return your findings as a JSON array with this structure:
     "impactedAssets": "user data"
   },
   {
-    "id": "T002",
+    "id": "TS002",
     "description": "Another threat statement",
     "severity": "Medium",
     "category": "Injection",

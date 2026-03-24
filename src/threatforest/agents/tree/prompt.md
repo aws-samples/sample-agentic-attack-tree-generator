@@ -52,7 +52,7 @@ Write a JSON object to the state file:
   "attack_trees": [
     {
       "id": "AT001",
-      "threat_id": "T001",
+      "threat_id": "TS001",
       "root_goal": "Exfiltrate customer data via SQL injection",
       "steps": [
         {"id": "AT001-S1", "title": "Malicious attacker with network access", "description": "A malicious attacker with network access to the REST API and knowledge of common SQL injection techniques", "parent_id": "", "is_leaf": false, "category": "fact"},

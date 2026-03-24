@@ -18,7 +18,7 @@ Please reformat the document to use this EXACT format structure:
 
 ### High Priority Threats
 
-#### T001 - [Category Name]
+#### TS001 - [Category Name]
 
 **Threat Statement**: A [threat source] with [prerequisites], can [threat action], which leads to [threat impact], resulting in [reduced goal] of [impacted assets].
 

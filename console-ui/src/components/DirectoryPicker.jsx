@@ -22,8 +22,8 @@ export default function DirectoryPicker({ value, onChange, placeholder }) {
   };
 
   return (
-    <SpaceBetween direction="horizontal" size="xs">
-      <div style={{ flexGrow: 1 }}>
+    <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+      <div style={{ flexGrow: 1, minWidth: '400px', width: '65%' }}>
         <Input
           value={value}
           onChange={({ detail }) => onChange(detail.value)}
@@ -38,6 +38,6 @@ export default function DirectoryPicker({ value, onChange, placeholder }) {
       >
         Browse
       </Button>
-    </SpaceBetween>
+    </div>
   );
 }

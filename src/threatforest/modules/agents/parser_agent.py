@@ -52,7 +52,7 @@ class ParserAgent(BaseAgent):
         Returns:
             List of threat dictionaries with structure:
                 {
-                    "id": "T001",
+                    "id": "TS001",
                     "description": "threat statement",
                     "severity": "High|Medium|Low",
                     "category": "category name",
@@ -196,7 +196,7 @@ IMPORTANT: Return a structured response with:
             normalized_threats = []
             for threat in threats:
                 normalized = {
-                    "id": threat.get("id", "T000"),
+                    "id": threat.get("id", "TS000"),
                     "description": threat.get("description") or threat.get("statement", ""),
                     "severity": threat.get("severity") or threat.get("priority", "Medium"),
                     "category": threat.get("category", "General"),

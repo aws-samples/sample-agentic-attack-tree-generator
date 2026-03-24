@@ -91,7 +91,7 @@ Generate ONE Mermaid attack tree for the provided threat statement:
 **Input Threat Statement:**
 ```json
 {
-  "id": "T001",
+  "id": "TS001",
   "threatSource": "external threat actor",
   "prerequisites": "can issue strategic queries to an LLM API",
   "threatAction": "harvest sufficient responses",

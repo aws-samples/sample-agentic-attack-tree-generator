@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import ApplicationsPage from './pages/ApplicationsPage';
 import AppDetailPage from './pages/AppDetailPage';
+import ThreatModelSummaryPage from './pages/ThreatModelSummaryPage';
 import VersionDetailPage from './pages/VersionDetailPage';
 import NewRunPage from './pages/NewRunPage';
 import RunProgressPage from './pages/RunProgressPage';
@@ -15,7 +16,8 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/applications" element={<ApplicationsPage />} />
         <Route path="/applications/:appId" element={<AppDetailPage />} />
-        <Route path="/applications/:appId/versions/:versionId" element={<VersionDetailPage />} />
+        <Route path="/applications/:appId/versions/:versionId" element={<ThreatModelSummaryPage />} />
+        <Route path="/applications/:appId/versions/:versionId/threats/:threatIndex" element={<VersionDetailPage />} />
         <Route path="/new-run" element={<NewRunPage />} />
         <Route path="/runs/:runId/progress" element={<RunProgressPage />} />
         <Route path="/configure" element={<ConfigurePage />} />

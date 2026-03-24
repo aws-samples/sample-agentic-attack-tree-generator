@@ -8,7 +8,7 @@ Generate 8-12 realistic threat statements in this JSON format:
 {
   "threats": [
     {
-      "id": "T001",
+      "id": "TS001",
       "statement": "A [threat source] with [pre-requisites], can [threat action], which leads to [threat impact], resulting in [reduced goal] of [impacted assets].",
       "priority": "High|Medium|Low",
       "category": "Data Breach|Privilege Escalation|etc"

@@ -200,7 +200,7 @@ Generate 8-12 high-quality threat statements that are specific to this applicati
 Focus on realistic threats based on the technologies, architecture, and deployment environment.
 
 Each threat should follow this structure:
-- id: T001, T002, etc.
+- id: TS001, TS002, etc.
 - statement: Full threat statement
 - priority: High, Medium, or Low
 - category: Threat category (e.g., Authentication, Data Breach, Injection, etc.)
@@ -268,7 +268,7 @@ Return the threats as a JSON object with a "threats" array."""
         
         return [
             {
-                "id": "T001",
+                "id": "TS001",
                 "statement": f"A malicious attacker with network access can exploit weak authentication mechanisms in {app_name}, which leads to unauthorized system access, resulting in reduced confidentiality of application data.",
                 "severity": "High",
                 "category": "Authentication",
@@ -281,7 +281,7 @@ Return the threats as a JSON object with a "threats" array."""
                 "source": "Fallback"
             },
             {
-                "id": "T002",
+                "id": "TS002",
                 "statement": f"A malicious user with application access can perform injection attacks against {app_name}, which leads to data manipulation or extraction, resulting in reduced integrity of database records.",
                 "severity": "High",
                 "category": "Injection",
@@ -294,7 +294,7 @@ Return the threats as a JSON object with a "threats" array."""
                 "source": "Fallback"
             },
             {
-                "id": "T003",
+                "id": "TS003",
                 "statement": f"A distributed attacker with internet connectivity can launch denial of service attacks against {app_name}, which leads to service unavailability, resulting in reduced availability of application services.",
                 "severity": "Medium",
                 "category": "Availability",
@@ -307,7 +307,7 @@ Return the threats as a JSON object with a "threats" array."""
                 "source": "Fallback"
             },
             {
-                "id": "T004",
+                "id": "TS004",
                 "statement": f"A network eavesdropper with packet capture capabilities can intercept unencrypted communications from {app_name}, which leads to sensitive data exposure, resulting in reduced confidentiality of transmitted data.",
                 "severity": "Medium",
                 "category": "Cryptography",

@@ -7,7 +7,7 @@ Generate threats in this JSON format:
 {
   "threats": [
     {
-      "id": "T001",
+      "id": "TS001",
       "statement": "A malicious attacker with network access, can perform SQL injection attacks, which leads to unauthorized data access, resulting in reduced confidentiality of customer database.",
       "priority": "High",
       "category": "Injection",

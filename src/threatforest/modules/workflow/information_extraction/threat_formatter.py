@@ -127,7 +127,7 @@ class ThreatFormatter:
                 markdown_content += f"### {priority} Priority Threats\n\n"
                 
                 for threat in threat_list:
-                    markdown_content += f"#### {threat.get('id', 'T000')} - {threat.get('category', 'General')}\n\n"
+                    markdown_content += f"#### {threat.get('id', 'TS000')} - {threat.get('category', 'General')}\n\n"
                     markdown_content += f"**Threat Statement**: {threat.get('statement', '')}\n\n"
                     
                     # Add breakdown if available

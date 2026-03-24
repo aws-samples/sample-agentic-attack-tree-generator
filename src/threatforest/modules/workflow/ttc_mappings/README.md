@@ -46,8 +46,8 @@ from modules.ttc_mappings import AttackTreeEnricher
 
 enricher = AttackTreeEnricher(matcher)
 enricher.enrich_file(
-    'output/attack_tree_T001.md',
-    'output/enriched_attack_tree_T001.md'
+    'output/attack_tree_TS001.md',
+    'output/enriched_attack_tree_TS001.md'
 )
 ```
 

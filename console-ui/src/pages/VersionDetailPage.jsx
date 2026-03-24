@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import ColumnLayout from '@cloudscape-design/components/column-layout';
 import Box from '@cloudscape-design/components/box';
@@ -8,8 +8,6 @@ import Spinner from '@cloudscape-design/components/spinner';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import Container from '@cloudscape-design/components/container';
 import Badge from '@cloudscape-design/components/badge';
-import Select from '@cloudscape-design/components/select';
-import FormField from '@cloudscape-design/components/form-field';
 import CloudscapeShell from '../components/CloudscapeShell';
 import AttackFlowViewer from '../components/AttackFlowViewer';
 import MitigationsTable from '../components/MitigationsTable';
@@ -58,10 +56,10 @@ function ThreatDetailsBar({ tree }) {
 
 
 export default function VersionDetailPage() {
-  const { appId, versionId } = useParams();
+  const { appId, versionId, threatIndex } = useParams();
+  const selectedIdx = parseInt(threatIndex || '0', 10);
   const [data, setData] = useState(null);
   const [appName, setAppName] = useState(appId);
-  const [selectedOption, setSelectedOption] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -77,10 +75,6 @@ export default function VersionDetailPage() {
         setData(json);
         if (json.project_info?.application_name) setAppName(json.project_info.application_name);
         else if (json.application_name) setAppName(json.application_name);
-        if (json.attack_trees?.length > 0) {
-          const t = json.attack_trees[0];
-          setSelectedOption({ label: `${t.threat_id} \u2014 ${t.threat_category} (${t.priority})`, value: '0' });
-        }
       } catch (err) {
         if (!cancelled) setError(err.message || 'Failed to load');
       } finally {
@@ -92,12 +86,10 @@ export default function VersionDetailPage() {
   }, [appId, versionId]);
 
   const attackTrees = data?.attack_trees || [];
-  const selectedIdx = selectedOption ? parseInt(selectedOption.value, 10) : 0;
   const selectedTree = attackTrees[selectedIdx] || null;
-  const threatOptions = attackTrees.map((t, i) => ({
-    label: `${t.threat_id || `Threat ${i + 1}`} \u2014 ${t.threat_category || 'Unknown'} (${t.priority || '\u2014'})`,
-    value: String(i),
-  }));
+  const threatLabel = selectedTree
+    ? `${selectedTree.threat_id || `Threat ${selectedIdx + 1}`} \u2014 ${selectedTree.threat_category || 'Unknown'}`
+    : `Threat ${selectedIdx + 1}`;
 
   return (
     <CloudscapeShell
@@ -106,7 +98,8 @@ export default function VersionDetailPage() {
         { text: 'Home', href: '/' },
         { text: 'Applications', href: '/applications' },
         { text: appName, href: `/applications/${appId}` },
-        { text: 'Attack Tree Dashboard', href: `/applications/${appId}/versions/${versionId}` },
+        { text: 'Threat Model', href: `/applications/${appId}/versions/${versionId}` },
+        { text: threatLabel, href: `/applications/${appId}/versions/${versionId}/threats/${threatIndex}` },
       ]}
     >
       {error && <Alert type="error" header="Error loading dashboard">{error}</Alert>}
@@ -116,25 +109,11 @@ export default function VersionDetailPage() {
         <SpaceBetween size="m">
           <Header variant="h1" actions={
             <ExportButton
-              attackTree={selectedTree}
               summaryData={data}
               appId={appId}
               versionId={versionId}
             />
-          }>Attack Tree Dashboard</Header>
-          <SummaryBar data={data} />
-          {threatOptions.length > 0 && (
-            <div style={{ maxWidth: '400px' }}>
-              <FormField label="Select threat">
-                <Select
-                  selectedOption={selectedOption}
-                  onChange={({ detail }) => setSelectedOption(detail.selectedOption)}
-                  options={threatOptions}
-                  placeholder="Choose a threat..."
-                />
-              </FormField>
-            </div>
-          )}
+          }>{threatLabel}</Header>
           {selectedTree && <ThreatDetailsBar tree={selectedTree} />}
           {selectedTree && (
             <div>
@@ -152,8 +131,10 @@ export default function VersionDetailPage() {
             </div>
           )}
           {selectedTree && <MitigationsTable attackTree={selectedTree} />}
-          {!selectedTree && attackTrees.length === 0 && (
-            <Box color="text-status-inactive" textAlign="center" padding="l">No attack trees available.</Box>
+          {!selectedTree && (
+            <Box color="text-status-inactive" textAlign="center" padding="l">
+              Attack tree not found for this threat.
+            </Box>
           )}
         </SpaceBetween>
       ) : null}
