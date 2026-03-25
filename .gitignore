@@ -203,3 +203,6 @@ sample-applications/sample-scientific-meeting-transcription/
 # Kept locally only
 paper/
 sample-applications/
+CLAUDE.md
+.claude/
+.understand-anything/
