@@ -169,7 +169,7 @@ def _get_stage_summary(project_path: str, node_id: str, run_dir: str | None = No
             findings = [f"{len(threats)} threats identified"]
             for t in threats[:5]:
                 sev = t.get("priority") or t.get("severity") or "medium"
-                title = t.get("title", t.get("name", t.get("description", "")))[:60]
+                title = t.get("title", t.get("name", t.get("description", "")))
                 findings.append(f"  [{sev.upper()}] {title}")
             if len(threats) > 5:
                 findings.append(f"  … and {len(threats) - 5} more")
