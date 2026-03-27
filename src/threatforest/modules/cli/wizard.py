@@ -309,7 +309,7 @@ class CLIWizard:
     def select_mode(self) -> str:
         """Select workflow mode using questionary with step indicator"""
         # Show step header
-        self._show_step_indicator(1, 4, "Select Action")
+        self._show_step_indicator(1, 5, "Select Action")
         
         mode = questionary.select(
             "What would you like to do?",
@@ -335,7 +335,7 @@ class CLIWizard:
     
     def get_project_path(self) -> str:
         """Get project path from user with validation"""
-        self._show_step_indicator(2, 4, "Select Project Directory")
+        self._show_step_indicator(2, 5, "Select Project Directory")
         self.console.print("[dim]📂 Choose the directory where your application information is stored[/dim]")
         self.console.print("[dim]   (README, architecture diagrams, dataflow diagrams, etc.)[/dim]\n")
         
@@ -371,6 +371,50 @@ class CLIWizard:
                 self.console.print(error_panel)
                 self.console.print()
     
+    def select_frameworks(self, total_steps: int = 5) -> list[str]:
+        """Select which threat frameworks to map against (checklist).
+
+        Returns:
+            List of selected framework keys (e.g. ["attack", "atlas"]).
+        """
+        from threatforest.config import config
+
+        frameworks = config.frameworks
+
+        self._show_step_indicator(3, total_steps, "Select Threat Frameworks")
+        self.console.print("[dim]Choose which knowledge bases to map attack steps against.[/dim]")
+        self.console.print("[dim]All frameworks are selected by default.[/dim]\n")
+
+        choices = [
+            questionary.Choice(
+                title=f"{fw['name']} ({fw['description']})",
+                value=key,
+                checked=True,
+            )
+            for key, fw in frameworks.items()
+        ]
+
+        selected = questionary.checkbox(
+            "Which frameworks should ThreatForest map to?",
+            choices=choices,
+            style=questionary.Style([
+                ('qmark', 'fg:#61afef bold'),
+                ('question', 'bold fg:#e5c07b'),
+                ('pointer', 'fg:#61afef bold'),
+                ('highlighted', 'fg:#61afef bold'),
+                ('selected', 'fg:#98c379'),
+            ]),
+            validate=lambda x: len(x) > 0 or "Select at least one framework",
+        ).ask()
+
+        if not selected:
+            # User cancelled — default to all
+            selected = list(frameworks.keys())
+
+        names = [frameworks[k]["name"] for k in selected if k in frameworks]
+        self.console.print(f"[bright_green]✓[/bright_green] Frameworks: [cyan]{', '.join(names)}[/cyan]\n")
+        return selected
+
     def ask_threat_statement_preference(self) -> tuple[bool, Optional[str]]:
         """Ask if user has existing threat statements
         
@@ -379,7 +423,7 @@ class CLIWizard:
             - has_threats: True if user has existing threats
             - threat_file_path: Path to threat file if provided, None otherwise
         """
-        self._show_step_indicator(3, 4, "Threat Statements")
+        self._show_step_indicator(4, 5, "Threat Statements")
         
         info_panel = Panel(
             "[bold blue]📋 Threat Statements[/bold blue]\n\n"
@@ -449,7 +493,7 @@ class CLIWizard:
         DEPRECATED: Use ask_threat_statement_preference instead.
         This method is kept for backward compatibility.
         """
-        self._show_step_indicator(3, 4, "Threat Model (Optional)")
+        self._show_step_indicator(4, 5, "Threat Model (Optional)")
         
         info_panel = Panel(
             "[bold blue]📄 Threat Model Document[/bold blue]\n\n"

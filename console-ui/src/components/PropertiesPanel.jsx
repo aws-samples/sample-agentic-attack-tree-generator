@@ -11,8 +11,11 @@ import ExpandableSection from '@cloudscape-design/components/expandable-section'
 import Link from '@cloudscape-design/components/link';
 import StatusIndicator from '@cloudscape-design/components/status-indicator';
 
-function buildMitreUrl(techniqueId) {
+function buildTechniqueUrl(techniqueId) {
   if (!techniqueId) return null;
+  if (techniqueId.startsWith('AML.')) {
+    return `https://atlas.mitre.org/techniques/${techniqueId}`;
+  }
   const parts = techniqueId.split('.');
   if (parts[1]) return `https://attack.mitre.org/techniques/${parts[0]}/${parts[1]}/`;
   return `https://attack.mitre.org/techniques/${parts[0]}/`;
@@ -101,15 +104,15 @@ function NodeProperties({ nodeData, onNodeFieldChange }) {
         />
       </FormField>
 
-      {/* MITRE ATT&CK Mappings */}
+      {/* TTP Mappings */}
       {ttcMappings.length > 0 && (
         <ExpandableSection
-          headerText={`MITRE ATT&CK Mappings (${ttcMappings.length})`}
+          headerText={`TTP Mappings (${ttcMappings.length})`}
           defaultExpanded
         >
           <SpaceBetween size="s">
             {ttcMappings.map((mapping, idx) => {
-              const url = buildMitreUrl(mapping.technique_id);
+              const url = buildTechniqueUrl(mapping.technique_id);
               return (
                 <div key={mapping.technique_id || idx} style={{
                   padding: '8px 10px',

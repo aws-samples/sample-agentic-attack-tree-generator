@@ -9,6 +9,7 @@ import Container from '@cloudscape-design/components/container';
 import Badge from '@cloudscape-design/components/badge';
 import Table from '@cloudscape-design/components/table';
 import Button from '@cloudscape-design/components/button';
+import Link from '@cloudscape-design/components/link';
 import Popover from '@cloudscape-design/components/popover';
 import Tabs from '@cloudscape-design/components/tabs';
 import ExpandableSection from '@cloudscape-design/components/expandable-section';
@@ -306,10 +307,15 @@ function MitigationsTab({ attackTrees, threats }) {
     },
     {
       id: 'technique',
-      header: 'ATT&CK Technique',
+      header: 'Technique',
       cell: (item) => {
         if (!item.techniqueId) return '\u2014';
-        const url = `https://attack.mitre.org/techniques/${item.techniqueId.replace('.', '/')}/`;
+        let url;
+        if (item.techniqueId.startsWith('AML.')) {
+          url = `https://atlas.mitre.org/techniques/${item.techniqueId}`;
+        } else {
+          url = `https://attack.mitre.org/techniques/${item.techniqueId.replace('.', '/')}/`;
+        }
         return <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: '#0972d3' }}>{item.techniqueId}</a>;
       },
       width: 130,
@@ -411,7 +417,15 @@ function OverviewTab({ tableItems, navigate, appId, versionId }) {
     {
       id: 'threat_id',
       header: 'ID',
-      cell: (item) => <span style={{ fontWeight: 600 }}>{item.threat_id}</span>,
+      cell: (item) => (
+        <Link
+          href={`/applications/${appId}/versions/${versionId}/threats/${item.idx}`}
+          onFollow={(e) => { e.preventDefault(); navigate(`/applications/${appId}/versions/${versionId}/threats/${item.idx}`); }}
+          fontWeight="bold"
+        >
+          {item.threat_id}
+        </Link>
+      ),
       width: 120,
       sortingField: 'threat_id',
     },

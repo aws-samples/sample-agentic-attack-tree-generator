@@ -272,7 +272,7 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
         run_dir, project_dir = create_run_directory(project_path)
         run_dir_str = str(run_dir)
 
-        graph = build_graph(project_path, run_dir=run_dir_str)
+        graph = build_graph(project_path, run_dir=run_dir_str, frameworks=config.frameworks)
 
         async def _run():
             current_stage = ""

@@ -71,6 +71,11 @@ export async function getProviders() {
   return request('/api/config/providers');
 }
 
+/** GET /api/config/frameworks → { frameworks: { key: { name, description } } } */
+export async function getFrameworks() {
+  return request('/api/config/frameworks');
+}
+
 /** POST /api/config/test → { success, message } */
 export async function testConnection(config) {
   return request('/api/config/test', {

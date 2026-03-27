@@ -14,7 +14,7 @@ export const PIPELINE_STAGES = [
   { title: 'Repository Analysis', description: 'Scans your codebase to identify components, dependencies, and potential attack surfaces' },
   { title: 'Threat Parsing', description: 'Analyzes identified components to extract and categorize potential threats' },
   { title: 'Attack Tree Generation', description: 'Builds structured attack trees modeling how threats can be exploited' },
-  { title: 'TTP Enrichment', description: 'Maps attack paths to MITRE ATT&CK tactics, techniques, and procedures' },
+  { title: 'TTP Enrichment', description: 'Maps attack paths to threat framework techniques (ATT&CK, ATLAS, and more)' },
   { title: 'Mitigation Mapping', description: 'Generates actionable mitigation strategies for each identified attack path' },
   { title: 'Dashboard Generation', description: 'Produces an interactive dashboard for exploring threats, attack trees, and mitigations' },
 ];
@@ -38,7 +38,7 @@ export default function HomePage() {
                   AI-Driven Threat Modeling for Modern Applications
                 </Box>
                 <Box variant="p" color="text-status-inactive" fontSize="body-s">
-                  Automatically analyze your codebase, generate attack trees, map MITRE ATT&amp;CK TTPs,
+                  Automatically analyze your codebase, generate attack trees, map TTPs across threat frameworks,
                   and produce actionable mitigation strategies — all through a 6-stage AI pipeline.
                 </Box>
               </SpaceBetween>

@@ -88,7 +88,7 @@ def _verifier_passed_file(verifier_fn, file_path: str) -> bool:
 # Graph builder
 # ---------------------------------------------------------------------------
 
-def build_graph(repo_path: str, run_dir: str | None = None) -> Graph:
+def build_graph(repo_path: str, run_dir: str | None = None, frameworks: list[str] | None = None) -> Graph:
     """Build the full ThreatForest graph for a repository."""
     from threatforest.agents.scanner.agent import create_scanner_agent
     from threatforest.agents.scanner.verifier import verify_scanner_output
@@ -125,8 +125,11 @@ def build_graph(repo_path: str, run_dir: str | None = None) -> Graph:
     ))
 
     # Parallel fan-out: tree → ttp → mitigation per threat
+    def _run_parallel(rp, run_dir=run_dir, frameworks=frameworks):
+        return run_parallel_pipeline(rp, run_dir=run_dir, frameworks=frameworks)
+
     parallel = GraphNode("parallel_pipeline", FunctionAgent(
-        run_parallel_pipeline, repo_path, "parallel_pipeline", run_dir=run_dir,
+        _run_parallel, repo_path, "parallel_pipeline", run_dir=run_dir,
     ))
     parallel_v = GraphNode("parallel_verifier", FunctionAgent(
         lambda rp, **kw: verify_mitigation_output(rp, run_dir=kw.get("run_dir")),
@@ -206,7 +209,7 @@ def build_graph(repo_path: str, run_dir: str | None = None) -> Graph:
     )
 
 
-async def run_graph(repo_path: str, run_dir: str | None = None) -> dict:
+async def run_graph(repo_path: str, run_dir: str | None = None, frameworks: list[str] | None = None) -> dict:
     """Run the full ThreatForest graph and return the result."""
     import time as _time
     from rich.console import Console
@@ -223,7 +226,7 @@ async def run_graph(repo_path: str, run_dir: str | None = None) -> dict:
 
     console = Console()
 
-    graph = build_graph(repo_path, run_dir=run_dir)
+    graph = build_graph(repo_path, run_dir=run_dir, frameworks=frameworks)
 
     # Resolve dirs for reading state/output in _node_summary
     _state_dir = resolve_state_dir(repo_path, run_dir)

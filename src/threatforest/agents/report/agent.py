@@ -53,7 +53,7 @@ def run_report_generator(repo_path: str, run_dir: str | None = None) -> str:
     lines.append("## Executive Summary")
     lines.append(f"This report covers {len(threats)} threats across {len(trees)} attack trees "
                  f"with {sum(len(t.get('steps', [])) for t in trees)} attack steps, "
-                 f"{len(mappings)} MITRE ATT&CK mappings, and {len(mitigations)} mitigations "
+                 f"{len(mappings)} TTP mappings, and {len(mitigations)} mitigations "
                  f"for the {Path(repo_path).name} project.")
     lines.append("")
 
@@ -92,13 +92,14 @@ def run_report_generator(repo_path: str, run_dir: str | None = None) -> str:
             lines.append(f"- ... and {len(steps) - 10} more steps")
         lines.append("")
 
-    # ATT&CK Mappings
-    lines.append("## MITRE ATT&CK Mappings")
-    lines.append("| Attack Step | Technique | Name | Similarity |")
-    lines.append("|-------------|-----------|------|------------|")
+    # TTP Mappings
+    lines.append("## TTP Mappings")
+    lines.append("| Attack Step | Technique | Name | Framework | Similarity |")
+    lines.append("|-------------|-----------|------|-----------|------------|")
     for m in mappings:
         step = m.get("attack_step_id", m.get("attack_step_description", ""))[:50]
-        lines.append(f"| {step} | {m.get('technique_id', '')} | {m.get('technique_name', '')} | {m.get('similarity_score', 0):.2f} |")
+        fw = m.get("framework", "attack").upper()
+        lines.append(f"| {step} | {m.get('technique_id', '')} | {m.get('technique_name', '')} | {fw} | {m.get('similarity_score', 0):.2f} |")
     lines.append("")
 
     # Mitigations — grouped by remediation type

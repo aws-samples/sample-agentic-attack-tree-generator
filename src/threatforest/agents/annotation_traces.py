@@ -177,12 +177,8 @@ def push_ttp_dataset_items(repo_path: str, dataset_name: str = "ttp-mappings", r
     except Exception:
         pass  # already exists
 
-    # Create a trace to link items to
-    trace = _client.trace(
-        name="ttp-dataset-export",
-        session_id=_session_id,
-        tags=["threatforest", "ttp-dataset"],
-    )
+    # Create a trace ID to link items to
+    trace_id = _client.create_trace_id()
 
     count = 0
     for mapping in mappings_data.get("ttp_mappings", []):
@@ -204,7 +200,7 @@ def push_ttp_dataset_items(repo_path: str, dataset_name: str = "ttp-mappings", r
                 "reviewer_overrode_top1": mapping.get("reviewer_overrode_top1", False),
                 "reviewer_reasoning": mapping.get("reviewer_reasoning", ""),
             },
-            source_trace_id=trace.id,
+            source_trace_id=trace_id,
         )
         count += 1
 

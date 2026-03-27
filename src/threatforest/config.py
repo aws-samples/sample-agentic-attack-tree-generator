@@ -97,13 +97,31 @@ class Config:
         return value if value is not None else default
 
     @property
-    def stix_bundle_path(self) -> Path:
-        """Get absolute path to STIX bundle file"""
+    def frameworks(self) -> Dict[str, Dict[str, Any]]:
+        """Get all available framework definitions."""
+        default = {
+            "attack": {
+                "name": "MITRE ATT&CK Enterprise",
+                "description": "835 techniques — cloud, network, endpoint",
+                "stix_bundle": "enterprise-attack-18.0.json",
+                "source_name": "mitre-attack",
+                "kill_chain_name": "mitre-attack",
+            },
+        }
+        return self.get("frameworks", default)
 
-        # Use bundled data in package
+    @property
+    def stix_bundle_path(self) -> Path:
+        """Get absolute path to STIX bundle file (default ATT&CK — kept for backward compat)."""
         return (
             Path(__file__).parent / "data" / "threat-intelligence" / "enterprise-attack-18.0.json"
         )
+
+    def stix_bundle_path_for(self, framework_key: str) -> Path:
+        """Get absolute path to the STIX bundle for a specific framework."""
+        fw = self.frameworks.get(framework_key, {})
+        bundle_name = fw.get("stix_bundle", "enterprise-attack-18.0.json")
+        return Path(__file__).parent / "data" / "threat-intelligence" / bundle_name
 
     @property
     def embeddings_model(self) -> str:
@@ -112,18 +130,15 @@ class Config:
 
     @property
     def graph_file_path(self) -> Path:
-        """Get absolute path to graph file in .threatforest/ directory"""
-        # Use .threatforest/graphs/ for user-generated graph cache
-        # This allows per-user, per-embedding-model graphs
+        """Get absolute path to graph file in .threatforest/ directory (default ATT&CK)."""
+        return self.graph_file_path_for("attack")
+
+    def graph_file_path_for(self, framework_key: str) -> Path:
+        """Get absolute path to graph cache file for a specific framework."""
         graph_dir = ROOT_DIR / ".threatforest" / "graphs"
         graph_dir.mkdir(parents=True, exist_ok=True)
-
-        # Use embedding model name in filename for versioning
-        # Sanitize model name for filesystem
         model_name = self.embeddings_model.replace("/", "_").replace("\\", "_")
-        graph_file = graph_dir / f"mitre_attack_graph_{model_name}.json"
-
-        return graph_file
+        return graph_dir / f"{framework_key}_graph_{model_name}.json"
 
     @property
     def ttc_threshold(self) -> float:

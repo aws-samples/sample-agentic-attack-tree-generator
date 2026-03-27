@@ -32,8 +32,9 @@ For each threat: description, severity, affected components.
 ## Attack Trees
 For each tree: root goal, step count, key attack paths described in prose.
 
-## MITRE ATT&CK Mappings
-Table: attack step → technique ID → technique name.
+## TTP Mappings
+Table: attack step → technique ID → technique name → framework.
+Techniques may come from different frameworks (e.g. MITRE ATT&CK, MITRE ATLAS).
 Note any steps where the reviewer overrode the embedding's top-1 pick.
 
 ## Mitigations

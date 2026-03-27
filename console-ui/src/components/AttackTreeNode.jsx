@@ -19,8 +19,11 @@ function formatConfidence(score) {
   return Math.round(score * 100) + '%';
 }
 
-function buildMitreUrl(techniqueId) {
+function buildTechniqueUrl(techniqueId) {
   if (!techniqueId) return null;
+  if (techniqueId.startsWith('AML.')) {
+    return `https://atlas.mitre.org/techniques/${techniqueId}`;
+  }
   const parts = techniqueId.split('.');
   if (parts[1]) return `https://attack.mitre.org/techniques/${parts[0]}/${parts[1]}/`;
   return `https://attack.mitre.org/techniques/${parts[0]}/`;
@@ -63,12 +66,12 @@ export function NodePopoverContent({ data }) {
         </div>
       )}
 
-      {/* MITRE ATT&CK Mappings — no duplicate tactics, no reasoning/embedding text */}
+      {/* TTP Mappings — no duplicate tactics, no reasoning/embedding text */}
       {hasMappings && (
-        <ExpandableSection headerText={`MITRE ATT&CK Mappings (${ttcMappings.length})`} defaultExpanded>
+        <ExpandableSection headerText={`TTP Mappings (${ttcMappings.length})`} defaultExpanded>
           <SpaceBetween size="s">
             {ttcMappings.map((mapping, idx) => {
-              const url = buildMitreUrl(mapping.technique_id);
+              const url = buildTechniqueUrl(mapping.technique_id);
               return (
                 <div key={mapping.technique_id || idx} style={{ padding: '10px 12px', background: '#f2f3f3', borderRadius: '8px', border: '1px solid #eaeded' }}>
                   <div style={{ fontWeight: 600, fontSize: '13px' }}>

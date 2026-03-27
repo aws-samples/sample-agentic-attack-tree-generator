@@ -9,7 +9,7 @@ REQUIRED_SECTIONS = [
     "Project Context",
     "Threats",
     "Attack Trees",
-    "ATT&CK Mappings",
+    "TTP Mappings",
     "Mitigations",
     "Coverage Summary",
 ]

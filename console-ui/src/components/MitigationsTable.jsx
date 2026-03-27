@@ -72,10 +72,15 @@ const COLUMN_DEFINITIONS = [
   },
   {
     id: "technique",
-    header: "ATT&CK Technique",
+    header: "Technique",
     cell: (item) => {
       if (!item.techniqueId) return "—";
-      const url = `https://attack.mitre.org/techniques/${item.techniqueId.replace('.', '/')}/`;
+      let url;
+      if (item.techniqueId.startsWith('AML.')) {
+        url = `https://atlas.mitre.org/techniques/${item.techniqueId}`;
+      } else {
+        url = `https://attack.mitre.org/techniques/${item.techniqueId.replace('.', '/')}/`;
+      }
       return <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: '#0972d3' }}>{item.techniqueId}</a>;
     },
     width: 130,

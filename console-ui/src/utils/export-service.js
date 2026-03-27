@@ -70,7 +70,7 @@ export function generateCsvContent(summaryData) {
     'Mitigation Priority',
     'Mitigation',
     'Remediation Type',
-    'ATT&CK Technique',
+    'Technique',
     'Attack Steps',
     'Implementation Guidance',
   ];
@@ -335,7 +335,7 @@ export function exportPdf(summaryData, filename) {
       doc.addPage();
       doc.setFontSize(14);
       doc.setTextColor(...DARK_COLOR);
-      doc.text('MITRE ATT&CK TTP Mappings', margin, 20);
+      doc.text('TTP Mappings', margin, 20);
 
       const ttpRows = allTtpMappings.map((m) => [
         m.threatId || '',

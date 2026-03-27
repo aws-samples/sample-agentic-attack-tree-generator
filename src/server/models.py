@@ -32,6 +32,7 @@ class RunConfig(BaseModel):
     project_path: str
     threat_source: str  # "auto" | "file"
     threat_file_path: str | None = None
+    frameworks: list[str] | None = None  # e.g. ["attack", "atlas"]; None = all
 
 
 class RunResponse(BaseModel):

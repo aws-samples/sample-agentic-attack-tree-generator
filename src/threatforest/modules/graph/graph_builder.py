@@ -22,24 +22,31 @@ class GraphBuilder:
         self.embedding_service = embedding_service
         self.logger = ThreatForestLogger.get_logger(self.__class__.__name__)
     
-    def build_from_stix(self, stix_bundle_path: str) -> MitreAttackGraph:
+    def build_from_stix(
+        self,
+        stix_bundle_path: str,
+        source_name: str = "mitre-attack",
+        kill_chain_name: str = "mitre-attack",
+    ) -> MitreAttackGraph:
         """
         Build graph from STIX bundle
-        
+
         Args:
             stix_bundle_path: Path to STIX bundle JSON file
-            
+            source_name: STIX source_name to filter on (e.g. "mitre-attack", "mitre-atlas")
+            kill_chain_name: STIX kill_chain_name to filter on
+
         Returns:
             MitreAttackGraph with embedded techniques
         """
         self.logger.info(f"Building graph from STIX bundle: {stix_bundle_path}")
-        
+
         # Load STIX bundle
         with open(stix_bundle_path, 'r') as f:
             bundle = json.load(f)
-        
+
         # Extract attack patterns
-        techniques = self._extract_techniques(bundle)
+        techniques = self._extract_techniques(bundle, source_name=source_name, kill_chain_name=kill_chain_name)
         self.logger.info(f"Extracted {len(techniques)} techniques from STIX bundle")
         
         # Generate embeddings
@@ -65,32 +72,39 @@ class GraphBuilder:
         self.logger.info(f"✓ Graph built successfully")
         return graph
     
-    def _extract_techniques(self, bundle: dict) -> List[dict]:
+    def _extract_techniques(
+        self,
+        bundle: dict,
+        source_name: str = "mitre-attack",
+        kill_chain_name: str = "mitre-attack",
+    ) -> List[dict]:
         """
         Extract attack pattern objects from STIX bundle
-        
+
         Args:
             bundle: STIX bundle dictionary
-            
+            source_name: STIX source_name to match in external_references
+            kill_chain_name: STIX kill_chain_name to match in kill_chain_phases
+
         Returns:
             List of attack pattern dictionaries
         """
         techniques = []
-        
+
         for obj in bundle.get('objects', []):
             if obj.get('type') == 'attack-pattern':
-                # Extract external IDs (technique IDs like T1190)
+                # Extract external IDs (technique IDs like T1190 or AML.T0000)
                 external_ids = []
                 for ref in obj.get('external_references', []):
-                    if ref.get('source_name') == 'mitre-attack':
+                    if ref.get('source_name') == source_name:
                         ext_id = ref.get('external_id')
                         if ext_id:
                             external_ids.append(ext_id)
-                
+
                 # Extract tactics from kill chain phases
                 tactics = []
                 for phase in obj.get('kill_chain_phases', []):
-                    if phase.get('kill_chain_name') == 'mitre-attack':
+                    if phase.get('kill_chain_name') == kill_chain_name:
                         tactics.append(phase.get('phase_name', ''))
                 
                 techniques.append({
@@ -174,27 +188,31 @@ class GraphBuilder:
         stix_bundle_path: str,
         embedding_model: str,
         force_rebuild: bool = False,
-        show_progress: bool = False
+        show_progress: bool = False,
+        source_name: str = "mitre-attack",
+        kill_chain_name: str = "mitre-attack",
     ) -> MitreAttackGraph:
         """
         Get existing graph or build new one
-        
+
         Args:
             graph_path: Path to save/load graph JSON
             stix_bundle_path: Path to STIX bundle
             embedding_model: Model name for embeddings
             force_rebuild: Force rebuild even if graph exists
             show_progress: Show progress in CLI
-            
+            source_name: STIX source_name filter
+            kill_chain_name: STIX kill_chain_name filter
+
         Returns:
             MitreAttackGraph instance
         """
         logger = ThreatForestLogger.get_logger(cls.__name__)
         store = GraphStore(graph_path)
-        
+
         # Check if we need to build (now includes embedding model validation)
         need_build = force_rebuild or not store.exists() or store.is_stale(stix_bundle_path, expected_embedding_model=embedding_model)
-        
+
         if not need_build:
             if show_progress:
                 from rich.console import Console
@@ -212,26 +230,30 @@ class GraphBuilder:
                 logger.warning(f"Failed to load existing graph: {e}")
                 logger.info("Will build new graph...")
                 need_build = True
-        
+
         # Build new graph
         if show_progress:
             from rich.console import Console
             console = Console()
             console.print("\n🔨 [bold cyan]Building MITRE ATT&CK graph...[/bold cyan]")
             console.print(f"   [dim]Embedding model: {embedding_model}[/dim]")
-        
+
         logger.info("Building new graph from STIX bundle...")
         embedding_service = EmbeddingService(embedding_model)
         builder = cls(embedding_service)
-        
-        graph = builder.build_from_stix(stix_bundle_path)
-        
+
+        graph = builder.build_from_stix(
+            stix_bundle_path,
+            source_name=source_name,
+            kill_chain_name=kill_chain_name,
+        )
+
         # Save for future use
         store.save(graph)
-        
+
         if show_progress:
             from rich.console import Console
             console = Console()
             console.print(f"[green]✓[/green] Graph built and cached: {len(graph)} techniques\n")
-        
+
         return graph

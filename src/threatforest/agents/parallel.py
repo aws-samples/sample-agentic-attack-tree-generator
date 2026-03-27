@@ -145,6 +145,7 @@ async def _process_single_threat(
     repo_path: str,
     scanner_context: dict,
     run_dir: str | None = None,
+    frameworks: list[str] | None = None,
 ) -> dict:
     """Run tree → ttp_embed → mitigation for one threat.
 
@@ -230,7 +231,7 @@ async def _process_single_threat(
     ttp_candidates = []
     if steps:
         from threatforest.config import config as _cfg
-        matcher = TTCMatcher(min_similarity=_cfg.ttc_threshold)
+        matcher = TTCMatcher(min_similarity=_cfg.ttc_threshold, frameworks=frameworks)
         results = matcher.match_steps(steps, top_k=3)
         step_to_matches = {r["attack_step"]: r["matches"] for r in results}
 
@@ -238,7 +239,8 @@ async def _process_single_threat(
             matches = step_to_matches.get(desc, [])
             top_k = [
                 {"technique_id": m["technique_id"], "technique_name": m["name"],
-                 "similarity_score": round(m["similarity"], 4), "rank": i + 1}
+                 "similarity_score": round(m["similarity"], 4), "rank": i + 1,
+                 "framework": m.get("framework", "attack")}
                 for i, m in enumerate(matches[:3])
             ]
             ttp_candidates.append({
@@ -264,6 +266,7 @@ async def _process_single_threat(
                 "technique_id": top1["technique_id"],
                 "technique_name": top1.get("technique_name", ""),
                 "similarity_score": top1.get("similarity_score", 0),
+                "framework": top1.get("framework", "attack"),
                 "reviewer_overrode_top1": False,
                 "reviewer_reasoning": "",
             })
@@ -461,11 +464,17 @@ def _consolidate_mitigations(mitigations: list[dict], ttp_mappings: list[dict]) 
     return consolidated
 
 
-def run_parallel_pipeline(repo_path: str, run_dir: str | None = None) -> str:
+def run_parallel_pipeline(repo_path: str, run_dir: str | None = None, frameworks: list[str] | None = None) -> str:
     """Fan out tree/ttp/mitigation across threats, merge results.
 
     Works both from a running event loop (server) and standalone (CLI).
     Returns the path to the merged mitigations file.
+
+    Args:
+        repo_path: Path to the project repository.
+        run_dir: Optional run directory for state files.
+        frameworks: List of framework keys (e.g. ["attack", "atlas"]).
+                    None means use all frameworks defined in config.
     """
     state_dir = resolve_state_dir(repo_path, run_dir)
     threats_file = state_dir / "threats.json"
@@ -485,7 +494,7 @@ def run_parallel_pipeline(repo_path: str, run_dir: str | None = None) -> str:
 
     async def _run_all():
         tasks = [
-            _process_single_threat(threat, i, len(threats), repo_path, scanner_context, run_dir=run_dir)
+            _process_single_threat(threat, i, len(threats), repo_path, scanner_context, run_dir=run_dir, frameworks=frameworks)
             for i, threat in enumerate(threats)
         ]
         return await asyncio.gather(*tasks, return_exceptions=True)

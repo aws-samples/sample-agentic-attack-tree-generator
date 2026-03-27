@@ -118,12 +118,23 @@ def cli(ctx, tui, host, port):
 @click.option(
     "--output-dir", "-o", default=None, help="Output directory (for enrich/mitigate modes)"
 )
-def run(project_path, threat_model, mode, input_dir, output_dir):
+@click.option(
+    "--frameworks",
+    "-f",
+    default=None,
+    help="Comma-separated frameworks to map to (e.g. attack,atlas). Default: all",
+)
+def run(project_path, threat_model, mode, input_dir, output_dir, frameworks):
     """Run ThreatForest workflow"""
 
     display = CLIDisplay()
     wizard = CLIWizard()
     runner = WorkflowRunner()
+
+    # Parse --frameworks flag (comma-separated) into a list, or None for all
+    selected_frameworks = None
+    if frameworks:
+        selected_frameworks = [f.strip() for f in frameworks.split(",") if f.strip()]
 
     # Initialize logger using ROOT_DIR from config
     output_path = ROOT_DIR / "output"
@@ -273,7 +284,11 @@ def run(project_path, threat_model, mode, input_dir, output_dir):
             # Only "full" mode in interactive - always run complete analysis
             # Get project path
             project_path = wizard.get_project_path()
-            
+
+            # Select threat frameworks (step 3/5)
+            if selected_frameworks is None:
+                selected_frameworks = wizard.select_frameworks()
+
             # Ask about threat statements (new agent-based workflow)
             has_threats, threat_file_path = wizard.ask_threat_statement_preference()
 
@@ -291,15 +306,15 @@ def run(project_path, threat_model, mode, input_dir, output_dir):
 
             # Run full workflow with step indicator
             display.show_step_header(
-                4, 4, "Executing Analysis", "This may take several minutes..."
+                5, 5, "Executing Analysis", "This may take several minutes..."
             )
-            result = runner.run_full_workflow(project_path, threat_file_path)
+            result = runner.run_full_workflow(project_path, threat_file_path, frameworks=selected_frameworks)
 
         else:
             # Non-interactive mode - project path provided
             if mode == "full":
                 display.show_info(f"Running full workflow for: {project_path}")
-                result = runner.run_full_workflow(project_path, threat_model)
+                result = runner.run_full_workflow(project_path, threat_model, frameworks=selected_frameworks)
             elif mode == "enrich":
                 if input_dir is None or output_dir is None:
                     display.show_error(

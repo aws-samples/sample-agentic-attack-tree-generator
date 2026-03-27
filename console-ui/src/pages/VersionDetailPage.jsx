@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import ColumnLayout from '@cloudscape-design/components/column-layout';
 import Box from '@cloudscape-design/components/box';
 import Header from '@cloudscape-design/components/header';
@@ -8,6 +8,7 @@ import Spinner from '@cloudscape-design/components/spinner';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import Container from '@cloudscape-design/components/container';
 import Badge from '@cloudscape-design/components/badge';
+import Button from '@cloudscape-design/components/button';
 import CloudscapeShell from '../components/CloudscapeShell';
 import AttackFlowViewer from '../components/AttackFlowViewer';
 import MitigationsTable from '../components/MitigationsTable';
@@ -57,6 +58,7 @@ function ThreatDetailsBar({ tree }) {
 
 export default function VersionDetailPage() {
   const { appId, versionId, threatIndex } = useParams();
+  const navigate = useNavigate();
   const selectedIdx = parseInt(threatIndex || '0', 10);
   const [data, setData] = useState(null);
   const [appName, setAppName] = useState(appId);
@@ -108,11 +110,30 @@ export default function VersionDetailPage() {
       ) : data ? (
         <SpaceBetween size="m">
           <Header variant="h1" actions={
-            <ExportButton
-              summaryData={data}
-              appId={appId}
-              versionId={versionId}
-            />
+            <SpaceBetween direction="horizontal" size="xs">
+              <Button
+                iconName="angle-left"
+                variant="icon"
+                disabled={selectedIdx <= 0}
+                onClick={() => navigate(`/applications/${appId}/versions/${versionId}/threats/${selectedIdx - 1}`)}
+                ariaLabel="Previous threat"
+              />
+              <Box variant="p" display="inline" padding={{ top: 'xxs' }}>
+                {selectedIdx + 1} / {attackTrees.length}
+              </Box>
+              <Button
+                iconName="angle-right"
+                variant="icon"
+                disabled={selectedIdx >= attackTrees.length - 1}
+                onClick={() => navigate(`/applications/${appId}/versions/${versionId}/threats/${selectedIdx + 1}`)}
+                ariaLabel="Next threat"
+              />
+              <ExportButton
+                summaryData={data}
+                appId={appId}
+                versionId={versionId}
+              />
+            </SpaceBetween>
           }>{threatLabel}</Header>
           {selectedTree && <ThreatDetailsBar tree={selectedTree} />}
           {selectedTree && (

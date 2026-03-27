@@ -1,7 +1,8 @@
 """Workflow runner for ThreatForest CLI"""
 import asyncio
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
+
 from rich.console import Console
 
 from threatforest.agents.graph import run_graph
@@ -17,9 +18,10 @@ class WorkflowRunner:
     def run_full_workflow(
         self,
         project_path: str,
-        threat_file_path: Optional[str] = None
+        threat_file_path: Optional[str] = None,
+        frameworks: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         """Execute full workflow via the v2 graph pipeline."""
         abs_path = str(Path(project_path).expanduser().resolve())
         run_dir, project_dir = create_run_directory(abs_path)
-        return asyncio.run(run_graph(abs_path, run_dir=str(run_dir)))
+        return asyncio.run(run_graph(abs_path, run_dir=str(run_dir), frameworks=frameworks))

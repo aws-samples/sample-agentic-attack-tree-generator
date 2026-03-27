@@ -5,6 +5,7 @@ import Wizard from '@cloudscape-design/components/wizard';
 import FormField from '@cloudscape-design/components/form-field';
 import Input from '@cloudscape-design/components/input';
 import RadioGroup from '@cloudscape-design/components/radio-group';
+import Checkbox from '@cloudscape-design/components/checkbox';
 import Container from '@cloudscape-design/components/container';
 import Header from '@cloudscape-design/components/header';
 import Alert from '@cloudscape-design/components/alert';
@@ -12,7 +13,7 @@ import Box from '@cloudscape-design/components/box';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import ColumnLayout from '@cloudscape-design/components/column-layout';
 import Spinner from '@cloudscape-design/components/spinner';
-import { getConfig, createRun } from '../api-client';
+import { getConfig, getFrameworks, createRun } from '../api-client';
 import DirectoryPicker from '../components/DirectoryPicker';
 
 export default function NewRunPage() {
@@ -27,9 +28,14 @@ export default function NewRunPage() {
   const [submitError, setSubmitError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  // Framework selection state
+  const [availableFrameworks, setAvailableFrameworks] = useState({});
+  const [selectedFrameworks, setSelectedFrameworks] = useState({});
+
   // Validation error states
   const [projectPathError, setProjectPathError] = useState('');
   const [threatFilePathError, setThreatFilePathError] = useState('');
+  const [frameworkError, setFrameworkError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -37,6 +43,21 @@ export default function NewRunPage() {
       .then((data) => { if (!cancelled) setConfig(data); })
       .catch(() => { if (!cancelled) setConfig(null); })
       .finally(() => { if (!cancelled) setConfigLoading(false); });
+
+    getFrameworks()
+      .then((data) => {
+        if (!cancelled && data.frameworks) {
+          setAvailableFrameworks(data.frameworks);
+          // Default: all checked
+          const initial = {};
+          for (const key of Object.keys(data.frameworks)) {
+            initial[key] = true;
+          }
+          setSelectedFrameworks(initial);
+        }
+      })
+      .catch(() => {});
+
     return () => { cancelled = true; };
   }, []);
 
@@ -57,6 +78,15 @@ export default function NewRunPage() {
       setThreatFilePathError('');
       return true;
     }
+    if (stepIndex === 2) {
+      const anySelected = Object.values(selectedFrameworks).some(Boolean);
+      if (!anySelected) {
+        setFrameworkError('Select at least one framework.');
+        return false;
+      }
+      setFrameworkError('');
+      return true;
+    }
     return true;
   };
 
@@ -72,9 +102,14 @@ export default function NewRunPage() {
     setSubmitError('');
     setSubmitting(true);
     try {
+      const chosenFrameworks = Object.entries(selectedFrameworks)
+        .filter(([, checked]) => checked)
+        .map(([key]) => key);
+
       const params = {
         project_path: projectPath,
         threat_source: threatSource,
+        frameworks: chosenFrameworks,
       };
       if (threatSource === 'file') {
         params.threat_file_path = threatFilePath;
@@ -87,6 +122,11 @@ export default function NewRunPage() {
       setSubmitting(false);
     }
   };
+
+  const frameworkKeys = Object.keys(availableFrameworks);
+  const selectedNames = Object.entries(selectedFrameworks)
+    .filter(([, checked]) => checked)
+    .map(([key]) => availableFrameworks[key]?.name || key);
 
   const steps = [
     {
@@ -149,6 +189,43 @@ export default function NewRunPage() {
       ),
     },
     {
+      title: 'Threat Frameworks',
+      content: (
+        <Container header={<Header variant="h2">Threat Frameworks</Header>}>
+          <SpaceBetween size="l">
+            <Box variant="p" color="text-body-secondary">
+              Select which knowledge bases to map attack steps against. All frameworks are selected by default.
+            </Box>
+            {frameworkError && (
+              <Alert type="error" dismissible onDismiss={() => setFrameworkError('')}>
+                {frameworkError}
+              </Alert>
+            )}
+            <FormField label="Frameworks">
+              <SpaceBetween size="xs">
+                {frameworkKeys.map((key) => (
+                  <Checkbox
+                    key={key}
+                    checked={!!selectedFrameworks[key]}
+                    onChange={({ detail }) => {
+                      setSelectedFrameworks((prev) => ({ ...prev, [key]: detail.checked }));
+                      setFrameworkError('');
+                    }}
+                  >
+                    <Box variant="strong">{availableFrameworks[key].name}</Box>
+                    {' '}
+                    <Box variant="small" color="text-body-secondary" display="inline">
+                      — {availableFrameworks[key].description}
+                    </Box>
+                  </Checkbox>
+                ))}
+              </SpaceBetween>
+            </FormField>
+          </SpaceBetween>
+        </Container>
+      ),
+    },
+    {
       title: 'Review & Confirm',
       content: (
         <Container header={<Header variant="h2">Review & Confirm</Header>}>
@@ -178,6 +255,10 @@ export default function NewRunPage() {
                     <div>{threatFilePath}</div>
                   </div>
                 )}
+                <div>
+                  <Box variant="awsui-key-label">Frameworks</Box>
+                  <div>{selectedNames.join(', ') || 'None selected'}</div>
+                </div>
                 <div>
                   <Box variant="awsui-key-label">Model provider</Box>
                   <div>{config?.model_provider || '—'}</div>

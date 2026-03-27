@@ -143,6 +143,28 @@ async def read_config() -> ConfigResponse:
     return get_config()
 
 
+@router.get("/config/frameworks")
+async def list_frameworks() -> dict:
+    """Return available threat mapping frameworks from config."""
+    import yaml
+    config_path = _resolve_config_path()
+    frameworks = {
+        "attack": {
+            "name": "MITRE ATT&CK Enterprise",
+            "description": "835 techniques — cloud, network, endpoint",
+        },
+    }
+    if config_path.is_file():
+        raw = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
+        fw = raw.get("frameworks", {})
+        if fw:
+            frameworks = {
+                k: {"name": v.get("name", k), "description": v.get("description", "")}
+                for k, v in fw.items()
+            }
+    return {"frameworks": frameworks}
+
+
 @router.get("/config/providers", response_model=ProvidersResponse)
 async def list_providers() -> ProvidersResponse:
     """Return the list of available model providers."""
