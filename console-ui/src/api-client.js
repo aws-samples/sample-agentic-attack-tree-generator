@@ -131,6 +131,26 @@ export async function createRun(params) {
   });
 }
 
+/** GET /api/runs/{runId} → RunState */
+export async function getRun(runId) {
+  return request(`/api/runs/${encodeURIComponent(runId)}`);
+}
+
+/** POST /api/runs/{runId}/pause → { status } */
+export async function pauseRun(runId) {
+  return request(`/api/runs/${encodeURIComponent(runId)}/pause`, { method: 'POST' });
+}
+
+/** POST /api/runs/{runId}/stop → { status } */
+export async function stopRun(runId) {
+  return request(`/api/runs/${encodeURIComponent(runId)}/stop`, { method: 'POST' });
+}
+
+/** POST /api/runs/{runId}/resume → { new_run_id } */
+export async function resumeRun(runId) {
+  return request(`/api/runs/${encodeURIComponent(runId)}/resume`, { method: 'POST' });
+}
+
 // ---------------------------------------------------------------------------
 // WebSocket
 // ---------------------------------------------------------------------------

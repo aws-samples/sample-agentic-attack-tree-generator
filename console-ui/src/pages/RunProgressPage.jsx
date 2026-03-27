@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import CloudscapeShell from '../components/CloudscapeShell';
 import ProgressBar from '@cloudscape-design/components/progress-bar';
 import StatusIndicator from '@cloudscape-design/components/status-indicator';
@@ -8,9 +8,10 @@ import SpaceBetween from '@cloudscape-design/components/space-between';
 import Header from '@cloudscape-design/components/header';
 import Container from '@cloudscape-design/components/container';
 import Link from '@cloudscape-design/components/link';
+import Button from '@cloudscape-design/components/button';
 import StageCard from '../components/StageCard';
 import ActivityFeed from '../components/ActivityFeed';
-import { connectRunWebSocket } from '../api-client';
+import { connectRunWebSocket, pauseRun, stopRun, resumeRun } from '../api-client';
 
 const STAGES = [
   'Repository Analysis',
@@ -60,6 +61,7 @@ const INITIAL_STAGES = STAGES.map((name) => ({
 
 export default function RunProgressPage() {
   const { runId } = useParams();
+  const navigate = useNavigate();
   const wsRef = useRef(null);
 
   const [stages, setStages] = useState(INITIAL_STAGES);
@@ -69,10 +71,56 @@ export default function RunProgressPage() {
   const [errorMessage, setErrorMessage] = useState('');
   const [pipelineComplete, setPipelineComplete] = useState(false);
   const [completedAppId, setCompletedAppId] = useState('');
+  // "running" | "paused" | "stopped" | "complete" | "failed"
+  const [scanStatus, setScanStatus] = useState('running');
+  // True while a pause/stop/resume HTTP request is in-flight
+  const [controlPending, setControlPending] = useState(false);
 
   const appendActivity = useCallback((message, type) => {
     setActivityFeed((prev) => [...prev, { time: formatTimestamp(), message, type }]);
   }, []);
+
+  const handlePause = useCallback(async () => {
+    setControlPending(true);
+    try {
+      await pauseRun(runId);
+      // scanStatus will update when the "scan_paused" WebSocket event arrives.
+    } catch (err) {
+      setErrorMessage(`Failed to pause: ${err.message}`);
+      setControlPending(false);
+    }
+  }, [runId]);
+
+  const handleStop = useCallback(async () => {
+    setControlPending(true);
+    try {
+      await stopRun(runId);
+      if (scanStatus === 'paused') {
+        // Executor has already exited; no WebSocket event is coming, so update
+        // the UI directly from the HTTP response.
+        setScanStatus('stopped');
+        setControlPending(false);
+        appendActivity('Scan stopped.', 'error');
+      }
+      // If running → stopped, wait for the "scan_stopped" WebSocket event.
+    } catch (err) {
+      setErrorMessage(`Failed to stop: ${err.message}`);
+      setControlPending(false);
+    }
+  }, [runId, scanStatus, appendActivity]);
+
+  const handleResume = useCallback(async () => {
+    setControlPending(true);
+    try {
+      const { new_run_id } = await resumeRun(runId);
+      // Navigate to the new run's progress page; the current WebSocket will
+      // be cleaned up by the useEffect return/cleanup when the component unmounts.
+      navigate(`/runs/${new_run_id}/progress`);
+    } catch (err) {
+      setErrorMessage(`Failed to resume: ${err.message}`);
+      setControlPending(false);
+    }
+  }, [runId, navigate]);
 
   // Use a ref to access current stages without adding it to handleMessage deps.
   // This prevents the WebSocket reconnection loop caused by stages → handleMessage → useEffect cycle.
@@ -144,6 +192,20 @@ export default function RunProgressPage() {
           break;
         }
 
+        case 'scan_paused': {
+          setScanStatus('paused');
+          setControlPending(false);
+          appendActivity('Scan paused. Click Resume to continue from where it left off.', 'stage-complete');
+          break;
+        }
+
+        case 'scan_stopped': {
+          setScanStatus('stopped');
+          setControlPending(false);
+          appendActivity('Scan stopped.', 'error');
+          break;
+        }
+
         case 'stage_complete': {
           if (stage === 'complete') {
             const completeTs = data.server_ts || Date.now();
@@ -157,6 +219,7 @@ export default function RunProgressPage() {
             );
             setOverallProgress(100);
             setPipelineComplete(true);
+            setScanStatus('complete');
             if (data.details?.app_id) setCompletedAppId(data.details.app_id);
             appendActivity('Pipeline completed successfully!', 'stage-complete');
             break;
@@ -246,6 +309,7 @@ export default function RunProgressPage() {
         case 'error': {
           const errMsg = message || 'An unknown error occurred.';
           setErrorMessage(errMsg);
+          setScanStatus('failed');
           if (stageIdx >= 0) {
             setStages((prev) =>
               prev.map((s, i) =>
@@ -335,9 +399,38 @@ export default function RunProgressPage() {
           variant="h1"
           description={`Run ID: ${runId}`}
           actions={
-            <StatusIndicator type={connected ? 'success' : 'stopped'}>
-              {connected ? 'Connected' : 'Disconnected'}
-            </StatusIndicator>
+            <SpaceBetween direction="horizontal" size="xs">
+              {scanStatus === 'running' && (
+                <Button
+                  onClick={handlePause}
+                  loading={controlPending}
+                  disabled={controlPending}
+                >
+                  Pause
+                </Button>
+              )}
+              {scanStatus === 'paused' && (
+                <Button
+                  variant="primary"
+                  onClick={handleResume}
+                  loading={controlPending}
+                  disabled={controlPending}
+                >
+                  Resume
+                </Button>
+              )}
+              {(scanStatus === 'running' || scanStatus === 'paused') && (
+                <Button
+                  onClick={handleStop}
+                  disabled={controlPending}
+                >
+                  Stop
+                </Button>
+              )}
+              <StatusIndicator type={connected ? 'success' : 'stopped'}>
+                {connected ? 'Connected' : 'Disconnected'}
+              </StatusIndicator>
+            </SpaceBetween>
           }
         >
           Run Progress
@@ -354,6 +447,21 @@ export default function RunProgressPage() {
             ) : (
               <Link href="/applications">View Applications</Link>
             )}
+          </Alert>
+        )}
+
+        {/* Paused banner */}
+        {scanStatus === 'paused' && (
+          <Alert type="info">
+            Scan paused after completing the current stage. Click <strong>Resume</strong> to
+            continue from where it left off, or <strong>Stop</strong> to cancel permanently.
+          </Alert>
+        )}
+
+        {/* Stopped banner */}
+        {scanStatus === 'stopped' && (
+          <Alert type="warning" dismissible onDismiss={() => setScanStatus('failed')}>
+            Scan stopped. Start a new run to analyze this project again.
           </Alert>
         )}
 

@@ -16,6 +16,10 @@ from strands.types.content import ContentBlock
 from threatforest.agents.scanner.agent import STATE_DIR, resolve_state_dir
 from threatforest.agents.report.agent import _resolve_output_dir
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from server.scan_control import ScanControl
+
 
 # ---------------------------------------------------------------------------
 # Lightweight wrapper: run a plain function as a GraphNode executor
@@ -88,8 +92,46 @@ def _verifier_passed_file(verifier_fn, file_path: str) -> bool:
 # Graph builder
 # ---------------------------------------------------------------------------
 
-def build_graph(repo_path: str, run_dir: str | None = None) -> Graph:
-    """Build the full ThreatForest graph for a repository."""
+def _make_skip_node(node_id: str, repo_path: str, run_dir: str | None) -> GraphNode:
+    """Return a GraphNode that completes instantly without running the real agent.
+
+    Used during a resumed run for nodes whose output files already exist on disk.
+    The edge condition functions read from disk directly, so they will still
+    evaluate correctly even though the real agent was skipped.
+    """
+    return GraphNode(node_id, FunctionAgent(
+        fn=lambda rp, **kw: f"[skipped] {node_id} — output already on disk",
+        repo_path=repo_path,
+        node_id=node_id,
+        run_dir=run_dir,
+    ))
+
+
+def build_graph(
+    repo_path: str,
+    run_dir: str | None = None,
+    skip_nodes: frozenset[str] | None = None,
+    scan_control: "ScanControl | None" = None,
+) -> Graph:
+    """Build the full ThreatForest graph for a repository.
+
+    Parameters
+    ----------
+    repo_path:
+        Absolute path to the project repository.
+    run_dir:
+        Path to the centralized run directory where state and output are stored.
+    skip_nodes:
+        Set of graph node IDs whose outputs already exist on disk (from a prior
+        paused/stopped run).  Those nodes are replaced with instant no-op agents
+        so the graph can resume from the first incomplete node.
+    scan_control:
+        Optional ScanControl instance.  When provided, an InterruptHookProvider
+        is injected into each Strands Agent so that pause/stop take effect at
+        tool-call granularity rather than waiting for an entire node to finish.
+    """
+    skip_nodes = skip_nodes or frozenset()
+
     from threatforest.agents.scanner.agent import create_scanner_agent
     from threatforest.agents.scanner.verifier import verify_scanner_output
     from threatforest.agents.threat.agent import create_threat_agent
@@ -102,44 +144,76 @@ def build_graph(repo_path: str, run_dir: str | None = None) -> Graph:
     state_dir = resolve_state_dir(repo_path, run_dir)
 
     # --- Nodes ---
-    scanner = GraphNode("scanner", create_scanner_agent(repo_path, run_dir=run_dir))
+    scanner = (
+        _make_skip_node("scanner", repo_path, run_dir)
+        if "scanner" in skip_nodes
+        else GraphNode("scanner", create_scanner_agent(repo_path, run_dir=run_dir))
+    )
 
     def _verify_scanner(rp, run_dir=run_dir):
         sd = resolve_state_dir(rp, run_dir)
         return verify_scanner_output(str(sd / "scanner_context.json"))
 
-    scanner_v = GraphNode("scanner_verifier", FunctionAgent(
-        lambda rp, **kw: _verify_scanner(rp),
-        repo_path, "scanner_verifier", run_dir=run_dir,
-    ))
+    scanner_v = (
+        _make_skip_node("scanner_verifier", repo_path, run_dir)
+        if "scanner_verifier" in skip_nodes
+        else GraphNode("scanner_verifier", FunctionAgent(
+            lambda rp, **kw: _verify_scanner(rp),
+            repo_path, "scanner_verifier", run_dir=run_dir,
+        ))
+    )
 
-    threat = GraphNode("threat", create_threat_agent(repo_path, run_dir=run_dir))
+    threat = (
+        _make_skip_node("threat", repo_path, run_dir)
+        if "threat" in skip_nodes
+        else GraphNode("threat", create_threat_agent(repo_path, run_dir=run_dir))
+    )
 
     def _verify_threat(rp, run_dir=run_dir):
         sd = resolve_state_dir(rp, run_dir)
         return verify_threat_output(str(sd / "threats.json"))
 
-    threat_v = GraphNode("threat_verifier", FunctionAgent(
-        lambda rp, **kw: _verify_threat(rp),
-        repo_path, "threat_verifier", run_dir=run_dir,
-    ))
+    threat_v = (
+        _make_skip_node("threat_verifier", repo_path, run_dir)
+        if "threat_verifier" in skip_nodes
+        else GraphNode("threat_verifier", FunctionAgent(
+            lambda rp, **kw: _verify_threat(rp),
+            repo_path, "threat_verifier", run_dir=run_dir,
+        ))
+    )
 
     # Parallel fan-out: tree → ttp → mitigation per threat
-    parallel = GraphNode("parallel_pipeline", FunctionAgent(
-        run_parallel_pipeline, repo_path, "parallel_pipeline", run_dir=run_dir,
-    ))
-    parallel_v = GraphNode("parallel_verifier", FunctionAgent(
-        lambda rp, **kw: verify_mitigation_output(rp, run_dir=kw.get("run_dir")),
-        repo_path, "parallel_verifier", run_dir=run_dir,
-    ))
+    parallel = (
+        _make_skip_node("parallel_pipeline", repo_path, run_dir)
+        if "parallel_pipeline" in skip_nodes
+        else GraphNode("parallel_pipeline", FunctionAgent(
+            run_parallel_pipeline, repo_path, "parallel_pipeline", run_dir=run_dir,
+        ))
+    )
+    parallel_v = (
+        _make_skip_node("parallel_verifier", repo_path, run_dir)
+        if "parallel_verifier" in skip_nodes
+        else GraphNode("parallel_verifier", FunctionAgent(
+            lambda rp, **kw: verify_mitigation_output(rp, run_dir=kw.get("run_dir")),
+            repo_path, "parallel_verifier", run_dir=run_dir,
+        ))
+    )
 
-    report = GraphNode("report", FunctionAgent(
-        run_report_generator, repo_path, "report", run_dir=run_dir,
-    ))
-    report_v = GraphNode("report_verifier", FunctionAgent(
-        lambda rp, **kw: verify_report_output(rp, run_dir=kw.get("run_dir")),
-        repo_path, "report_verifier", run_dir=run_dir,
-    ))
+    report = (
+        _make_skip_node("report", repo_path, run_dir)
+        if "report" in skip_nodes
+        else GraphNode("report", FunctionAgent(
+            run_report_generator, repo_path, "report", run_dir=run_dir,
+        ))
+    )
+    report_v = (
+        _make_skip_node("report_verifier", repo_path, run_dir)
+        if "report_verifier" in skip_nodes
+        else GraphNode("report_verifier", FunctionAgent(
+            lambda rp, **kw: verify_report_output(rp, run_dir=kw.get("run_dir")),
+            repo_path, "report_verifier", run_dir=run_dir,
+        ))
+    )
 
     # --- Edges ---
     def _scanner_ok(s):
