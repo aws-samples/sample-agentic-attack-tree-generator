@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ContentLayout from '@cloudscape-design/components/content-layout';
 import Grid from '@cloudscape-design/components/grid';
@@ -9,6 +9,7 @@ import Button from '@cloudscape-design/components/button';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import ColumnLayout from '@cloudscape-design/components/column-layout';
 import CloudscapeShell from '../components/CloudscapeShell';
+import { getPausedRuns } from '../api-client';
 
 export const PIPELINE_STAGES = [
   { title: 'Repository Analysis', description: 'Scans your codebase to identify components, dependencies, and potential attack surfaces' },
@@ -21,6 +22,17 @@ export const PIPELINE_STAGES = [
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const [pausedCount, setPausedCount] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    getPausedRuns()
+      .then((data) => {
+        if (!cancelled) setPausedCount((data.paused_runs || []).length);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <CloudscapeShell activePage="/" breadcrumbs={[]} headerVariant="high-contrast">
@@ -89,6 +101,15 @@ export default function HomePage() {
                 >
                   Start a run
                 </button>
+                {pausedCount > 0 && (
+                  <Button
+                    variant="link"
+                    iconName="status-in-progress"
+                    onClick={() => navigate('/paused-runs')}
+                  >
+                    Resume paused runs ({pausedCount})
+                  </Button>
+                )}
               </SpaceBetween>
               <SpaceBetween size="s">
                 <Box fontSize="heading-l" fontWeight="bold">Step 3</Box>

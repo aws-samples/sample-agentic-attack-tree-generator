@@ -145,80 +145,121 @@ async def _process_single_threat(
     repo_path: str,
     scanner_context: dict,
     run_dir: str | None = None,
+    scan_control: Any = None,
 ) -> dict:
     """Run tree → ttp_embed → mitigation for one threat.
 
     Returns a dict with keys: attack_trees, ttp_candidates, ttp_mappings, mitigations.
     Note: TTP reviewer step is currently disabled — embedding top-1 is used directly.
     """
+    _empty_result = {"attack_trees": [], "ttp_candidates": [], "ttp_mappings": [], "mitigations": []}
+
+    try:
+        return await _process_single_threat_inner(
+            threat, threat_idx, total_threats, repo_path, scanner_context,
+            run_dir=run_dir, scan_control=scan_control,
+        )
+    except Exception:
+        return _empty_result
+
+
+async def _process_single_threat_inner(
+    threat: dict,
+    threat_idx: int,
+    total_threats: int,
+    repo_path: str,
+    scanner_context: dict,
+    run_dir: str | None = None,
+    scan_control: Any = None,
+) -> dict:
+    """Inner implementation of _process_single_threat."""
     from threatforest.agents.tree.agent import create_tree_agent
     from threatforest.agents.mitigation.agent import create_mitigation_agent
     from threatforest.modules.workflow.ttc_mappings.matcher import TTCMatcher
 
+    _empty_result = {"attack_trees": [], "ttp_candidates": [], "ttp_mappings": [], "mitigations": []}
+
+    def _interrupted() -> bool:
+        return scan_control is not None and scan_control.should_interrupt
+
     state_dir = resolve_state_dir(repo_path, run_dir)
     prefix = f"t{threat_idx}"
 
-    # --- Tree generation ---
-    _update_progress(total_threats, threat_idx, "🌳 Building attack tree")
-
-    # Write single-threat input for this sub-pipeline
-    single_threats_file = state_dir / f"{prefix}_threats.json"
-    single_threats_file.write_text(json.dumps({"threats": [threat]}))
-
-    tree_agent = create_tree_agent(repo_path)
-    tree_out = state_dir / f"{prefix}_attack_trees.json"
-
-    # Patch the agent's write path to the per-threat file
     from threatforest.tools.sandboxed_file import make_sandboxed_file_read, make_sandboxed_file_write, make_store_mitigations
     from strands import Agent
     from strands.handlers import null_callback_handler
     from threatforest.modules.core.providers.provider_factory import create_model
     from threatforest.config import config
 
-    # Create a tree agent scoped to this single threat
     scanner_file = str(state_dir / "scanner_context.json")
-    threats_file = str(single_threats_file)
+    single_threats_file = state_dir / f"{prefix}_threats.json"
+    tree_out = state_dir / f"{prefix}_attack_trees.json"
     tree_out_str = str(tree_out)
 
-    tree_prompt = (Path(__file__).parent / "tree" / "prompt.md").read_text()
-    tree_prompt += (
-        f"\n\n## Paths\n"
-        f"- Scanner context: `{scanner_file}`\n"
-        f"- Threats: `{threats_file}`\n"
-        f"- Write output to: `{tree_out_str}`\n"
-    )
-
-    tree_tools = [
-        make_sandboxed_file_read([scanner_file, threats_file, repo_path]),
-        make_sandboxed_file_write([tree_out_str]),
-    ]
-
-    model = create_model(config, temperature=0)
-    agent = Agent(
-        model=model,
-        system_prompt=tree_prompt,
-        tools=tree_tools,
-        callback_handler=null_callback_handler(),
-        trace_attributes=trace_attrs(f"tree-T{threat_idx:03d}"),
-    )
-
-    # Run tree generation (sync agent call in async context via thread)
-    await asyncio.to_thread(
-        agent, "Read the threat and scanner context. Generate an attack tree. Write to the output file."
-    )
-
-    # Parse tree output
+    # --- Tree generation (skip if output already exists from a prior run) ---
     trees = []
     if tree_out.exists():
         try:
             trees = json.loads(tree_out.read_text()).get("attack_trees", [])
         except (json.JSONDecodeError, OSError):
-            pass
+            trees = []
 
     if not trees:
-        return {"attack_trees": [], "ttp_candidates": [], "ttp_mappings": [], "mitigations": []}
+        if _interrupted():
+            return _empty_result
 
-    # --- TTP embedding (no LLM) ---
+        _update_progress(total_threats, threat_idx, "🌳 Building attack tree")
+
+        single_threats_file.write_text(json.dumps({"threats": [threat]}))
+        threats_file = str(single_threats_file)
+
+        tree_prompt = (Path(__file__).parent / "tree" / "prompt.md").read_text()
+        tree_prompt += (
+            f"\n\n## Paths\n"
+            f"- Scanner context: `{scanner_file}`\n"
+            f"- Threats: `{threats_file}`\n"
+            f"- Write output to: `{tree_out_str}`\n"
+        )
+
+        tree_tools = [
+            make_sandboxed_file_read([scanner_file, threats_file, repo_path]),
+            make_sandboxed_file_write([tree_out_str]),
+        ]
+
+        model = create_model(config, temperature=0)
+
+        tree_hooks = []
+        if scan_control is not None:
+            from server.scan_control import ParallelInterruptHookProvider
+            tree_hooks.append(ParallelInterruptHookProvider(scan_control))
+
+        agent = Agent(
+            model=model,
+            system_prompt=tree_prompt,
+            tools=tree_tools,
+            callback_handler=null_callback_handler(),
+            trace_attributes=trace_attrs(f"tree-T{threat_idx:03d}"),
+            hooks=tree_hooks,
+        )
+
+        await asyncio.to_thread(
+            agent, "Read the threat and scanner context. Generate an attack tree. Write to the output file."
+        )
+
+        if tree_out.exists():
+            try:
+                trees = json.loads(tree_out.read_text()).get("attack_trees", [])
+            except (json.JSONDecodeError, OSError):
+                pass
+
+    if not trees:
+        return _empty_result
+
+    # Check for interrupt before proceeding to TTP embedding
+    if _interrupted():
+        return _empty_result
+
+    # --- TTP embedding (no LLM, fast — always rerun) ---
     _update_progress(total_threats, threat_idx, "📐 TTP embedding")
     steps = []
     step_ids = []
@@ -247,13 +288,6 @@ async def _process_single_threat(
                 "top_k": top_k,
             })
 
-    # --- TTP review (LLM) — DISABLED ---
-    # To re-enable, uncomment the call below and remove the direct promotion block.
-    # ttp_mappings, review_temp_files = await _run_ttp_review(
-    #     ttp_candidates, state_dir, prefix, scanner_file, threat_idx,
-    #     total_threats,
-    # )
-
     # Promote embedding top-1 directly (no LLM review)
     ttp_mappings = []
     for c in ttp_candidates:
@@ -267,85 +301,107 @@ async def _process_single_threat(
                 "reviewer_overrode_top1": False,
                 "reviewer_reasoning": "",
             })
-    review_temp_files = []
 
     # Filter out techniques known to be irrelevant for cloud/serverless workloads
     _CLOUD_TTP_BLOCKLIST = {"T1014", "T1548.002", "T1088", "T1553.001"}
     ttp_mappings = [m for m in ttp_mappings if m["technique_id"] not in _CLOUD_TTP_BLOCKLIST]
 
-    # --- Mitigation (LLM) with per-threat retry ---
-    _update_progress(total_threats, threat_idx, "🛡️ Defining relevant mitigations")
-    mit_mappings_file = state_dir / f"{prefix}_mitigations_input.json"
-    mit_mappings_file.write_text(json.dumps({"ttp_mappings": ttp_mappings}, indent=2))
+    # Check for interrupt before proceeding to mitigation
+    if _interrupted():
+        return _empty_result
 
+    # --- Mitigation (skip if output already exists from a prior run) ---
     mit_out = state_dir / f"{prefix}_mitigations.json"
-
-    mit_prompt = (Path(__file__).parent / "mitigation" / "prompt.md").read_text()
-    mit_prompt += (
-        f"\n\n## Paths\n"
-        f"- TTP mappings: `{mit_mappings_file}`\n"
-        f"- Scanner context: `{scanner_file}`\n"
-        f"- Attack trees: `{tree_out_str}`\n"
-        f"- Output: call `store_mitigations` (path is preconfigured)\n"
-    )
-
-    mit_tools = [
-        make_sandboxed_file_read([str(mit_mappings_file), scanner_file, tree_out_str, repo_path]),
-        make_store_mitigations(str(mit_out)),
-    ]
-
-    mapped_step_ids = {m["attack_step_id"] for m in ttp_mappings if m.get("attack_step_id")}
-    max_mit_attempts = 2
     mitigations = []
 
-    for attempt in range(max_mit_attempts):
-        if mit_out.exists():
-            mit_out.unlink()
-
-        mit_agent = Agent(
-            model=create_model(config, temperature=0),
-            system_prompt=mit_prompt,
-            tools=mit_tools,
-            callback_handler=null_callback_handler(),
-            trace_attributes=trace_attrs(f"mitigation-T{threat_idx:03d}"),
-        )
-
-        feedback = "" if attempt == 0 else (
-            f" IMPORTANT: Your previous attempt was missing mitigations for some attack steps. "
-            f"Make sure every technique in the TTP mappings file has a mitigation."
-        )
-
-        await asyncio.to_thread(
-            mit_agent,
-            f"Read the TTP mappings and scanner context. For each unique technique, synthesize an actionable mitigation with evidence. Call store_mitigations with the complete list.{feedback}"
-        )
-
-        mitigations = []
-        if mit_out.exists():
-            try:
-                raw = mit_out.read_text().replace(",\n]", "\n]").replace(",]", "]")
-                mitigations = json.loads(raw).get("mitigations", [])
-            except (json.JSONDecodeError, OSError):
-                pass
-
-        # Quick per-threat verification: check that mapped steps are covered
-        covered = set()
-        for m in mitigations:
-            sid = m.get("attack_step_id", "")
-            if sid:
-                covered.add(sid)
-            covered.update(m.get("also_applies_to", []))
-
-        missing = mapped_step_ids - covered
-        if not missing or not mitigations:
-            break  # Pass or no mitigations possible
-
-    # Cleanup temp files
-    for f in [single_threats_file, mit_mappings_file, mit_out, tree_out] + review_temp_files:
+    if mit_out.exists():
         try:
-            f.unlink(missing_ok=True)
-        except OSError:
-            pass
+            raw = mit_out.read_text().replace(",\n]", "\n]").replace(",]", "]")
+            mitigations = json.loads(raw).get("mitigations", [])
+        except (json.JSONDecodeError, OSError):
+            mitigations = []
+
+    if not mitigations:
+        if _interrupted():
+            return _empty_result
+
+        _update_progress(total_threats, threat_idx, "🛡️ Defining relevant mitigations")
+        mit_mappings_file = state_dir / f"{prefix}_mitigations_input.json"
+        mit_mappings_file.write_text(json.dumps({"ttp_mappings": ttp_mappings}, indent=2))
+
+        mit_prompt = (Path(__file__).parent / "mitigation" / "prompt.md").read_text()
+        mit_prompt += (
+            f"\n\n## Paths\n"
+            f"- TTP mappings: `{mit_mappings_file}`\n"
+            f"- Scanner context: `{scanner_file}`\n"
+            f"- Attack trees: `{tree_out_str}`\n"
+            f"- Output: call `store_mitigations` (path is preconfigured)\n"
+        )
+
+        mit_tools = [
+            make_sandboxed_file_read([str(mit_mappings_file), scanner_file, tree_out_str, repo_path]),
+            make_store_mitigations(str(mit_out)),
+        ]
+
+        mapped_step_ids = {m["attack_step_id"] for m in ttp_mappings if m.get("attack_step_id")}
+        max_mit_attempts = 2
+
+        for attempt in range(max_mit_attempts):
+            if _interrupted():
+                break
+
+            if mit_out.exists():
+                mit_out.unlink()
+
+            mit_hooks = []
+            if scan_control is not None:
+                from server.scan_control import ParallelInterruptHookProvider
+                mit_hooks.append(ParallelInterruptHookProvider(scan_control))
+
+            mit_agent = Agent(
+                model=create_model(config, temperature=0),
+                system_prompt=mit_prompt,
+                tools=mit_tools,
+                callback_handler=null_callback_handler(),
+                trace_attributes=trace_attrs(f"mitigation-T{threat_idx:03d}"),
+                hooks=mit_hooks,
+            )
+
+            feedback = "" if attempt == 0 else (
+                f" IMPORTANT: Your previous attempt was missing mitigations for some attack steps. "
+                f"Make sure every technique in the TTP mappings file has a mitigation."
+            )
+
+            await asyncio.to_thread(
+                mit_agent,
+                f"Read the TTP mappings and scanner context. For each unique technique, synthesize an actionable mitigation with evidence. Call store_mitigations with the complete list.{feedback}"
+            )
+
+            mitigations = []
+            if mit_out.exists():
+                try:
+                    raw = mit_out.read_text().replace(",\n]", "\n]").replace(",]", "]")
+                    mitigations = json.loads(raw).get("mitigations", [])
+                except (json.JSONDecodeError, OSError):
+                    pass
+
+            covered = set()
+            for m in mitigations:
+                sid = m.get("attack_step_id", "")
+                if sid:
+                    covered.add(sid)
+                covered.update(m.get("also_applies_to", []))
+
+            missing = mapped_step_ids - covered
+            if not missing or not mitigations:
+                break
+
+        # Clean up transient input file only (keep output files for resume)
+        for f in [single_threats_file, mit_mappings_file]:
+            try:
+                f.unlink(missing_ok=True)
+            except OSError:
+                pass
 
     _mark_threat_complete(threat_idx)
 
@@ -461,7 +517,7 @@ def _consolidate_mitigations(mitigations: list[dict], ttp_mappings: list[dict]) 
     return consolidated
 
 
-def run_parallel_pipeline(repo_path: str, run_dir: str | None = None) -> str:
+def run_parallel_pipeline(repo_path: str, run_dir: str | None = None, scan_control: Any = None) -> str:
     """Fan out tree/ttp/mitigation across threats, merge results.
 
     Works both from a running event loop (server) and standalone (CLI).
@@ -485,7 +541,7 @@ def run_parallel_pipeline(repo_path: str, run_dir: str | None = None) -> str:
 
     async def _run_all():
         tasks = [
-            _process_single_threat(threat, i, len(threats), repo_path, scanner_context, run_dir=run_dir)
+            _process_single_threat(threat, i, len(threats), repo_path, scanner_context, run_dir=run_dir, scan_control=scan_control)
             for i, threat in enumerate(threats)
         ]
         return await asyncio.gather(*tasks, return_exceptions=True)
@@ -547,5 +603,18 @@ def run_parallel_pipeline(repo_path: str, run_dir: str | None = None) -> str:
 
     (state_dir / "ttp_mappings.json").write_text(json.dumps({"ttp_mappings": all_mappings}, indent=2))
     (state_dir / "mitigations.json").write_text(json.dumps({"mitigations": all_mitigations}, indent=2))
+
+    # Clean up per-threat output files only when the pipeline completed
+    # without interruption.  If the scan was paused/stopped, keep them so
+    # resumed runs can skip already-completed threats.
+    interrupted = scan_control is not None and scan_control.should_interrupt
+    if not interrupted:
+        for i in range(len(threats)):
+            for suffix in ("attack_trees", "mitigations", "threats", "mitigations_input"):
+                f = state_dir / f"t{i}_{suffix}.json"
+                try:
+                    f.unlink(missing_ok=True)
+                except OSError:
+                    pass
 
     return str(state_dir / "mitigations.json")

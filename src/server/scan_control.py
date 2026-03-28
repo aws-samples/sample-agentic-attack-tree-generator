@@ -14,6 +14,15 @@ class ScanInterruptedException(BaseException):
     """
 
 
+class ScanInterruptedError(Exception):
+    """Regular Exception variant of ScanInterruptedException.
+
+    Used by parallel agents where we want Strands' ConcurrentToolExecutor to
+    catch the exception cleanly and terminate the agent loop without producing
+    "Task exception was never retrieved" warnings.
+    """
+
+
 class InterruptHookProvider:
     """Strands HookProvider that raises ScanInterruptedException after each tool call.
 
@@ -31,7 +40,32 @@ class InterruptHookProvider:
     def _check_interrupt(self, event: Any) -> None:
         if self._control.should_interrupt:
             raise ScanInterruptedException(
-                f"Scan {self._control.intent}ed by user after tool call"
+                f"Scan {self._control.intent}d by user after tool call"
+            )
+
+
+class ParallelInterruptHookProvider:
+    """Strands HookProvider for parallel agents — cancels tools before execution.
+
+    Uses ``BeforeToolCallEvent.cancel_tool`` to prevent the next tool call from
+    running when pause/stop is requested.  This is cleaner than raising in
+    ``AfterToolCallEvent`` because Strands' ``ConcurrentToolExecutor`` handles
+    tool cancellation gracefully without producing "Task exception was never
+    retrieved" warnings.
+    """
+
+    def __init__(self, scan_control: "ScanControl") -> None:
+        self._control = scan_control
+
+    def register_hooks(self, registry: Any, **kwargs: Any) -> None:
+        from strands.hooks import BeforeToolCallEvent
+        registry.add_callback(BeforeToolCallEvent, self._check_interrupt)
+
+    def _check_interrupt(self, event: Any) -> None:
+        if self._control.should_interrupt:
+            event.cancel_tool = (
+                f"Scan {self._control.intent}d by user — tool execution cancelled. "
+                "DO NOT CALL ANY MORE TOOLS. Respond immediately with what you have so far."
             )
 
 
@@ -43,6 +77,9 @@ class ScanControl:
     ``pause_state.json`` to the run directory, emits a terminal WebSocket event,
     and exits cleanly — leaving all completed-node output files on disk so the
     run can be resumed later.
+
+    Parallel agents also receive an ``InterruptHookProvider`` so they terminate
+    promptly after their current tool call instead of running to completion.
     """
 
     def __init__(self) -> None:

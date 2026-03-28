@@ -30,20 +30,23 @@ class FunctionAgent(MultiAgentBase):
 
     The function receives (repo_path) and returns a result string.
     When *run_dir* is set, the function is called as fn(repo_path, run_dir=run_dir).
+    Additional keyword arguments (e.g. scan_control) are forwarded as-is.
     """
 
-    def __init__(self, fn, repo_path: str, node_id: str, run_dir: str | None = None):
+    def __init__(self, fn, repo_path: str, node_id: str, run_dir: str | None = None, **extra_kwargs):
         self.fn = fn
         self.repo_path = repo_path
         self.run_dir = run_dir
+        self.extra_kwargs = extra_kwargs
         self.id = node_id
 
     async def invoke_async(self, task, invocation_state=None, **kwargs):
         import asyncio
+        call_kwargs = {}
         if self.run_dir:
-            result_str = await asyncio.to_thread(self.fn, self.repo_path, run_dir=self.run_dir)
-        else:
-            result_str = await asyncio.to_thread(self.fn, self.repo_path)
+            call_kwargs["run_dir"] = self.run_dir
+        call_kwargs.update(self.extra_kwargs)
+        result_str = await asyncio.to_thread(self.fn, self.repo_path, **call_kwargs)
         agent_result = _make_agent_result(str(result_str or "done"))
         return MultiAgentResult(
             status=Status.COMPLETED,
@@ -188,6 +191,7 @@ def build_graph(
         if "parallel_pipeline" in skip_nodes
         else GraphNode("parallel_pipeline", FunctionAgent(
             run_parallel_pipeline, repo_path, "parallel_pipeline", run_dir=run_dir,
+            scan_control=scan_control,
         ))
     )
     parallel_v = (

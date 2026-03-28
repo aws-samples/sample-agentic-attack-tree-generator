@@ -588,6 +588,12 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
 
         output_dir = str(run_dir / "output")
 
+        # Clean up pause_state.json on successful completion so the run
+        # no longer appears in the "paused runs" list.
+        pause_file = run_dir / "pause_state.json"
+        if pause_file.is_file():
+            pause_file.unlink()
+
         # Update metadata.json description from scan output
         try:
             import json as _json

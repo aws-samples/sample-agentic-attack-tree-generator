@@ -227,6 +227,12 @@ class RunManager:
             # Executor thread has already exited; just flip the status.
             state.status = "stopped"
             state.completed_at = datetime.now(tz=timezone.utc).isoformat()
+            # Remove pause_state.json so this run no longer appears as resumable
+            control = self._controls.get(run_id)
+            if control and control.run_dir:
+                pause_file = Path(control.run_dir) / "pause_state.json"
+                if pause_file.is_file():
+                    pause_file.unlink()
             return
 
         if state.status not in ("pending", "running"):

@@ -8,6 +8,7 @@ import VersionDetailPage from './pages/VersionDetailPage';
 import NewRunPage from './pages/NewRunPage';
 import RunProgressPage from './pages/RunProgressPage';
 import ConfigurePage from './pages/ConfigurePage';
+import PausedRunsPage from './pages/PausedRunsPage';
 
 // Wrapper that forces RunProgressPage to fully remount when the runId changes.
 // Without this, React Router reuses the same component instance when navigating
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="/applications/:appId/versions/:versionId" element={<ThreatModelSummaryPage />} />
         <Route path="/applications/:appId/versions/:versionId/threats/:threatIndex" element={<VersionDetailPage />} />
         <Route path="/new-run" element={<NewRunPage />} />
+        <Route path="/paused-runs" element={<PausedRunsPage />} />
         <Route path="/runs/:runId/progress" element={<RunProgressPageKeyed />} />
         <Route path="/configure" element={<ConfigurePage />} />
       </Routes>

@@ -151,6 +151,25 @@ export async function resumeRun(runId) {
   return request(`/api/runs/${encodeURIComponent(runId)}/resume`, { method: 'POST' });
 }
 
+/** GET /api/paused-runs → { paused_runs: PausedRun[] } */
+export async function getPausedRuns() {
+  return request('/api/paused-runs');
+}
+
+/** DELETE /api/paused-runs/{appId} → void */
+export async function deletePausedRun(appId) {
+  return request(`/api/paused-runs/${encodeURIComponent(appId)}`, { method: 'DELETE' });
+}
+
+/** POST /api/runs (resume from pause_state) → { run_id } */
+export async function createResumeRun(params) {
+  return request('/api/runs', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+}
+
 // ---------------------------------------------------------------------------
 // WebSocket
 // ---------------------------------------------------------------------------
