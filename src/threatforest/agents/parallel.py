@@ -158,7 +158,7 @@ async def _process_single_threat(
     try:
         return await _process_single_threat_inner(
             threat, threat_idx, total_threats, repo_path, scanner_context,
-            run_dir=run_dir, scan_control=scan_control,
+            run_dir=run_dir, frameworks=frameworks, scan_control=scan_control,
         )
     except Exception:
         return _empty_result
@@ -171,6 +171,7 @@ async def _process_single_threat_inner(
     repo_path: str,
     scanner_context: dict,
     run_dir: str | None = None,
+    frameworks: list[str] | None = None,
     scan_control: Any = None,
 ) -> dict:
     """Inner implementation of _process_single_threat."""
