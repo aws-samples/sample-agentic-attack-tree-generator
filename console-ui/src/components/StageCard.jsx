@@ -15,6 +15,8 @@ function getIndicatorType(status) {
       return 'success';
     case 'in-progress':
       return 'in-progress';
+    case 'awaiting-input':
+      return 'warning';
     case 'failed':
       return 'error';
     default:
@@ -53,6 +55,7 @@ export default function StageCard({
 
   const isPending = status === 'pending';
   const isInProgress = status === 'in-progress';
+  const isAwaitingInput = status === 'awaiting-input';
   const isCompleted = status === 'completed';
   const isFailed = status === 'failed';
 
@@ -84,6 +87,13 @@ export default function StageCard({
         <div style={{ marginTop: '8px' }}>
           <ProgressBar value={progress} />
         </div>
+      )}
+
+      {/* Awaiting input indicator */}
+      {isAwaitingInput && (
+        <Box color="text-status-warning" fontSize="body-s" margin={{ top: 'xs' }} data-testid="awaiting-input">
+          Waiting for your input — see the Context Validation panel below
+        </Box>
       )}
 
       {/* Row 3: Sub-step text */}

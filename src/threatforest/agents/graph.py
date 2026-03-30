@@ -116,6 +116,7 @@ def build_graph(
     skip_nodes: frozenset[str] | None = None,
     scan_control: "ScanControl | None" = None,
     interaction_fn=None,
+    frameworks: list[str] | None = None,
 ) -> Graph:
     """Build the full ThreatForest graph for a repository.
 
@@ -142,6 +143,7 @@ def build_graph(
 
     from threatforest.agents.scanner.agent import create_scanner_agent
     from threatforest.agents.scanner.verifier import verify_scanner_output
+    from threatforest.agents.interviewer.agent import create_interviewer_agent, InterviewerNode
     from threatforest.agents.threat.agent import create_threat_agent
     from threatforest.agents.threat.verifier import verify_threat_output
     from threatforest.agents.parallel import run_parallel_pipeline
@@ -171,6 +173,15 @@ def build_graph(
         ))
     )
 
+    # Interviewer: human-in-the-loop context validation
+    if "interviewer" in skip_nodes:
+        interviewer = _make_skip_node("interviewer", repo_path, run_dir)
+    else:
+        interviewer_agent = create_interviewer_agent(repo_path, run_dir=run_dir)
+        interviewer = GraphNode("interviewer", InterviewerNode(
+            interviewer_agent, interaction_fn, "interviewer",
+        ))
+
     threat = (
         _make_skip_node("threat", repo_path, run_dir)
         if "threat" in skip_nodes
@@ -190,14 +201,13 @@ def build_graph(
         ))
     )
 
-    # Parallel fan-out: tree → ttp → mitigation per threat
     # Parallel fan-out: tree -> ttp -> mitigation per threat
     parallel = (
         _make_skip_node("parallel_pipeline", repo_path, run_dir)
         if "parallel_pipeline" in skip_nodes
         else GraphNode("parallel_pipeline", FunctionAgent(
             run_parallel_pipeline, repo_path, "parallel_pipeline", run_dir=run_dir,
-            scan_control=scan_control,
+            scan_control=scan_control, frameworks=frameworks,
         ))
     )
     parallel_v = (
@@ -253,9 +263,10 @@ def build_graph(
         return not _report_ok(s)
 
     edges = {
-        # Scanner → Threat (sequential, fast)
+        # Scanner → Interviewer → Threat
         GraphEdge(scanner, scanner_v),
-        GraphEdge(scanner_v, threat, condition=_scanner_ok),
+        GraphEdge(scanner_v, interviewer, condition=_scanner_ok),
+        GraphEdge(interviewer, threat),
         GraphEdge(threat, threat_v),
 
         # Threat → Parallel pipeline (fan-out)
@@ -275,6 +286,7 @@ def build_graph(
 
     nodes = {
         "scanner": scanner, "scanner_verifier": scanner_v,
+        "interviewer": interviewer,
         "threat": threat, "threat_verifier": threat_v,
         "parallel_pipeline": parallel, "parallel_verifier": parallel_v,
         "report": report, "report_verifier": report_v,
@@ -290,7 +302,7 @@ def build_graph(
     )
 
 
-async def run_graph(repo_path: str, run_dir: str | None = None, frameworks: list[str] | None = None) -> dict:
+async def run_graph(repo_path: str, run_dir: str | None = None, frameworks: list[str] | None = None, interaction_fn=None) -> dict:
     """Run the full ThreatForest graph and return the result."""
     import time as _time
     from rich.console import Console
@@ -307,7 +319,7 @@ async def run_graph(repo_path: str, run_dir: str | None = None, frameworks: list
 
     console = Console()
 
-    graph = build_graph(repo_path, run_dir=run_dir, frameworks=frameworks)
+    graph = build_graph(repo_path, run_dir=run_dir, interaction_fn=interaction_fn, frameworks=frameworks)
 
     # Resolve dirs for reading state/output in _node_summary
     _state_dir = resolve_state_dir(repo_path, run_dir)
@@ -316,6 +328,7 @@ async def run_graph(repo_path: str, run_dir: str | None = None, frameworks: list
     NODE_LABELS = {
         "scanner": "🔍 Scanner Agent",
         "scanner_verifier": "✅ Scanner Verifier",
+        "interviewer": "🔎 Context Validation",
         "threat": "🤖 Threat Agent",
         "threat_verifier": "✅ Threat Verifier",
         "parallel_pipeline": "⚡ Parallel Pipeline (tree → ttp → mitigation)",
@@ -344,6 +357,14 @@ async def run_graph(repo_path: str, run_dir: str | None = None, frameworks: list
                     from threatforest.agents.scanner.verifier import verify_scanner_output
                     ok, msg = verify_scanner_output(str(f))
                     return [f"{'PASS' if ok else 'FAIL'}: {msg}"]
+            elif nid == "interviewer":
+                d = json.loads((sd / "scanner_context.json").read_text())
+                confidence = d.get("interviewer_confidence", "skipped")
+                summary = d.get("interviewer_summary", "")
+                lines = [f"Confidence: {confidence}"]
+                if summary:
+                    lines.append(summary[:80])
+                return lines
             elif nid == "threat":
                 d = json.loads((sd / "threats.json").read_text())
                 threats = d.get("threats", [])

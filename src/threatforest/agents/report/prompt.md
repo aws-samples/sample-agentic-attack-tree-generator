@@ -55,3 +55,4 @@ Group by priority (critical first).
 - Reference specific files, services, and components from the project
 - The executive summary must fit in one paragraph
 - Mitigations section must be sorted by priority (1=critical first)
+- If the scanner context has `interviewer_confidence` set to `"low"`, add a **Disclaimer** section at the top of the report noting: "This threat model was generated with limited context. Key information about the application's architecture, authentication, or deployment was not available during analysis. Results should be treated as preliminary and validated with the development team."

@@ -132,6 +132,7 @@ def _slugify(name: str) -> str:
 NODE_LABELS = {
     "scanner": "Repository Analysis",
     "scanner_verifier": "Repository Analysis",
+    "interviewer": "Context Validation",
     "threat": "Threat Generation",
     "threat_verifier": "Threat Generation",
     "parallel_pipeline": "Parallel Analysis",
@@ -184,6 +185,14 @@ def _get_stage_summary(project_path: str, node_id: str, run_dir: str | None = No
     else:
         sd = Path(project_path) / ".threatforest" / "state"
     try:
+        if node_id == "interviewer":
+            d = _json.loads((sd / "scanner_context.json").read_text())
+            confidence = d.get("interviewer_confidence", "skipped")
+            summary = d.get("interviewer_summary", "")
+            findings = [f"Confidence: {confidence}"]
+            if summary:
+                findings.append(summary[:120])
+            return {"message": f"Context validation: {confidence} confidence", "findings": findings}
         if node_id in ("scanner", "scanner_verifier"):
             d = _json.loads((sd / "scanner_context.json").read_text())
             return {
@@ -235,6 +244,7 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
         config: RunConfig,
         progress_callback: Callable[[ProgressEvent], None],
         scan_control: "ScanControl | None" = None,
+        interaction_fn=None,
     ) -> dict[str, str]:
         import os
 
@@ -315,7 +325,7 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
             scan_control.run_dir = run_dir_str
 
         skip_nodes: frozenset[str] = frozenset(config.skip_nodes) if config.skip_nodes else frozenset()
-        graph = build_graph(project_path, run_dir=run_dir_str, skip_nodes=skip_nodes, scan_control=scan_control)
+        graph = build_graph(project_path, run_dir=run_dir_str, skip_nodes=skip_nodes, scan_control=scan_control, interaction_fn=interaction_fn)
 
         interrupted = False
         interrupted_intent = "stop"
@@ -610,10 +620,24 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
         except Exception:
             pass
 
-        return {
+        # Check interviewer confidence for low-confidence warning
+        low_confidence = False
+        try:
+            import json as _json2
+            ctx_file = run_dir / "state" / "scanner_context.json"
+            if ctx_file.is_file():
+                ctx = _json2.loads(ctx_file.read_text(encoding="utf-8"))
+                low_confidence = ctx.get("interviewer_confidence") == "low"
+        except Exception:
+            pass
+
+        result_dict = {
             "output_dir": output_dir,
             "run_dir": run_dir_str,
             "app_id": slugify(project_dir.name),
         }
+        if low_confidence:
+            result_dict["low_confidence"] = True
+        return result_dict
 
     return executor

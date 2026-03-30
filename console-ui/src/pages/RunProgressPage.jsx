@@ -11,10 +11,12 @@ import Link from '@cloudscape-design/components/link';
 import Button from '@cloudscape-design/components/button';
 import StageCard from '../components/StageCard';
 import ActivityFeed from '../components/ActivityFeed';
-import { connectRunWebSocket, pauseRun, stopRun, resumeRun } from '../api-client';
+import InterviewerPanel from '../components/InterviewerPanel';
+import { connectRunWebSocket, pauseRun, stopRun, resumeRun, submitRunResponse } from '../api-client';
 
 const STAGES = [
   'Repository Analysis',
+  'Context Validation',
   'Threat Generation',
   'Parallel Analysis',
   'Dashboard Generation',
@@ -22,17 +24,18 @@ const STAGES = [
 
 const stageIndexMap = {
   'Repository Analysis': 0,
-  'Threat Generation': 1,
-  'Parallel Analysis': 2,
-  'Dashboard Generation': 3,
+  'Context Validation': 1,
+  'Threat Generation': 2,
+  'Parallel Analysis': 3,
+  'Dashboard Generation': 4,
   // Fallback internal names
   setup: 0,
   context_analysis: 0,
   extraction: 0,
-  tree_generation: 2,
-  ttc_enrichment: 2,
-  mitigation: 2,
-  summary: 3,
+  tree_generation: 3,
+  ttc_enrichment: 3,
+  mitigation: 3,
+  summary: 4,
 };
 
 function resolveStageIndex(stageName) {
@@ -71,10 +74,37 @@ export default function RunProgressPage() {
   const [errorMessage, setErrorMessage] = useState('');
   const [pipelineComplete, setPipelineComplete] = useState(false);
   const [completedAppId, setCompletedAppId] = useState('');
+  const [lowConfidence, setLowConfidence] = useState(false);
   // "running" | "paused" | "stopped" | "complete" | "failed"
   const [scanStatus, setScanStatus] = useState('running');
   // True while a pause/stop/resume HTTP request is in-flight
   const [controlPending, setControlPending] = useState(false);
+  // Interviewer state
+  const [showInterviewer, setShowInterviewer] = useState(false);
+  const [chatHistory, setChatHistory] = useState([]);
+  const [interviewerWaiting, setInterviewerWaiting] = useState(false);
+
+  const handleInterviewerSubmit = useCallback(async (text) => {
+    setChatHistory((prev) => [...prev, { role: 'user', text }]);
+    setInterviewerWaiting(true);
+    try {
+      await submitRunResponse(runId, text);
+    } catch (err) {
+      setErrorMessage(`Failed to submit response: ${err.message}`);
+      setInterviewerWaiting(false);
+    }
+  }, [runId]);
+
+  const handleInterviewerSkip = useCallback(async () => {
+    setInterviewerWaiting(true);
+    try {
+      await submitRunResponse(runId, null);
+      setShowInterviewer(false);
+    } catch (err) {
+      setErrorMessage(`Failed to skip interview: ${err.message}`);
+    }
+    setInterviewerWaiting(false);
+  }, [runId]);
 
   const appendActivity = useCallback((message, type) => {
     setActivityFeed((prev) => [...prev, { time: formatTimestamp(), message, type }]);
@@ -177,6 +207,28 @@ export default function RunProgressPage() {
           break;
         }
 
+        case 'awaiting_input': {
+          const cvIdx = resolveStageIndex('Context Validation');
+          if (cvIdx >= 0) {
+            setStages((prev) =>
+              prev.map((s, i) =>
+                i === cvIdx
+                  ? { ...s, status: 'awaiting-input', statusText: 'Waiting for your input' }
+                  : s,
+              ),
+            );
+          }
+          setChatHistory((prev) => [...prev, {
+            role: 'agent',
+            message: details?.message || message || '',
+            questions: details?.questions || [],
+          }]);
+          setShowInterviewer(true);
+          setInterviewerWaiting(false);
+          appendActivity('Interviewer is waiting for your input.', 'stage-start');
+          break;
+        }
+
         case 'stage_update':
         case 'stage_progress': {
           if (stageIdx < 0) break;
@@ -221,6 +273,8 @@ export default function RunProgressPage() {
             setPipelineComplete(true);
             setScanStatus('complete');
             if (data.details?.app_id) setCompletedAppId(data.details.app_id);
+            if (data.details?.low_confidence) setLowConfidence(true);
+            setShowInterviewer(false);
             appendActivity('Pipeline completed successfully!', 'stage-complete');
             break;
           }
@@ -436,6 +490,15 @@ export default function RunProgressPage() {
           Run Progress
         </Header>
 
+        {/* Low confidence warning */}
+        {lowConfidence && pipelineComplete && (
+          <Alert type="warning" dismissible onDismiss={() => setLowConfidence(false)}>
+            This threat model was generated with <strong>limited context</strong>. The
+            context validation interview was skipped or had insufficient responses.
+            Results should be treated as preliminary and validated with the development team.
+          </Alert>
+        )}
+
         {/* Success banner */}
         {pipelineComplete && (
           <Alert type="success" dismissible>
@@ -508,6 +571,16 @@ export default function RunProgressPage() {
             ))}
           </SpaceBetween>
         </Container>
+
+        {/* Interviewer Panel */}
+        {showInterviewer && (
+          <InterviewerPanel
+            chatHistory={chatHistory}
+            onSubmit={handleInterviewerSubmit}
+            onSkip={handleInterviewerSkip}
+            waiting={interviewerWaiting}
+          />
+        )}
 
         {/* Activity Feed */}
         <Container header={<Header variant="h2">Activity Feed</Header>}>

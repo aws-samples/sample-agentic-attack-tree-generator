@@ -175,6 +175,15 @@ export async function createResumeRun(params) {
   });
 }
 
+/** POST /api/runs/{runId}/respond → { ok } */
+export async function submitRunResponse(runId, text) {
+  return request(`/api/runs/${encodeURIComponent(runId)}/respond`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text }),
+  });
+}
+
 // ---------------------------------------------------------------------------
 // WebSocket
 // ---------------------------------------------------------------------------

@@ -8,7 +8,7 @@ import time
 
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 
-from server.models import ResumeResponse, RunConfig, RunResponse, RunState
+from server.models import InteractionResponse, ResumeResponse, RunConfig, RunResponse, RunState
 from server.run_manager import RunManager
 
 # Heartbeat interval in seconds — keeps idle WebSocket connections alive
@@ -131,6 +131,24 @@ async def resume_run(run_id: str) -> ResumeResponse:
     except (RuntimeError, FileNotFoundError) as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     return ResumeResponse(new_run_id=new_run_id)
+
+
+@router.post("/runs/{run_id}/respond", status_code=200)
+async def submit_run_response(run_id: str, body: InteractionResponse) -> dict:
+    """Submit a user response to an interviewer question.
+
+    The interviewer agent pauses and sends an ``awaiting_input`` WebSocket
+    event when it needs user input.  This endpoint delivers the user's
+    answer back to the blocked agent thread.
+
+    - **404** if *run_id* is not known or has no pending interaction
+    """
+    manager = get_run_manager()
+    try:
+        manager.submit_interaction_response(run_id, body.text)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    return {"ok": True}
 
 
 @ws_router.websocket("/ws/runs/{run_id}")

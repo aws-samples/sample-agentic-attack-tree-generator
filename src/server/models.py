@@ -54,6 +54,12 @@ class ResumeResponse(BaseModel):
     new_run_id: str
 
 
+class InteractionResponse(BaseModel):
+    """User response to an interviewer question."""
+
+    text: str | None = None
+
+
 class DirectoryEntry(BaseModel):
     """A single file or directory entry in a listing."""
 

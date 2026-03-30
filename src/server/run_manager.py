@@ -24,6 +24,27 @@ logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
+# Interaction request for interviewer HITL
+# ---------------------------------------------------------------------------
+
+class InteractionRequest:
+    """Pending interviewer question waiting for a user response."""
+
+    def __init__(self, run_id: str, reason: dict[str, Any]) -> None:
+        self.run_id = run_id
+        self.reason = reason
+        self.response: str | None = None
+        self._event = threading.Event()
+
+    def wait(self, timeout: float = 300.0) -> bool:
+        return self._event.wait(timeout=timeout)
+
+    def respond(self, text: str | None) -> None:
+        self.response = text
+        self._event.set()
+
+
+# ---------------------------------------------------------------------------
 # Progress event helpers
 # ---------------------------------------------------------------------------
 
@@ -75,6 +96,7 @@ class OrchestratorExecutor(Protocol):
         config: RunConfig,
         progress_callback: Callable[[ProgressEvent], None],
         scan_control: Any | None = None,
+        interaction_fn: Any | None = None,
     ) -> dict[str, str]:
         ...
 
@@ -96,6 +118,7 @@ class RunManager:
         self._queues: dict[str, asyncio.Queue[dict[str, Any]]] = {}
         self._loops: dict[str, asyncio.AbstractEventLoop] = {}
         self._controls: dict[str, ScanControl] = {}
+        self._pending_interactions: dict[str, InteractionRequest] = {}
         self._executor = executor
 
     # ------------------------------------------------------------------
@@ -302,6 +325,18 @@ class RunManager:
 
         return self.start_run(new_config)
 
+    def set_pending_interaction(self, run_id: str, req: InteractionRequest) -> None:
+        self._pending_interactions[run_id] = req
+
+    def submit_interaction_response(self, run_id: str, text: str | None) -> None:
+        req = self._pending_interactions.get(run_id)
+        if req is None:
+            raise KeyError(f"No pending interaction for run {run_id}")
+        req.respond(text)
+
+    def clear_pending_interaction(self, run_id: str) -> None:
+        self._pending_interactions.pop(run_id, None)
+
     def cleanup_run(self, run_id: str) -> None:
         """Remove the event queue and loop reference for a finished run.
 
@@ -337,9 +372,33 @@ class RunManager:
             else:
                 queue.put_nowait(payload)
 
+        def _web_interaction_fn(interrupts):
+            """Handle interviewer interrupts by routing questions to the web UI."""
+            for interrupt in interrupts:
+                reason = interrupt.reason or {}
+                req = InteractionRequest(run_id, reason)
+                self.set_pending_interaction(run_id, req)
+
+                _push_event(ProgressEvent(
+                    event_type="awaiting_input",
+                    stage="Context Validation",
+                    percentage=50,
+                    message=reason.get("message", "The interviewer has questions for you."),
+                    details=reason,
+                ))
+
+                answered = req.wait(timeout=300.0)
+                self.clear_pending_interaction(run_id)
+
+                if not answered or req.response is None:
+                    return None
+
+                return [{"interruptResponse": {"interruptId": interrupt.id, "response": req.response}}]
+            return None
+
         try:
             assert self._executor is not None
-            result = self._executor(config, _push_event, scan_control=control)
+            result = self._executor(config, _push_event, scan_control=control, interaction_fn=_web_interaction_fn)
 
             result_status = result.get("status", "complete")
 
@@ -362,15 +421,19 @@ class RunManager:
                 state.completed_at = datetime.now(tz=timezone.utc).isoformat()
                 state.output_dir = result.get("output_dir")
 
+                completion_details = {
+                    "output_dir": state.output_dir,
+                    "app_id": result.get("app_id", ""),
+                }
+                if result.get("low_confidence"):
+                    completion_details["low_confidence"] = True
+
                 _push_event(ProgressEvent(
                     event_type="stage_complete",
                     stage="complete",
                     percentage=100,
                     message="Pipeline completed successfully",
-                    details={
-                        "output_dir": state.output_dir,
-                        "app_id": result.get("app_id", ""),
-                    },
+                    details=completion_details,
                 ))
 
         except Exception as exc:
