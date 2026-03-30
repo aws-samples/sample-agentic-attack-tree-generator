@@ -153,6 +153,10 @@ async def list_frameworks() -> dict:
             "name": "MITRE ATT&CK Enterprise",
             "description": "835 techniques — cloud, network, endpoint",
         },
+        "atlas": {
+            "name": "MITRE ATLAS",
+            "description": "AI/ML adversarial threats",
+        },
     }
     if config_path.is_file():
         raw = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
