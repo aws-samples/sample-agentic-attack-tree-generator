@@ -55,6 +55,53 @@ def _resolve_workspace_root() -> Path:
     return package_dir.parent.parent
 
 
+def _build_console_ui(repo_root: Path) -> None:
+    """Build the React console UI and copy artefacts into the Python package.
+
+    Runs ``npm run build`` in ``console-ui/`` and syncs the output to
+    ``src/threatforest/console_ui/`` so the FastAPI server serves the
+    latest bundle.  Skipped silently when ``console-ui/`` doesn't exist
+    (e.g. packaged installs).
+    """
+    import shutil
+    import subprocess
+
+    ui_src = repo_root / "console-ui"
+    if not (ui_src / "package.json").is_file():
+        return  # not a dev checkout
+
+    console.print("[dim]Building console UI...[/dim]")
+    try:
+        subprocess.run(
+            ["npm", "run", "build"],
+            cwd=str(ui_src),
+            check=True,
+            capture_output=True,
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError) as exc:
+        console.print(f"[yellow]Warning:[/yellow] UI build failed ({exc}), using cached bundle.")
+        return
+
+    dist_dir = ui_src / "dist"
+    target_dir = repo_root / "src" / "threatforest" / "console_ui"
+    if not dist_dir.is_dir() or not target_dir.is_dir():
+        return
+
+    # Sync: copy index.html to package root, assets/ into assets/
+    shutil.copy2(dist_dir / "index.html", target_dir / "index.html")
+    target_assets = target_dir / "assets"
+    target_assets.mkdir(exist_ok=True)
+    # Remove old JS/CSS bundles to avoid stale files
+    for old in target_assets.glob("index-*.js"):
+        old.unlink()
+    for old in target_assets.glob("index-*.css"):
+        old.unlink()
+    for f in (dist_dir / "assets").iterdir():
+        shutil.copy2(f, target_assets / f.name)
+
+    console.print("[dim]Console UI built.[/dim]")
+
+
 def launch_server(host: str = "127.0.0.1", port: int = 8000) -> None:
     """Start the FastAPI web console server and open the browser."""
     import threading
@@ -64,6 +111,8 @@ def launch_server(host: str = "127.0.0.1", port: int = 8000) -> None:
     src_dir = str(repo_root / "src")
     if src_dir not in sys.path:
         sys.path.insert(0, src_dir)
+
+    _build_console_ui(repo_root)
 
     console.print(f"[bold cyan]🌳 Starting ThreatForest Web Console on http://{host}:{port}[/bold cyan]")
 

@@ -377,45 +377,49 @@ export default function ConfigurePage() {
               </Header>
             }
           >
-            {!langfuseEnabled ? (
-              <Box color="text-status-inactive" padding={{ vertical: 's' }}>
-                <StatusIndicator type="stopped">
-                  Langfuse tracing is disabled. Enable it to trace and score your threat modeling runs.
-                </StatusIndicator>
-              </Box>
-            ) : (
-              <SpaceBetween size="l">
-                <ColumnLayout columns={2}>
-                  <FormField label="Public Key">
+            <SpaceBetween size="l">
+              {!langfuseEnabled ? (
+                <Box color="text-status-inactive" padding={{ vertical: 's' }}>
+                  <StatusIndicator type="stopped">
+                    Langfuse tracing is disabled. Enable it to trace and score your threat modeling runs.
+                  </StatusIndicator>
+                </Box>
+              ) : (
+                <>
+                  <ColumnLayout columns={2}>
+                    <FormField label="Public Key">
+                      <Input
+                        value={langfusePublicKey}
+                        onChange={({ detail }) => setLangfusePublicKey(detail.value)}
+                        placeholder="pk-lf-..."
+                      />
+                    </FormField>
+                    <FormField
+                      label="Secret Key"
+                      description={langfuseSecretKeyConfigured && !langfuseSecretKey
+                        ? "A secret key is already configured. Enter a new value to replace it."
+                        : "Required when enabling Langfuse."}
+                    >
+                      <Input
+                        value={langfuseSecretKey}
+                        onChange={({ detail }) => setLangfuseSecretKey(detail.value)}
+                        placeholder={langfuseSecretKeyConfigured ? '••••••••••••••••' : 'sk-lf-...'}
+                        type="password"
+                      />
+                    </FormField>
+                  </ColumnLayout>
+                  <FormField label="Host">
                     <Input
-                      value={langfusePublicKey}
-                      onChange={({ detail }) => setLangfusePublicKey(detail.value)}
-                      placeholder="pk-lf-..."
+                      value={langfuseHost}
+                      onChange={({ detail }) => setLangfuseHost(detail.value)}
+                      placeholder="https://cloud.langfuse.com"
                     />
                   </FormField>
-                  <FormField
-                    label="Secret Key"
-                    description={langfuseSecretKeyConfigured && !langfuseSecretKey
-                      ? "A secret key is already configured. Enter a new value to replace it."
-                      : "Required when enabling Langfuse."}
-                  >
-                    <Input
-                      value={langfuseSecretKey}
-                      onChange={({ detail }) => setLangfuseSecretKey(detail.value)}
-                      placeholder={langfuseSecretKeyConfigured ? '••••••••••••••••' : 'sk-lf-...'}
-                      type="password"
-                    />
-                  </FormField>
-                </ColumnLayout>
-                <FormField label="Host">
-                  <Input
-                    value={langfuseHost}
-                    onChange={({ detail }) => setLangfuseHost(detail.value)}
-                    placeholder="https://cloud.langfuse.com"
-                  />
-                </FormField>
-                <Box float="right">
-                  <SpaceBetween direction="horizontal" size="xs">
+                </>
+              )}
+              <Box float="right">
+                <SpaceBetween direction="horizontal" size="xs">
+                  {langfuseEnabled && (
                     <Button
                       onClick={handleTestLangfuse}
                       loading={testingLangfuse}
@@ -423,17 +427,17 @@ export default function ConfigurePage() {
                     >
                       Test Connection
                     </Button>
-                    <Button
-                      variant="primary"
-                      onClick={handleSaveLangfuse}
-                      loading={savingLangfuse}
-                    >
-                      Save Langfuse Settings
-                    </Button>
-                  </SpaceBetween>
-                </Box>
-              </SpaceBetween>
-            )}
+                  )}
+                  <Button
+                    variant="primary"
+                    onClick={handleSaveLangfuse}
+                    loading={savingLangfuse}
+                  >
+                    Save Langfuse Settings
+                  </Button>
+                </SpaceBetween>
+              </Box>
+            </SpaceBetween>
           </Container>
         </SpaceBetween>
       </ContentLayout>

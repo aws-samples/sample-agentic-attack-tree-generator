@@ -48,6 +48,10 @@ def setup_langfuse_otel() -> None:
     host = os.environ.get("LANGFUSE_HOST", "https://cloud.langfuse.com")
 
     if not enabled or not public_key or not secret_key:
+        # Clear any leftover OTEL env vars so a previously-initialized
+        # exporter doesn't keep trying to reach an unreachable host.
+        os.environ.pop("OTEL_EXPORTER_OTLP_ENDPOINT", None)
+        os.environ.pop("OTEL_EXPORTER_OTLP_HEADERS", None)
         return
 
     auth = base64.b64encode(f"{public_key}:{secret_key}".encode()).decode()

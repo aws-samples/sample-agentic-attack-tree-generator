@@ -23,38 +23,13 @@ class ConfigManager:
         self.bundled_config = Path(__file__).parent.parent.parent / "config.yaml"
 
     def migrate_config(self) -> bool:
-        """Merge new entries from the bundled config into an existing user config.
+        """Migrate user config if needed.
 
-        Only adds keys that are missing — never overwrites user customizations.
-        Returns True if the user config was updated.
+        Framework definitions are now driven by the canonical registry in
+        ``threatforest.frameworks`` — no YAML migration is required for
+        new frameworks.  This hook is kept for potential future migrations.
         """
-        if not self.user_config_file.exists() or not self.bundled_config.exists():
-            return False
-
-        with open(self.bundled_config) as f:
-            bundled = yaml.safe_load(f) or {}
-        with open(self.user_config_file) as f:
-            user = yaml.safe_load(f) or {}
-
-        updated = False
-
-        # Merge frameworks: add any new framework keys from bundled config
-        bundled_fw = bundled.get("frameworks", {})
-        user_fw = user.get("frameworks", {})
-        for key, value in bundled_fw.items():
-            if key not in user_fw:
-                user_fw[key] = value
-                updated = True
-                self.console.print(
-                    f"[green]+[/green] Added new framework: [cyan]{value.get('name', key)}[/cyan]"
-                )
-
-        if updated:
-            user["frameworks"] = user_fw
-            with open(self.user_config_file, "w") as f:
-                yaml.dump(user, f, default_flow_style=False, sort_keys=False)
-
-        return updated
+        return False
 
     def init_user_config(self, force: bool = False) -> bool:
         """Initialize user config from bundled default"""

@@ -57,6 +57,12 @@ frameworks:
     stix_bundle: "stix-atlas.json"
     source_name: "mitre-atlas"
     kill_chain_name: "mitre-atlas"
+  wiz:
+    name: "Wiz Cloud Threat Landscape"
+    description: "Cloud-native attack techniques"
+    stix_bundle: "wiz-cloud-threat-landscape.json"
+    source_name: "wiz-cloud-threat-landscape"
+    kill_chain_name: "wiz-cloud-threat-landscape"
 
 # Embeddings settings
 embeddings:

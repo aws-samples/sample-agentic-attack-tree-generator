@@ -231,6 +231,14 @@ class RunManager:
 
         except Exception as exc:
             logger.exception("Run %s failed", run_id)
+            # Persist traceback to file for debugging
+            import traceback as _tb
+            _err_file = Path(f".threatforest/run_error_{run_id}.log")
+            try:
+                _err_file.write_text(_tb.format_exc(), encoding="utf-8")
+                logger.info("Error details written to %s", _err_file)
+            except OSError:
+                pass
             state.status = "failed"
             state.completed_at = datetime.now(tz=timezone.utc).isoformat()
             state.error = str(exc)

@@ -7,6 +7,8 @@ from typing import Any, Dict
 import yaml
 from dotenv import load_dotenv
 
+from threatforest.frameworks import FRAMEWORKS
+
 # Root directory of the ThreatForest project - use __file__ path, not cwd
 # This gives us the repo root: /path/to/ThreatForest-internal
 ROOT_DIR = Path(__file__).parent.parent.parent
@@ -98,24 +100,14 @@ class Config:
 
     @property
     def frameworks(self) -> Dict[str, Dict[str, Any]]:
-        """Get all available framework definitions."""
-        default = {
-            "attack": {
-                "name": "MITRE ATT&CK Enterprise",
-                "description": "835 techniques — cloud, network, endpoint",
-                "stix_bundle": "enterprise-attack-18.0.json",
-                "source_name": "mitre-attack",
-                "kill_chain_name": "mitre-attack",
-            },
-            "atlas": {
-                "name": "MITRE ATLAS",
-                "description": "AI/ML adversarial threats",
-                "stix_bundle": "stix-atlas.json",
-                "source_name": "mitre-atlas",
-                "kill_chain_name": "mitre-atlas",
-            },
-        }
-        return self.get("frameworks", default)
+        """Get all available framework definitions.
+
+        Always returns the canonical set from ``threatforest.frameworks``.
+        User config may override individual framework settings, but the
+        registry in ``frameworks.py`` is the source of truth for which
+        frameworks exist.
+        """
+        return dict(FRAMEWORKS)
 
     @property
     def stix_bundle_path(self) -> Path:

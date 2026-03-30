@@ -145,27 +145,24 @@ async def read_config() -> ConfigResponse:
 
 @router.get("/config/frameworks")
 async def list_frameworks() -> dict:
-    """Return available threat mapping frameworks from config."""
-    import yaml
-    config_path = _resolve_config_path()
+    """Return available threat mapping frameworks.
+
+    Reads directly from the canonical ``threatforest.frameworks`` registry
+    so that all supported frameworks are always visible regardless of
+    what is in the user's config file.
+    """
+    import sys
+
+    tf_src = str(_REPO_ROOT / "src")
+    if tf_src not in sys.path:
+        sys.path.insert(0, tf_src)
+
+    from threatforest.frameworks import FRAMEWORKS  # type: ignore[import-untyped]
+
     frameworks = {
-        "attack": {
-            "name": "MITRE ATT&CK Enterprise",
-            "description": "835 techniques — cloud, network, endpoint",
-        },
-        "atlas": {
-            "name": "MITRE ATLAS",
-            "description": "AI/ML adversarial threats",
-        },
+        k: {"name": v.get("name", k), "description": v.get("description", "")}
+        for k, v in FRAMEWORKS.items()
     }
-    if config_path.is_file():
-        raw = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
-        fw = raw.get("frameworks", {})
-        if fw:
-            frameworks = {
-                k: {"name": v.get("name", k), "description": v.get("description", "")}
-                for k, v in fw.items()
-            }
     return {"frameworks": frameworks}
 
 

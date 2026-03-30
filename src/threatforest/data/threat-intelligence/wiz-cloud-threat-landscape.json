@@ -1,0 +1,4899 @@
+{
+  "type": "bundle",
+  "id": "bundle--3dc42871-bb71-51f8-8056-0b2f1079e7ca",
+  "objects": [
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--b27cb0a3-706b-5af3-85a3-80e9c612408b",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Abuse access to existing KMS key",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/abuse-access-to-existing-kms-key for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "abuse-access-to-existing-kms-key",
+          "url": "https://threats.wiz.io/all-techniques/abuse-access-to-existing-kms-key"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "credential-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--2ac9b7d8-81f5-5232-8df5-c7c8a9b85368",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Abuse naming patterns to guess resource IDs or fingerprint resources",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/abuse-naming-patterns-to-guess-resource-ids-or-fingerprint-resources for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "abuse-naming-patterns-to-guess-resource-ids-or-fingerprint-resources",
+          "url": "https://threats.wiz.io/all-techniques/abuse-naming-patterns-to-guess-resource-ids-or-fingerprint-resources"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "discovery"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--f121a911-730c-5b64-8490-4ef8e68a007c",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Abuse of cross-job access in CI/CD system",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/abuse-of-cross-job-access-in-cicd-system for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "abuse-of-cross-job-access-in-cicd-system",
+          "url": "https://threats.wiz.io/all-techniques/abuse-of-cross-job-access-in-cicd-system"
+        }
+      ],
+      "x_mitre_platforms": [
+        "CI/CD"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--c6c97574-3525-5a56-a6de-6e471402235e",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Abuse trust and privileges across accounts",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/abuse-trust-and-privileges-across-accounts for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "abuse-trust-and-privileges-across-accounts",
+          "url": "https://threats.wiz.io/all-techniques/abuse-trust-and-privileges-across-accounts"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "lateral-movement"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--e51bce02-0c12-5734-8b10-1497febdf151",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Abusing exposed Docker socket",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/abusing-exposed-docker-socket for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "abusing-exposed-docker-socket",
+          "url": "https://threats.wiz.io/all-techniques/abusing-exposed-docker-socket"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "K8s"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--febf5e04-dd8c-59c7-90b0-9f7b56fd2ba8",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Add attacker-controlled IdP via ADFS access",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/add-attacker-controlled-idp-via-adfs-access for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "add-attacker-controlled-idp-via-adfs-access",
+          "url": "https://threats.wiz.io/all-techniques/add-attacker-controlled-idp-via-adfs-access"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "lateral-movement"
+        }
+      ],
+      "x_mitre_platforms": [
+        "AAD"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--6c754e13-8b6d-56e8-831a-8075d24fce71",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "App Script impersonation",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/app-script-impersonation for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "app-script-impersonation",
+          "url": "https://threats.wiz.io/all-techniques/app-script-impersonation"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "persistence"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--7db50e15-13ae-5c6b-955f-68cf97a69e99",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Appstream abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/appstream-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "appstream-abuse",
+          "url": "https://threats.wiz.io/all-techniques/appstream-abuse"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--8f311f89-9979-5478-b50b-43d0f2e78dcf",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Attach administrative role to account",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/attach-administrative-role-to-account for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "attach-administrative-role-to-account",
+          "url": "https://threats.wiz.io/all-techniques/attach-administrative-role-to-account"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--ff38ae87-ce22-5e4b-855f-2bcb34092e32",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Auth token signing via ADFS access",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/auth-token-signing-via-adfs-access for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "auth-token-signing-via-adfs-access",
+          "url": "https://threats.wiz.io/all-techniques/auth-token-signing-via-adfs-access"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "lateral-movement"
+        }
+      ],
+      "x_mitre_platforms": [
+        "AAD"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--5361c009-2c36-5bb7-bb22-e17d6dbcb75d",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Auth token signing via Golden SAML",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/auth-token-signing-via-golden-saml for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "auth-token-signing-via-golden-saml",
+          "url": "https://threats.wiz.io/all-techniques/auth-token-signing-via-golden-saml"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "lateral-movement"
+        },
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "credential-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "AAD"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--87649487-86ee-58ff-acc9-46b0776747aa",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Azure AD abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/azure-ad-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "azure-ad-abuse",
+          "url": "https://threats.wiz.io/all-techniques/azure-ad-abuse"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud",
+        "AAD"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--d1f75cb1-25da-5727-be9b-eb64a132b342",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Azure Arc abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/azure-arc-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "azure-arc-abuse",
+          "url": "https://threats.wiz.io/all-techniques/azure-arc-abuse"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "persistence"
+        },
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "execution"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--49d79850-52f2-5815-bb90-4b9ca6547f9f",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Azure Batch abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/azure-batch-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "azure-batch-abuse",
+          "url": "https://threats.wiz.io/all-techniques/azure-batch-abuse"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--d32064e6-2d31-5a90-a6cc-083d19d59d3c",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Azure cross-tenant synchronization backdoor",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/azure-cross-tenant-synchronization-backdoor for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "azure-cross-tenant-synchronization-backdoor",
+          "url": "https://threats.wiz.io/all-techniques/azure-cross-tenant-synchronization-backdoor"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "persistence"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud",
+        "AAD"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--4001fceb-93cb-56c2-9630-4df2633a297b",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Azure lateral movement via cross-tenant synchronization",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/azure-lateral-movement-via-cross-tenant-synchronization for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "azure-lateral-movement-via-cross-tenant-synchronization",
+          "url": "https://threats.wiz.io/all-techniques/azure-lateral-movement-via-cross-tenant-synchronization"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "lateral-movement"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud",
+        "AAD"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--14cfdc0c-59c0-5e15-b3dd-dfc74fd20448",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Azure Run Commands abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/azure-run-commands-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "azure-run-commands-abuse",
+          "url": "https://threats.wiz.io/all-techniques/azure-run-commands-abuse"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "execution"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--e544f7d7-4fb7-5f81-aa4e-1b749cf5311e",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Backdoor AMI",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/backdoor-ami for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "backdoor-ami",
+          "url": "https://threats.wiz.io/all-techniques/backdoor-ami"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--63f676f1-cf30-5e66-bd95-2918f65052e8",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Backdoor Docker image",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/backdoor-docker-image for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "backdoor-docker-image",
+          "url": "https://threats.wiz.io/all-techniques/backdoor-docker-image"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "K8s"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--16fb0be5-a70f-5bec-8371-73aa7654039d",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Backdoor IaC (StackSet, Terraform, etc.)",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/backdoor-iac-stackset-etc for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "backdoor-iac-stackset-etc",
+          "url": "https://threats.wiz.io/all-techniques/backdoor-iac-stackset-etc"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--6c7fabe0-68b3-5c06-a4d6-2768e46a5239",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Backdoor Lambda Layer",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/backdoor-lambda-layer for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "backdoor-lambda-layer",
+          "url": "https://threats.wiz.io/all-techniques/backdoor-lambda-layer"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--b7398c56-b59a-56b7-a037-0abb7008c8cd",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Bootkit",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/bootkit for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "bootkit",
+          "url": "https://threats.wiz.io/all-techniques/bootkit"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "persistence"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Linux",
+        "Windows"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--3294da11-eb67-5214-8d35-925f113833e0",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Bring Your Own Vulnerable Driver",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/bring-your-own-vulnerable-driver for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "bring-your-own-vulnerable-driver",
+          "url": "https://threats.wiz.io/all-techniques/bring-your-own-vulnerable-driver"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "execution"
+        },
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "privilege-escalation"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Windows"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--2e40a322-a5ec-5e52-b12c-32c3f8f13bb2",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Bucket / storage ransomware",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/s3-bucket-ransomware for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "s3-bucket-ransomware",
+          "url": "https://threats.wiz.io/all-techniques/s3-bucket-ransomware"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "impact"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud",
+        "Ransomware"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--1f20a0ab-d1c6-5a51-9ff6-988f775234cc",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Bucket name squatting attack",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/bucket-name-squatting-attack for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "bucket-name-squatting-attack",
+          "url": "https://threats.wiz.io/all-techniques/bucket-name-squatting-attack"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--532585af-5521-5262-a52a-966d142482b7",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "cAdvisor abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/cadvisor-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "cadvisor-abuse",
+          "url": "https://threats.wiz.io/all-techniques/cadvisor-abuse"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "reconnaissance"
+        },
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "credential-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "App Misconfig."
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--407d2be4-8279-56d1-a0ef-a1ef3ddf443d",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "CI/CD system enumeration",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/cicd-system-enumeration for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "cicd-system-enumeration",
+          "url": "https://threats.wiz.io/all-techniques/cicd-system-enumeration"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "discovery"
+        }
+      ],
+      "x_mitre_platforms": [
+        "CI/CD"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--4d1f4715-1130-56ff-ae28-53267efdc573",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Cleartext cloud keys abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/cleartext-cloud-keys-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "cleartext-cloud-keys-abuse",
+          "url": "https://threats.wiz.io/all-techniques/cleartext-cloud-keys-abuse"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--9393e515-74e7-56d2-8616-52b819d3b16f",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Cloud account password reset",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/cloud-account-password-reset for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "cloud-account-password-reset",
+          "url": "https://threats.wiz.io/all-techniques/cloud-account-password-reset"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--eac14138-691f-58da-aa2c-c37112be34bf",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Cloud API enumeration",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/cloud-enumeration for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "cloud-enumeration",
+          "url": "https://threats.wiz.io/all-techniques/cloud-enumeration"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "reconnaissance"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--cdc385c6-e6ea-5ece-8ef5-bfdbff24960b",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Cloud compute cryptojacking",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/compute-cryptojacking for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "compute-cryptojacking",
+          "url": "https://threats.wiz.io/all-techniques/compute-cryptojacking"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "impact"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud",
+        "K8s"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--faf4d074-f23a-5aee-95c3-c34a5e1c0460",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Cloud key compromise",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/cloud-key-compromise for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "cloud-key-compromise",
+          "url": "https://threats.wiz.io/all-techniques/cloud-key-compromise"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "credential-access"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--31c95531-1985-5d44-ba3e-b55da0ac0d69",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Cloud storage cryptojacking",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/cloud-storage-cryptojacking for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "cloud-storage-cryptojacking",
+          "url": "https://threats.wiz.io/all-techniques/cloud-storage-cryptojacking"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "impact"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--508ab3dd-f332-5f27-b2c5-c3cfb508ce49",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Cloud to on-prem lateral movement",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/cloud-to-on-prem-lateral-movement for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "cloud-to-on-prem-lateral-movement",
+          "url": "https://threats.wiz.io/all-techniques/cloud-to-on-prem-lateral-movement"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--85da6914-4e10-58f4-8785-820117316ea6",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Cloud-init persistence",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/cloud-init-persistence for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "cloud-init-persistence",
+          "url": "https://threats.wiz.io/all-techniques/cloud-init-persistence"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "persistence"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--57ade1ea-32e5-53ad-a9bf-fd3353d9f359",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Cluster anonymous access",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/cluster-anonymous-access for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "cluster-anonymous-access",
+          "url": "https://threats.wiz.io/all-techniques/cluster-anonymous-access"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "K8s"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--4822d8ca-bf76-5f11-a3b2-545542352aba",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Command execution via Lambda",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/command-execution-via-lambda for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "command-execution-via-lambda",
+          "url": "https://threats.wiz.io/all-techniques/command-execution-via-lambda"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--64730076-7451-5542-a1d4-2286d830c1b3",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Container enumeration",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/container-enumeration for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "container-enumeration",
+          "url": "https://threats.wiz.io/all-techniques/container-enumeration"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "discovery"
+        }
+      ],
+      "x_mitre_platforms": [
+        "K8s"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--dd25ef7c-02d2-5b2a-96c9-f46538fbd5f2",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Container escape",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/container-escape for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "container-escape",
+          "url": "https://threats.wiz.io/all-techniques/container-escape"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--bb0c352f-dc2a-56e4-b3d5-7d6a42949db2",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Create an IAM Roles Anywhere trust anchor",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/create-an-iam-roles-anywhere-trust-anchor for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "create-an-iam-roles-anywhere-trust-anchor",
+          "url": "https://threats.wiz.io/all-techniques/create-an-iam-roles-anywhere-trust-anchor"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--498082ca-6639-515b-a24e-373ab1208c56",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Create new application user",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/create-new-application-user for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "create-new-application-user",
+          "url": "https://threats.wiz.io/all-techniques/create-new-application-user"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--6ee5d87d-b216-5a4d-8fb6-11e1a056a4c0",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Create new cloud user",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/create-new-cloud-admin-user for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "create-new-cloud-admin-user",
+          "url": "https://threats.wiz.io/all-techniques/create-new-cloud-admin-user"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "persistence"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--175d3eeb-0d36-5a17-b308-f95008927c17",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Create new local user",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/create-new-local-user for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "create-new-local-user",
+          "url": "https://threats.wiz.io/all-techniques/create-new-local-user"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "persistence"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Linux",
+        "Windows"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--1f70c0e2-5197-5ff7-94f3-8dfab270635c",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Create or modify cloud key",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/create-or-modify-cloud-key for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "create-or-modify-cloud-key",
+          "url": "https://threats.wiz.io/all-techniques/create-or-modify-cloud-key"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "persistence"
+        },
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "credential-access"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--da13dbcb-aa6c-5b52-b265-ceef681eff3c",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Create or modify firewall or security group rules",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/create-or-modify-firewall-or-security-group-rules for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "create-or-modify-firewall-or-security-group-rules",
+          "url": "https://threats.wiz.io/all-techniques/create-or-modify-firewall-or-security-group-rules"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "defense-evasion"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--48008db9-e2a5-50f8-b94f-2ec4d5d15f29",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Create SSH backdoor",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/create-ssh-backdoor for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "create-ssh-backdoor",
+          "url": "https://threats.wiz.io/all-techniques/create-ssh-backdoor"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "persistence"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--45f2592e-4146-5569-bb93-87e186ff6328",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Credential compromise via Infostealer infection",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/credential-compromise-via-infostealer-infection for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "credential-compromise-via-infostealer-infection",
+          "url": "https://threats.wiz.io/all-techniques/credential-compromise-via-infostealer-infection"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--f7d81ee3-f800-50fc-b762-e4fb1d93d570",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Credential harvesting from code repository",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/credential-harvesting-from-code-repository for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "credential-harvesting-from-code-repository",
+          "url": "https://threats.wiz.io/all-techniques/credential-harvesting-from-code-repository"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "credential-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "CI/CD"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--e5e72e2d-ce06-5b9a-830d-89935556485e",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Credential stuffing",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/credential-stuffing for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "credential-stuffing",
+          "url": "https://threats.wiz.io/all-techniques/credential-stuffing"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud",
+        "Linux"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--dd15e6c3-9fbf-549c-8687-615f18b29c48",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Credential theft",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/steal-credentials for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "steal-credentials",
+          "url": "https://threats.wiz.io/all-techniques/steal-credentials"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "credential-access"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--70c6de3e-a118-5b8f-9c60-19dc12ffa014",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Cron persistence",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/cron-persistence for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "cron-persistence",
+          "url": "https://threats.wiz.io/all-techniques/cron-persistence"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "persistence"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--67a09e13-bcbf-52e7-a541-02e9b89c92e6",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Custom ELF loaders",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/custom-elf-loaders for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "custom-elf-loaders",
+          "url": "https://threats.wiz.io/all-techniques/custom-elf-loaders"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--7155da30-0384-519e-9a05-adcc13d00d51",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Dangling DNS takeover",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/dangling-dns-takeover for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "dangling-dns-takeover",
+          "url": "https://threats.wiz.io/all-techniques/dangling-dns-takeover"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "resource-development"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Network"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--d9227f8e-c01c-50cc-b74d-2701b98aa27a",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Data exfiltration from cloud storage",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/data-exfiltration-from-cloud-storage for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "data-exfiltration-from-cloud-storage",
+          "url": "https://threats.wiz.io/all-techniques/data-exfiltration-from-cloud-storage"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--324918c6-0811-5b27-9ea3-3ed72c38b8f8",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Database ransomware",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/database-ransomware for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "database-ransomware",
+          "url": "https://threats.wiz.io/all-techniques/database-ransomware"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "impact"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Ransomware"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--74709eac-cbe2-5fcc-ac6d-e9051a171e48",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "DCSync attack",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/dcsync-attack for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "dcsync-attack",
+          "url": "https://threats.wiz.io/all-techniques/dcsync-attack"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--48482c5b-1196-596f-b6d2-2d7c1333c0ce",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "DDoS attack",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/ddos-attack for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "ddos-attack",
+          "url": "https://threats.wiz.io/all-techniques/ddos-attack"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--031e6c0f-2bc5-59f8-bf43-6faa5359bdcd",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Delete compute snapshot",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/delete-compute-snapshot for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "delete-compute-snapshot",
+          "url": "https://threats.wiz.io/all-techniques/delete-compute-snapshot"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--ced20fcb-055d-550d-aa8c-b71f6b2bc104",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Direct Kernel object manipulation",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/direct-kernel-object-manipulation for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "direct-kernel-object-manipulation",
+          "url": "https://threats.wiz.io/all-techniques/direct-kernel-object-manipulation"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--c098953a-9a55-52e7-aa19-82abdad722ff",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Disable anti-virus",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/disable-anti-virus for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "disable-anti-virus",
+          "url": "https://threats.wiz.io/all-techniques/disable-anti-virus"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--b15e54a3-ace4-58e0-b91e-b9f9fb4d4b43",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Disable logging",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/disable-logging for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "disable-logging",
+          "url": "https://threats.wiz.io/all-techniques/disable-logging"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "defense-evasion"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--67c1ced7-85f0-505c-b0d9-9cb4d5957afe",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Discover origin IP of fronted domain",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/discover-origin-ip-of-fronted-domain for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "discover-origin-ip-of-fronted-domain",
+          "url": "https://threats.wiz.io/all-techniques/discover-origin-ip-of-fronted-domain"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "discovery"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Network"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--3fe8cd9a-80f0-57a6-9c23-9a6b92eac95a",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Disk Wipe",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/disk-wipe for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "disk-wipe",
+          "url": "https://threats.wiz.io/all-techniques/disk-wipe"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "impact"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--d46513ff-49d9-501a-9ed5-7c89f988ce63",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "DLL search order hijacking",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/dll-search-order-hijacking for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "dll-search-order-hijacking",
+          "url": "https://threats.wiz.io/all-techniques/dll-search-order-hijacking"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "execution"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--5c29bf6f-7333-58c9-897b-fad6359d1876",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "DLL Side-Loading",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/dll-side-loading for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "dll-side-loading",
+          "url": "https://threats.wiz.io/all-techniques/dll-side-loading"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--afdf8d96-52d7-5be1-8fa1-726f3804d817",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "DNS tunneling",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/dns-tunneling for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "dns-tunneling",
+          "url": "https://threats.wiz.io/all-techniques/dns-tunneling"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--8d3c87be-39d7-5977-862d-ee3dada61e0b",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "DNS-over-HTTPS (DoH)",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/dns-over-https-doh for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "dns-over-https-doh",
+          "url": "https://threats.wiz.io/all-techniques/dns-over-https-doh"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "command-and-control"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--c0aaa7fa-8fdc-557e-9a4b-105ec3398a1c",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Domain registration abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/domain-registration-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "domain-registration-abuse",
+          "url": "https://threats.wiz.io/all-techniques/domain-registration-abuse"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--6a5993ab-f193-52bd-8511-a4070ccb03e5",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "EDR whitelisting",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/edr-whitelisting for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "edr-whitelisting",
+          "url": "https://threats.wiz.io/all-techniques/edr-whitelisting"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--399eb3ba-d5d0-5352-aee7-51813ab232e2",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Email C2",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/email-c2 for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "email-c2",
+          "url": "https://threats.wiz.io/all-techniques/email-c2"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--e410d1ae-eb86-5e28-8f80-4dc1565fd6b2",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Email server hijacking",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/email-server-hijacking for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "email-server-hijacking",
+          "url": "https://threats.wiz.io/all-techniques/email-server-hijacking"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "impact"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Supply Chain"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--96648b41-dd5c-5b1a-9d00-d2527777f1ea",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Erase logs",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/erase-logs for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "erase-logs",
+          "url": "https://threats.wiz.io/all-techniques/erase-logs"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "defense-evasion"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--25e4a74f-745d-5257-a5f5-e8b748459b32",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Escape to host via cgroups release_agent",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/escape-to-host-via-cgroups-releaseagent for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "escape-to-host-via-cgroups-releaseagent",
+          "url": "https://threats.wiz.io/all-techniques/escape-to-host-via-cgroups-releaseagent"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "privilege-escalation"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Linux"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--30f31a21-76aa-5374-b78e-d02cfc156ddd",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Evasive username patterns",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/evasive-username-patterns for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "evasive-username-patterns",
+          "url": "https://threats.wiz.io/all-techniques/evasive-username-patterns"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--d2e0142a-fd5f-563c-9638-d4ce54381444",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Execute Command on VM using Custom Script Extension",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/execute-command-on-vm-using-custom-script-extension for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "execute-command-on-vm-using-custom-script-extension",
+          "url": "https://threats.wiz.io/all-techniques/execute-command-on-vm-using-custom-script-extension"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "execution"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--07ed2094-fd13-54ef-bc18-7a5c8a9c0f35",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Exfiltration via AWS DataSync",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/exfiltration-via-aws-datasync for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "exfiltration-via-aws-datasync",
+          "url": "https://threats.wiz.io/all-techniques/exfiltration-via-aws-datasync"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "exfiltration"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--faa30eb7-ad21-567b-9359-c5f8d14bafc4",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Exfiltration via AWS Transfer",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/exfiltration-via-aws-transfer for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "exfiltration-via-aws-transfer",
+          "url": "https://threats.wiz.io/all-techniques/exfiltration-via-aws-transfer"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "exfiltration"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--c4207337-3df6-5427-88ba-49d9b62052d2",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Exploiting BPF load to escape to host",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/exploiting-bpf-load-to-escape-to-host for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "exploiting-bpf-load-to-escape-to-host",
+          "url": "https://threats.wiz.io/all-techniques/exploiting-bpf-load-to-escape-to-host"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "privilege-escalation"
+        }
+      ],
+      "x_mitre_platforms": [
+        "K8s"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--aa7e3a93-abcd-5ce5-9bb3-6e557099071d",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Exploiting host mount to escape to host",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/exploiting-host-mount-to-escape-to-host for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "exploiting-host-mount-to-escape-to-host",
+          "url": "https://threats.wiz.io/all-techniques/exploiting-host-mount-to-escape-to-host"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "privilege-escalation"
+        }
+      ],
+      "x_mitre_platforms": [
+        "K8s"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--566b7bff-eac6-5376-b688-d667152e343a",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Export disk via SAS URL",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/export-disk-through-sas-url for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "export-disk-through-sas-url",
+          "url": "https://threats.wiz.io/all-techniques/export-disk-through-sas-url"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "exfiltration"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--218eda1c-1a6d-538b-816e-52e19b5902b1",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Exposed ComfyUI abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/exposed-comfyui-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "exposed-comfyui-abuse",
+          "url": "https://threats.wiz.io/all-techniques/exposed-comfyui-abuse"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--a7ca565e-e8b6-52c7-9e43-b19c990a0272",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Exposed environment config abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/exposed-environment-config-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "exposed-environment-config-abuse",
+          "url": "https://threats.wiz.io/all-techniques/exposed-environment-config-abuse"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--689babef-6c76-5d7b-9fff-fd042c7de8ec",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Exposed git config files abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/exposed-git-config-files-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "exposed-git-config-files-abuse",
+          "url": "https://threats.wiz.io/all-techniques/exposed-git-config-files-abuse"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "credential-access"
+        },
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "reconnaissance"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--bce14d3e-5e70-5818-add1-4aca01b6f14a",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Exposed resource abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/exposed-resource-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "exposed-resource-abuse",
+          "url": "https://threats.wiz.io/all-techniques/exposed-resource-abuse"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--e2ab9efe-e8c1-594d-9cea-6b4aacabf170",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Exposed resource abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/exposed-resource-abuse-1 for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "exposed-resource-abuse-1",
+          "url": "https://threats.wiz.io/all-techniques/exposed-resource-abuse-1"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--a0e8c0f2-8e73-5383-934f-d716d2b941c7",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Extract credentials from resource tags",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/extract-credentials-from-resource-tags for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "extract-credentials-from-resource-tags",
+          "url": "https://threats.wiz.io/all-techniques/extract-credentials-from-resource-tags"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "credential-access"
+        },
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "lateral-movement"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--4ce5501d-8a53-557a-bf2b-8e40ef228bdc",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "FTP access",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/ftp-access for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "ftp-access",
+          "url": "https://threats.wiz.io/all-techniques/ftp-access"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--c3c3d5a0-ca16-5dc8-8ab3-5e89742192c6",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Gift card fraud",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/gift-card-fraud for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "gift-card-fraud",
+          "url": "https://threats.wiz.io/all-techniques/gift-card-fraud"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--dcf91cca-88f2-5204-9f0d-4adb7e673ddc",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Git commit timestamp forgery",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/git-commit-timestamp-forgery for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "git-commit-timestamp-forgery",
+          "url": "https://threats.wiz.io/all-techniques/git-commit-timestamp-forgery"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--0f7dc5f3-498f-5a5c-a253-33c8f411206e",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Global socket communication",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/global-socket-communication for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "global-socket-communication",
+          "url": "https://threats.wiz.io/all-techniques/global-socket-communication"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "command-and-control"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Network"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--1ddfd5c9-4dcc-5b16-a956-f79b17dedc5c",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "IAM privilege escalation",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/iam-privilege-escalation for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "iam-privilege-escalation",
+          "url": "https://threats.wiz.io/all-techniques/iam-privilege-escalation"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "privilege-escalation"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud",
+        "Authentication"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--2a10bab8-180b-57ad-b08f-5cc60b7e21d8",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "IIS native module malware",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/iis-native-module-malware for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "iis-native-module-malware",
+          "url": "https://threats.wiz.io/all-techniques/iis-native-module-malware"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--4438f163-a3e8-5cc1-bc06-cb587fbf821e",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Image dependency confusion",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/image-dependency-confusion for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "image-dependency-confusion",
+          "url": "https://threats.wiz.io/all-techniques/image-dependency-confusion"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Supply Chain",
+        "K8s"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--f8232c3b-9801-5104-a72b-2e1c609c4ed7",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "IMDS abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/imds-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "imds-abuse",
+          "url": "https://threats.wiz.io/all-techniques/imds-abuse"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "credential-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--9c38caa7-9c88-5cee-b20f-5fa8c0846472",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Impersonate GCP Service Accounts",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/impersonate-gcp-service-accounts for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "impersonate-gcp-service-accounts",
+          "url": "https://threats.wiz.io/all-techniques/impersonate-gcp-service-accounts"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "privilege-escalation"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--e4daea6a-d0c5-5341-8497-1f32f20ab85a",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "In-band signaling",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/in-band-signaling for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "in-band-signaling",
+          "url": "https://threats.wiz.io/all-techniques/in-band-signaling"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--ac9c72e1-b4ce-5dd7-a746-5c6840624b82",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Intune abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/intune-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "intune-abuse",
+          "url": "https://threats.wiz.io/all-techniques/intune-abuse"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "execution"
+        },
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "persistence"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--7fa01f17-f863-53e1-87c7-1cd21ba67f2c",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Jira ScriptRunner abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/jira-scriptrunner-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "jira-scriptrunner-abuse",
+          "url": "https://threats.wiz.io/all-techniques/jira-scriptrunner-abuse"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--94ec5943-e6fd-5ef9-84e4-9e98635f8ea8",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Jupyter Notebook misconfig abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/jupyter-notebook-misconfig-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "jupyter-notebook-misconfig-abuse",
+          "url": "https://threats.wiz.io/all-techniques/jupyter-notebook-misconfig-abuse"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        },
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "privilege-escalation"
+        }
+      ],
+      "x_mitre_platforms": [
+        "App Misconfig."
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--6ad6f716-b0a6-5402-9f8a-e669e74a13fb",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Jupyter Notebook ransomware",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/jupyter-notebook-ransomware for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "jupyter-notebook-ransomware",
+          "url": "https://threats.wiz.io/all-techniques/jupyter-notebook-ransomware"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "impact"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Ransomware"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--0b758d2b-6b2c-5688-81f9-03778361a2b7",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "K8s anonymous auth abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/k8s-anonymous-auth-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "k8s-anonymous-auth-abuse",
+          "url": "https://threats.wiz.io/all-techniques/k8s-anonymous-auth-abuse"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "K8s",
+        "Authentication"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--e392eabe-4ff0-52b3-ad62-8830b9515015",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Lambda persistence",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/lambda-persistence for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "lambda-persistence",
+          "url": "https://threats.wiz.io/all-techniques/lambda-persistence"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "persistence"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--9adadb59-2104-5e0b-9af7-59121c8a570d",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Launch new cloud resources",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/launch-new-cloud-resources for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "launch-new-cloud-resources",
+          "url": "https://threats.wiz.io/all-techniques/launch-new-cloud-resources"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--987b3895-e5f9-59f6-8411-7e355bc24586",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Linux fileless malware",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/linux-fileless-malware for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "linux-fileless-malware",
+          "url": "https://threats.wiz.io/all-techniques/linux-fileless-malware"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "persistence"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Linux"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--5a80d2d3-ddf6-54a2-9388-44acad9e17df",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "LLM Prompt Injection",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/llm-prompt-injection for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "llm-prompt-injection",
+          "url": "https://threats.wiz.io/all-techniques/llm-prompt-injection"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "AI/ML"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--39abcb3f-d9ac-52ce-8745-bedcb01360ce",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "LLMjacking",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/llmjacking for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "llmjacking",
+          "url": "https://threats.wiz.io/all-techniques/llmjacking"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--d3eac12f-cdfc-5f7b-8a4a-d01ce4a024d9",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Local privilege escalation via vulnerability exploitation",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/local-privilege-escalation-via-vulnerability-exploitation for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "local-privilege-escalation-via-vulnerability-exploitation",
+          "url": "https://threats.wiz.io/all-techniques/local-privilege-escalation-via-vulnerability-exploitation"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--764ac8c7-b7a2-5233-9dd2-c1688b6c6ce8",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "LOLBin abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/lolbin-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "lolbin-abuse",
+          "url": "https://threats.wiz.io/all-techniques/lolbin-abuse"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "defense-evasion"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Windows"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--a9b83f60-e7b6-5253-a348-a22bb0c3cbbe",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "LSASS dumping",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/lsass-dumping for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "lsass-dumping",
+          "url": "https://threats.wiz.io/all-techniques/lsass-dumping"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "credential-access"
+        },
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "privilege-escalation"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Windows"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--fbbb50ac-884f-561e-b8fa-319681ea449e",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Malicious AI model",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/malicious-ai-model for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "malicious-ai-model",
+          "url": "https://threats.wiz.io/all-techniques/malicious-ai-model"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "ml-attack-staging"
+        }
+      ],
+      "x_mitre_platforms": [
+        "AI/ML"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--e7a842a4-9a70-57ba-8d6b-eff47c054fcb",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Malicious Github Runner",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/malicious-github-runner for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "malicious-github-runner",
+          "url": "https://threats.wiz.io/all-techniques/malicious-github-runner"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--0955f218-43aa-5bcf-b477-b98fc7239d1b",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Malicious pull request submission",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/malicious-pull-request-submission for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "malicious-pull-request-submission",
+          "url": "https://threats.wiz.io/all-techniques/malicious-pull-request-submission"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--7840b3ba-cdbe-53fa-9586-31d0edd723e2",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Malicious Terraform provider or module",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/malicious-terraform-provider-or-module for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "malicious-terraform-provider-or-module",
+          "url": "https://threats.wiz.io/all-techniques/malicious-terraform-provider-or-module"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Supply Chain",
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--b02ef619-9906-5bb3-a505-569d16bfb1a7",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Malvertising",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/malvertising for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "malvertising",
+          "url": "https://threats.wiz.io/all-techniques/malvertising"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--eb3c129b-13a4-515f-8e47-ff0f8d111416",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "MFA bypass",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/mfa-bypass for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "mfa-bypass",
+          "url": "https://threats.wiz.io/all-techniques/mfa-bypass"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--6da2b2cb-8b86-5498-b321-19d880062288",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "MFA enrollment",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/mfa-enrollment for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "mfa-enrollment",
+          "url": "https://threats.wiz.io/all-techniques/mfa-enrollment"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "persistence"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Authentication"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--db9348c5-fc35-5620-9355-e605dd8e6c2a",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "MFA prompt spam",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/mfa-prompt-spam for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "mfa-prompt-spam",
+          "url": "https://threats.wiz.io/all-techniques/mfa-prompt-spam"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Authentication",
+        "Social Eng."
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--3b92272a-cea4-53e3-a18c-d7f7645b1a46",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Misconfigured Apache Hadoop abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/misconfigured-apache-hadoop for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "misconfigured-apache-hadoop",
+          "url": "https://threats.wiz.io/all-techniques/misconfigured-apache-hadoop"
+        }
+      ],
+      "x_mitre_platforms": [
+        "App Misconfig."
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--65332f79-8d56-526d-9184-7d520ea00ab8",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Misconfigured Argo abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/misconfigured-argo-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "misconfigured-argo-abuse",
+          "url": "https://threats.wiz.io/all-techniques/misconfigured-argo-abuse"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "App Misconfig."
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--d6912ba3-9411-5014-8cdf-3fa9db5184b9",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Misconfigured Consul abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/misconfigured-consul-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "misconfigured-consul-abuse",
+          "url": "https://threats.wiz.io/all-techniques/misconfigured-consul-abuse"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "App Misconfig."
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--18b6c02f-085f-5de9-a0d5-09ee3402188e",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Misconfigured DB abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/misconfigured-db-abuse-eg-postgresql for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "misconfigured-db-abuse-eg-postgresql",
+          "url": "https://threats.wiz.io/all-techniques/misconfigured-db-abuse-eg-postgresql"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "App Misconfig."
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--6bd73d8d-b71d-51a0-bef7-9939a36919aa",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Misconfigured Docker abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/misconfigured-docker for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "misconfigured-docker",
+          "url": "https://threats.wiz.io/all-techniques/misconfigured-docker"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "App Misconfig."
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--782b0522-68a4-5851-8f60-74ffbd9f71c7",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Misconfigured Gitea Abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/misconfigured-gitea-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "misconfigured-gitea-abuse",
+          "url": "https://threats.wiz.io/all-techniques/misconfigured-gitea-abuse"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        },
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "privilege-escalation"
+        }
+      ],
+      "x_mitre_platforms": [
+        "App Misconfig."
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--97d826fa-2f0b-54d5-aefa-14e66b7d8f10",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Misconfigured GitHub Action abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/misconfigured-github-action-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "misconfigured-github-action-abuse",
+          "url": "https://threats.wiz.io/all-techniques/misconfigured-github-action-abuse"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--8def864f-b35d-5998-8d72-25ff884c9539",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Misconfigured GitHub Runner abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/misconfigured-github-runner-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "misconfigured-github-runner-abuse",
+          "url": "https://threats.wiz.io/all-techniques/misconfigured-github-runner-abuse"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--32573c62-1796-5780-a119-0782cd78cc4d",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Misconfigured KubeFlow abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/misconfigured-kubeflow-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "misconfigured-kubeflow-abuse",
+          "url": "https://threats.wiz.io/all-techniques/misconfigured-kubeflow-abuse"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "App Misconfig.",
+        "K8s"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--0543b8b4-5697-5936-b0d4-79b0d2a7d9ad",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Misconfigured Nomad abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/misconfigured-nomad-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "misconfigured-nomad-abuse",
+          "url": "https://threats.wiz.io/all-techniques/misconfigured-nomad-abuse"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--1260dcce-514f-593f-a3a0-6977dfa27a5c",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Misconfigured OIDC service account abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/misconfigured-oidc-service-account-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "misconfigured-oidc-service-account-abuse",
+          "url": "https://threats.wiz.io/all-techniques/misconfigured-oidc-service-account-abuse"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        },
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "credential-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud",
+        "CI/CD"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--636db1f8-7b8e-502e-ad9d-07c8e8263f0a",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Misconfigured PostgreSQL abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/misconfigured-postgresql-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "misconfigured-postgresql-abuse",
+          "url": "https://threats.wiz.io/all-techniques/misconfigured-postgresql-abuse"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--14885b76-be0b-5180-8f0d-b39349a86858",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Misconfigured Power Pages abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/misconfigured-power-pages-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "misconfigured-power-pages-abuse",
+          "url": "https://threats.wiz.io/all-techniques/misconfigured-power-pages-abuse"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "exfiltration"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--0d0b0f01-0b87-5be8-84d6-e46e9fad9b2e",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Misconfigured Redis abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/misconfigured-redis-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "misconfigured-redis-abuse",
+          "url": "https://threats.wiz.io/all-techniques/misconfigured-redis-abuse"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "App Misconfig."
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--eae0fd58-62d6-5fb9-a356-2dda2e844484",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Misconfigured Selenium Grid abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/misconfigured-selenium-grid-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "misconfigured-selenium-grid-abuse",
+          "url": "https://threats.wiz.io/all-techniques/misconfigured-selenium-grid-abuse"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "App Misconfig."
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--f24a36a6-e67f-54f6-a058-24c4713c652e",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Misconfigured SSH abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/misconfigured-ssh-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "misconfigured-ssh-abuse",
+          "url": "https://threats.wiz.io/all-techniques/misconfigured-ssh-abuse"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        },
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "lateral-movement"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Linux",
+        "OS Misconfig.",
+        "Network",
+        "Authentication"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--08e649af-99b2-5f0b-8f6d-0c961af0e27b",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Misconfigured WebLogic abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/misconfigured-weblogic-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "misconfigured-weblogic-abuse",
+          "url": "https://threats.wiz.io/all-techniques/misconfigured-weblogic-abuse"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--d27fecba-fef9-528b-bd2f-1bf0faed0e9c",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Misconfigured Wordpress abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/misconfigured-wordpress-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "misconfigured-wordpress-abuse",
+          "url": "https://threats.wiz.io/all-techniques/misconfigured-wordpress-abuse"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "App Misconfig."
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--f4bb8197-48c7-5bca-9951-df1b9fd06350",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Modify compute startup script",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/modify-compute-startup-script for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "modify-compute-startup-script",
+          "url": "https://threats.wiz.io/all-techniques/modify-compute-startup-script"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--745fd4a0-5aba-5ff3-8330-f9a0b74f2371",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Modify existing IAM user or role",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/modify-existing-iam-user-or-role for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "modify-existing-iam-user-or-role",
+          "url": "https://threats.wiz.io/all-techniques/modify-existing-iam-user-or-role"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "persistence"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--5cafe9a9-7340-55a9-b8c1-ae27949bb042",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Modify VPC / subnet / security group configuration",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/modify-vpc-subnet-security-group-configuration for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "modify-vpc-subnet-security-group-configuration",
+          "url": "https://threats.wiz.io/all-techniques/modify-vpc-subnet-security-group-configuration"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "persistence"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--b8ad7cad-f6ed-5f43-a93e-ff31af9a8230",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Network lateral movement",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/network-lateral-movement for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "network-lateral-movement",
+          "url": "https://threats.wiz.io/all-techniques/network-lateral-movement"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--197aa088-f276-5bfc-8814-99e07b86929b",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "OAuth app creation",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/oauth-app-creation for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "oauth-app-creation",
+          "url": "https://threats.wiz.io/all-techniques/oauth-app-creation"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "persistence"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--044df506-6a07-5d4b-8dbb-36e281dbefd9",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "OAuth app hijack",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/oauth-app-hijack for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "oauth-app-hijack",
+          "url": "https://threats.wiz.io/all-techniques/oauth-app-hijack"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "persistence"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--3623afd5-7fdf-55ab-84d6-25634d78c617",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "On-prem to cloud lateral movement",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/on-prem-to-cloud-lateral-movement for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "on-prem-to-cloud-lateral-movement",
+          "url": "https://threats.wiz.io/all-techniques/on-prem-to-cloud-lateral-movement"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--468ac218-e3ac-5d14-82f8-217fe48c633d",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "OS password reset",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/os-password-reset for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "os-password-reset",
+          "url": "https://threats.wiz.io/all-techniques/os-password-reset"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--5c66c792-5e05-5a79-b041-7f5629f4a4ea",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "OverPass-The-Hash",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/overpass-the-hash for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "overpass-the-hash",
+          "url": "https://threats.wiz.io/all-techniques/overpass-the-hash"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--785100f7-77b5-505e-8058-308e570e6280",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Package dependency confusion",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/package-dependency-confusion for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "package-dependency-confusion",
+          "url": "https://threats.wiz.io/all-techniques/package-dependency-confusion"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        },
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "execution"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Supply Chain",
+        "CI/CD"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--c1083114-f396-5799-b6ce-703d202266bc",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Package hijacking",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/package-hijacking for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "package-hijacking",
+          "url": "https://threats.wiz.io/all-techniques/package-hijacking"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--a474dd40-3ac1-59bf-9e74-6897d0ffc749",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Package Starjacking",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/package-starjacking for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "package-starjacking",
+          "url": "https://threats.wiz.io/all-techniques/package-starjacking"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--1e5e3f88-9730-54d1-82de-1bfcb21155b7",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Package typosquatting",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/package-typosquatting for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "package-typosquatting",
+          "url": "https://threats.wiz.io/all-techniques/package-typosquatting"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--bba7215c-3d63-5c2d-99de-7d1d438649c2",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Password bruteforcing",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/password-bruteforcing for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "password-bruteforcing",
+          "url": "https://threats.wiz.io/all-techniques/password-bruteforcing"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--77060cb7-0d3c-53cf-bf62-d313fa36c624",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Password spraying",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/password-spray for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "password-spray",
+          "url": "https://threats.wiz.io/all-techniques/password-spray"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "credential-access"
+        },
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Credentials",
+        "Authentication"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--317ef7d1-9f84-5377-a85d-286eda6b9470",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Persistence via AI service backend",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/persistence-via-ai-service for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "persistence-via-ai-service",
+          "url": "https://threats.wiz.io/all-techniques/persistence-via-ai-service"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "persistence"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud",
+        "AI/ML"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--f396593d-dadb-50cb-9696-b2bc9d2d3688",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Persistence via udev",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/persistence-via-udev for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "persistence-via-udev",
+          "url": "https://threats.wiz.io/all-techniques/persistence-via-udev"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--e8433f10-22b9-5207-9278-94c8ffae59f3",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Persistence via VM user data",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/persistence-via-vm-user-data for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "persistence-via-vm-user-data",
+          "url": "https://threats.wiz.io/all-techniques/persistence-via-vm-user-data"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "persistence"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--0487291f-d1e2-5159-b699-59fc8493cb72",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Phishing",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/phishing for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "phishing",
+          "url": "https://threats.wiz.io/all-techniques/phishing"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--786e826e-e8cd-57cd-bd3e-e1e011e6d56d",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Poison AI training data",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/poison-ai-training-data for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "poison-ai-training-data",
+          "url": "https://threats.wiz.io/all-techniques/poison-ai-training-data"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "resource-development"
+        },
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "persistence"
+        }
+      ],
+      "x_mitre_platforms": [
+        "AI/ML"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--6c6119f9-b03e-5d6f-a69d-4ec06b3b0e18",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Policy simulation",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/policy-simulation for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "policy-simulation",
+          "url": "https://threats.wiz.io/all-techniques/policy-simulation"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--f6d94fb6-c2a4-5c9b-90c5-18f787702372",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Process injection",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/process-injection for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "process-injection",
+          "url": "https://threats.wiz.io/all-techniques/process-injection"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--a94f032c-22b2-5921-b73d-d275fa078b91",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Propagation via Kubelet",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/propagation-via-kubelet for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "propagation-via-kubelet",
+          "url": "https://threats.wiz.io/all-techniques/propagation-via-kubelet"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "lateral-movement"
+        }
+      ],
+      "x_mitre_platforms": [
+        "K8s"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--fbb479e5-bf20-5437-8e0b-4f52b6c527ff",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Proxyjacking",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/proxyjacking for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "proxyjacking",
+          "url": "https://threats.wiz.io/all-techniques/proxyjacking"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "impact"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--a16e64ef-41c2-55b5-abfd-01bc69676180",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Public exposure abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/public-exposure-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "public-exposure-abuse",
+          "url": "https://threats.wiz.io/all-techniques/public-exposure-abuse"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--faf56f3b-c547-544d-a32f-7ff56121c7a4",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Public malicious container image",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/public-malicious-container-image for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "public-malicious-container-image",
+          "url": "https://threats.wiz.io/all-techniques/public-malicious-container-image"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--e13a7b08-dba9-5df4-9aef-0990238f4558",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Publishing trojanized npm packages",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/publishing-trojanized-npm-packages for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "publishing-trojanized-npm-packages",
+          "url": "https://threats.wiz.io/all-techniques/publishing-trojanized-npm-packages"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--1f032e2d-203f-5214-ac05-66130b92d4cd",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "pwn request",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/pwn-request for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "pwn-request",
+          "url": "https://threats.wiz.io/all-techniques/pwn-request"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "CI/CD"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--ac7b27d8-a526-583e-b5fe-58d7186d0856",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Redis-as-a-backdoor",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/redis-as-a-backdoor for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "redis-as-a-backdoor",
+          "url": "https://threats.wiz.io/all-techniques/redis-as-a-backdoor"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "persistence"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Linux",
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--9d059a7c-1e89-5a99-bc0f-b0e1956d5f31",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Refresh token compromise",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/refresh-token-compromise for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "refresh-token-compromise",
+          "url": "https://threats.wiz.io/all-techniques/refresh-token-compromise"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "credential-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Authentication"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--506a64e6-1a5c-5f31-b8e7-4f1b6a5eda6a",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Register self-hosted runner",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/register-self-hosted-runner for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "register-self-hosted-runner",
+          "url": "https://threats.wiz.io/all-techniques/register-self-hosted-runner"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "privilege-escalation"
+        }
+      ],
+      "x_mitre_platforms": [
+        "CI/CD"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--22a69ee6-77ac-5bbc-aabc-45ad9e5ff8cb",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Registry secret scanning",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/registry-secret-scanning for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "registry-secret-scanning",
+          "url": "https://threats.wiz.io/all-techniques/registry-secret-scanning"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "reconnaissance"
+        },
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "credential-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Credentials"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--7869b553-763c-5e0e-8c64-2b14ed6a851d",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Remotely execute commands or scripts on a VM",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/remotely-execute-commands-or-scripts-on-a-vm for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "remotely-execute-commands-or-scripts-on-a-vm",
+          "url": "https://threats.wiz.io/all-techniques/remotely-execute-commands-or-scripts-on-a-vm"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "execution"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--a8d4f128-617e-55cb-a1af-7ea4e652467c",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Repo encryption for extortion",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/repo-encryption-for-extortion for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "repo-encryption-for-extortion",
+          "url": "https://threats.wiz.io/all-techniques/repo-encryption-for-extortion"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--13161dd6-f037-574e-a2d2-b6124f74c550",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Repojacking",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/repojacking for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "repojacking",
+          "url": "https://threats.wiz.io/all-techniques/repojacking"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Supply Chain"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--067bd408-c295-592a-926e-c4d3ca8fd7d1",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Repository webhook abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/repository-webhook-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "repository-webhook-abuse",
+          "url": "https://threats.wiz.io/all-techniques/repository-webhook-abuse"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "CI/CD",
+        "App Misconfig.",
+        "Network"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--31e7a01e-6620-5ee3-9380-cb61d55b1876",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Resource enumeration",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/resource-enumeration for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "resource-enumeration",
+          "url": "https://threats.wiz.io/all-techniques/resource-enumeration"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--068fec41-6642-51e1-bd44-ee6ef0a25da1",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Resource injection in CloudFormation template",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/resource-injection-in-cloudformation-template for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "resource-injection-in-cloudformation-template",
+          "url": "https://threats.wiz.io/all-techniques/resource-injection-in-cloudformation-template"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "execution"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--d05bfaf4-98ed-5fde-a607-b2e559424715",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Retrieve EC2 Password Data",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/retrieve-ec2-password-data for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "retrieve-ec2-password-data",
+          "url": "https://threats.wiz.io/all-techniques/retrieve-ec2-password-data"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "credential-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--098d539d-6835-5156-a139-41e741990c59",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Reverse DNS manipulation",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/reverse-dns-manipulation for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "reverse-dns-manipulation",
+          "url": "https://threats.wiz.io/all-techniques/reverse-dns-manipulation"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--b851ffa2-f479-53ec-88fd-46a42ac3461a",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Reverse shell",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/reverse-shell for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "reverse-shell",
+          "url": "https://threats.wiz.io/all-techniques/reverse-shell"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "execution"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--0652fbed-de61-50b8-9721-7c91447ec95d",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Rootkit - LD_PRELOAD",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/rootkit-ldpreload for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "rootkit-ldpreload",
+          "url": "https://threats.wiz.io/all-techniques/rootkit-ldpreload"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "persistence"
+        },
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "execution"
+        },
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "privilege-escalation"
+        },
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "defense-evasion"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--423159db-1565-5457-b107-e1332336b103",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Script injection into CICD workflow",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/script-injection-into-cicd-workflow for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "script-injection-into-cicd-workflow",
+          "url": "https://threats.wiz.io/all-techniques/script-injection-into-cicd-workflow"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Supply Chain",
+        "CI/CD"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--3d123c72-1e95-5df8-8006-cf8a238789b0",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Serial port abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/serial-port-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "serial-port-abuse",
+          "url": "https://threats.wiz.io/all-techniques/serial-port-abuse"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--d6eca7ec-4500-5808-89f7-8cc3a5aa12bc",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Serverless execution",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/serverless-execution for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "serverless-execution",
+          "url": "https://threats.wiz.io/all-techniques/serverless-execution"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "execution"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--5d85071a-fc95-5945-adc1-6bc41186345b",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "SES abuse for spam or phishing",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/ses-abuse-for-spam-or-phishing for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "ses-abuse-for-spam-or-phishing",
+          "url": "https://threats.wiz.io/all-techniques/ses-abuse-for-spam-or-phishing"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "impact"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--ddc88272-775b-5451-a320-7b489ad7a076",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "SES enumeration",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/ses-enumeration for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "ses-enumeration",
+          "url": "https://threats.wiz.io/all-techniques/ses-enumeration"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--1ba11e0f-d8a2-5eee-a22c-7a1f18f80afb",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Session hijacking",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/session-hijacking for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "session-hijacking",
+          "url": "https://threats.wiz.io/all-techniques/session-hijacking"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--cb387619-e978-5db4-9c17-314cd1ce777d",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Share compromised resources to an external account",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/share-compromised-resources-to-an-external-account-for-exfiltration for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "share-compromised-resources-to-an-external-account-for-exfiltration",
+          "url": "https://threats.wiz.io/all-techniques/share-compromised-resources-to-an-external-account-for-exfiltration"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "exfiltration"
+        },
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "persistence"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--ad36ec80-ee65-51c0-a575-8d638e91e42f",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "SIM swap scam",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/sim-swap-scam for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "sim-swap-scam",
+          "url": "https://threats.wiz.io/all-techniques/sim-swap-scam"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--8da2d37e-7aed-52c6-a333-064fff50e2c6",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Slopsquatting",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/slopsquatting for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "slopsquatting",
+          "url": "https://threats.wiz.io/all-techniques/slopsquatting"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        },
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "resource-development"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Supply Chain"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--bca47996-3661-5792-b0ba-c8775bfef0a5",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Smishing (SMS phishing)",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/smishing-sms-phishing for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "smishing-sms-phishing",
+          "url": "https://threats.wiz.io/all-techniques/smishing-sms-phishing"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--55427399-4107-5341-964a-25c2bdb65bee",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "SNS abuse for spam or phishing",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/sns-abuse-for-spam-or-phishing for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "sns-abuse-for-spam-or-phishing",
+          "url": "https://threats.wiz.io/all-techniques/sns-abuse-for-spam-or-phishing"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--468f2089-ab50-5ea9-9397-d9a2c6c12a2b",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Sockpuppet infiltration",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/social-engineering for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "social-engineering",
+          "url": "https://threats.wiz.io/all-techniques/social-engineering"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Social Eng."
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--7b5de3d2-450b-558d-af4b-071023c632c8",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Spearphishing",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/spearphishing for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "spearphishing",
+          "url": "https://threats.wiz.io/all-techniques/spearphishing"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--252338ad-6005-59ba-afd1-6167de1f5633",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Spring Boot Actuator abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/spring-boot-actuator-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "spring-boot-actuator-abuse",
+          "url": "https://threats.wiz.io/all-techniques/spring-boot-actuator-abuse"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "App Misconfig."
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--122ff374-177d-5385-9b7b-c397ef4a2cef",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "SQL commands",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/sql-commands for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "sql-commands",
+          "url": "https://threats.wiz.io/all-techniques/sql-commands"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "execution"
+        }
+      ],
+      "x_mitre_platforms": [
+        "App Misconfig."
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--57300450-8002-5770-8dc7-11da57aebbd6",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "SQL injection",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/sql-injection for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "sql-injection",
+          "url": "https://threats.wiz.io/all-techniques/sql-injection"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "App Misconfig."
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--50d89941-bd91-5cd1-9e00-47c74b1c9bb5",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "SSH bruteforcing",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/ssh-bruteforcing for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "ssh-bruteforcing",
+          "url": "https://threats.wiz.io/all-techniques/ssh-bruteforcing"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--2c284efd-a015-522f-9d04-ee708134f2ed",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "SSH key compromise",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/ssh-key-compromise for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "ssh-key-compromise",
+          "url": "https://threats.wiz.io/all-techniques/ssh-key-compromise"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--33f375e5-42f9-5ad8-9696-a758ededb7ff",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "SSH propagation",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/ssh-propagation for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "ssh-propagation",
+          "url": "https://threats.wiz.io/all-techniques/ssh-propagation"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "lateral-movement"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--5dba7b74-c2c0-5fa7-9622-e27ef057e771",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "SSM document phishing",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/ssm-document-phishing for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "ssm-document-phishing",
+          "url": "https://threats.wiz.io/all-techniques/ssm-document-phishing"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Social Eng."
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--a7472d13-90a7-50ec-9b45-ddebf171849e",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "SSM misconfiguration abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/ssm-misconfiguration-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "ssm-misconfiguration-abuse",
+          "url": "https://threats.wiz.io/all-techniques/ssm-misconfiguration-abuse"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--8549c38f-f9ef-5e66-8991-fc4fb144ec2f",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "SSM orchestration abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/ssm-orchestration-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "ssm-orchestration-abuse",
+          "url": "https://threats.wiz.io/all-techniques/ssm-orchestration-abuse"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--aadce114-9f7c-57cf-a781-038ec7cc5f94",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "SSM-facilitated remote desktop connection",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/ssm-facilitated-remote-desktop-connection for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "ssm-facilitated-remote-desktop-connection",
+          "url": "https://threats.wiz.io/all-techniques/ssm-facilitated-remote-desktop-connection"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "lateral-movement"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--39574f28-f337-55ec-8e74-771f80c98448",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "SSRF",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/ssrf for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "ssrf",
+          "url": "https://threats.wiz.io/all-techniques/ssrf"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--a4429b83-72b0-5ba6-8866-0dc400d44a0f",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Steal EC2 Instance Credentials",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/steal-ec2-instance-credentials for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "steal-ec2-instance-credentials",
+          "url": "https://threats.wiz.io/all-techniques/steal-ec2-instance-credentials"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "credential-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--ca70da5f-e029-593c-a08a-eadc3f176eaa",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Storage Denial of Wallet amplification attack",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/storage-denial-of-wallet-amplification-attack for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "storage-denial-of-wallet-amplification-attack",
+          "url": "https://threats.wiz.io/all-techniques/storage-denial-of-wallet-amplification-attack"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "impact"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud",
+        "Network"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--0e9fffd6-4258-5a7e-ab25-4f87e702551c",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Subdomain takeover",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/subdomain-takeover for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "subdomain-takeover",
+          "url": "https://threats.wiz.io/all-techniques/subdomain-takeover"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--1abc9d4f-4ec6-5831-8169-00edce4ca4eb",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Supply Chain Compromise",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/supply-chain-compromise for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "supply-chain-compromise",
+          "url": "https://threats.wiz.io/all-techniques/supply-chain-compromise"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Supply Chain"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--1bb3cc79-bafb-5608-bb0f-42883d9111b6",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Thread impersonation to escape to host",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/thread-impersonation-to-escape-to-host for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "thread-impersonation-to-escape-to-host",
+          "url": "https://threats.wiz.io/all-techniques/thread-impersonation-to-escape-to-host"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "privilege-escalation"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Linux"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--451e15e5-bc64-53ed-9e08-a79b81b084d9",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Timestomping",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/timestomping for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "timestomping",
+          "url": "https://threats.wiz.io/all-techniques/timestomping"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "defense-evasion"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--00987798-f9d5-5ed7-a2de-96018ccbfd5f",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Token forgery",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/token-forgery for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "token-forgery",
+          "url": "https://threats.wiz.io/all-techniques/token-forgery"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        },
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "credential-access"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--f79102ac-d4b9-5735-8ece-a9f6efab8aab",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "TOR anonymization",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/tor-anonymization for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "tor-anonymization",
+          "url": "https://threats.wiz.io/all-techniques/tor-anonymization"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "command-and-control"
+        },
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "defense-evasion"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--8e4a7bf8-a955-5802-9380-21c3849512a4",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Traffic routing through residential proxy network",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/traffic-routing-through-residential-proxy-network for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "traffic-routing-through-residential-proxy-network",
+          "url": "https://threats.wiz.io/all-techniques/traffic-routing-through-residential-proxy-network"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "defense-evasion"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Network"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--bcc8f5b4-a1e4-5352-9929-f138fc70a516",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Trojanized DLLs",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/trojanized-dlls for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "trojanized-dlls",
+          "url": "https://threats.wiz.io/all-techniques/trojanized-dlls"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--350b5acc-e962-5957-934c-2809c0c8dfec",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Trusted technologies abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/trusted-technologies-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "trusted-technologies-abuse",
+          "url": "https://threats.wiz.io/all-techniques/trusted-technologies-abuse"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--f37e1a6d-4748-5acb-98c6-728c5de69bf5",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "UPX packing",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/upx-packing for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "upx-packing",
+          "url": "https://threats.wiz.io/all-techniques/upx-packing"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--18f8d3bd-d000-547a-ab99-5e2930294e90",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Use DNS for exfiltration",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/use-dns-for-exfiltration for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "use-dns-for-exfiltration",
+          "url": "https://threats.wiz.io/all-techniques/use-dns-for-exfiltration"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "exfiltration"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Cloud"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--d53947b8-ad77-50e4-ac1d-b7c29a3ed70f",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Valid creds abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/valid-creds-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "valid-creds-abuse",
+          "url": "https://threats.wiz.io/all-techniques/valid-creds-abuse"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        },
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "credential-access"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--25330082-8cb6-56df-84b0-f09f9a011b99",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Vishing",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/vishing for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "vishing",
+          "url": "https://threats.wiz.io/all-techniques/vishing"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--0a590786-a327-50b5-aad1-f6cec8cc3dd2",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "VM extension abuse",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/vm-extension-abuse for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "vm-extension-abuse",
+          "url": "https://threats.wiz.io/all-techniques/vm-extension-abuse"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "privilege-escalation"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--a007da43-0b4d-5cc3-b185-455c62cafdfd",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "VPN anonymization",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/vpn-anonymization for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "vpn-anonymization",
+          "url": "https://threats.wiz.io/all-techniques/vpn-anonymization"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--71afdd77-963d-5be0-bf0b-6663ec308d25",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Vulnerability exploitation",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/vulnerability-exploitation for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "vulnerability-exploitation",
+          "url": "https://threats.wiz.io/all-techniques/vulnerability-exploitation"
+        }
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "initial-access"
+        },
+        {
+          "kill_chain_name": "wiz-cloud-threat-landscape",
+          "phase_name": "privilege-escalation"
+        }
+      ],
+      "x_mitre_platforms": [
+        "Network"
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--7d1c40b9-07e9-5199-9b99-1916146c5fba",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "Webshell deployment",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/webshell-deployment for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "webshell-deployment",
+          "url": "https://threats.wiz.io/all-techniques/webshell-deployment"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--2b99e125-151f-5d10-af4c-6446d8087086",
+      "created": "2026-03-30T16:57:35.000Z",
+      "modified": "2026-03-30T16:57:35.000Z",
+      "name": "XML injection",
+      "description": "Cloud-native attack technique from the Wiz Cloud Threat Landscape. See https://threats.wiz.io/all-techniques/xml-injection for details.",
+      "external_references": [
+        {
+          "source_name": "wiz-cloud-threat-landscape",
+          "external_id": "xml-injection",
+          "url": "https://threats.wiz.io/all-techniques/xml-injection"
+        }
+      ]
+    }
+  ]
+}

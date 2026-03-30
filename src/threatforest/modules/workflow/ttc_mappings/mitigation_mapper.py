@@ -4,6 +4,7 @@ import re
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from ...utils.logger import ThreatForestLogger
+from threatforest.frameworks import STIX_SOURCE_NAMES
 
 
 class MitigationMapper:
@@ -25,7 +26,7 @@ class MitigationMapper:
         for obj in bundle['objects']:
             if obj.get('type') == 'attack-pattern':
                 for ref in obj.get('external_references', []):
-                    if ref.get('source_name') in ['mitre-attack', 'aaf']:
+                    if ref.get('source_name') in STIX_SOURCE_NAMES:
                         ext_id = ref.get('external_id')
                         if ext_id:
                             pattern_to_technique[obj['id']] = ext_id
