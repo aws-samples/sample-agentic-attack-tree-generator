@@ -34,11 +34,24 @@ class RunConfig(BaseModel):
     threat_file_path: str | None = None
     frameworks: list[str] | None = None  # e.g. ["attack", "atlas"]; None = all
 
+    # Server-side fields populated on resume — not set directly by UI clients.
+    # resume_run_dir points to a prior run's directory so the executor can
+    # reuse its state files instead of creating a fresh run directory.
+    resume_run_dir: str | None = None
+    # Graph nodes whose output files already exist on disk and can be skipped.
+    skip_nodes: list[str] = []
+
 
 class RunResponse(BaseModel):
     """Response returned after initiating a run."""
 
     run_id: str
+
+
+class ResumeResponse(BaseModel):
+    """Response returned after resuming a paused or stopped run."""
+
+    new_run_id: str
 
 
 class DirectoryEntry(BaseModel):
@@ -72,12 +85,15 @@ class RunState(BaseModel):
     """Tracks the state of an active or completed run."""
 
     run_id: str
-    status: str  # "pending" | "running" | "complete" | "failed"
+    status: str  # "pending" | "running" | "paused" | "stopped" | "complete" | "failed"
     config: RunConfig
     started_at: str
     completed_at: str | None = None
     output_dir: str | None = None
     error: str | None = None
+    # Set when the run is paused or stopped mid-pipeline.
+    paused_at_stage: str | None = None
+    paused_at: str | None = None
 
 
 class ProvidersResponse(BaseModel):

@@ -333,6 +333,76 @@ class ApplicationRegistry:
         mtime = version_dir.stat().st_mtime
         return datetime.fromtimestamp(mtime, tz=timezone.utc).isoformat()
 
+    def discover_paused_runs(self) -> list[dict]:
+        """Return applications whose most recent run has a pause_state.json with intent 'pause'.
+
+        Each entry contains the application summary fields plus pause metadata
+        so the UI can offer a resume action.
+        """
+        if not self.runs_root.is_dir():
+            return []
+
+        paused: list[dict] = []
+        for project_dir in sorted(self.runs_root.iterdir()):
+            if not project_dir.is_dir():
+                continue
+            meta_file = project_dir / "metadata.json"
+            if not meta_file.is_file():
+                continue
+
+            # Find the latest timestamped run directory
+            latest = self._resolve_latest_version(project_dir)
+            if latest is None:
+                continue
+
+            pause_file = project_dir / latest / "pause_state.json"
+            if not pause_file.is_file():
+                continue
+
+            pause_data = self._read_json(pause_file)
+            if pause_data is None or pause_data.get("intent") != "pause":
+                continue
+
+            meta = self._read_json(meta_file) or {}
+            app_id = slugify(project_dir.name)
+            raw_name = project_dir.name
+            if "--" in raw_name:
+                parts = raw_name.split("--", 1)
+                display_name = f"{parts[0].title()}/{parts[1]}"
+            else:
+                display_name = meta.get("name", raw_name)
+
+            paused.append({
+                "id": app_id,
+                "name": display_name,
+                "project_path": meta.get("path", ""),
+                "paused_at": pause_data.get("paused_at", ""),
+                "completed_nodes": pause_data.get("completed_nodes", []),
+                "run_dir": str(project_dir / latest),
+                "config": pause_data.get("config", {}),
+            })
+
+        return paused
+
+    def delete_pause_state(self, app_id: str) -> bool:
+        """Remove pause_state.json from the latest run of an application.
+
+        Returns True if a file was deleted, False if nothing was found.
+        """
+        project_dir = self._find_project_dir(app_id)
+        if project_dir is None:
+            return False
+
+        latest = self._resolve_latest_version(project_dir)
+        if latest is None:
+            return False
+
+        pause_file = project_dir / latest / "pause_state.json"
+        if pause_file.is_file():
+            pause_file.unlink()
+            return True
+        return False
+
     @staticmethod
     def _read_json(path: Path) -> dict | None:
         """Read and parse a JSON file, returning None on failure."""

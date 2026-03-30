@@ -8,15 +8,47 @@ events from the graph stream are forwarded to the RunManager callback.
 from __future__ import annotations
 
 import asyncio
+import json as _json_module
 import re
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any, Callable
 
 import yaml
 
 from server.models import RunConfig
 from server.run_manager import OrchestratorExecutor, ProgressEvent
+
+if TYPE_CHECKING:
+    from server.scan_control import ScanControl
+
+
+def _save_pause_state(
+    run_dir: Path,
+    completed_nodes: list[str],
+    intent: str,
+    config: RunConfig,
+) -> None:
+    """Persist pause/stop state so the run can be resumed later.
+
+    Writes ``pause_state.json`` into *run_dir* with the set of graph nodes
+    that completed successfully and the original ``RunConfig`` fields needed
+    to reconstruct the run.
+    """
+    pause_data = {
+        "intent": intent,
+        "paused_at": datetime.now(timezone.utc).isoformat(),
+        "completed_nodes": completed_nodes,
+        "config": {
+            "project_path": config.project_path,
+            "threat_source": config.threat_source,
+            "threat_file_path": config.threat_file_path,
+        },
+    }
+    (run_dir / "pause_state.json").write_text(
+        _json_module.dumps(pause_data, indent=2), encoding="utf-8"
+    )
 
 
 _otel_initialized = False
@@ -202,6 +234,7 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
     def executor(
         config: RunConfig,
         progress_callback: Callable[[ProgressEvent], None],
+        scan_control: "ScanControl | None" = None,
     ) -> dict[str, str]:
         import os
 
@@ -268,13 +301,28 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
             if candidate.is_dir():
                 project_path = str(candidate.resolve())
 
-        # Create centralized run directory under .threatforest/runs/
-        run_dir, project_dir = create_run_directory(project_path)
+        # Resolve run directory — reuse existing dir on resume, create fresh otherwise
+        if config.resume_run_dir:
+            run_dir = Path(config.resume_run_dir)
+            project_dir = run_dir.parent  # <runs_root>/<project_folder>/
+        else:
+            run_dir, project_dir = create_run_directory(project_path)
         run_dir_str = str(run_dir)
 
-        graph = build_graph(project_path, run_dir=run_dir_str, frameworks=config.frameworks)
+        # Tell the ScanControl where the run directory lives so that
+        # RunManager.resume_run() can locate pause_state.json later.
+        if scan_control is not None:
+            scan_control.run_dir = run_dir_str
+
+        skip_nodes: frozenset[str] = frozenset(config.skip_nodes) if config.skip_nodes else frozenset()
+        graph = build_graph(project_path, run_dir=run_dir_str, skip_nodes=skip_nodes, scan_control=scan_control)
+
+        interrupted = False
+        interrupted_intent = "stop"
+        interrupted_stage = ""
 
         async def _run():
+            nonlocal interrupted, interrupted_intent, interrupted_stage
             current_stage = ""
             current_node_id = ""
             prev_node_id = ""
@@ -282,6 +330,7 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
             last_tool_name = ""
             result = None
             poll_task = None
+            completed_nodes: list[str] = []
 
             async def _poll_parallel_progress():
                 """Poll parallel pipeline progress and emit updates.
@@ -408,8 +457,52 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
                         poll_task = None
 
                     prev_node_id = nid
+                    completed_nodes.append(nid)
+
+                    # Check for pause/stop at this natural stage boundary.
+                    # We only interrupt between complete nodes so that no
+                    # partial output is left on disk.
+                    if scan_control is not None and scan_control.should_interrupt:
+                        _save_pause_state(run_dir, completed_nodes, scan_control.intent, config)
+                        interrupted = True
+                        interrupted_intent = scan_control.intent
+                        interrupted_stage = current_stage
+                        verb = "paused" if scan_control.intent == "pause" else "stopped"
+                        progress_callback(ProgressEvent(
+                            event_type=f"scan_{verb}",
+                            stage=current_stage or "unknown",
+                            percentage=0,
+                            message=(
+                                f"Scan {verb} after completing stage. "
+                                + ("Click Resume to continue." if verb == "paused" else "")
+                            ),
+                        ))
+                        break
 
                 elif etype == "multiagent_node_stream":
+                    # Check for pause/stop during agent execution (mid-node).
+                    # We break here WITHOUT appending to completed_nodes so the
+                    # interrupted node is re-run from scratch on resume.
+                    if scan_control is not None and scan_control.should_interrupt:
+                        if poll_task:
+                            poll_task.cancel()
+                            poll_task = None
+                        _save_pause_state(run_dir, completed_nodes, scan_control.intent, config)
+                        interrupted = True
+                        interrupted_intent = scan_control.intent
+                        interrupted_stage = current_stage
+                        verb = "paused" if scan_control.intent == "pause" else "stopped"
+                        progress_callback(ProgressEvent(
+                            event_type=f"scan_{verb}",
+                            stage=current_stage or "unknown",
+                            percentage=0,
+                            message=(
+                                f"Scan {verb} during stage. "
+                                + ("Click Resume to continue." if verb == "paused" else "")
+                            ),
+                        ))
+                        break
+
                     nested = event.get("event", {})
                     if isinstance(nested, dict):
                         tool_use = nested.get("current_tool_use", {})
@@ -467,7 +560,11 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
                 if "result" in event:
                     result = event["result"]
 
-            if current_stage:
+
+            # Only emit the final stage_complete when the run finished naturally.
+            # If interrupted (paused/stopped) the scan_paused/scan_stopped event
+            # was already pushed and the stage should not be marked complete.
+            if current_stage and not interrupted:
                 final_summary = _get_stage_summary(project_path, prev_node_id, run_dir=run_dir_str) if prev_node_id else None
                 progress_callback(ProgressEvent(
                     event_type="stage_complete",
@@ -481,7 +578,21 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
 
         result = asyncio.run(_run())
 
+        # Return early when the run was paused or stopped by the user.
+        if interrupted:
+            return {
+                "status": interrupted_intent,
+                "run_dir": run_dir_str,
+                "paused_at_stage": interrupted_stage,
+            }
+
         output_dir = str(run_dir / "output")
+
+        # Clean up pause_state.json on successful completion so the run
+        # no longer appears in the "paused runs" list.
+        pause_file = run_dir / "pause_state.json"
+        if pause_file.is_file():
+            pause_file.unlink()
 
         # Update metadata.json description from scan output
         try:
@@ -501,6 +612,7 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
 
         return {
             "output_dir": output_dir,
+            "run_dir": run_dir_str,
             "app_id": slugify(project_dir.name),
         }
 

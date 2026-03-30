@@ -136,6 +136,45 @@ export async function createRun(params) {
   });
 }
 
+/** GET /api/runs/{runId} → RunState */
+export async function getRun(runId) {
+  return request(`/api/runs/${encodeURIComponent(runId)}`);
+}
+
+/** POST /api/runs/{runId}/pause → { status } */
+export async function pauseRun(runId) {
+  return request(`/api/runs/${encodeURIComponent(runId)}/pause`, { method: 'POST' });
+}
+
+/** POST /api/runs/{runId}/stop → { status } */
+export async function stopRun(runId) {
+  return request(`/api/runs/${encodeURIComponent(runId)}/stop`, { method: 'POST' });
+}
+
+/** POST /api/runs/{runId}/resume → { new_run_id } */
+export async function resumeRun(runId) {
+  return request(`/api/runs/${encodeURIComponent(runId)}/resume`, { method: 'POST' });
+}
+
+/** GET /api/paused-runs → { paused_runs: PausedRun[] } */
+export async function getPausedRuns() {
+  return request('/api/paused-runs');
+}
+
+/** DELETE /api/paused-runs/{appId} → void */
+export async function deletePausedRun(appId) {
+  return request(`/api/paused-runs/${encodeURIComponent(appId)}`, { method: 'DELETE' });
+}
+
+/** POST /api/runs (resume from pause_state) → { run_id } */
+export async function createResumeRun(params) {
+  return request('/api/runs', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+}
+
 // ---------------------------------------------------------------------------
 // WebSocket
 // ---------------------------------------------------------------------------

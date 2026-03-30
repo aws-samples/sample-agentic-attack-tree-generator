@@ -1,4 +1,4 @@
-"""Run initiation and WebSocket progress streaming routes."""
+"""Run initiation, control, and WebSocket progress streaming routes."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ import time
 
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 
-from server.models import RunConfig, RunResponse
+from server.models import ResumeResponse, RunConfig, RunResponse, RunState
 from server.run_manager import RunManager
 
 # Heartbeat interval in seconds — keeps idle WebSocket connections alive
@@ -58,6 +58,81 @@ async def create_run(config: RunConfig) -> RunResponse:
     return RunResponse(run_id=run_id)
 
 
+@router.get("/runs/{run_id}", response_model=RunState)
+async def get_run(run_id: str) -> RunState:
+    """Return the current state of a run.
+
+    - **404** if *run_id* is not known
+    """
+    manager = get_run_manager()
+    state = manager.active_runs.get(run_id)
+    if state is None:
+        raise HTTPException(status_code=404, detail=f"Unknown run_id: {run_id}")
+    return state
+
+
+@router.post("/runs/{run_id}/pause", status_code=200)
+async def pause_run(run_id: str) -> dict:
+    """Request the pipeline to pause after the current stage completes.
+
+    The run transitions to ``"paused"`` once the executor acknowledges the
+    request (signalled by a ``scan_paused`` WebSocket event).
+
+    - **404** if *run_id* is not known
+    - **400** if the run is not in a pausable state
+    """
+    manager = get_run_manager()
+    try:
+        manager.pause_run(run_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except RuntimeError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return {"status": "pause_requested"}
+
+
+@router.post("/runs/{run_id}/stop", status_code=200)
+async def stop_run(run_id: str) -> dict:
+    """Request the pipeline to stop after the current stage completes.
+
+    If the run is already paused (executor has exited) the status is flipped
+    to ``"stopped"`` immediately without waiting for a WebSocket event.
+
+    - **404** if *run_id* is not known
+    - **400** if the run is in a terminal state
+    """
+    manager = get_run_manager()
+    try:
+        manager.stop_run(run_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except RuntimeError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return {"status": "stop_requested"}
+
+
+@router.post("/runs/{run_id}/resume", response_model=ResumeResponse, status_code=202)
+async def resume_run(run_id: str) -> ResumeResponse:
+    """Resume a paused or stopped run.
+
+    Reads ``pause_state.json`` from the original run directory, constructs a
+    new ``RunConfig`` that skips already-completed graph nodes, and starts a
+    new run in the same directory.  Returns the new ``run_id``; clients should
+    navigate to ``/runs/<new_run_id>/progress``.
+
+    - **404** if *run_id* is not known
+    - **400** if the run cannot be resumed (wrong status or missing state file)
+    """
+    manager = get_run_manager()
+    try:
+        new_run_id = manager.resume_run(run_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except (RuntimeError, FileNotFoundError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return ResumeResponse(new_run_id=new_run_id)
+
+
 @ws_router.websocket("/ws/runs/{run_id}")
 async def run_progress(websocket: WebSocket, run_id: str) -> None:
     """Stream pipeline progress events over WebSocket.
@@ -68,7 +143,7 @@ async def run_progress(websocket: WebSocket, run_id: str) -> None:
     message is sent to keep the connection alive through proxies and
     browsers that close idle WebSocket connections.
 
-    Closes the connection after the completion or error event.
+    Closes the connection after completion, error, pause, or stop events.
     Closes with code 4004 if the run_id is unknown.
     """
     manager = get_run_manager()
@@ -100,9 +175,9 @@ async def run_progress(websocket: WebSocket, run_id: str) -> None:
 
             # Close after terminal events
             event_type = event.get("type", "")
-            if event_type in ("stage_complete", "error"):
+            if event_type in ("stage_complete", "error", "scan_paused", "scan_stopped"):
                 stage = event.get("stage", "")
-                if event_type == "error" or stage == "complete":
+                if event_type in ("error", "scan_paused", "scan_stopped") or stage == "complete":
                     break
     except WebSocketDisconnect:
         logger.info("WebSocket client disconnected for run %s", run_id)

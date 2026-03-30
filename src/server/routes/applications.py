@@ -83,6 +83,31 @@ async def delete_application(app_id: str) -> dict:
     return {"success": True, "message": f"Application '{app_id}' deleted successfully"}
 
 
+@router.get("/paused-runs")
+async def list_paused_runs() -> dict:
+    """Return applications whose most recent run is paused.
+
+    Response: ``{ "paused_runs": [ { id, name, project_path, paused_at, ... }, ... ] }``
+    """
+    registry = get_registry()
+    return {"paused_runs": registry.discover_paused_runs()}
+
+
+@router.delete("/paused-runs/{app_id}")
+async def delete_paused_run(app_id: str) -> dict:
+    """Remove the pause_state.json for an application's latest run.
+
+    This prevents the application from appearing in the paused runs list.
+
+    - **404** if the application is not found or has no pause state
+    """
+    registry = get_registry()
+    deleted = registry.delete_pause_state(app_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail=f"No paused run found for '{app_id}'")
+    return {"success": True, "message": f"Paused run for '{app_id}' removed"}
+
+
 @router.get("/applications/{app_id}/versions/{version_id}/data")
 async def get_version_data(app_id: str, version_id: str) -> JSONResponse:
     """Return the raw threatforest_data.json for a specific version.
