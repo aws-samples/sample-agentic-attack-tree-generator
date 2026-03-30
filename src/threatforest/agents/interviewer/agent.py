@@ -146,12 +146,22 @@ class InterviewerNode(MultiAgentBase):
         while result.stop_reason == "interrupt" and result.interrupts:
             responses = await asyncio.to_thread(self.interaction_fn, result.interrupts)
             if responses is None:
-                # User skipped — tell agent to finalize with current context
-                result = await asyncio.to_thread(
-                    self.agent,
-                    "The user chose to skip the interview. Call finalize_interview "
-                    "with confidence='low' and the scanner's existing context.",
-                )
+                # User skipped — must resume with proper interruptResponse format
+                skip_responses = [
+                    {
+                        "interruptResponse": {
+                            "interruptId": interrupt.id,
+                            "response": (
+                                "The user chose to skip the interview. "
+                                "Call finalize_interview immediately with "
+                                "confidence='low', an empty additional_context "
+                                "dict, and a summary noting the interview was skipped."
+                            ),
+                        }
+                    }
+                    for interrupt in result.interrupts
+                ]
+                result = await asyncio.to_thread(self.agent, skip_responses)
                 break
             result = await asyncio.to_thread(self.agent, responses)
 
