@@ -107,6 +107,13 @@ class Config:
                 "source_name": "mitre-attack",
                 "kill_chain_name": "mitre-attack",
             },
+            "atlas": {
+                "name": "MITRE ATLAS",
+                "description": "AI/ML adversarial threats",
+                "stix_bundle": "stix-atlas.json",
+                "source_name": "mitre-atlas",
+                "kill_chain_name": "mitre-atlas",
+            },
         }
         return self.get("frameworks", default)
 
