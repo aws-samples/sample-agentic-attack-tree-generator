@@ -25,6 +25,10 @@ class CLIWizard:
         config_missing = not manager.user_config_file.exists()
         env_missing = not env_manager.env_file.exists()
         
+        if not config_missing:
+            # Existing config — merge any new bundled entries (e.g. new frameworks)
+            manager.migrate_config()
+
         if config_missing or env_missing:
             # First-time setup wizard
             welcome_panel = Panel(
