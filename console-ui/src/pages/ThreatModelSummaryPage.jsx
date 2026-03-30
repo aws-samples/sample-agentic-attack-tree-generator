@@ -307,7 +307,7 @@ function MitigationsTab({ attackTrees, threats }) {
     },
     {
       id: 'technique',
-      header: 'Technique',
+      header: 'Mapped TTP',
       cell: (item) => {
         if (!item.techniqueId) return '\u2014';
         let url;

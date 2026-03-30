@@ -70,7 +70,7 @@ export function generateCsvContent(summaryData) {
     'Mitigation Priority',
     'Mitigation',
     'Remediation Type',
-    'Technique',
+    'Mapped TTP',
     'Attack Steps',
     'Implementation Guidance',
   ];
@@ -347,7 +347,7 @@ export function exportPdf(summaryData, filename) {
 
       autoTable(doc, {
         startY: 25,
-        head: [['Threat', 'Attack Step', 'Technique ID', 'Technique Name', 'Confidence']],
+        head: [['Threat', 'Attack Step', 'TTP ID', 'TTP Name', 'Confidence']],
         body: ttpRows,
         theme: 'striped',
         headStyles: { fillColor: THEME_COLOR, fontSize: 8 },
@@ -387,7 +387,7 @@ export function exportPdf(summaryData, filename) {
 
       autoTable(doc, {
         startY: 25,
-        head: [['Priority', 'Mitigation', 'Remediation', 'Technique', 'Threat']],
+        head: [['Priority', 'Mitigation', 'Remediation', 'Mapped TTP', 'Threat']],
         body: mitRows,
         theme: 'striped',
         headStyles: { fillColor: THEME_COLOR, fontSize: 8 },

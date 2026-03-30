@@ -72,7 +72,7 @@ const COLUMN_DEFINITIONS = [
   },
   {
     id: "technique",
-    header: "Technique",
+    header: "Mapped TTP",
     cell: (item) => {
       if (!item.techniqueId) return "—";
       let url;

@@ -14,7 +14,7 @@ export const PIPELINE_STAGES = [
   { title: 'Repository Analysis', description: 'Scans your codebase to identify components, dependencies, and potential attack surfaces' },
   { title: 'Threat Parsing', description: 'Analyzes identified components to extract and categorize potential threats' },
   { title: 'Attack Tree Generation', description: 'Builds structured attack trees modeling how threats can be exploited' },
-  { title: 'TTP Enrichment', description: 'Maps attack paths to threat framework techniques (ATT&CK, ATLAS, and more)' },
+  { title: 'TTP Enrichment', description: 'Maps attack paths to industry repositories of tactics, techniques, and procedures' },
   { title: 'Mitigation Mapping', description: 'Generates actionable mitigation strategies for each identified attack path' },
   { title: 'Dashboard Generation', description: 'Produces an interactive dashboard for exploring threats, attack trees, and mitigations' },
 ];
