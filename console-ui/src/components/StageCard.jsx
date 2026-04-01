@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import StatusIndicator from '@cloudscape-design/components/status-indicator';
 import ProgressBar from '@cloudscape-design/components/progress-bar';
 import Box from '@cloudscape-design/components/box';
+import Button from '@cloudscape-design/components/button';
 import { useElapsedTimer, formatElapsed } from '../hooks/useElapsedTimer';
+import ScannerReviewEditModal, { BadgeList } from './ScannerReviewPanel';
 
 /**
  * Map stage status to Cloudscape StatusIndicator type.
@@ -49,7 +51,13 @@ export default function StageCard({
   errorMessage = null,
   findings = null,
   workers = null,
+  scannerReview = null,
+  onScannerReviewConfirm = null,
+  onScannerReviewEdit = null,
+  onScannerReviewSkip = null,
 }) {
+  const [editModalVisible, setEditModalVisible] = useState(false);
+
   // Elapsed timer via extracted hook
   const elapsed = useElapsedTimer(startTime, endTime);
 
@@ -89,8 +97,46 @@ export default function StageCard({
         </div>
       )}
 
-      {/* Awaiting input indicator */}
-      {isAwaitingInput && (
+      {/* Awaiting input: scanner review (inline) or interviewer (pointer to panel) */}
+      {isAwaitingInput && scannerReview && (
+        <div style={{ marginTop: '10px' }} data-testid="scanner-review-inline">
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '10px 24px',
+            padding: '10px 12px',
+            background: '#f9fafb',
+            borderRadius: '6px',
+            fontSize: '13px',
+          }}>
+            <div><Box variant="awsui-key-label" fontSize="body-s">Cloud</Box><BadgeList items={scannerReview._cloudTokens} /></div>
+            <div><Box variant="awsui-key-label" fontSize="body-s">Stack</Box><BadgeList items={scannerReview._techTokens} /></div>
+            <div><Box variant="awsui-key-label" fontSize="body-s">Industry</Box><div>{scannerReview.industry || '\u2014'}</div></div>
+            <div><Box variant="awsui-key-label" fontSize="body-s">Services</Box><BadgeList items={scannerReview.services} /></div>
+            <div><Box variant="awsui-key-label" fontSize="body-s">Auth</Box><BadgeList items={scannerReview.auth_mechanisms} /></div>
+            <div><Box variant="awsui-key-label" fontSize="body-s">Compliance</Box><BadgeList items={scannerReview.compliance_requirements} /></div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px' }}>
+            <Button variant="primary" onClick={onScannerReviewConfirm} data-testid="scanner-review-confirm">
+              Looks good
+            </Button>
+            <Button variant="normal" onClick={() => setEditModalVisible(true)} data-testid="scanner-review-edit">
+              Edit
+            </Button>
+            <span style={{ flex: 1 }} />
+            <Button variant="link" onClick={onScannerReviewSkip} data-testid="scanner-review-skip">
+              Skip
+            </Button>
+          </div>
+          <ScannerReviewEditModal
+            visible={editModalVisible}
+            scannerData={scannerReview}
+            onSubmit={(edits) => { setEditModalVisible(false); onScannerReviewEdit(edits); }}
+            onDismiss={() => setEditModalVisible(false)}
+          />
+        </div>
+      )}
+      {isAwaitingInput && !scannerReview && (
         <Box color="text-status-warning" fontSize="body-s" margin={{ top: 'xs' }} data-testid="awaiting-input">
           Waiting for your input — see the Context Validation panel below
         </Box>

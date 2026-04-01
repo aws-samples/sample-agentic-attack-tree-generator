@@ -12,10 +12,16 @@ from server.registry import create_run_directory
 
 def _make_cli_interaction_fn(console: Console):
     """Create an interaction function that prompts the user in the terminal."""
+    from rich.table import Table
 
     def interaction_fn(interrupts):
         for interrupt in interrupts:
             reason = interrupt.reason or {}
+            phase = reason.get("phase", "interviewer")
+
+            if phase == "scanner_review":
+                return _handle_scanner_review(console, interrupt, reason)
+
             console.print()
             console.print(Panel(
                 reason.get("message", "The interviewer has questions for you."),
@@ -42,6 +48,45 @@ def _make_cli_interaction_fn(console: Console):
             return [{"interruptResponse": {"interruptId": interrupt.id, "response": response}}]
 
         return None
+
+    def _handle_scanner_review(console, interrupt, reason):
+        """Present scanner findings as a Rich table for CLI review."""
+        import json
+
+        scanner_data = reason.get("scanner_data", {})
+
+        console.print()
+        table = Table(title="Scanner Findings", border_style="cyan", show_lines=True)
+        table.add_column("Field", style="bold")
+        table.add_column("Value")
+
+        table.add_row("Cloud Provider", scanner_data.get("cloud_provider", "unknown"))
+        table.add_row("Tech Stack", scanner_data.get("tech_stack", ""))
+        table.add_row("Industry", scanner_data.get("industry", "") or "not detected")
+        table.add_row("Services", ", ".join(scanner_data.get("services", [])) or "none")
+        table.add_row("Auth Mechanisms", ", ".join(scanner_data.get("auth_mechanisms", [])) or "none")
+        table.add_row("Compliance", ", ".join(scanner_data.get("compliance_requirements", [])) or "none")
+        table.add_row("Data Sensitivity", scanner_data.get("data_sensitivity", "") or "not detected")
+        table.add_row("Files Analyzed", str(len(scanner_data.get("files_analyzed", []))))
+
+        console.print(table)
+        console.print()
+        console.print("[dim]Press Enter to confirm, or type edits as JSON (e.g. {\"industry\": \"healthcare\"}).[/dim]")
+        console.print("[dim]Type 'skip' to proceed without review.[/dim]")
+        console.print()
+
+        try:
+            response = console.input("[cyan]> [/cyan]")
+        except (EOFError, KeyboardInterrupt):
+            return None
+
+        if not response or response.strip().lower() in ("skip", "s"):
+            return None
+
+        if not response.strip() or response.strip().lower() in ("y", "yes", "confirm", "ok"):
+            response = json.dumps({"confirmed_only": True})
+
+        return [{"interruptResponse": {"interruptId": interrupt.id, "response": response}}]
 
     return interaction_fn
 

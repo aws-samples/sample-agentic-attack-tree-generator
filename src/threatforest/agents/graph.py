@@ -143,7 +143,7 @@ def build_graph(
 
     from threatforest.agents.scanner.agent import create_scanner_agent
     from threatforest.agents.scanner.verifier import verify_scanner_output
-    from threatforest.agents.interviewer.agent import create_interviewer_agent, InterviewerNode
+    from threatforest.agents.interviewer.agent import create_interviewer_agent, InterviewerNode, ScannerReviewNode
     from threatforest.agents.threat.agent import create_threat_agent
     from threatforest.agents.threat.verifier import verify_threat_output
     from threatforest.agents.parallel import run_parallel_pipeline
@@ -172,6 +172,14 @@ def build_graph(
             repo_path, "scanner_verifier", run_dir=run_dir,
         ))
     )
+
+    # Scanner review: present findings for user confirmation before interview
+    if "scanner_review" in skip_nodes:
+        scanner_review = _make_skip_node("scanner_review", repo_path, run_dir)
+    else:
+        scanner_review = GraphNode("scanner_review", ScannerReviewNode(
+            state_dir, interaction_fn, "scanner_review",
+        ))
 
     # Interviewer: human-in-the-loop context validation
     if "interviewer" in skip_nodes:
@@ -263,9 +271,10 @@ def build_graph(
         return not _report_ok(s)
 
     edges = {
-        # Scanner → Interviewer → Threat
+        # Scanner → Scanner Review → Interviewer → Threat
         GraphEdge(scanner, scanner_v),
-        GraphEdge(scanner_v, interviewer, condition=_scanner_ok),
+        GraphEdge(scanner_v, scanner_review, condition=_scanner_ok),
+        GraphEdge(scanner_review, interviewer),
         GraphEdge(interviewer, threat),
         GraphEdge(threat, threat_v),
 
@@ -286,7 +295,7 @@ def build_graph(
 
     nodes = {
         "scanner": scanner, "scanner_verifier": scanner_v,
-        "interviewer": interviewer,
+        "scanner_review": scanner_review, "interviewer": interviewer,
         "threat": threat, "threat_verifier": threat_v,
         "parallel_pipeline": parallel, "parallel_verifier": parallel_v,
         "report": report, "report_verifier": report_v,
@@ -328,6 +337,7 @@ async def run_graph(repo_path: str, run_dir: str | None = None, frameworks: list
     NODE_LABELS = {
         "scanner": "🔍 Scanner Agent",
         "scanner_verifier": "✅ Scanner Verifier",
+        "scanner_review": "📋 Scanner Review",
         "interviewer": "🔎 Context Validation",
         "threat": "🤖 Threat Agent",
         "threat_verifier": "✅ Threat Verifier",
@@ -357,6 +367,10 @@ async def run_graph(repo_path: str, run_dir: str | None = None, frameworks: list
                     from threatforest.agents.scanner.verifier import verify_scanner_output
                     ok, msg = verify_scanner_output(str(f))
                     return [f"{'PASS' if ok else 'FAIL'}: {msg}"]
+            elif nid == "scanner_review":
+                d = json.loads((sd / "scanner_context.json").read_text())
+                reviewed = "yes" if d.get("scanner_review_applied") else "no edits"
+                return [f"Review: {reviewed}"]
             elif nid == "interviewer":
                 d = json.loads((sd / "scanner_context.json").read_text())
                 confidence = d.get("interviewer_confidence", "skipped")

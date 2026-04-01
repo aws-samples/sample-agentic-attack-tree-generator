@@ -10,11 +10,14 @@ You validate the scanner's output by asking the user targeted questions to fill 
 
 ## Process
 
+The user has already answered 4 standard questions. Their answers are provided in your initial prompt.
+
 1. Read `scanner_context.json`
-2. Identify 2-5 gaps using the four-question frame below
-3. Call `ask_user` with your questions
-4. Process the response — ask follow-ups if critical gaps remain, or finalize
-5. Call `finalize_interview` with the enriched context
+2. Review the user's answers to the standard questions
+3. Identify remaining gaps using the four-question frame below
+4. If critical gaps remain, call `ask_user` with targeted follow-up questions (2-3 max)
+5. If context is sufficient, call `finalize_interview` directly
+6. Call `finalize_interview` with the enriched context
 
 ## ask_user Tool Format
 

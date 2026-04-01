@@ -6,6 +6,7 @@ collects user input, and resumes the agent with the response.
 """
 
 import json
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable
 
@@ -22,7 +23,35 @@ from threatforest.tools.sandboxed_file import make_sandboxed_file_read
 from threatforest.agents.scanner.agent import resolve_state_dir
 from threatforest.agents.tracing_session import trace_attrs
 from threatforest.agents.interviewer.hook import InterviewerInterruptHook
-from threatforest.agents.interviewer.enricher import enrich_scanner_context
+from threatforest.agents.interviewer.enricher import enrich_scanner_context, apply_scanner_review_edits
+
+
+# ---------------------------------------------------------------------------
+# SimpleInterrupt — lightweight interrupt for non-LLM interaction rounds
+# ---------------------------------------------------------------------------
+
+@dataclass
+class SimpleInterrupt:
+    """Mimics strands Interrupt interface for non-agent interaction rounds.
+
+    Used by ScannerReviewNode and InterviewerNode (fixed questions) so the
+    same interaction_fn can handle both real strands interrupts and these
+    lightweight ones.
+    """
+    id: str
+    reason: dict = field(default_factory=dict)
+
+
+# ---------------------------------------------------------------------------
+# Fixed interview questions (identical every run)
+# ---------------------------------------------------------------------------
+
+FIXED_QUESTIONS = [
+    "What specific types of sensitive data does this application handle?",
+    "Is this system in production, early design, or early development?",
+    "What is the main risk focus — confidentiality, integrity, or availability?",
+    "Are there compliance or regulatory requirements this system must meet?",
+]
 
 
 def _load_prompt() -> str:
@@ -111,11 +140,77 @@ def create_interviewer_agent(repo_path: str, run_dir: str | None = None) -> Agen
     )
 
 
+class ScannerReviewNode(MultiAgentBase):
+    """Presents scanner findings to user for confirmation/editing.
+
+    Reads scanner_context.json, sends findings via interaction_fn using a
+    SimpleInterrupt with phase="scanner_review", and applies any user edits.
+    """
+
+    def __init__(
+        self,
+        state_dir: Path,
+        interaction_fn: Callable | None,
+        node_id: str = "scanner_review",
+    ):
+        self.state_dir = state_dir
+        self.interaction_fn = interaction_fn
+        self.id = node_id
+
+    async def invoke_async(self, task, invocation_state=None, **kwargs):
+        import asyncio
+
+        state_file = self.state_dir / "scanner_context.json"
+
+        if self.interaction_fn is None or not state_file.exists():
+            return self._make_result("Scanner review skipped (no interaction_fn).")
+
+        ctx = json.loads(state_file.read_text())
+
+        review_payload = {
+            "phase": "scanner_review",
+            "message": "Here's what the scanner found. Please confirm or edit before we continue.",
+            "scanner_data": {
+                "files_analyzed": ctx.get("files_analyzed", []),
+                "industry": ctx.get("industry", ""),
+                "services": ctx.get("services", []),
+                "auth_mechanisms": ctx.get("auth_mechanisms", []),
+                # Send as original strings — frontend splits into tokens for editing
+                "cloud_provider": ctx.get("cloud_provider", ""),
+                "tech_stack": ctx.get("tech_stack", ""),
+                "data_sensitivity": ctx.get("data_sensitivity", ""),
+                "compliance_requirements": ctx.get("compliance_requirements", []),
+            },
+        }
+
+        interrupt = SimpleInterrupt(id="scanner-review", reason=review_payload)
+        responses = await asyncio.to_thread(self.interaction_fn, [interrupt])
+
+        if responses is not None:
+            # Parse user response — expect JSON with edits or plain "confirmed"
+            raw = responses[0].get("interruptResponse", {}).get("response", "")
+            try:
+                edits = json.loads(raw)
+                if isinstance(edits, dict) and not edits.get("confirmed_only"):
+                    apply_scanner_review_edits(str(state_file), edits)
+            except (json.JSONDecodeError, TypeError):
+                pass  # Plain text confirmation, no edits needed
+
+        return self._make_result("Scanner review complete.")
+
+    def _make_result(self, text: str):
+        agent_result = _make_agent_result(text)
+        return MultiAgentResult(
+            status=Status.COMPLETED,
+            results={self.id: NodeResult(result=agent_result, status=Status.COMPLETED)},
+        )
+
+
 class InterviewerNode(MultiAgentBase):
     """Graph node that runs the interviewer with interrupt-based HITL.
 
-    Encapsulates the multi-turn interrupt loop within the node so the
-    graph executor doesn't need special interrupt handling.
+    Phase 1: Sends hardcoded FIXED_QUESTIONS via SimpleInterrupt (no LLM).
+    Phase 2: Feeds answers + scanner context to LLM for follow-ups.
     """
 
     def __init__(
@@ -136,13 +231,36 @@ class InterviewerNode(MultiAgentBase):
             result_str = await asyncio.to_thread(self._run_skip)
             return self._make_result(result_str)
 
+        # Phase 1: Fixed questions (no LLM)
+        fixed_interrupt = SimpleInterrupt(
+            id="fixed-questions",
+            reason={
+                "phase": "interviewer",
+                "message": "A few standard questions before we begin threat modeling.",
+                "questions": FIXED_QUESTIONS,
+            },
+        )
+        fixed_responses = await asyncio.to_thread(self.interaction_fn, [fixed_interrupt])
+
+        if fixed_responses is None:
+            # User skipped
+            result_str = await asyncio.to_thread(self._run_skip)
+            return self._make_result(result_str)
+
+        # Extract user text from interruptResponse
+        user_text = fixed_responses[0].get("interruptResponse", {}).get("response", "")
+
+        # Phase 2: Feed answers + scanner context to LLM for follow-ups
         result = await asyncio.to_thread(
             self.agent,
-            "Read the scanner context file and evaluate its completeness. "
-            "Then ask the user targeted questions about any gaps you find.",
+            f"The user answered the standard interview questions as follows:\n\n"
+            f"{user_text}\n\n"
+            "Read the scanner context file. Based on these answers and any remaining gaps, "
+            "either ask targeted follow-up questions using ask_user, or call finalize_interview "
+            "if you have enough context.",
         )
 
-        # Multi-turn interrupt loop
+        # Multi-turn interrupt loop for LLM follow-ups (unchanged)
         while result.stop_reason == "interrupt" and result.interrupts:
             responses = await asyncio.to_thread(self.interaction_fn, result.interrupts)
             if responses is None:

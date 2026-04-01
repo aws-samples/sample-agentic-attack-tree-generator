@@ -83,6 +83,9 @@ export default function RunProgressPage() {
   const [showInterviewer, setShowInterviewer] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
   const [interviewerWaiting, setInterviewerWaiting] = useState(false);
+  // Scanner review state
+  const [showScannerReview, setShowScannerReview] = useState(false);
+  const [scannerReviewData, setScannerReviewData] = useState(null);
 
   const handleInterviewerSubmit = useCallback(async (text) => {
     setChatHistory((prev) => [...prev, { role: 'user', text }]);
@@ -104,6 +107,36 @@ export default function RunProgressPage() {
       setErrorMessage(`Failed to skip interview: ${err.message}`);
     }
     setInterviewerWaiting(false);
+  }, [runId]);
+
+  const handleScannerReviewConfirm = useCallback(async () => {
+    try {
+      await submitRunResponse(runId, JSON.stringify({ confirmed_only: true }));
+      setShowScannerReview(false);
+      setScannerReviewData(null);
+    } catch (err) {
+      setErrorMessage(`Failed to confirm scanner review: ${err.message}`);
+    }
+  }, [runId]);
+
+  const handleScannerReviewEdit = useCallback(async (edits) => {
+    try {
+      await submitRunResponse(runId, JSON.stringify(edits));
+      setShowScannerReview(false);
+      setScannerReviewData(null);
+    } catch (err) {
+      setErrorMessage(`Failed to submit scanner review edits: ${err.message}`);
+    }
+  }, [runId]);
+
+  const handleScannerReviewSkip = useCallback(async () => {
+    try {
+      await submitRunResponse(runId, null);
+      setShowScannerReview(false);
+      setScannerReviewData(null);
+    } catch (err) {
+      setErrorMessage(`Failed to skip scanner review: ${err.message}`);
+    }
   }, [runId]);
 
   const appendActivity = useCallback((message, type) => {
@@ -208,24 +241,55 @@ export default function RunProgressPage() {
         }
 
         case 'awaiting_input': {
-          const cvIdx = resolveStageIndex('Context Validation');
-          if (cvIdx >= 0) {
-            setStages((prev) =>
-              prev.map((s, i) =>
-                i === cvIdx
-                  ? { ...s, status: 'awaiting-input', statusText: 'Waiting for your input' }
-                  : s,
-              ),
-            );
+          const awaitPhase = details?.phase || 'interviewer';
+
+          if (awaitPhase === 'scanner_review') {
+            // Scanner review — show inline in the Repository Analysis StageCard
+            const raIdx = resolveStageIndex('Repository Analysis');
+            const rawData = details?.scanner_data || {};
+            // Pre-compute token arrays for display
+            const enriched = {
+              ...rawData,
+              _cloudTokens: typeof rawData.cloud_provider === 'string' && rawData.cloud_provider.trim()
+                ? rawData.cloud_provider.split(/,\s*/).filter(Boolean)
+                : (Array.isArray(rawData.cloud_provider) ? rawData.cloud_provider : []),
+              _techTokens: typeof rawData.tech_stack === 'string' && rawData.tech_stack.trim()
+                ? rawData.tech_stack.split(/,\s*/).filter(Boolean)
+                : (Array.isArray(rawData.tech_stack) ? rawData.tech_stack : []),
+            };
+            setScannerReviewData(enriched);
+            setShowScannerReview(true);
+            if (raIdx >= 0) {
+              setStages((prev) =>
+                prev.map((s, i) =>
+                  i === raIdx
+                    ? { ...s, status: 'awaiting-input', statusText: 'Waiting for your review' }
+                    : s,
+                ),
+              );
+            }
+            appendActivity('Scanner review is waiting for your confirmation.', 'stage-start');
+          } else {
+            // Interviewer — show InterviewerPanel
+            const cvIdx = resolveStageIndex('Context Validation');
+            if (cvIdx >= 0) {
+              setStages((prev) =>
+                prev.map((s, i) =>
+                  i === cvIdx
+                    ? { ...s, status: 'awaiting-input', statusText: 'Waiting for your input' }
+                    : s,
+                ),
+              );
+            }
+            setChatHistory((prev) => [...prev, {
+              role: 'agent',
+              message: details?.message || message || '',
+              questions: details?.questions || [],
+            }]);
+            setShowInterviewer(true);
+            setInterviewerWaiting(false);
+            appendActivity('Interviewer is waiting for your input.', 'stage-start');
           }
-          setChatHistory((prev) => [...prev, {
-            role: 'agent',
-            message: details?.message || message || '',
-            questions: details?.questions || [],
-          }]);
-          setShowInterviewer(true);
-          setInterviewerWaiting(false);
-          appendActivity('Interviewer is waiting for your input.', 'stage-start');
           break;
         }
 
@@ -278,6 +342,15 @@ export default function RunProgressPage() {
             appendActivity('Pipeline completed successfully!', 'stage-complete');
             break;
           }
+          // Close panels when their stage completes
+          if (stage === 'Context Validation') {
+            setShowInterviewer(false);
+            setInterviewerWaiting(false);
+          }
+          if (stage === 'Repository Analysis') {
+            setShowScannerReview(false);
+          }
+
           if (stageIdx < 0) break;
           const endTs = data.server_ts || Date.now();
           // Compute elapsed INSIDE the updater so we access the latest
@@ -567,6 +640,10 @@ export default function RunProgressPage() {
                 errorMessage={stage.errorMessage}
                 findings={stage.findings}
                 workers={stage.workers}
+                scannerReview={stage.name === 'Repository Analysis' && showScannerReview ? scannerReviewData : null}
+                onScannerReviewConfirm={handleScannerReviewConfirm}
+                onScannerReviewEdit={handleScannerReviewEdit}
+                onScannerReviewSkip={handleScannerReviewSkip}
               />
             ))}
           </SpaceBetween>

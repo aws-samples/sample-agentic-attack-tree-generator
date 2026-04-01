@@ -132,6 +132,7 @@ def _slugify(name: str) -> str:
 NODE_LABELS = {
     "scanner": "Repository Analysis",
     "scanner_verifier": "Repository Analysis",
+    "scanner_review": "Repository Analysis",
     "interviewer": "Context Validation",
     "threat": "Threat Generation",
     "threat_verifier": "Threat Generation",
@@ -185,6 +186,17 @@ def _get_stage_summary(project_path: str, node_id: str, run_dir: str | None = No
     else:
         sd = Path(project_path) / ".threatforest" / "state"
     try:
+        if node_id == "scanner_review":
+            d = _json.loads((sd / "scanner_context.json").read_text())
+            return {
+                "message": f"Analyzed {len(d.get('files_analyzed', []))} files",
+                "findings": [
+                    f"☁️ Cloud: {d.get('cloud_provider', 'unknown').upper()}",
+                    f"🔧 Stack: {d.get('tech_stack', '')[:80]}",
+                    f"📦 Services: {', '.join(d.get('services', [])[:6])}",
+                    f"🔐 Auth: {', '.join(d.get('auth_mechanisms', [])[:4]) or 'none detected'}",
+                ],
+            }
         if node_id == "interviewer":
             d = _json.loads((sd / "scanner_context.json").read_text())
             confidence = d.get("interviewer_confidence", "skipped")

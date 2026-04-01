@@ -373,15 +373,22 @@ class RunManager:
                 queue.put_nowait(payload)
 
         def _web_interaction_fn(interrupts):
-            """Handle interviewer interrupts by routing questions to the web UI."""
+            """Handle interviewer/scanner-review interrupts by routing to the web UI."""
             for interrupt in interrupts:
                 reason = interrupt.reason or {}
                 req = InteractionRequest(run_id, reason)
                 self.set_pending_interaction(run_id, req)
 
+                # Route to the correct UI stage based on phase
+                phase = reason.get("phase", "interviewer")
+                if phase == "scanner_review":
+                    stage_label = "Repository Analysis"
+                else:
+                    stage_label = "Context Validation"
+
                 _push_event(ProgressEvent(
                     event_type="awaiting_input",
-                    stage="Context Validation",
+                    stage=stage_label,
                     percentage=50,
                     message=reason.get("message", "The interviewer has questions for you."),
                     details=reason,
