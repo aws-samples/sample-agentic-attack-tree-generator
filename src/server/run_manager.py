@@ -394,7 +394,7 @@ class RunManager:
                     details=reason,
                 ))
 
-                answered = req.wait(timeout=300.0)
+                answered = req.wait(timeout=1800.0)
                 self.clear_pending_interaction(run_id)
 
                 if not answered or req.response is None:
