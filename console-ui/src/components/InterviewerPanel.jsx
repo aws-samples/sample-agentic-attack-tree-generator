@@ -55,7 +55,7 @@ function renderText(text) {
  * @param {Function} props.onSkip - Called when user wants to proceed without answering
  * @param {boolean} props.waiting - True when waiting for agent response after submit
  */
-export default function InterviewerPanel({ chatHistory = [], onSubmit, onSkip, waiting = false }) {
+export default function InterviewerPanel({ chatHistory = [], onSubmit, onSkip, onBack, waiting = false }) {
   const [inputValue, setInputValue] = useState('');
   const bottomRef = useRef(null);
 
@@ -132,24 +132,39 @@ export default function InterviewerPanel({ chatHistory = [], onSubmit, onSkip, w
             disabled={waiting}
             data-testid="interviewer-input"
           />
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '8px' }}>
-            <Button
-              variant="link"
-              onClick={onSkip}
-              disabled={waiting}
-              data-testid="interviewer-skip"
-            >
-              Ready to proceed
-            </Button>
-            <Button
-              variant="primary"
-              onClick={handleSubmit}
-              disabled={waiting || !inputValue.trim()}
-              loading={waiting}
-              data-testid="interviewer-submit"
-            >
-              Submit
-            </Button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
+            <div>
+              {onBack && (
+                <Button
+                  variant="link"
+                  onClick={onBack}
+                  disabled={waiting}
+                  iconName="arrow-left"
+                  data-testid="interviewer-back"
+                >
+                  Back to scanner review
+                </Button>
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <Button
+                variant="link"
+                onClick={onSkip}
+                disabled={waiting}
+                data-testid="interviewer-skip"
+              >
+                Ready to proceed
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleSubmit}
+                disabled={waiting || !inputValue.trim()}
+                loading={waiting}
+                data-testid="interviewer-submit"
+              >
+                Submit
+              </Button>
+            </div>
           </div>
         </div>
       </SpaceBetween>

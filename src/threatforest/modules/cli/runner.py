@@ -34,7 +34,7 @@ def _make_cli_interaction_fn(console: Console):
                 console.print(f"  [bold]{i}.[/bold] {q}")
 
             console.print()
-            console.print("[dim]Type your response below, or 'skip' to proceed without answering.[/dim]")
+            console.print("[dim]Type your response, 'skip' to proceed, or 'back' to edit scanner findings.[/dim]")
             console.print()
 
             try:
@@ -44,6 +44,9 @@ def _make_cli_interaction_fn(console: Console):
 
             if not response or response.strip().lower() in ("skip", "done", "s"):
                 return None
+
+            if response.strip().lower() == "back":
+                return [{"interruptResponse": {"interruptId": interrupt.id, "response": "__back__"}}]
 
             return [{"interruptResponse": {"interruptId": interrupt.id, "response": response}}]
 

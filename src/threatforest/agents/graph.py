@@ -187,7 +187,7 @@ def build_graph(
     else:
         interviewer_agent = create_interviewer_agent(repo_path, run_dir=run_dir)
         interviewer = GraphNode("interviewer", InterviewerNode(
-            interviewer_agent, interaction_fn, "interviewer",
+            interviewer_agent, interaction_fn, state_dir, "interviewer",
         ))
 
     threat = (

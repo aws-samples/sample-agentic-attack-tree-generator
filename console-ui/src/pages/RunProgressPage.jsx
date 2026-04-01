@@ -109,6 +109,20 @@ export default function RunProgressPage() {
     setInterviewerWaiting(false);
   }, [runId]);
 
+  const handleInterviewerBack = useCallback(async () => {
+    setInterviewerWaiting(true);
+    try {
+      await submitRunResponse(runId, '__back__');
+      // Backend will send a scanner_review awaiting_input event,
+      // which the handler will route to the StageCard inline review.
+      setShowInterviewer(false);
+      setChatHistory([]);
+    } catch (err) {
+      setErrorMessage(`Failed to go back: ${err.message}`);
+      setInterviewerWaiting(false);
+    }
+  }, [runId]);
+
   const handleScannerReviewConfirm = useCallback(async () => {
     try {
       await submitRunResponse(runId, JSON.stringify({ confirmed_only: true }));
@@ -655,6 +669,7 @@ export default function RunProgressPage() {
             chatHistory={chatHistory}
             onSubmit={handleInterviewerSubmit}
             onSkip={handleInterviewerSkip}
+            onBack={handleInterviewerBack}
             waiting={interviewerWaiting}
           />
         )}

@@ -50,8 +50,9 @@ FIXED_QUESTIONS = [
     "What specific types of sensitive data does this application handle?",
     "Is this system in production, early design, or early development?",
     "What is the main risk focus — confidentiality, integrity, or availability?",
-    "Are there compliance or regulatory requirements this system must meet?",
 ]
+
+BACK_SENTINEL = "__back__"
 
 
 def _load_prompt() -> str:
@@ -210,6 +211,7 @@ class InterviewerNode(MultiAgentBase):
     """Graph node that runs the interviewer with interrupt-based HITL.
 
     Phase 1: Sends hardcoded FIXED_QUESTIONS via SimpleInterrupt (no LLM).
+              User can go "back" to re-edit scanner findings.
     Phase 2: Feeds answers + scanner context to LLM for follow-ups.
     """
 
@@ -217,38 +219,79 @@ class InterviewerNode(MultiAgentBase):
         self,
         agent: Agent,
         interaction_fn: Callable | None,
+        state_dir: Path,
         node_id: str = "interviewer",
     ):
         self.agent = agent
         self.interaction_fn = interaction_fn
+        self.state_dir = state_dir
         self.id = node_id
+
+    def _build_scanner_review_interrupt(self) -> SimpleInterrupt:
+        """Build a scanner review interrupt from current scanner_context.json."""
+        state_file = self.state_dir / "scanner_context.json"
+        ctx = json.loads(state_file.read_text()) if state_file.exists() else {}
+        return SimpleInterrupt(
+            id="scanner-review-back",
+            reason={
+                "phase": "scanner_review",
+                "message": "Edit your scanner findings, then continue.",
+                "scanner_data": {
+                    "files_analyzed": ctx.get("files_analyzed", []),
+                    "industry": ctx.get("industry", ""),
+                    "services": ctx.get("services", []),
+                    "auth_mechanisms": ctx.get("auth_mechanisms", []),
+                    "cloud_provider": ctx.get("cloud_provider", ""),
+                    "tech_stack": ctx.get("tech_stack", ""),
+                    "data_sensitivity": ctx.get("data_sensitivity", ""),
+                    "compliance_requirements": ctx.get("compliance_requirements", []),
+                },
+            },
+        )
 
     async def invoke_async(self, task, invocation_state=None, **kwargs):
         import asyncio
 
         if self.interaction_fn is None:
-            # No interaction function — skip interview, finalize with low confidence
             result_str = await asyncio.to_thread(self._run_skip)
             return self._make_result(result_str)
 
-        # Phase 1: Fixed questions (no LLM)
-        fixed_interrupt = SimpleInterrupt(
-            id="fixed-questions",
-            reason={
-                "phase": "interviewer",
-                "message": "A few standard questions before we begin threat modeling.",
-                "questions": FIXED_QUESTIONS,
-            },
-        )
-        fixed_responses = await asyncio.to_thread(self.interaction_fn, [fixed_interrupt])
+        # Phase 1: Fixed questions with back-to-scanner-review loop
+        while True:
+            fixed_interrupt = SimpleInterrupt(
+                id="fixed-questions",
+                reason={
+                    "phase": "interviewer",
+                    "message": "A few standard questions before we begin threat modeling.",
+                    "questions": FIXED_QUESTIONS,
+                },
+            )
+            fixed_responses = await asyncio.to_thread(self.interaction_fn, [fixed_interrupt])
 
-        if fixed_responses is None:
-            # User skipped
-            result_str = await asyncio.to_thread(self._run_skip)
-            return self._make_result(result_str)
+            if fixed_responses is None:
+                result_str = await asyncio.to_thread(self._run_skip)
+                return self._make_result(result_str)
 
-        # Extract user text from interruptResponse
-        user_text = fixed_responses[0].get("interruptResponse", {}).get("response", "")
+            user_text = fixed_responses[0].get("interruptResponse", {}).get("response", "")
+
+            if user_text == BACK_SENTINEL:
+                # User wants to go back to scanner review
+                review_interrupt = self._build_scanner_review_interrupt()
+                review_responses = await asyncio.to_thread(
+                    self.interaction_fn, [review_interrupt]
+                )
+                if review_responses is not None:
+                    raw = review_responses[0].get("interruptResponse", {}).get("response", "")
+                    try:
+                        edits = json.loads(raw)
+                        if isinstance(edits, dict) and not edits.get("confirmed_only"):
+                            state_file = str(self.state_dir / "scanner_context.json")
+                            apply_scanner_review_edits(state_file, edits)
+                    except (json.JSONDecodeError, TypeError):
+                        pass
+                continue  # Loop back to show fixed questions again
+
+            break  # Got real answers, proceed to phase 2
 
         # Phase 2: Feed answers + scanner context to LLM for follow-ups
         result = await asyncio.to_thread(
