@@ -36,8 +36,8 @@ class InteractionRequest:
         self.response: str | None = None
         self._event = threading.Event()
 
-    def wait(self, timeout: float = 300.0) -> bool:
-        return self._event.wait(timeout=timeout)
+    def wait(self) -> None:
+        self._event.wait()
 
     def respond(self, text: str | None) -> None:
         self.response = text
@@ -394,10 +394,10 @@ class RunManager:
                     details=reason,
                 ))
 
-                answered = req.wait(timeout=1800.0)
+                req.wait()
                 self.clear_pending_interaction(run_id)
 
-                if not answered or req.response is None:
+                if req.response is None:
                     return None
 
                 return [{"interruptResponse": {"interruptId": interrupt.id, "response": req.response}}]
