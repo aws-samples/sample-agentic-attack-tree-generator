@@ -38,6 +38,25 @@ def set_run_manager(manager: RunManager) -> None:
     _run_manager = manager
 
 
+@router.get("/runs", status_code=200)
+async def list_runs(status: str | None = None) -> dict:
+    """List all known runs, optionally filtered by status.
+
+    Query parameters:
+    - **status** — comma-separated statuses to include (e.g. ``running,pending``)
+
+    Returns ``{ runs: RunState[] }``.
+    """
+    manager = get_run_manager()
+    runs = list(manager.active_runs.values())
+    if status:
+        allowed = {s.strip() for s in status.split(",")}
+        runs = [r for r in runs if r.status in allowed]
+    # Most recent first
+    runs.sort(key=lambda r: r.started_at, reverse=True)
+    return {"runs": runs}
+
+
 @router.post("/runs", response_model=RunResponse, status_code=202)
 async def create_run(config: RunConfig) -> RunResponse:
     """Initiate a new ThreatForest pipeline run.
@@ -169,11 +188,34 @@ async def run_progress(websocket: WebSocket, run_id: str) -> None:
     try:
         queue = manager.get_progress_queue(run_id)
     except KeyError:
+        # Queue was cleaned up but run may have history (completed/failed run)
+        history = manager.get_event_history(run_id)
+        if not history:
+            await websocket.accept()
+            await websocket.close(code=4004, reason=f"Unknown run_id: {run_id}")
+            return
+        # Replay history for a terminal run that already had its queue removed
         await websocket.accept()
-        await websocket.close(code=4004, reason=f"Unknown run_id: {run_id}")
+        for event in history:
+            await websocket.send_json(event)
         return
 
     await websocket.accept()
+
+    # Replay event history for reconnecting clients
+    history = manager.get_event_history(run_id)
+    for event in history:
+        await websocket.send_json(event)
+
+    # If the run already reached a terminal state, no need to stream live
+    if history:
+        last = history[-1]
+        last_type = last.get("type", "")
+        last_stage = last.get("stage", "")
+        if last_type in ("error", "scan_paused", "scan_stopped") or (
+            last_type == "stage_complete" and last_stage == "complete"
+        ):
+            return
 
     try:
         while True:
@@ -202,6 +244,4 @@ async def run_progress(websocket: WebSocket, run_id: str) -> None:
     except Exception:
         logger.exception("WebSocket error for run %s", run_id)
     finally:
-        # Clean up the run's queue and event-loop reference to prevent
-        # memory leaks for long-running server instances.
         manager.cleanup_run(run_id)

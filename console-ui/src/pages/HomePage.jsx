@@ -8,8 +8,10 @@ import Box from '@cloudscape-design/components/box';
 import Button from '@cloudscape-design/components/button';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import ColumnLayout from '@cloudscape-design/components/column-layout';
+import Link from '@cloudscape-design/components/link';
+import StatusIndicator from '@cloudscape-design/components/status-indicator';
 import CloudscapeShell from '../components/CloudscapeShell';
-import { getPausedRuns } from '../api-client';
+import { getPausedRuns, getActiveRuns } from '../api-client';
 
 export const PIPELINE_STAGES = [
   { title: 'Repository Analysis', description: 'Scans your codebase to identify components, dependencies, and potential attack surfaces' },
@@ -23,12 +25,18 @@ export const PIPELINE_STAGES = [
 export default function HomePage() {
   const navigate = useNavigate();
   const [pausedCount, setPausedCount] = useState(0);
+  const [activeRuns, setActiveRuns] = useState([]);
 
   useEffect(() => {
     let cancelled = false;
     getPausedRuns()
       .then((data) => {
         if (!cancelled) setPausedCount((data.paused_runs || []).length);
+      })
+      .catch(() => {});
+    getActiveRuns()
+      .then((data) => {
+        if (!cancelled) setActiveRuns(data.runs || []);
       })
       .catch(() => {});
     return () => { cancelled = true; };
@@ -73,6 +81,34 @@ export default function HomePage() {
         }
       >
         <SpaceBetween size="xl">
+          {/* Active Runs */}
+          {activeRuns.length > 0 && (
+            <Container header={<Header variant="h2">Active runs</Header>}>
+              <SpaceBetween size="s">
+                {activeRuns.map((run) => (
+                  <Box key={run.run_id}>
+                    <SpaceBetween direction="horizontal" size="s" alignItems="center">
+                      <StatusIndicator type="in-progress">
+                        {run.status === 'pending' ? 'Starting' : 'Running'}
+                      </StatusIndicator>
+                      <Box variant="span" color="text-body-secondary">
+                        {run.config?.project_path?.split('/').pop() || run.run_id}
+                      </Box>
+                      <Link
+                        onFollow={(e) => {
+                          e.preventDefault();
+                          navigate(`/runs/${run.run_id}/progress`);
+                        }}
+                      >
+                        View progress
+                      </Link>
+                    </SpaceBetween>
+                  </Box>
+                ))}
+              </SpaceBetween>
+            </Container>
+          )}
+
           {/* Getting Started Steps */}
           <Container header={<Header variant="h2">Getting started</Header>}>
             <ColumnLayout columns={3}>

@@ -119,6 +119,7 @@ class RunManager:
         self._loops: dict[str, asyncio.AbstractEventLoop] = {}
         self._controls: dict[str, ScanControl] = {}
         self._pending_interactions: dict[str, InteractionRequest] = {}
+        self._event_history: dict[str, list[dict[str, Any]]] = {}
         self._executor = executor
 
     # ------------------------------------------------------------------
@@ -337,6 +338,10 @@ class RunManager:
     def clear_pending_interaction(self, run_id: str) -> None:
         self._pending_interactions.pop(run_id, None)
 
+    def get_event_history(self, run_id: str) -> list[dict[str, Any]]:
+        """Return a copy of all progress events recorded for *run_id*."""
+        return list(self._event_history.get(run_id, []))
+
     def cleanup_run(self, run_id: str) -> None:
         """Remove the event queue and loop reference for a finished run.
 
@@ -344,9 +349,17 @@ class RunManager:
         prevent memory leaks.  The ``active_runs`` entry is kept so that
         the dashboard endpoint can still serve results.  The ScanControl
         is kept so that ``resume_run`` can locate the run directory.
+
+        For active runs the queue and event history are preserved so that
+        a reconnecting client can replay the full history.
         """
-        self._queues.pop(run_id, None)
-        self._loops.pop(run_id, None)
+        state = self.active_runs.get(run_id)
+        is_terminal = state is not None and state.status in ("complete", "failed", "stopped")
+        if is_terminal:
+            self._queues.pop(run_id, None)
+            self._loops.pop(run_id, None)
+            self._event_history.pop(run_id, None)
+        # For active runs: keep queue + history intact for reconnection
 
     # ------------------------------------------------------------------
     # Background execution
@@ -367,6 +380,7 @@ class RunManager:
         def _push_event(event: ProgressEvent) -> None:
             """Thread-safe helper to enqueue a progress event."""
             payload = event.to_dict()
+            self._event_history.setdefault(run_id, []).append(payload)
             if loop is not None and loop.is_running():
                 loop.call_soon_threadsafe(queue.put_nowait, payload)
             else:

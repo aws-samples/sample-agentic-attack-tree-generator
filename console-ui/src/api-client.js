@@ -127,6 +127,11 @@ export async function pickDirectory() {
   return request('/api/filesystem/pick-directory', { method: 'POST' });
 }
 
+/** GET /api/runs?status=... → { runs: RunState[] } */
+export async function getActiveRuns() {
+  return request('/api/runs?status=pending,running');
+}
+
 /** POST /api/runs → { run_id } */
 export async function createRun(params) {
   return request('/api/runs', {

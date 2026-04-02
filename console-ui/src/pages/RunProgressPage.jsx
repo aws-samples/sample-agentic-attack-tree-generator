@@ -624,18 +624,25 @@ export default function RunProgressPage() {
 
         {/* Overall progress */}
         <Container header={<Header variant="h2">Overall Progress</Header>}>
-          <ProgressBar
-            value={overallProgress}
-            label="Pipeline progress"
-            description={
-              pipelineComplete
-                ? 'All stages completed'
-                : `${overallProgress}% complete`
-            }
-            status={
-              errorMessage ? 'error' : pipelineComplete ? 'success' : 'in-progress'
-            }
-          />
+          <SpaceBetween size="s">
+            <ProgressBar
+              value={overallProgress}
+              label="Pipeline progress"
+              description={
+                pipelineComplete
+                  ? 'All stages completed'
+                  : `${overallProgress}% complete`
+              }
+              status={
+                errorMessage ? 'error' : pipelineComplete ? 'success' : 'in-progress'
+              }
+            />
+            {scanStatus === 'running' && (
+              <Box color="text-status-inactive" fontSize="body-s">
+                You can safely leave this page and return at any time — your run will continue in the background.
+              </Box>
+            )}
+          </SpaceBetween>
         </Container>
 
         {/* Pipeline stages — now using StageCard components */}
