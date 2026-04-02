@@ -8,6 +8,7 @@ import SpaceBetween from '@cloudscape-design/components/space-between';
 import Header from '@cloudscape-design/components/header';
 import Container from '@cloudscape-design/components/container';
 import Link from '@cloudscape-design/components/link';
+import Box from '@cloudscape-design/components/box';
 import Button from '@cloudscape-design/components/button';
 import StageCard from '../components/StageCard';
 import ActivityFeed from '../components/ActivityFeed';
