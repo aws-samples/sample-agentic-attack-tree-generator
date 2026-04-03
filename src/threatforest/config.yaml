@@ -69,6 +69,12 @@ embeddings:
   model: "basel/ATTACK-BERT"
   ttc_threshold: 0.3  # Similarity threshold for TTP matching (0-1)
 
+# Parallel pipeline settings
+parallel:
+  # Max retry rounds for failed threats (0 = no retries).
+  # A value of 1 means 1 retry after the initial run (2 total attempts).
+  max_retries: 1
+
 # Kiro IDE Integration
 kiro_integration:
   enabled: true  # Enable/disable automatic ThreatForest execution via Kiro hooks

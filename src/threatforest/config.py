@@ -144,6 +144,15 @@ class Config:
         """Get TTC matching similarity threshold"""
         return self.get("embeddings.ttc_threshold", 0.3)
 
+    @property
+    def parallel_max_retries(self) -> int:
+        """Max retry rounds for failed threats in the parallel pipeline.
+
+        A value of 1 means 1 retry after the initial run (2 total attempts).
+        Set to 0 to disable retries.
+        """
+        return int(self.get("parallel.max_retries", 1))
+
     # Model provider configurations
     @property
     def bedrock(self) -> Dict[str, Any]:

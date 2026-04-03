@@ -323,6 +323,31 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
             if candidate.is_dir():
                 project_path = str(candidate.resolve())
 
+        # 4a. Fail-early input validation — catch problems before burning tokens
+        from threatforest.modules.core.providers.provider_factory import create_model
+        from threatforest.config import config as tf_config
+
+        # Validate model provider is configured (raises ValueError if not)
+        create_model(tf_config, temperature=0)
+
+        # Validate project has source files
+        from threatforest.agents.scanner.agent import _count_source_files
+        if _count_source_files(project_path) == 0:
+            raise ValueError(
+                f"No source files found in {project_path}. "
+                "The project directory must contain at least one source file to analyze."
+            )
+
+        # Validate threat file exists when threat_source is "file"
+        if config.threat_source == "file" and config.threat_file_path:
+            threat_file = Path(config.threat_file_path)
+            if not threat_file.is_absolute():
+                threat_file = Path(project_path) / threat_file
+            if not threat_file.is_file():
+                raise FileNotFoundError(
+                    f"Threat file not found: {config.threat_file_path}"
+                )
+
         # Resolve run directory — reuse existing dir on resume, create fresh otherwise
         if config.resume_run_dir:
             run_dir = Path(config.resume_run_dir)
@@ -480,6 +505,11 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
 
                     prev_node_id = nid
                     completed_nodes.append(nid)
+
+                    # Expose completed nodes on ScanControl so the crash
+                    # handler in RunManager can persist them to pause_state.
+                    if scan_control is not None:
+                        scan_control.completed_nodes = list(completed_nodes)
 
                     # Check for pause/stop at this natural stage boundary.
                     # We only interrupt between complete nodes so that no

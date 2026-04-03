@@ -527,12 +527,18 @@ def run_parallel_pipeline(repo_path: str, run_dir: str | None = None, frameworks
     Works both from a running event loop (server) and standalone (CLI).
     Returns the path to the merged mitigations file.
 
+    Failed threats are retried up to ``max_parallel_retries`` times at the
+    merge point.  Only the failed threats are re-run, not the entire batch.
+
     Args:
         repo_path: Path to the project repository.
         run_dir: Optional run directory for state files.
         frameworks: List of framework keys (e.g. ["attack", "atlas"]).
                     None means use all frameworks defined in config.
     """
+    from threatforest.config import config as _cfg
+    max_retries = _cfg.parallel_max_retries
+
     state_dir = resolve_state_dir(repo_path, run_dir)
     threats_file = state_dir / "threats.json"
     scanner_file = state_dir / "scanner_context.json"
@@ -549,23 +555,77 @@ def run_parallel_pipeline(repo_path: str, run_dir: str | None = None, frameworks
             (state_dir / name).write_text(json.dumps({name.replace(".json", ""): []}))
         return str(state_dir / "mitigations.json")
 
-    async def _run_all():
-        tasks = [
-            _process_single_threat(threat, i, len(threats), repo_path, scanner_context, run_dir=run_dir, frameworks=frameworks, scan_control=scan_control)
-            for i, threat in enumerate(threats)
-        ]
-        return await asyncio.gather(*tasks, return_exceptions=True)
+    def _is_empty_result(r: Any) -> bool:
+        """True when a threat produced no usable output (exception or empty)."""
+        if isinstance(r, Exception):
+            return True
+        if not isinstance(r, dict):
+            return True
+        return (
+            not r.get("attack_trees")
+            and not r.get("mitigations")
+        )
 
-    # Handle both: called from async context (server) or sync context (CLI)
-    try:
-        asyncio.get_running_loop()
-        # Already in an event loop — run in a new thread with its own loop
-        import concurrent.futures
-        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
-            results = pool.submit(lambda: asyncio.run(_run_all())).result()
-    except RuntimeError:
-        # No running loop — safe to use asyncio.run directly
-        results = asyncio.run(_run_all())
+    def _run_threats(threat_items: list[tuple[int, dict]]) -> list[tuple[int, Any]]:
+        """Run a batch of (index, threat) pairs and return (index, result) pairs."""
+        total = len(threats)  # always show total against full threat count
+
+        async def _run_batch():
+            tasks = [
+                _process_single_threat(
+                    threat, idx, total, repo_path, scanner_context,
+                    run_dir=run_dir, frameworks=frameworks, scan_control=scan_control,
+                )
+                for idx, threat in threat_items
+            ]
+            return await asyncio.gather(*tasks, return_exceptions=True)
+
+        # Handle both: called from async context (server) or sync context (CLI)
+        try:
+            asyncio.get_running_loop()
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+                batch_results = pool.submit(lambda: asyncio.run(_run_batch())).result()
+        except RuntimeError:
+            batch_results = asyncio.run(_run_batch())
+
+        return list(zip([idx for idx, _ in threat_items], batch_results))
+
+    # Initial run — all threats
+    indexed_threats = list(enumerate(threats))
+    indexed_results = _run_threats(indexed_threats)
+
+    # Build results dict keyed by threat index
+    results_by_idx: dict[int, Any] = {idx: r for idx, r in indexed_results}
+
+    # Retry failed threats at the merge point.
+    # Re-run ALL threats (not just failed ones) so each thread can leverage
+    # its own skip-if-exists logic — threads that completed previously will
+    # detect their output files and return immediately, while failed threads
+    # re-run from the step that failed (partial output from earlier steps is
+    # preserved and reused, just like the pause/resume flow).
+    for retry_round in range(max_retries):
+        # Check for interrupt before retrying
+        if scan_control is not None and scan_control.should_interrupt:
+            break
+
+        has_failures = any(
+            _is_empty_result(results_by_idx[idx])
+            for idx in results_by_idx
+        )
+        if not has_failures:
+            break
+
+        retry_results = _run_threats(indexed_threats)
+        for idx, r in retry_results:
+            # Only update if the new result is better than what we had
+            if _is_empty_result(results_by_idx.get(idx)) and not _is_empty_result(r):
+                results_by_idx[idx] = r
+            elif not _is_empty_result(r):
+                results_by_idx[idx] = r
+
+    # Collect ordered results for merging
+    results = [results_by_idx[i] for i in range(len(threats))]
 
     # Merge results with per-result renumbering.
     # Each per-threat pipeline produces trees starting from AT001, so we must

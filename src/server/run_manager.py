@@ -467,7 +467,29 @@ class RunManager:
                 logger.info("Error details written to %s", _err_file)
             except OSError:
                 pass
-            state.status = "failed"
+
+            # Save pause state so the run appears as a resumable paused scan.
+            # Completed nodes are tracked by the executor and stored on the
+            # ScanControl; if available, we persist them so resume can skip
+            # already-finished stages.
+            run_dir_str = control.run_dir if control else None
+            if run_dir_str:
+                try:
+                    from server.executor import _save_pause_state
+                    completed = getattr(control, "completed_nodes", []) or []
+                    _save_pause_state(
+                        Path(run_dir_str), completed, "error", config,
+                    )
+                    logger.info(
+                        "Saved pause state for crashed run %s (%d completed nodes)",
+                        run_id, len(completed),
+                    )
+                except Exception:
+                    logger.warning(
+                        "Could not save pause state for run %s", run_id, exc_info=True,
+                    )
+
+            state.status = "paused"
             state.completed_at = datetime.now(tz=timezone.utc).isoformat()
             state.error = str(exc)
 
@@ -477,7 +499,11 @@ class RunManager:
                 stage=stage_name,
                 percentage=state_percentage(state),
                 message=f"Pipeline failed: {exc}",
-                details={"error": str(exc), "stage": stage_name},
+                details={
+                    "error": str(exc),
+                    "stage": stage_name,
+                    "resumable": run_dir_str is not None,
+                },
             ))
 
 

@@ -198,6 +198,7 @@ async def run_progress(websocket: WebSocket, run_id: str) -> None:
         await websocket.accept()
         for event in history:
             await websocket.send_json(event)
+        await websocket.close(code=1000, reason="Run is in terminal state")
         return
 
     await websocket.accept()
@@ -207,7 +208,8 @@ async def run_progress(websocket: WebSocket, run_id: str) -> None:
     for event in history:
         await websocket.send_json(event)
 
-    # If the run already reached a terminal state, no need to stream live
+    # If the run already reached a terminal state, close cleanly with 1000
+    # so the client's reconnect logic does not kick in.
     if history:
         last = history[-1]
         last_type = last.get("type", "")
@@ -215,6 +217,7 @@ async def run_progress(websocket: WebSocket, run_id: str) -> None:
         if last_type in ("error", "scan_paused", "scan_stopped") or (
             last_type == "stage_complete" and last_stage == "complete"
         ):
+            await websocket.close(code=1000, reason="Run is in terminal state")
             return
 
     try:

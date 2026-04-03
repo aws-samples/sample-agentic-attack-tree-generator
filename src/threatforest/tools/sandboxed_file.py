@@ -89,7 +89,7 @@ def make_sandboxed_file_read(allowed_read_paths: list[str]):
             return result
         if resolved.suffix.lower() in DOCUMENT_EXTENSIONS:
             fmt = resolved.suffix.lower().lstrip(".")
-            name = f"{resolved.stem}-{uuid.uuid4().hex[:8]}"
+            name = f"doc-{uuid.uuid4().hex[:12]}"
             content_bytes = resolved.read_bytes()
             doc_result = {
                 "status": "success",

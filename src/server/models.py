@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel
+from typing import Literal
+
+from pydantic import BaseModel, model_validator
 
 
 class ApplicationSummary(BaseModel):
@@ -30,7 +32,7 @@ class RunConfig(BaseModel):
     """Configuration for initiating a ThreatForest run."""
 
     project_path: str
-    threat_source: str  # "auto" | "file"
+    threat_source: Literal["auto", "file"] = "auto"
     threat_file_path: str | None = None
     frameworks: list[str] | None = None  # e.g. ["attack", "atlas"]; None = all
 
@@ -40,6 +42,12 @@ class RunConfig(BaseModel):
     resume_run_dir: str | None = None
     # Graph nodes whose output files already exist on disk and can be skipped.
     skip_nodes: list[str] = []
+
+    @model_validator(mode="after")
+    def _validate_threat_file(self) -> "RunConfig":
+        if self.threat_source == "file" and not self.threat_file_path:
+            raise ValueError("threat_file_path is required when threat_source is 'file'")
+        return self
 
 
 class RunResponse(BaseModel):
