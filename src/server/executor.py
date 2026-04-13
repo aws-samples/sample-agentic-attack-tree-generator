@@ -330,12 +330,13 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
         # Validate model provider is configured (raises ValueError if not)
         create_model(tf_config, temperature=0)
 
-        # Validate project has source files
+        # Validate project has analyzable files
         from threatforest.agents.scanner.agent import _count_source_files
         if _count_source_files(project_path) == 0:
             raise ValueError(
-                f"No source files found in {project_path}. "
-                "The project directory must contain at least one source file to analyze."
+                f"No analyzable files found in {project_path}. "
+                "The project directory must contain at least one file to analyze "
+                "(source code, documentation, config, etc.)."
             )
 
         # Validate threat file exists when threat_source is "file"

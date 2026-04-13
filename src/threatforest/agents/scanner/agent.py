@@ -37,13 +37,36 @@ def _load_prompt() -> str:
 
 
 def _count_source_files(repo_path: str) -> int:
-    """Quick count of source files to determine repo size category."""
-    source_exts = {".py", ".js", ".ts", ".java", ".go", ".rb", ".rs", ".c", ".cpp", ".cs", ".php"}
+    """Quick count of analyzable files to determine repo size category.
+
+    Counts source code, config, documentation, and other text-based files
+    that the scanner agent can meaningfully analyze.
+    """
+    source_exts = {
+        # Source code
+        ".py", ".js", ".ts", ".jsx", ".tsx", ".java", ".go", ".rb", ".rs",
+        ".c", ".cpp", ".cs", ".php", ".swift", ".kt", ".scala", ".sh",
+        # Config / IaC
+        ".json", ".yaml", ".yml", ".toml", ".xml", ".tf", ".hcl",
+        ".properties", ".ini", ".cfg", ".conf",
+        # Documentation
+        ".md", ".txt", ".rst", ".pdf", ".doc", ".docx",
+        # Web
+        ".html", ".css", ".sql",
+        # Containers / CI
+        ".dockerfile",
+    }
+    # Also match extensionless files with known names
+    known_names = {"Dockerfile", "Makefile", "Gemfile", "Rakefile", "Procfile", "Jenkinsfile"}
     skip_dirs = {".git", "node_modules", "__pycache__", ".venv", "venv", "dist", "build", "target"}
     count = 0
     for root, dirs, files in os.walk(repo_path):
         dirs[:] = [d for d in dirs if d not in skip_dirs]
-        count += sum(1 for f in files if Path(f).suffix.lower() in source_exts)
+        for f in files:
+            if f.startswith("."):
+                continue
+            if Path(f).suffix.lower() in source_exts or f in known_names:
+                count += 1
         if count >= 50:
             return count
     return count
