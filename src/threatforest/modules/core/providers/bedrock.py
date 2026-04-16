@@ -75,13 +75,18 @@ def create_bedrock_model(config, temperature: float = 0):
             raise ValueError(f"❌ AWS Error: {str(e)}")
     
     # Create Bedrock model
-    model = BedrockModel(
-        model_id=bedrock_config['model_id'],
+    # Claude Opus 4.7 does not support the temperature parameter
+    model_id = bedrock_config['model_id']
+    kwargs = dict(
+        model_id=model_id,
         boto_session=session,
         boto_client_config=_bedrock_client_config(),
-        temperature=temperature,
         cache_prompt="default",
     )
+    if "claude-opus-4-7" not in model_id:
+        kwargs["temperature"] = temperature
+
+    model = BedrockModel(**kwargs)
     
     return model
 
