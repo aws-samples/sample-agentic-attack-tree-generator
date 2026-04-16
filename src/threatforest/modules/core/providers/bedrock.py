@@ -82,6 +82,7 @@ def create_bedrock_model(config, temperature: float = 0):
         boto_session=session,
         boto_client_config=_bedrock_client_config(),
         cache_prompt="default",
+        max_tokens=16_384,
     )
     if "claude-opus-4-7" not in model_id:
         kwargs["temperature"] = temperature
