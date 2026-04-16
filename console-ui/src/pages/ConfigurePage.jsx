@@ -27,6 +27,7 @@ const PROVIDER_MODELS = {
     { label: 'Claude Sonnet 4.6', value: 'global.anthropic.claude-sonnet-4-6' },
     { label: 'Claude Opus 4.5', value: 'global.anthropic.claude-opus-4-5-20251101-v1:0' },
     { label: 'Claude Opus 4.6', value: 'global.anthropic.claude-opus-4-6-v1' },
+    { label: 'Claude Opus 4.7', value: 'global.anthropic.claude-opus-4-7' },
   ],
   'Anthropic': [
     { label: 'Claude 3 Sonnet', value: 'claude-3-sonnet-20240229' },

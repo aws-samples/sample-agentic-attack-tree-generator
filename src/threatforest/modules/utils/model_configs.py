@@ -8,6 +8,7 @@ BEDROCK_MODELS = [
     "global.anthropic.claude-sonnet-4-5-20250929-v1:0",
     "global.anthropic.claude-opus-4-5-20251101-v1:0",
     "global.anthropic.claude-opus-4-6-v1",
+    "global.anthropic.claude-opus-4-7",
 ]
 
 # Anthropic Direct API Models
