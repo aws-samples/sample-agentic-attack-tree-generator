@@ -332,6 +332,10 @@ class RunManager:
             project_path=config_data.get("project_path", state.config.project_path),
             threat_source=config_data.get("threat_source", state.config.threat_source),
             threat_file_path=config_data.get("threat_file_path", state.config.threat_file_path),
+            # Preserve the link back to the persistent Application record so
+            # the resumed run retains v2 UX context (breadcrumbs, overview
+            # navigation). Falls back to None for pre-v2 paused runs.
+            app_id=config_data.get("app_id") or state.config.app_id,
             # Tell the executor to reuse the existing run directory
             resume_run_dir=run_dir_str,
             # Tell the graph to skip nodes whose outputs are already on disk
