@@ -17,7 +17,11 @@ from typing import TYPE_CHECKING, Any, Callable
 
 import yaml
 
-from server.models import RunConfig
+from server.applications import (
+    ApplicationNotFoundError,
+    get_repository as get_app_repository,
+)
+from server.models import Application, RunConfig
 from server.run_manager import OrchestratorExecutor, ProgressEvent
 
 if TYPE_CHECKING:
@@ -44,6 +48,7 @@ def _save_pause_state(
             "project_path": config.project_path,
             "threat_source": config.threat_source,
             "threat_file_path": config.threat_file_path,
+            "app_id": config.app_id,
         },
     }
     (run_dir / "pause_state.json").write_text(
@@ -123,6 +128,52 @@ def _sync_config_to_engine(workspace_dir: Path, engine_root: Path) -> None:
 
 def _slugify(name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+
+
+def _seed_scanner_context(run_dir: Path, app: Application) -> None:
+    """Pre-populate ``<run_dir>/state/scanner_context.json`` from business context.
+
+    The scanner agent is the first node in the graph and normally writes a
+    fresh file. When the run is tied to a persistent ``Application``, we seed
+    the file before the scanner starts so every downstream agent (which reads
+    the same file via their sandboxed file tools) sees user-authoritative
+    business context without any separate side-channel.
+
+    The seed contains both:
+
+    - A nested ``business_context`` block — the authoritative record of what
+      the user entered.
+    - Top-level ``compliance_requirements`` and ``data_sensitivity`` — mirrors
+      of the fields the scanner / interviewer already enrich, so existing
+      fill-if-not-set and unique-append logic naturally preserves the user's
+      values.
+
+    Leaves an existing file untouched (resume flows re-enter with state already
+    written from the previous attempt — we never clobber it).
+    """
+    state_dir = run_dir / "state"
+    state_dir.mkdir(parents=True, exist_ok=True)
+    state_file = state_dir / "scanner_context.json"
+    if state_file.is_file():
+        return
+
+    bc = app.business_context
+    seed: dict[str, Any] = {
+        "business_context": {
+            "description": bc.description,
+            "regulatory_frameworks": list(bc.regulatory_frameworks),
+            "data_sensitivity": bc.data_sensitivity,
+            "main_cia_risk": bc.main_cia_risk,
+        },
+        # Mirrored into top-level fields that the scanner + interviewer
+        # already understand, so downstream enrichment logic is zero-change.
+        "compliance_requirements": list(bc.regulatory_frameworks),
+        "data_sensitivity": bc.data_sensitivity,
+    }
+    state_file.write_text(
+        _json_module.dumps(seed, indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
 
 
 # Map graph node IDs to UI stage names.
@@ -369,6 +420,20 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
         # RunManager.resume_run() can locate pause_state.json later.
         if scan_control is not None:
             scan_control.run_dir = run_dir_str
+
+        # Seed scanner_context.json from the app's business context before any
+        # agent runs. Skipped when the run isn't linked to a persisted app
+        # (legacy / resume paths) — the scanner then writes a fresh file the
+        # way it always has.
+        if config.app_id and not config.resume_run_dir:
+            try:
+                app_record = get_app_repository().get_application(config.app_id)
+            except ApplicationNotFoundError:
+                # Route layer already rejects unknown app_ids with 404, but
+                # guard here too so stale RunConfigs don't crash the executor.
+                app_record = None
+            if app_record is not None:
+                _seed_scanner_context(run_dir, app_record)
 
         skip_nodes: frozenset[str] = frozenset(config.skip_nodes) if config.skip_nodes else frozenset()
         graph = build_graph(project_path, run_dir=run_dir_str, skip_nodes=skip_nodes, scan_control=scan_control, interaction_fn=interaction_fn)
