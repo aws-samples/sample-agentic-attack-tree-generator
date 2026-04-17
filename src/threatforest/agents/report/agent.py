@@ -497,6 +497,7 @@ def _generate_html_dashboard(repo_path: str, run_dir: str | None = None) -> None
         },
         "threats": threats,
         "attack_trees": _build_attack_trees_for_ui(state_dir, threats),
+        "scanner_context": scanner_ctx,
     }
     # Count total mappings
     total_mappings = sum(len(t.get("ttc_mappings", [])) for t in metadata.get("attack_trees", []))
