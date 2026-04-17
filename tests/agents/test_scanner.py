@@ -6,7 +6,12 @@ import tempfile
 
 import pytest
 
-from threatforest.agents.scanner.agent import _count_source_files, STATE_DIR, STATE_FILE
+from threatforest.agents.scanner.agent import (
+    _count_source_files,
+    _load_seeded_business_context,
+    STATE_DIR,
+    STATE_FILE,
+)
 from threatforest.agents.scanner.verifier import verify_scanner_output
 
 
@@ -105,3 +110,46 @@ class TestVerifyScannerOutput:
         passed, feedback = verify_scanner_output(state_file)
         assert passed is False
         assert "Missing" in feedback
+
+
+class TestLoadSeededBusinessContext:
+    """The scanner reads a pre-seeded state file to surface user-authoritative
+    business context in its system prompt. These tests exercise the helper
+    that pulls the nested block out of ``scanner_context.json``.
+    """
+
+    def test_returns_none_when_file_missing(self, tmp_path):
+        assert _load_seeded_business_context(str(tmp_path / "absent.json")) is None
+
+    def test_returns_none_when_no_business_context_key(self, tmp_path):
+        state = tmp_path / "scanner_context.json"
+        state.write_text(json.dumps({"tech_stack": "Python"}))
+        assert _load_seeded_business_context(str(state)) is None
+
+    def test_returns_block_when_present(self, tmp_path):
+        bc = {
+            "description": "Healthcare intake API storing PHI.",
+            "regulatory_frameworks": ["HIPAA", "SOC2"],
+            "data_sensitivity": "phi",
+            "main_cia_risk": "confidentiality",
+        }
+        state = tmp_path / "scanner_context.json"
+        state.write_text(json.dumps({"business_context": bc}))
+        assert _load_seeded_business_context(str(state)) == bc
+
+    def test_returns_none_when_block_is_empty(self, tmp_path):
+        state = tmp_path / "scanner_context.json"
+        state.write_text(json.dumps({"business_context": {}}))
+        # Empty dict is falsy — treat as "nothing to inject".
+        assert _load_seeded_business_context(str(state)) is None
+
+    def test_returns_none_on_malformed_json(self, tmp_path):
+        state = tmp_path / "scanner_context.json"
+        state.write_text("not valid {")
+        # Caller should never crash on a bad state file.
+        assert _load_seeded_business_context(str(state)) is None
+
+    def test_returns_none_when_block_is_not_a_dict(self, tmp_path):
+        state = tmp_path / "scanner_context.json"
+        state.write_text(json.dumps({"business_context": "oops a string"}))
+        assert _load_seeded_business_context(str(state)) is None
