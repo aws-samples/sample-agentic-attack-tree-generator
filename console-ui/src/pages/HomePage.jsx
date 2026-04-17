@@ -70,12 +70,18 @@ export default function HomePage() {
           <Container header={<Header variant="h2">Get started with ThreatForest</Header>}>
             <SpaceBetween size="m">
               <Box variant="p">
-                Start a new ThreatForest analysis run to scan your repository, generate attack trees,
-                and produce actionable security insights.
+                Register an application with its business context, then start a
+                threat model to scan the repository, generate attack trees, and
+                produce actionable security insights.
               </Box>
-              <Button variant="primary" onClick={() => navigate('/new-run')}>
-                Start New Run
-              </Button>
+              <SpaceBetween direction="horizontal" size="s">
+                <Button variant="primary" onClick={() => navigate('/applications/new')}>
+                  Create application
+                </Button>
+                <Button onClick={() => navigate('/applications')}>
+                  View applications
+                </Button>
+              </SpaceBetween>
             </SpaceBetween>
           </Container>
         }
@@ -127,15 +133,16 @@ export default function HomePage() {
               </SpaceBetween>
               <SpaceBetween size="s">
                 <Box fontSize="heading-l" fontWeight="bold">Step 2</Box>
-                <Box variant="h3">Start run</Box>
+                <Box variant="h3">Create threat model</Box>
                 <Box variant="p">
-                  Provide a repository URL and start the ThreatForest analysis pipeline
+                  Register an application with its business context, then launch
+                  the ThreatForest analysis pipeline from the app overview.
                 </Box>
                 <button
                   className="aws-orange-btn"
-                  onClick={() => navigate('/new-run')}
+                  onClick={() => navigate('/applications/new')}
                 >
-                  Start a run
+                  Create application
                 </button>
                 {pausedCount > 0 && (
                   <Button

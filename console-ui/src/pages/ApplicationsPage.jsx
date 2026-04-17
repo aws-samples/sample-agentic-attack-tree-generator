@@ -216,14 +216,29 @@ export default function ApplicationsPage() {
               setSortingColumn(detail.sortingColumn);
               setSortingDescending(detail.isDescending);
             }}
-            header={<Header description="Browse and manage your threat model applications">Applications</Header>}
+            header={
+              <Header
+                description="Browse and manage your threat model applications"
+                actions={
+                  <Button
+                    variant="primary"
+                    onClick={() => navigate('/applications/new')}
+                    data-testid="create-application"
+                  >
+                    Create application
+                  </Button>
+                }
+              >
+                Applications
+              </Header>
+            }
             empty={
               <Box textAlign="center" color="inherit" padding="l">
                 <SpaceBetween size="m">
                   <b>No applications</b>
                   <Box color="inherit">
                     No applications found.{' '}
-                    <Link onFollow={(e) => { e.preventDefault(); navigate('/new-run'); }}>Start a new run</Link> to create one.
+                    <Link onFollow={(e) => { e.preventDefault(); navigate('/applications/new'); }}>Create an application</Link> to get started.
                   </Box>
                 </SpaceBetween>
               </Box>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import CloudscapeShell from '../components/CloudscapeShell';
 import Wizard from '@cloudscape-design/components/wizard';
 import FormField from '@cloudscape-design/components/form-field';
@@ -13,11 +13,29 @@ import Box from '@cloudscape-design/components/box';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import ColumnLayout from '@cloudscape-design/components/column-layout';
 import Spinner from '@cloudscape-design/components/spinner';
-import { getConfig, getFrameworks, createRun } from '../api-client';
+import Badge from '@cloudscape-design/components/badge';
+import { getApplication, getConfig, getFrameworks, createRun } from '../api-client';
 import DirectoryPicker from '../components/DirectoryPicker';
 
+/**
+ * NewRunPage — launches a threat model run.
+ *
+ * In the v2 UX this page is always scoped to an existing Application via
+ * the ``/applications/:appId/runs/new`` route:
+ *
+ *   - project_path is locked to the application's stored path (read-only).
+ *   - regulatory_frameworks from the application's business context are
+ *     surfaced as pre-selected in the Threat Frameworks step.
+ *   - The submission carries ``app_id`` so the run links back to the app.
+ *
+ * The legacy ``/new-run`` route still works for backwards compatibility
+ * (no app scope — user types a path manually) until the v1 flow is
+ * retired.
+ */
 export default function NewRunPage() {
   const navigate = useNavigate();
+  const { appId } = useParams();
+  const isAppScoped = Boolean(appId);
 
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [projectPath, setProjectPath] = useState('');
@@ -28,9 +46,17 @@ export default function NewRunPage() {
   const [submitError, setSubmitError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  // App scope state
+  const [app, setApp] = useState(null);
+  const [appLoading, setAppLoading] = useState(isAppScoped);
+  const [appError, setAppError] = useState('');
+
   // Framework selection state
   const [availableFrameworks, setAvailableFrameworks] = useState({});
   const [selectedFrameworks, setSelectedFrameworks] = useState({});
+  // Ensures we only apply the business-context preselection once the two
+  // independent fetches (app + frameworks) have both landed.
+  const [frameworksInitialized, setFrameworksInitialized] = useState(false);
 
   // Validation error states
   const [projectPathError, setProjectPathError] = useState('');
@@ -46,23 +72,68 @@ export default function NewRunPage() {
 
     getFrameworks()
       .then((data) => {
-        if (!cancelled && data.frameworks) {
-          setAvailableFrameworks(data.frameworks);
-          // Default: all checked
-          const initial = {};
-          for (const key of Object.keys(data.frameworks)) {
-            initial[key] = true;
-          }
-          setSelectedFrameworks(initial);
-        }
+        if (cancelled || !data.frameworks) return;
+        setAvailableFrameworks(data.frameworks);
       })
       .catch(() => {});
 
+    if (isAppScoped) {
+      getApplication(appId)
+        .then((data) => {
+          if (cancelled) return;
+          setApp(data);
+          if (data.project_path) setProjectPath(data.project_path);
+        })
+        .catch((err) => {
+          if (!cancelled) setAppError(err.message || 'Failed to load application.');
+        })
+        .finally(() => {
+          if (!cancelled) setAppLoading(false);
+        });
+    }
+
     return () => { cancelled = true; };
-  }, []);
+  }, [appId, isAppScoped]);
+
+  /*
+   * Preselection rule:
+   *   - In app-scoped mode, any framework whose key *or* display name matches
+   *     an entry in ``app.business_context.regulatory_frameworks`` starts
+   *     checked; everything else starts unchecked.
+   *   - Otherwise all frameworks are checked by default (legacy behaviour).
+   * The match is case-insensitive so users who type "soc2" or "SOC 2" in
+   * business context still get an intuitive result.
+   */
+  useEffect(() => {
+    if (frameworksInitialized) return;
+    const keys = Object.keys(availableFrameworks);
+    if (keys.length === 0) return;
+    if (isAppScoped && !app) return; // wait for app to land
+
+    const preferred = new Set(
+      (app?.business_context?.regulatory_frameworks || []).map((f) =>
+        String(f).trim().toLowerCase()
+      )
+    );
+
+    const initial = {};
+    for (const key of keys) {
+      const name = availableFrameworks[key]?.name || key;
+      if (isAppScoped && preferred.size > 0) {
+        initial[key] =
+          preferred.has(key.toLowerCase()) || preferred.has(name.toLowerCase());
+      } else {
+        initial[key] = true;
+      }
+    }
+    setSelectedFrameworks(initial);
+    setFrameworksInitialized(true);
+  }, [availableFrameworks, app, isAppScoped, frameworksInitialized]);
 
   const validateStep = (stepIndex) => {
     if (stepIndex === 0) {
+      // In app-scoped mode the project path is locked and already valid.
+      if (isAppScoped) return true;
       if (!projectPath.trim()) {
         setProjectPathError('Project path is required.');
         return false;
@@ -114,6 +185,9 @@ export default function NewRunPage() {
       if (threatSource === 'file') {
         params.threat_file_path = threatFilePath;
       }
+      if (isAppScoped) {
+        params.app_id = appId;
+      }
       const result = await createRun(params);
       navigate(`/runs/${result.run_id}/progress`);
     } catch (err) {
@@ -128,25 +202,49 @@ export default function NewRunPage() {
     .filter(([, checked]) => checked)
     .map(([key]) => availableFrameworks[key]?.name || key);
 
+  const appRegulatory = app?.business_context?.regulatory_frameworks || [];
+
   const steps = [
     {
       title: 'Project Path',
       content: (
         <Container header={<Header variant="h2">Project Path</Header>}>
-          <FormField
-            label="Project directory path"
-            errorText={projectPathError}
-            description="Enter the path or browse to the project directory to analyze."
-          >
-            <DirectoryPicker
-              value={projectPath}
-              onChange={(val) => {
-                setProjectPath(val);
-                if (val.trim()) setProjectPathError('');
-              }}
-              placeholder="/path/to/project"
-            />
-          </FormField>
+          {isAppScoped ? (
+            <SpaceBetween size="m">
+              {appError && <Alert type="error">{appError}</Alert>}
+              <FormField
+                label="Project directory path"
+                description="Locked to the path registered when the application was created. Edit from the application overview to change it."
+              >
+                <Input value={projectPath} disabled readOnly />
+              </FormField>
+              {appRegulatory.length > 0 && (
+                <Box variant="small" color="text-body-secondary">
+                  Regulatory frameworks from this app's business context:{' '}
+                  {appRegulatory.map((f, i) => (
+                    <Badge key={i} color="blue">
+                      {f}
+                    </Badge>
+                  ))}
+                </Box>
+              )}
+            </SpaceBetween>
+          ) : (
+            <FormField
+              label="Project directory path"
+              errorText={projectPathError}
+              description="Enter the path or browse to the project directory to analyze."
+            >
+              <DirectoryPicker
+                value={projectPath}
+                onChange={(val) => {
+                  setProjectPath(val);
+                  if (val.trim()) setProjectPathError('');
+                }}
+                placeholder="/path/to/project"
+              />
+            </FormField>
+          )}
         </Container>
       ),
     },
@@ -194,7 +292,9 @@ export default function NewRunPage() {
         <Container header={<Header variant="h2">Threat Frameworks</Header>}>
           <SpaceBetween size="l">
             <Box variant="p" color="text-body-secondary">
-              Select which knowledge bases to map attack steps against. All frameworks are selected by default.
+              {isAppScoped && appRegulatory.length > 0
+                ? "Frameworks declared in this application's business context are pre-selected. You can still adjust the selection for this run."
+                : 'Select which knowledge bases to map attack steps against. All frameworks are selected by default.'}
             </Box>
             {frameworkError && (
               <Alert type="error" dismissible onDismiss={() => setFrameworkError('')}>
@@ -241,6 +341,12 @@ export default function NewRunPage() {
               </Box>
             ) : (
               <ColumnLayout columns={2} variant="text-grid">
+                {isAppScoped && (
+                  <div>
+                    <Box variant="awsui-key-label">Application</Box>
+                    <div>{app?.name || appId}</div>
+                  </div>
+                )}
                 <div>
                   <Box variant="awsui-key-label">Project path</Box>
                   <div>{projectPath}</div>
@@ -275,13 +381,32 @@ export default function NewRunPage() {
     },
   ];
 
-  return (
-    <CloudscapeShell
-      activePage="/new-run"
-      breadcrumbs={[
+  const breadcrumbs = isAppScoped
+    ? [
+        { text: 'Home', href: '/' },
+        { text: 'Applications', href: '/applications' },
+        { text: app?.name || appId, href: `/applications/${appId}` },
+        { text: 'New run', href: `/applications/${appId}/runs/new` },
+      ]
+    : [
         { text: 'Home', href: '/' },
         { text: 'New Run', href: '/new-run' },
-      ]}
+      ];
+
+  if (isAppScoped && appLoading) {
+    return (
+      <CloudscapeShell activePage={isAppScoped ? '/applications' : '/new-run'} breadcrumbs={breadcrumbs}>
+        <Box textAlign="center" padding="l" data-testid="loading-spinner">
+          <Spinner size="large" />
+        </Box>
+      </CloudscapeShell>
+    );
+  }
+
+  return (
+    <CloudscapeShell
+      activePage={isAppScoped ? '/applications' : '/new-run'}
+      breadcrumbs={breadcrumbs}
     >
       <Wizard
         i18nStrings={{
@@ -298,7 +423,9 @@ export default function NewRunPage() {
         activeStepIndex={activeStepIndex}
         onNavigate={handleNavigate}
         onSubmit={handleSubmit}
-        onCancel={() => navigate('/')}
+        onCancel={() =>
+          navigate(isAppScoped ? `/applications/${appId}` : '/')
+        }
         isLoadingNextStep={submitting}
       />
     </CloudscapeShell>
