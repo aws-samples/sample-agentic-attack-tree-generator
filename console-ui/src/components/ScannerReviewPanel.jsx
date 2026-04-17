@@ -9,6 +9,44 @@ import FormField from '@cloudscape-design/components/form-field';
 import Box from '@cloudscape-design/components/box';
 import Badge from '@cloudscape-design/components/badge';
 
+const FIELD_HELP = {
+  cloud_provider: 'Cloud platform(s) hosting the application (e.g. AWS, Azure, GCP).',
+  tech_stack: 'Primary languages, frameworks, and runtimes used in the codebase.',
+  industry: 'Business domain of the application — shapes threat relevance and compliance.',
+  services: 'Discrete services, components, or modules that make up the system.',
+  auth_mechanisms: 'How users and services authenticate (e.g. IAM roles, OAuth2, API keys).',
+  compliance_requirements: 'Regulatory or contractual frameworks the system must meet (e.g. SOC2, HIPAA).',
+};
+
+function InfoPopover({ text }) {
+  return (
+    <span
+      title={text}
+      aria-label={text}
+      role="img"
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '14px',
+        height: '14px',
+        borderRadius: '50%',
+        border: '1px solid #5f6b7a',
+        color: '#5f6b7a',
+        fontSize: '10px',
+        fontStyle: 'italic',
+        fontFamily: 'serif',
+        lineHeight: 1,
+        cursor: 'help',
+        marginLeft: '4px',
+        verticalAlign: 'middle',
+      }}
+    >
+      i
+    </span>
+  );
+}
+
 function toTokens(value) {
   if (Array.isArray(value)) return value;
   if (typeof value === 'string' && value.trim()) {
@@ -17,7 +55,7 @@ function toTokens(value) {
   return [];
 }
 
-function TokenField({ label, items, setItems, placeholder }) {
+function TokenField({ label, items, setItems, placeholder, info }) {
   const [draft, setDraft] = useState('');
 
   function add() {
@@ -28,7 +66,7 @@ function TokenField({ label, items, setItems, placeholder }) {
   }
 
   return (
-    <FormField label={label}>
+    <FormField label={label} info={info}>
       {items.length > 0 && (
         <div style={{ marginBottom: 4 }}>
           <TokenGroup
@@ -69,7 +107,6 @@ export function BadgeList({ items }) {
  */
 export default function ScannerReviewEditModal({ visible, scannerData = {}, onSubmit, onDismiss }) {
   const [industry, setIndustry] = useState(scannerData.industry || '');
-  const [dataSensitivity, setDataSensitivity] = useState(scannerData.data_sensitivity || '');
   const [cloudProviders, setCloudProviders] = useState(toTokens(scannerData.cloud_provider));
   const [techStack, setTechStack] = useState(toTokens(scannerData.tech_stack));
   const [services, setServices] = useState(scannerData.services || []);
@@ -81,7 +118,6 @@ export default function ScannerReviewEditModal({ visible, scannerData = {}, onSu
     setSubmitting(true);
     onSubmit({
       industry,
-      data_sensitivity: dataSensitivity,
       cloud_provider: cloudProviders.join(', '),
       tech_stack: techStack.join(', '),
       services,
@@ -109,21 +145,48 @@ export default function ScannerReviewEditModal({ visible, scannerData = {}, onSu
     >
       <SpaceBetween size="m">
         <ColumnLayout columns={2} variant="text-grid">
-          <TokenField label="Cloud providers" items={cloudProviders} setItems={setCloudProviders} placeholder="e.g. AWS" />
-          <TokenField label="Tech stack" items={techStack} setItems={setTechStack} placeholder="e.g. Python" />
+          <TokenField
+            label="Cloud providers"
+            items={cloudProviders}
+            setItems={setCloudProviders}
+            placeholder="e.g. AWS"
+            info={<InfoPopover text={FIELD_HELP.cloud_provider} />}
+          />
+          <TokenField
+            label="Tech stack"
+            items={techStack}
+            setItems={setTechStack}
+            placeholder="e.g. Python"
+            info={<InfoPopover text={FIELD_HELP.tech_stack} />}
+          />
         </ColumnLayout>
         <ColumnLayout columns={2} variant="text-grid">
-          <FormField label="Industry">
+          <FormField label="Industry" info={<InfoPopover text={FIELD_HELP.industry} />}>
             <Input value={industry} onChange={({ detail }) => setIndustry(detail.value)} placeholder="e.g. healthcare, fintech" />
           </FormField>
-          <FormField label="Data sensitivity">
-            <Input value={dataSensitivity} onChange={({ detail }) => setDataSensitivity(detail.value)} placeholder="e.g. PII, PHI, financial" />
-          </FormField>
         </ColumnLayout>
-        <TokenField label="Services & components" items={services} setItems={setServices} placeholder="Add a service" />
+        <TokenField
+          label="Services & components"
+          items={services}
+          setItems={setServices}
+          placeholder="Add a service"
+          info={<InfoPopover text={FIELD_HELP.services} />}
+        />
         <ColumnLayout columns={2} variant="text-grid">
-          <TokenField label="Auth mechanisms" items={authMechanisms} setItems={setAuthMechanisms} placeholder="e.g. IAM roles" />
-          <TokenField label="Compliance requirements" items={compliance} setItems={setCompliance} placeholder="e.g. SOC2" />
+          <TokenField
+            label="Auth mechanisms"
+            items={authMechanisms}
+            setItems={setAuthMechanisms}
+            placeholder="e.g. IAM roles"
+            info={<InfoPopover text={FIELD_HELP.auth_mechanisms} />}
+          />
+          <TokenField
+            label="Compliance requirements"
+            items={compliance}
+            setItems={setCompliance}
+            placeholder="e.g. SOC2"
+            info={<InfoPopover text={FIELD_HELP.compliance_requirements} />}
+          />
         </ColumnLayout>
       </SpaceBetween>
     </Modal>

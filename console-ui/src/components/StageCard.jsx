@@ -6,6 +6,55 @@ import Button from '@cloudscape-design/components/button';
 import { useElapsedTimer, formatElapsed } from '../hooks/useElapsedTimer';
 import ScannerReviewEditModal, { BadgeList } from './ScannerReviewPanel';
 
+const FIELD_HELP = {
+  cloud: 'Cloud platform(s) hosting the application (e.g. AWS, Azure, GCP).',
+  stack: 'Primary languages, frameworks, and runtimes used in the codebase.',
+  industry: 'Business domain of the application — shapes threat relevance and compliance.',
+  services: 'Discrete services, components, or modules that make up the system.',
+  auth: 'How users and services authenticate (e.g. IAM roles, OAuth2, API keys).',
+  compliance: 'Regulatory or contractual frameworks the system must meet (e.g. SOC2, HIPAA).',
+};
+
+function InfoIcon({ text }) {
+  return (
+    <span
+      title={text}
+      aria-label={text}
+      role="img"
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '13px',
+        height: '13px',
+        borderRadius: '50%',
+        border: '1px solid #5f6b7a',
+        color: '#5f6b7a',
+        fontSize: '9px',
+        fontStyle: 'italic',
+        fontFamily: 'serif',
+        lineHeight: 1,
+        cursor: 'help',
+        marginLeft: '4px',
+        verticalAlign: 'middle',
+      }}
+    >
+      i
+    </span>
+  );
+}
+
+function FieldLabel({ text, info }) {
+  return (
+    <Box variant="awsui-key-label" fontSize="body-s">
+      <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+        {text}
+        <InfoIcon text={info} />
+      </span>
+    </Box>
+  );
+}
+
 /**
  * Map stage status to Cloudscape StatusIndicator type.
  * @param {string} status
@@ -55,6 +104,7 @@ export default function StageCard({
   onScannerReviewConfirm = null,
   onScannerReviewEdit = null,
   onScannerReviewSkip = null,
+  confirmedContext = null,
 }) {
   const [editModalVisible, setEditModalVisible] = useState(false);
 
@@ -109,12 +159,12 @@ export default function StageCard({
             borderRadius: '6px',
             fontSize: '13px',
           }}>
-            <div><Box variant="awsui-key-label" fontSize="body-s">Cloud</Box><BadgeList items={scannerReview._cloudTokens} /></div>
-            <div><Box variant="awsui-key-label" fontSize="body-s">Stack</Box><BadgeList items={scannerReview._techTokens} /></div>
-            <div><Box variant="awsui-key-label" fontSize="body-s">Industry</Box><div>{scannerReview.industry || '\u2014'}</div></div>
-            <div><Box variant="awsui-key-label" fontSize="body-s">Services</Box><BadgeList items={scannerReview.services} /></div>
-            <div><Box variant="awsui-key-label" fontSize="body-s">Auth</Box><BadgeList items={scannerReview.auth_mechanisms} /></div>
-            <div><Box variant="awsui-key-label" fontSize="body-s">Compliance</Box><BadgeList items={scannerReview.compliance_requirements} /></div>
+            <div><FieldLabel text="Cloud" info={FIELD_HELP.cloud} /><BadgeList items={scannerReview._cloudTokens} /></div>
+            <div><FieldLabel text="Stack" info={FIELD_HELP.stack} /><BadgeList items={scannerReview._techTokens} /></div>
+            <div><FieldLabel text="Industry" info={FIELD_HELP.industry} /><div>{scannerReview.industry || '\u2014'}</div></div>
+            <div><FieldLabel text="Services" info={FIELD_HELP.services} /><BadgeList items={scannerReview.services} /></div>
+            <div><FieldLabel text="Auth" info={FIELD_HELP.auth} /><BadgeList items={scannerReview.auth_mechanisms} /></div>
+            <div><FieldLabel text="Compliance" info={FIELD_HELP.compliance} /><BadgeList items={scannerReview.compliance_requirements} /></div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px' }}>
             <Button variant="primary" onClick={onScannerReviewConfirm} data-testid="scanner-review-confirm">
@@ -190,7 +240,7 @@ export default function StageCard({
               }}>
                 <span>{w.status === 'completed' ? '✅' : w.status === 'in-progress' ? '⚡' : '⏳'}</span>
                 <span style={{ fontWeight: w.status === 'in-progress' ? 600 : 400, color: w.status === 'pending' ? '#9ca3af' : '#1f2937' }}>
-                  T{w.id + 1}: {w.stage}{w.detail ? ` — ${w.detail.slice(0, 40)}` : ''}
+                  T{w.id + 1}: {w.stage}{w.detail ? ` — ${w.detail}` : ''}
                 </span>
               </div>
             ))}
@@ -205,8 +255,30 @@ export default function StageCard({
         </Box>
       )}
 
-      {/* Findings summary when completed */}
-      {isCompleted && findings && findings.length > 0 && (
+      {/* Confirmed scanner context (read-only) — replaces text findings for Repository Analysis */}
+      {isCompleted && confirmedContext && (
+        <div style={{ marginTop: '8px' }} data-testid="confirmed-context">
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '8px 24px',
+            padding: '10px 12px',
+            background: '#f9fafb',
+            borderRadius: '6px',
+            fontSize: '13px',
+          }}>
+            <div><FieldLabel text="Cloud" info={FIELD_HELP.cloud} /><BadgeList items={confirmedContext._cloudTokens} /></div>
+            <div><FieldLabel text="Stack" info={FIELD_HELP.stack} /><BadgeList items={confirmedContext._techTokens} /></div>
+            <div><FieldLabel text="Industry" info={FIELD_HELP.industry} /><div>{confirmedContext.industry || '\u2014'}</div></div>
+            <div><FieldLabel text="Services" info={FIELD_HELP.services} /><BadgeList items={confirmedContext.services} /></div>
+            <div><FieldLabel text="Auth" info={FIELD_HELP.auth} /><BadgeList items={confirmedContext.auth_mechanisms} /></div>
+            <div><FieldLabel text="Compliance" info={FIELD_HELP.compliance} /><BadgeList items={confirmedContext.compliance_requirements} /></div>
+          </div>
+        </div>
+      )}
+
+      {/* Findings summary when completed (only if no confirmed context) */}
+      {isCompleted && !confirmedContext && findings && findings.length > 0 && (
         <div style={{ marginTop: '6px', paddingLeft: '24px' }} data-testid="stage-findings">
           {findings.map((f, i) => (
             <Box key={i} color="text-status-inactive" fontSize="body-s" margin={{ top: 'xxxs' }}>
