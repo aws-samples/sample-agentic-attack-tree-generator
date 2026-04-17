@@ -81,7 +81,8 @@ describe('ApplicationsPage', () => {
     await waitFor(() => {
       expect(screen.getAllByText('No applications').length).toBeGreaterThan(0);
     });
-    expect(screen.getAllByText('Start a new run').length).toBeGreaterThan(0);
+    // Empty-state CTA now points users at the application wizard.
+    expect(screen.getAllByText('Create an application').length).toBeGreaterThan(0);
   });
 
   it('shows error alert when API call fails', async () => {

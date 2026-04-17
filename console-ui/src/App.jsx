@@ -31,6 +31,7 @@ export default function App() {
         <Route path="/applications/:appId/versions/:versionId" element={<ThreatModelSummaryPage />} />
         <Route path="/applications/:appId/versions/:versionId/threats/:threatIndex" element={<VersionDetailPage />} />
         <Route path="/new-run" element={<NewRunPage />} />
+        <Route path="/applications/:appId/runs/new" element={<NewRunPage />} />
         <Route path="/paused-runs" element={<PausedRunsPage />} />
         <Route path="/runs/:runId/progress" element={<RunProgressPageKeyed />} />
         <Route path="/configure" element={<ConfigurePage />} />

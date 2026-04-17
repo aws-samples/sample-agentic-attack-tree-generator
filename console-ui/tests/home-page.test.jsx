@@ -36,16 +36,17 @@ describe('HomePage', () => {
     expect(screen.getByText('AI-Driven Threat Modeling for Modern Applications')).toBeTruthy();
   });
 
-  it('renders Get Started card with "Start New Run" button that navigates to /new-run', () => {
+  it('renders Get Started card with "Create application" CTA that navigates to /applications/new', () => {
     renderHomePage();
     // "Get started" header
     const headers = screen.getAllByText(/Get started/i);
     expect(headers.length).toBeGreaterThan(0);
-    // "Start New Run" button (Cloudscape may render multiple responsive copies)
-    const buttons = screen.getAllByRole('button', { name: /start new run/i });
+    // Primary CTA is now "Create application"; it should navigate to the
+    // new application wizard.
+    const buttons = screen.getAllByRole('button', { name: /create application/i });
     expect(buttons.length).toBeGreaterThan(0);
     fireEvent.click(buttons[0]);
-    expect(mockNavigate).toHaveBeenCalledWith('/new-run');
+    expect(mockNavigate).toHaveBeenCalledWith('/applications/new');
   });
 
   it('renders three Getting Started steps with correct text', () => {
@@ -55,7 +56,9 @@ describe('HomePage', () => {
     expect(screen.getAllByText('Step 2').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Step 3').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Configure credentials and model access').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Start run').length).toBeGreaterThan(0);
+    // Step 2 in the v2 UX registers an application first; the old "Start run"
+    // affordance is replaced by "Create threat model".
+    expect(screen.getAllByText('Create threat model').length).toBeGreaterThan(0);
     expect(screen.getAllByText('View dashboard').length).toBeGreaterThan(0);
   });
 
@@ -70,7 +73,9 @@ describe('HomePage', () => {
 
     mockNavigate.mockClear();
     fireEvent.click(orangeBtns[1]);
-    expect(mockNavigate).toHaveBeenCalledWith('/new-run');
+    // Step 2 now routes through the Application wizard instead of the
+    // legacy /new-run page.
+    expect(mockNavigate).toHaveBeenCalledWith('/applications/new');
 
     mockNavigate.mockClear();
     fireEvent.click(orangeBtns[2]);
