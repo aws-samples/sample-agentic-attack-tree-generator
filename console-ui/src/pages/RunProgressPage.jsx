@@ -13,12 +13,14 @@ import Button from '@cloudscape-design/components/button';
 import StageCard from '../components/StageCard';
 import ActivityFeed from '../components/ActivityFeed';
 import InterviewerPanel from '../components/InterviewerPanel';
+import ThreatReviewPanel from '../components/ThreatReviewPanel';
 import { connectRunWebSocket, pauseRun, stopRun, resumeRun, submitRunResponse } from '../api-client';
 
 const STAGES = [
   'Repository Analysis',
   'Context Validation',
   'Threat Generation',
+  'Threat Review',
   'Parallel Analysis',
   'Dashboard Generation',
 ];
@@ -27,16 +29,17 @@ const stageIndexMap = {
   'Repository Analysis': 0,
   'Context Validation': 1,
   'Threat Generation': 2,
-  'Parallel Analysis': 3,
-  'Dashboard Generation': 4,
+  'Threat Review': 3,
+  'Parallel Analysis': 4,
+  'Dashboard Generation': 5,
   // Fallback internal names
   setup: 0,
   context_analysis: 0,
   extraction: 0,
-  tree_generation: 3,
-  ttc_enrichment: 3,
-  mitigation: 3,
-  summary: 4,
+  tree_generation: 4,
+  ttc_enrichment: 4,
+  mitigation: 4,
+  summary: 5,
 };
 
 function resolveStageIndex(stageName) {
@@ -87,6 +90,11 @@ export default function RunProgressPage() {
   // Scanner review state
   const [showScannerReview, setShowScannerReview] = useState(false);
   const [scannerReviewData, setScannerReviewData] = useState(null);
+  const [confirmedReviewData, setConfirmedReviewData] = useState(null);
+  // Threat review state
+  const [showThreatReview, setShowThreatReview] = useState(false);
+  const [threatReviewData, setThreatReviewData] = useState(null);
+  const [threatReviewWaiting, setThreatReviewWaiting] = useState(false);
 
   const handleInterviewerSubmit = useCallback(async (text) => {
     setChatHistory((prev) => [...prev, { role: 'user', text }]);
@@ -127,22 +135,33 @@ export default function RunProgressPage() {
   const handleScannerReviewConfirm = useCallback(async () => {
     try {
       await submitRunResponse(runId, JSON.stringify({ confirmed_only: true }));
+      setConfirmedReviewData(scannerReviewData);
       setShowScannerReview(false);
       setScannerReviewData(null);
     } catch (err) {
       setErrorMessage(`Failed to confirm scanner review: ${err.message}`);
     }
-  }, [runId]);
+  }, [runId, scannerReviewData]);
 
   const handleScannerReviewEdit = useCallback(async (edits) => {
     try {
       await submitRunResponse(runId, JSON.stringify(edits));
+      // Build confirmed data from the edits so the persisted view reflects changes
+      const updated = { ...scannerReviewData, ...edits };
+      // Recompute display tokens from edited values
+      if (typeof updated.cloud_provider === 'string' && updated.cloud_provider.trim()) {
+        updated._cloudTokens = updated.cloud_provider.split(/,\s*/).filter(Boolean);
+      }
+      if (typeof updated.tech_stack === 'string' && updated.tech_stack.trim()) {
+        updated._techTokens = updated.tech_stack.split(/,\s*/).filter(Boolean);
+      }
+      setConfirmedReviewData(updated);
       setShowScannerReview(false);
       setScannerReviewData(null);
     } catch (err) {
       setErrorMessage(`Failed to submit scanner review edits: ${err.message}`);
     }
-  }, [runId]);
+  }, [runId, scannerReviewData]);
 
   const handleScannerReviewSkip = useCallback(async () => {
     try {
@@ -151,6 +170,33 @@ export default function RunProgressPage() {
       setScannerReviewData(null);
     } catch (err) {
       setErrorMessage(`Failed to skip scanner review: ${err.message}`);
+    }
+  }, [runId]);
+
+  const handleThreatReviewApply = useCallback(async ({ edits, feedback }) => {
+    setThreatReviewWaiting(true);
+    try {
+      await submitRunResponse(
+        runId,
+        JSON.stringify({ action: 'apply', edits: edits || {}, feedback: feedback || '' }),
+      );
+      // Backend will re-apply edits, optionally re-run the threat agent, then
+      // emit a new awaiting_input event with the refreshed threats list.
+    } catch (err) {
+      setErrorMessage(`Failed to apply threat review: ${err.message}`);
+      setThreatReviewWaiting(false);
+    }
+  }, [runId]);
+
+  const handleThreatReviewProceed = useCallback(async () => {
+    setThreatReviewWaiting(true);
+    try {
+      await submitRunResponse(runId, JSON.stringify({ action: 'proceed' }));
+      setShowThreatReview(false);
+      setThreatReviewData(null);
+    } catch (err) {
+      setErrorMessage(`Failed to proceed past threat review: ${err.message}`);
+      setThreatReviewWaiting(false);
     }
   }, [runId]);
 
@@ -258,6 +304,28 @@ export default function RunProgressPage() {
         case 'awaiting_input': {
           const awaitPhase = details?.phase || 'interviewer';
 
+          if (awaitPhase === 'threat_review') {
+            const trIdx = resolveStageIndex('Threat Review');
+            setThreatReviewData({
+              threats: details?.threats || [],
+              questions: details?.questions || [],
+              message: details?.message || message || '',
+            });
+            setShowThreatReview(true);
+            setThreatReviewWaiting(false);
+            if (trIdx >= 0) {
+              setStages((prev) =>
+                prev.map((s, i) =>
+                  i === trIdx
+                    ? { ...s, status: 'awaiting-input', statusText: 'Waiting for your review' }
+                    : s,
+                ),
+              );
+            }
+            appendActivity('Threat review is waiting for your input.', 'stage-start');
+            break;
+          }
+
           if (awaitPhase === 'scanner_review') {
             // Scanner review — show inline in the Repository Analysis StageCard
             const raIdx = resolveStageIndex('Repository Analysis');
@@ -354,6 +422,7 @@ export default function RunProgressPage() {
             if (data.details?.app_id) setCompletedAppId(data.details.app_id);
             if (data.details?.low_confidence) setLowConfidence(true);
             setShowInterviewer(false);
+            setShowThreatReview(false);
             appendActivity('Pipeline completed successfully!', 'stage-complete');
             break;
           }
@@ -364,6 +433,10 @@ export default function RunProgressPage() {
           }
           if (stage === 'Repository Analysis') {
             setShowScannerReview(false);
+          }
+          if (stage === 'Threat Review') {
+            setShowThreatReview(false);
+            setThreatReviewWaiting(false);
           }
 
           if (stageIdx < 0) break;
@@ -592,11 +665,19 @@ export default function RunProgressPage() {
           <Alert type="success" dismissible>
             Pipeline completed successfully!{' '}
             {completedAppId ? (
-              <Link href={`/applications/${completedAppId}/versions/latest`}>
+              <Link
+                href={`/applications/${completedAppId}/versions/latest`}
+                onFollow={(e) => { e.preventDefault(); navigate(`/applications/${completedAppId}/versions/latest`); }}
+              >
                 View Dashboard
               </Link>
             ) : (
-              <Link href="/applications">View Applications</Link>
+              <Link
+                href="/applications"
+                onFollow={(e) => { e.preventDefault(); navigate('/applications'); }}
+              >
+                View Applications
+              </Link>
             )}
           </Alert>
         )}
@@ -663,6 +744,7 @@ export default function RunProgressPage() {
                 findings={stage.findings}
                 workers={stage.workers}
                 scannerReview={stage.name === 'Repository Analysis' && showScannerReview ? scannerReviewData : null}
+                confirmedContext={stage.name === 'Repository Analysis' ? confirmedReviewData : null}
                 onScannerReviewConfirm={handleScannerReviewConfirm}
                 onScannerReviewEdit={handleScannerReviewEdit}
                 onScannerReviewSkip={handleScannerReviewSkip}
@@ -679,6 +761,18 @@ export default function RunProgressPage() {
             onSkip={handleInterviewerSkip}
             onBack={handleInterviewerBack}
             waiting={interviewerWaiting}
+          />
+        )}
+
+        {/* Threat Review Panel */}
+        {showThreatReview && threatReviewData && (
+          <ThreatReviewPanel
+            threats={threatReviewData.threats}
+            questions={threatReviewData.questions}
+            message={threatReviewData.message}
+            onApply={handleThreatReviewApply}
+            onProceed={handleThreatReviewProceed}
+            waiting={threatReviewWaiting}
           />
         )}
 

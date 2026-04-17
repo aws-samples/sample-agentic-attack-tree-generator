@@ -141,9 +141,9 @@ export default function AppDetailPage() {
       cell: (item) => renderStatus(item.status),
     },
     {
-      id: 'threat_count',
+      id: 'high_severity_count',
       header: 'High-level threats',
-      cell: (item) => item.threat_count ?? 0,
+      cell: (item) => item.high_severity_count ?? 0,
     },
   ];
 

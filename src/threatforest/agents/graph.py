@@ -146,6 +146,7 @@ def build_graph(
     from threatforest.agents.interviewer.agent import create_interviewer_agent, InterviewerNode, ScannerReviewNode
     from threatforest.agents.threat.agent import create_threat_agent
     from threatforest.agents.threat.verifier import verify_threat_output
+    from threatforest.agents.threat_review.agent import ThreatReviewNode
     from threatforest.agents.parallel import run_parallel_pipeline
     from threatforest.agents.mitigation.verifier import verify_mitigation_output
     from threatforest.agents.probability.stage import run_probability_stage
@@ -209,6 +210,14 @@ def build_graph(
             repo_path, "threat_verifier", run_dir=run_dir,
         ))
     )
+
+    # Threat review: HITL review of generated threats before parallel fan-out
+    if "threat_review" in skip_nodes:
+        threat_review = _make_skip_node("threat_review", repo_path, run_dir)
+    else:
+        threat_review = GraphNode("threat_review", ThreatReviewNode(
+            state_dir, repo_path, run_dir, interaction_fn, "threat_review",
+        ))
 
     # Parallel fan-out: tree -> ttp -> mitigation per threat
     parallel = (
@@ -289,8 +298,9 @@ def build_graph(
         GraphEdge(interviewer, threat),
         GraphEdge(threat, threat_v),
 
-        # Threat → Parallel pipeline (fan-out)
-        GraphEdge(threat_v, parallel, condition=_threat_ok),
+        # Threat → Threat Review → Parallel pipeline (fan-out)
+        GraphEdge(threat_v, threat_review, condition=_threat_ok),
+        GraphEdge(threat_review, parallel),
         GraphEdge(parallel, parallel_v),
 
         # Parallel → Probability → Report
@@ -309,6 +319,7 @@ def build_graph(
         "scanner": scanner, "scanner_verifier": scanner_v,
         "scanner_review": scanner_review, "interviewer": interviewer,
         "threat": threat, "threat_verifier": threat_v,
+        "threat_review": threat_review,
         "parallel_pipeline": parallel, "parallel_verifier": parallel_v,
         "probability": probability,
         "report": report, "report_verifier": report_v,
@@ -318,7 +329,7 @@ def build_graph(
         nodes=nodes,
         edges=edges,
         entry_points={scanner},
-        max_node_executions=24,
+        max_node_executions=32,
         reset_on_revisit=True,
         id="threatforest",
     )
@@ -354,6 +365,7 @@ async def run_graph(repo_path: str, run_dir: str | None = None, frameworks: list
         "interviewer": "🔎 Context Validation",
         "threat": "🤖 Threat Agent",
         "threat_verifier": "✅ Threat Verifier",
+        "threat_review": "📋 Threat Review",
         "parallel_pipeline": "⚡ Parallel Pipeline (tree → ttp → mitigation)",
         "parallel_verifier": "✅ Pipeline Verifier",
         "probability": "📊 Probability Stage",
@@ -410,6 +422,13 @@ async def run_graph(repo_path: str, run_dir: str | None = None, frameworks: list
                     from threatforest.agents.threat.verifier import verify_threat_output
                     ok, msg = verify_threat_output(str(f))
                     return [f"{'PASS' if ok else 'FAIL'}: {msg}"]
+            elif nid == "threat_review":
+                try:
+                    d = json.loads((sd / "threats.json").read_text())
+                    n = len(d.get("threats", []))
+                    return [f"Threat review complete · {n} threats after review"]
+                except (FileNotFoundError, json.JSONDecodeError):
+                    return ["Threat review complete"]
             elif nid == "parallel_pipeline":
                 trees = json.loads((sd / "attack_trees.json").read_text()).get("attack_trees", [])
                 mappings = json.loads((sd / "ttp_mappings.json").read_text()).get("ttp_mappings", [])

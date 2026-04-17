@@ -112,12 +112,113 @@ export function exportCsv(summaryData, filename) {
     alert('No threat model data available to export.');
     return;
   }
+  downloadBlob(csvContent, 'text/csv;charset=utf-8;', filename || 'threat-model-report.csv');
+}
 
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+// ─── Threats-only CSV ─────────────────────────────────────────
+
+/**
+ * Generate a threats-focused CSV with one row per threat.
+ */
+export function generateThreatsCsvContent(summaryData) {
+  if (!summaryData || typeof summaryData !== 'object') return '';
+
+  const attackTrees = Array.isArray(summaryData.attack_trees) ? summaryData.attack_trees : [];
+  const threats = Array.isArray(summaryData.threats) ? summaryData.threats : [];
+  if (attackTrees.length === 0) return '';
+
+  const header = [
+    'Threat ID', 'Category', 'Priority', 'Statement', 'Affected Components', 'Attack Steps',
+  ];
+  const rows = [header.map(escapeCsvField).join(',')];
+
+  for (const tree of attackTrees) {
+    const affected = getAffectedComponents(tree, threats);
+    const steps = Array.isArray(tree.attack_steps) ? tree.attack_steps : [];
+    const stepSummary = steps.map(s => s.label || s.description || '').join('; ');
+    rows.push([
+      escapeCsvField(tree.threat_id || ''),
+      escapeCsvField(tree.threat_category || ''),
+      escapeCsvField(tree.priority || ''),
+      escapeCsvField(tree.threat_statement || tree.threat_description || ''),
+      escapeCsvField(affected.join(', ')),
+      escapeCsvField(stepSummary),
+    ].join(','));
+  }
+
+  return rows.join('\n');
+}
+
+/**
+ * Download a threats-only CSV.
+ */
+export function exportThreatsCsv(summaryData, filename) {
+  const content = generateThreatsCsvContent(summaryData);
+  if (!content) { alert('No threat data available to export.'); return; }
+  downloadBlob(content, 'text/csv;charset=utf-8;', filename || 'threats.csv');
+}
+
+// ─── Mitigations-only CSV ─────────────────────────────────────
+
+/**
+ * Generate a mitigations-focused CSV with one row per unique mitigation.
+ */
+export function generateMitigationsCsvContent(summaryData) {
+  if (!summaryData || typeof summaryData !== 'object') return '';
+
+  const attackTrees = Array.isArray(summaryData.attack_trees) ? summaryData.attack_trees : [];
+  if (attackTrees.length === 0) return '';
+
+  const header = [
+    'Priority', 'Mitigation', 'Remediation Type', 'Mapped TTP', 'Threat ID', 'Attack Steps', 'Implementation Guidance',
+  ];
+  const rows = [header.map(escapeCsvField).join(',')];
+
+  const allMitigations = [];
+  for (const tree of attackTrees) {
+    for (const mit of aggregateMitigations(tree)) {
+      allMitigations.push({ ...mit, threatId: tree.threat_id || '' });
+    }
+  }
+
+  allMitigations.sort((a, b) => {
+    const pa = typeof a.priority === 'number' ? a.priority : 99;
+    const pb = typeof b.priority === 'number' ? b.priority : 99;
+    return pa - pb;
+  });
+
+  for (const m of allMitigations) {
+    rows.push([
+      escapeCsvField(priorityLabel(m.priority)),
+      escapeCsvField(m.name || ''),
+      escapeCsvField(REMEDIATION_LABELS[m.remediationType] || m.remediationType || ''),
+      escapeCsvField(m.techniqueId || ''),
+      escapeCsvField(m.threatId),
+      escapeCsvField(m.attackSteps.join('; ')),
+      escapeCsvField(m.description || ''),
+    ].join(','));
+  }
+
+  return rows.join('\n');
+}
+
+/**
+ * Download a mitigations-only CSV.
+ */
+export function exportMitigationsCsv(summaryData, filename) {
+  const content = generateMitigationsCsvContent(summaryData);
+  if (!content) { alert('No mitigation data available to export.'); return; }
+  downloadBlob(content, 'text/csv;charset=utf-8;', filename || 'mitigations.csv');
+}
+
+// ─── Shared download helper ───────────────────────────────────
+
+function downloadBlob(content, mimeType, filename) {
+  const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = filename || 'threat-model-report.csv';
+  link.download = filename;
   link.style.display = 'none';
   document.body.appendChild(link);
   link.click();
@@ -426,5 +527,248 @@ export function exportPdf(summaryData, filename) {
     doc.save(filename || 'threat-model-report.pdf');
   } catch (err) {
     alert(`PDF generation failed: ${err.message || 'Unknown error'}`);
+  }
+}
+
+// ─── Threats-only PDF ─────────────────────────────────────────
+
+/**
+ * Generate and download a threats-only PDF report.
+ * Includes threats overview table and per-threat attack tree sections.
+ */
+export function exportThreatsPdf(summaryData, filename) {
+  if (!summaryData || typeof summaryData !== 'object') {
+    alert('No threat model data available to export.');
+    return;
+  }
+
+  const attackTrees = Array.isArray(summaryData.attack_trees) ? summaryData.attack_trees : [];
+  if (attackTrees.length === 0) { alert('No threats available to export.'); return; }
+
+  try {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 14;
+    const contentWidth = pageWidth - margin * 2;
+    const threats = summaryData.threats || [];
+    const appName = summaryData.project_info?.application_name || summaryData.application_name || 'Threat Model';
+
+    // Title
+    doc.setFontSize(22);
+    doc.setTextColor(...DARK_COLOR);
+    doc.text('ThreatForest', pageWidth / 2, 35, { align: 'center' });
+    doc.setFontSize(16);
+    doc.text('Threats Report', pageWidth / 2, 45, { align: 'center' });
+    doc.setFontSize(12);
+    doc.setTextColor(100, 100, 100);
+    doc.text(appName, pageWidth / 2, 57, { align: 'center' });
+    doc.text(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), pageWidth / 2, 65, { align: 'center' });
+    doc.setDrawColor(...THEME_COLOR);
+    doc.setLineWidth(0.5);
+    doc.line(margin, 72, pageWidth - margin, 72);
+
+    // Threats Overview table
+    doc.setFontSize(14);
+    doc.setTextColor(...DARK_COLOR);
+    doc.text('Threats Overview', margin, 82);
+
+    const threatRows = attackTrees.map((tree) => {
+      const affected = getAffectedComponents(tree, threats);
+      return [
+        tree.threat_id || '',
+        tree.threat_category || '',
+        tree.priority || '',
+        tree.threat_statement || tree.threat_description || '',
+        affected.slice(0, 3).join(', ') + (affected.length > 3 ? ` (+${affected.length - 3})` : ''),
+      ];
+    });
+
+    autoTable(doc, {
+      startY: 87,
+      head: [['ID', 'Category', 'Priority', 'Statement', 'Affected Assets']],
+      body: threatRows,
+      theme: 'striped',
+      headStyles: { fillColor: THEME_COLOR, fontSize: 8 },
+      bodyStyles: { fontSize: 7 },
+      columnStyles: { 0: { cellWidth: 20 }, 1: { cellWidth: 30 }, 2: { cellWidth: 18 }, 3: { cellWidth: 75 }, 4: { cellWidth: 35 } },
+      margin: { left: margin, right: margin },
+    });
+
+    // Per-threat attack tree pages
+    for (const tree of attackTrees) {
+      doc.addPage();
+      let yPos = 20;
+
+      doc.setFontSize(14);
+      doc.setTextColor(...DARK_COLOR);
+      doc.text(`${tree.threat_id || 'Unknown'} — ${tree.threat_category || ''}`, margin, yPos);
+      yPos += 8;
+
+      if (tree.threat_statement || tree.threat_description) {
+        doc.setFontSize(9);
+        doc.setTextColor(80, 80, 80);
+        const lines = doc.splitTextToSize(tree.threat_statement || tree.threat_description, contentWidth);
+        doc.text(lines, margin, yPos);
+        yPos += lines.length * 4.5 + 4;
+      }
+
+      if (tree.priority) {
+        doc.setFontSize(9);
+        doc.setTextColor(80, 80, 80);
+        doc.text(`Priority: ${tree.priority}`, margin, yPos);
+        yPos += 7;
+      }
+
+      const steps = Array.isArray(tree.attack_steps) ? tree.attack_steps : [];
+      if (steps.length > 0) {
+        doc.setFontSize(11);
+        doc.setTextColor(...DARK_COLOR);
+        doc.text('Attack Steps', margin, yPos);
+        yPos += 4;
+
+        autoTable(doc, {
+          startY: yPos,
+          head: [['Step ID', 'Label', 'Description']],
+          body: steps.map(s => [s.node_id || '', s.label || s.description || '', s.description || '']),
+          theme: 'striped',
+          headStyles: { fillColor: THEME_COLOR, fontSize: 8 },
+          bodyStyles: { fontSize: 7 },
+          columnStyles: { 0: { cellWidth: 25 }, 1: { cellWidth: 45 }, 2: { cellWidth: 'auto' } },
+          margin: { left: margin, right: margin },
+        });
+      }
+    }
+
+    addPdfFooter(doc, pageWidth, margin);
+    doc.save(filename || 'threats-report.pdf');
+  } catch (err) {
+    alert(`PDF generation failed: ${err.message || 'Unknown error'}`);
+  }
+}
+
+// ─── Mitigations-only PDF ─────────────────────────────────────
+
+/**
+ * Generate and download a mitigations-only PDF report.
+ */
+export function exportMitigationsPdf(summaryData, filename) {
+  if (!summaryData || typeof summaryData !== 'object') {
+    alert('No threat model data available to export.');
+    return;
+  }
+
+  const attackTrees = Array.isArray(summaryData.attack_trees) ? summaryData.attack_trees : [];
+  if (attackTrees.length === 0) { alert('No mitigations available to export.'); return; }
+
+  try {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 14;
+    const appName = summaryData.project_info?.application_name || summaryData.application_name || 'Threat Model';
+
+    // Collect all mitigations
+    const allMitigations = [];
+    for (const tree of attackTrees) {
+      for (const mit of aggregateMitigations(tree)) {
+        allMitigations.push({ ...mit, threatId: tree.threat_id || '' });
+      }
+    }
+
+    if (allMitigations.length === 0) { alert('No mitigations found.'); return; }
+
+    // Sort by priority
+    allMitigations.sort((a, b) => {
+      const pa = typeof a.priority === 'number' ? a.priority : 99;
+      const pb = typeof b.priority === 'number' ? b.priority : 99;
+      return pa - pb;
+    });
+
+    // Title
+    doc.setFontSize(22);
+    doc.setTextColor(...DARK_COLOR);
+    doc.text('ThreatForest', pageWidth / 2, 35, { align: 'center' });
+    doc.setFontSize(16);
+    doc.text('Mitigations Report', pageWidth / 2, 45, { align: 'center' });
+    doc.setFontSize(12);
+    doc.setTextColor(100, 100, 100);
+    doc.text(appName, pageWidth / 2, 57, { align: 'center' });
+    doc.text(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), pageWidth / 2, 65, { align: 'center' });
+    doc.setDrawColor(...THEME_COLOR);
+    doc.setLineWidth(0.5);
+    doc.line(margin, 72, pageWidth - margin, 72);
+
+    // Summary
+    doc.setFontSize(14);
+    doc.setTextColor(...DARK_COLOR);
+    doc.text('Summary', margin, 82);
+
+    const criticalCount = allMitigations.filter(m => m.priority === 1).length;
+    const highCount = allMitigations.filter(m => m.priority === 2).length;
+
+    autoTable(doc, {
+      startY: 87,
+      head: [['Metric', 'Value']],
+      body: [
+        ['Total Mitigations', String(allMitigations.length)],
+        ['Critical Priority', String(criticalCount)],
+        ['High Priority', String(highCount)],
+        ['Threats Covered', String(new Set(allMitigations.map(m => m.threatId)).size)],
+      ],
+      theme: 'grid',
+      headStyles: { fillColor: THEME_COLOR, fontSize: 10 },
+      bodyStyles: { fontSize: 10 },
+      columnStyles: { 0: { cellWidth: 60, fontStyle: 'bold' }, 1: { cellWidth: 40 } },
+      margin: { left: margin, right: margin },
+      tableWidth: 100,
+    });
+
+    // Mitigations table
+    doc.addPage();
+    doc.setFontSize(14);
+    doc.setTextColor(...DARK_COLOR);
+    doc.text('Mitigations', margin, 20);
+
+    autoTable(doc, {
+      startY: 25,
+      head: [['Priority', 'Mitigation', 'Remediation', 'Mapped TTP', 'Threat', 'Guidance']],
+      body: allMitigations.map(m => [
+        priorityLabel(m.priority),
+        m.name || '',
+        REMEDIATION_LABELS[m.remediationType] || m.remediationType || '',
+        m.techniqueId || '',
+        m.threatId || '',
+        (m.description || '').slice(0, 120) + ((m.description || '').length > 120 ? '...' : ''),
+      ]),
+      theme: 'striped',
+      headStyles: { fillColor: THEME_COLOR, fontSize: 7 },
+      bodyStyles: { fontSize: 6 },
+      columnStyles: {
+        0: { cellWidth: 16 },
+        1: { cellWidth: 40 },
+        2: { cellWidth: 22 },
+        3: { cellWidth: 20 },
+        4: { cellWidth: 18 },
+        5: { cellWidth: 62 },
+      },
+      margin: { left: margin, right: margin },
+    });
+
+    addPdfFooter(doc, pageWidth, margin);
+    doc.save(filename || 'mitigations-report.pdf');
+  } catch (err) {
+    alert(`PDF generation failed: ${err.message || 'Unknown error'}`);
+  }
+}
+
+// ─── Shared PDF footer helper ─────────────────────────────────
+
+function addPdfFooter(doc, pageWidth, margin) {
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
+    doc.text('Generated by ThreatForest', pageWidth - margin, doc.internal.pageSize.getHeight() - 10, { align: 'right' });
   }
 }

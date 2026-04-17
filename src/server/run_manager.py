@@ -397,6 +397,8 @@ class RunManager:
                 phase = reason.get("phase", "interviewer")
                 if phase == "scanner_review":
                     stage_label = "Repository Analysis"
+                elif phase == "threat_review":
+                    stage_label = "Threat Review"
                 else:
                     stage_label = "Context Validation"
 

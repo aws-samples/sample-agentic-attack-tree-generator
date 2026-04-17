@@ -153,7 +153,7 @@ export default function InterviewerPanel({ chatHistory = [], onSubmit, onSkip, o
                 disabled={waiting}
                 data-testid="interviewer-skip"
               >
-                Ready to proceed
+                Skip
               </Button>
               <Button
                 variant="primary"

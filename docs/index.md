@@ -169,6 +169,37 @@ Generate comprehensive attack trees in minutes:
 
 ---
 
+## 🔍 How ThreatForest Compares
+
+ThreatForest was benchmarked against three other AWS threat modeling tools on the same target application — a CDK-deployed healthcare system with Bedrock Agent, Lambda, DynamoDB, and OpenSearch Serverless.
+
+| Capability | ThreatForest | Threat Composer AI | Aside-MCP | ADK (AppSec Toolkit) |
+|---|:---:|:---:|:---:|:---:|
+| Analyzes source code | :white_check_mark: | :white_check_mark: | :white_check_mark: | :warning: Requires Talos |
+| Analyzes docs & diagrams | :white_check_mark: | :x: | :x: | :x: |
+| Accepts PDF input | :white_check_mark: | :x: | :x: | :x: |
+| Generates attack trees | :white_check_mark: | :x: | :x: | :x: |
+| Maps to MITRE ATT&CK | :white_check_mark: | :x: | :x: | :x: |
+| Maps to STRIDE | :x: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| AI/ML methodology (MAESTRO) | :x: | :x: | :white_check_mark: | :x: |
+| Interactive dashboard | :white_check_mark: | :x: | :x: | :x: |
+| Standalone operation | :white_check_mark: | :white_check_mark: | :x: MCP server | :warning: Requires Talos |
+
+### Healthcare Benchmark (same target application)
+
+| Metric | ThreatForest | Threat Composer AI | Aside-MCP | ADK |
+|---|:---:|:---:|:---:|:---:|
+| Threats identified | 12 | 20 | 42 | 27 |
+| Attack trees | 12 | — | — | — |
+| ATT&CK mappings | 171 | — | — | — |
+| Mitigations | 121 | 28 | 16 | 13 |
+| Names exact resources | :white_check_mark: | :x: | :x: | :x: |
+
+!!! tip "Complementary Tools"
+    ThreatForest provides **depth** — attack trees with step-by-step exploitation chains mapped to MITRE ATT&CK, with mitigations that name exact resources from your codebase. Other tools provide **breadth** — wider threat counts, STRIDE categorisation, and assumption tracking. Running ThreatForest alongside complementary tools gives you both.
+
+---
+
 ## 🆘 Need Help?
 
 <div class="grid cards" markdown>
