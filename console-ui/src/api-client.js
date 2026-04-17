@@ -61,6 +61,47 @@ export async function deleteApplication(appId) {
   });
 }
 
+// --- v2 persistent-application CRUD --------------------------------------
+// These hit /api/applications/by-id/* to avoid colliding with the legacy
+// folder-identifier routes above (/{appId}/versions etc.).
+
+/** POST /api/applications → Application (201) */
+export async function createApplication({ name, projectPath, businessContext }) {
+  return request('/api/applications', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name,
+      project_path: projectPath,
+      business_context: businessContext,
+    }),
+  });
+}
+
+/** GET /api/applications/by-id/{appId} → Application */
+export async function getApplication(appId) {
+  return request(`/api/applications/by-id/${encodeURIComponent(appId)}`);
+}
+
+/** PATCH /api/applications/by-id/{appId} → Application */
+export async function updateApplication(appId, { name, businessContext } = {}) {
+  const body = {};
+  if (name !== undefined) body.name = name;
+  if (businessContext !== undefined) body.business_context = businessContext;
+  return request(`/api/applications/by-id/${encodeURIComponent(appId)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+}
+
+/** DELETE /api/applications/by-id/{appId} → void */
+export async function deleteApplicationRecord(appId) {
+  await request(`/api/applications/by-id/${encodeURIComponent(appId)}`, {
+    method: 'DELETE',
+  });
+}
+
 /** GET /api/config → Config object */
 export async function getConfig() {
   return request('/api/config');

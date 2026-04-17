@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useParams } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import ApplicationsPage from './pages/ApplicationsPage';
 import AppDetailPage from './pages/AppDetailPage';
+import CreateApplicationPage from './pages/CreateApplicationPage';
 import ThreatModelSummaryPage from './pages/ThreatModelSummaryPage';
 import VersionDetailPage from './pages/VersionDetailPage';
 import NewRunPage from './pages/NewRunPage';
@@ -25,6 +26,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/applications" element={<ApplicationsPage />} />
+        <Route path="/applications/new" element={<CreateApplicationPage />} />
         <Route path="/applications/:appId" element={<AppDetailPage />} />
         <Route path="/applications/:appId/versions/:versionId" element={<ThreatModelSummaryPage />} />
         <Route path="/applications/:appId/versions/:versionId/threats/:threatIndex" element={<VersionDetailPage />} />
