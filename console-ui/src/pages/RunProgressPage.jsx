@@ -665,11 +665,19 @@ export default function RunProgressPage() {
           <Alert type="success" dismissible>
             Pipeline completed successfully!{' '}
             {completedAppId ? (
-              <Link href={`/applications/${completedAppId}/versions/latest`}>
+              <Link
+                href={`/applications/${completedAppId}/versions/latest`}
+                onFollow={(e) => { e.preventDefault(); navigate(`/applications/${completedAppId}/versions/latest`); }}
+              >
                 View Dashboard
               </Link>
             ) : (
-              <Link href="/applications">View Applications</Link>
+              <Link
+                href="/applications"
+                onFollow={(e) => { e.preventDefault(); navigate('/applications'); }}
+              >
+                View Applications
+              </Link>
             )}
           </Alert>
         )}
