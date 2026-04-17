@@ -67,6 +67,26 @@ def _count_source_files(repo_path: str) -> int:
     return count
 
 
+def _load_seeded_business_context(state_file: str) -> dict | None:
+    """Return a pre-seeded ``business_context`` block if the state file exists.
+
+    The v2 UX pre-populates ``scanner_context.json`` with user-provided
+    business context before the scanner runs (see ``server.executor.
+    _seed_scanner_context``). Surfacing that block in the system prompt —
+    in addition to it being available through the file the agent reads —
+    matches the existing handoff convention of "prompt + file".
+    """
+    path = Path(state_file)
+    if not path.is_file():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    bc = data.get("business_context")
+    return bc if isinstance(bc, dict) and bc else None
+
+
 def create_scanner_agent(repo_path: str, run_dir: str | None = None) -> Agent:
     """Create a Scanner Agent scoped to the given repository."""
     state_dir = resolve_state_dir(repo_path, run_dir)
@@ -74,7 +94,10 @@ def create_scanner_agent(repo_path: str, run_dir: str | None = None) -> Agent:
 
     tools = [
         make_structural_analyzer(repo_path),
-        make_sandboxed_file_read([repo_path]),
+        # Allow the agent to read repo files *and* its own seeded state file
+        # so it can merge business context into the output rather than
+        # overwriting the pre-populated fields.
+        make_sandboxed_file_read([repo_path, state_file]),
         make_sandboxed_file_write([state_file]),
     ]
 
@@ -83,6 +106,23 @@ def create_scanner_agent(repo_path: str, run_dir: str | None = None) -> Agent:
 
     system_prompt = _load_prompt()
     system_prompt += f"\n\n## Repo Info\n- Path: `{repo_path}`\n- Source files: ~{file_count}\n- Size category: **{size_hint}**\n- Write output to: `{state_file}`\n"
+
+    # When the run is linked to a persistent Application, the executor has
+    # seeded `state_file` with a `business_context` block and top-level
+    # `compliance_requirements` / `data_sensitivity`. Surface it in-prompt so
+    # the agent can treat it as authoritative context while analysing the
+    # repo, and remind it to preserve (not overwrite) those fields.
+    seeded_bc = _load_seeded_business_context(state_file)
+    if seeded_bc is not None:
+        system_prompt += (
+            "\n\n## User-Provided Business Context (authoritative)\n"
+            "The state file has been pre-populated with the following\n"
+            "user-provided business context. Treat these fields as the\n"
+            "source of truth. Do not overwrite them; preserve them when\n"
+            "you write your output, and let them shape which parts of the\n"
+            "repo you prioritise.\n\n"
+            f"```json\n{json.dumps(seeded_bc, indent=2)}\n```\n"
+        )
 
     model = create_model(config, temperature=0)
 
