@@ -16,6 +16,7 @@ import ExpandableSection from '@cloudscape-design/components/expandable-section'
 import Select from '@cloudscape-design/components/select';
 import FormField from '@cloudscape-design/components/form-field';
 import Grid from '@cloudscape-design/components/grid';
+import ColumnLayout from '@cloudscape-design/components/column-layout';
 import CloudscapeShell from '../components/CloudscapeShell';
 import ExportButton from '../components/ExportButton';
 import { aggregateMitigations } from '../utils/mitigation-aggregator';
@@ -40,6 +41,39 @@ function PriorityBadge({ priority }) {
   const p = (priority || '').toLowerCase();
   const colorMap = { high: 'red', critical: 'red', medium: 'blue', low: 'green' };
   return <Badge color={colorMap[p] || 'grey'}>{priority || '\u2014'}</Badge>;
+}
+
+/**
+ * Render the interviewer summary string, which may contain `## Section` markers
+ * produced by the threat-review stage. Splits the text on those markers and
+ * renders each section with its own subheading.
+ */
+function InterviewerSummarySections({ text }) {
+  if (!text) return null;
+  const trimmed = String(text).trim();
+  if (!trimmed.startsWith('## ')) {
+    // Legacy / unstructured — render verbatim.
+    return <Box variant="p">{trimmed}</Box>;
+  }
+  // Split on '## ' markers. First element is empty because the string starts with '## '.
+  const parts = trimmed.split(/^##\s+/m).filter((p) => p.trim().length > 0);
+  return (
+    <SpaceBetween size="m">
+      {parts.map((part, i) => {
+        const firstNewline = part.indexOf('\n');
+        const heading = firstNewline === -1 ? part.trim() : part.slice(0, firstNewline).trim();
+        const body = firstNewline === -1 ? '' : part.slice(firstNewline + 1).trim();
+        return (
+          <div key={i}>
+            <Box variant="h4" margin={{ bottom: 'xxs' }}>{heading}</Box>
+            {body.split('\n').map((line, li) => (
+              <Box key={li} variant="p">{line}</Box>
+            ))}
+          </div>
+        );
+      })}
+    </SpaceBetween>
+  );
 }
 
 function SummaryBar({ data, totalMitigations }) {
@@ -411,6 +445,189 @@ function MitigationsTab({ attackTrees, threats }) {
   );
 }
 
+// ─── Section helper ───
+function Section({ title, children, defaultExpanded = true }) {
+  return (
+    <Container header={<Header variant="h3">{title}</Header>}>
+      {children}
+    </Container>
+  );
+}
+
+function KeyValue({ label, children }) {
+  return (
+    <div>
+      <Box variant="awsui-key-label">{label}</Box>
+      <div>{children || '\u2014'}</div>
+    </div>
+  );
+}
+
+function BadgeList({ items, color = 'blue' }) {
+  if (!items || items.length === 0) return <Box color="text-status-inactive">{'\u2014'}</Box>;
+  return (
+    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+      {items.map((item, i) => <Badge key={i} color={color}>{item}</Badge>)}
+    </div>
+  );
+}
+
+function BulletList({ items }) {
+  if (!items || items.length === 0) return <Box color="text-status-inactive">{'\u2014'}</Box>;
+  return (
+    <ul style={{ margin: 0, paddingLeft: '20px' }}>
+      {items.map((item, i) => (
+        <li key={i} style={{ marginBottom: '6px', lineHeight: '1.5' }}>{item}</li>
+      ))}
+    </ul>
+  );
+}
+
+// ─── Application Overview Tab ───
+function ApplicationOverviewTab({ scannerContext, projectInfo }) {
+  const ctx = scannerContext || {};
+  const info = projectInfo || {};
+  const userCtx = ctx.user_context || {};
+  const secControls = ctx.security_controls || {};
+
+  const deploymentType = userCtx.deployment_state
+    || userCtx.environment_type
+    || (ctx.cloud_provider ? `${ctx.cloud_provider.toUpperCase()} deployment` : null)
+    || info.deployment_environment
+    || null;
+
+  const industry = userCtx.industry || ctx.industry || info.industry || null;
+
+  return (
+    <SpaceBetween size="l">
+      {/* Description */}
+      {(info.short_summary || ctx.description) && (
+        <Container header={<Header variant="h3">Description</Header>}>
+          <Box variant="p">{info.short_summary || ctx.description}</Box>
+        </Container>
+      )}
+
+      {/* Key attributes row */}
+      <Container header={<Header variant="h3">Application Details</Header>}>
+        <ColumnLayout columns={3} variant="text-grid">
+          <KeyValue label="Industry">{industry}</KeyValue>
+          <KeyValue label="Deployment type">{deploymentType}</KeyValue>
+          <KeyValue label="Cloud provider">{ctx.cloud_provider ? ctx.cloud_provider.toUpperCase() : null}</KeyValue>
+        </ColumnLayout>
+      </Container>
+
+      {/* Components found */}
+      <Section title="Components found">
+        <BadgeList items={ctx.services} />
+      </Section>
+
+      {/* Files scanned */}
+      <Section title="Files scanned">
+        {ctx.files_analyzed && ctx.files_analyzed.length > 0 ? (
+          <SpaceBetween size="xs">
+            <BadgeList items={ctx.files_analyzed} color="grey" />
+            {ctx.files_skipped_reason && ctx.files_skipped_reason.length > 0 && (
+              <ExpandableSection headerText={`${ctx.files_skipped_reason.length} file${ctx.files_skipped_reason.length !== 1 ? 's' : ''} skipped`} variant="footer">
+                <BulletList items={ctx.files_skipped_reason} />
+              </ExpandableSection>
+            )}
+          </SpaceBetween>
+        ) : (
+          <Box color="text-status-inactive">{'\u2014'}</Box>
+        )}
+      </Section>
+
+      {/* Authentication mechanisms */}
+      <Section title="Authentication mechanisms found">
+        <BulletList items={ctx.auth_mechanisms} />
+      </Section>
+
+      {/* Main risks inferred */}
+      <Section title="Main risks inferred">
+        <BulletList items={ctx.critical_findings} />
+      </Section>
+
+      {/* User-provided context (from interview agent) */}
+      {Object.keys(userCtx).length > 0 && (
+        <Section title="Additional context (interview)">
+          <SpaceBetween size="m">
+            <ColumnLayout columns={2} variant="text-grid">
+              {userCtx.data_sensitivity && (
+                <KeyValue label="Data sensitivity">{userCtx.data_sensitivity}</KeyValue>
+              )}
+              {userCtx.primary_threat_concern && (
+                <KeyValue label="Primary threat concern">{userCtx.primary_threat_concern}</KeyValue>
+              )}
+              {userCtx.compliance_requirements && (
+                <KeyValue label="Compliance requirements">{userCtx.compliance_requirements}</KeyValue>
+              )}
+              {userCtx.studio_credential_model && (
+                <KeyValue label="Credential model">{userCtx.studio_credential_model}</KeyValue>
+              )}
+            </ColumnLayout>
+            {userCtx.threat_model_focus && userCtx.threat_model_focus.length > 0 && (
+              <div>
+                <Box variant="awsui-key-label">Threat model focus areas</Box>
+                <BulletList items={userCtx.threat_model_focus} />
+              </div>
+            )}
+            {userCtx.existing_controls_status && (
+              <ExpandableSection headerText="Existing controls status" variant="footer">
+                <ColumnLayout columns={2} variant="text-grid">
+                  {Object.entries(userCtx.existing_controls_status).map(([key, val]) => (
+                    <KeyValue key={key} label={key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}>
+                      {val}
+                    </KeyValue>
+                  ))}
+                </ColumnLayout>
+              </ExpandableSection>
+            )}
+          </SpaceBetween>
+        </Section>
+      )}
+
+      {/* Interviewer summary */}
+      {ctx.interviewer_summary && (
+        <Container header={<Header variant="h3">Interviewer summary</Header>}>
+          <InterviewerSummarySections text={ctx.interviewer_summary} />
+          {ctx.interviewer_confidence && (
+            <Box variant="small" color="text-body-secondary" margin={{ top: 'xs' }}>
+              Confidence: <Badge color={ctx.interviewer_confidence === 'high' ? 'green' : ctx.interviewer_confidence === 'medium' ? 'blue' : 'grey'}>{ctx.interviewer_confidence}</Badge>
+            </Box>
+          )}
+        </Container>
+      )}
+
+      {/* Security controls */}
+      {Object.keys(secControls).length > 0 && (
+        <Section title="Security controls observed">
+          <ColumnLayout columns={2} variant="text-grid">
+            {Object.entries(secControls).map(([key, val]) => (
+              <KeyValue key={key} label={key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}>
+                {val}
+              </KeyValue>
+            ))}
+          </ColumnLayout>
+        </Section>
+      )}
+
+      {/* Data flows */}
+      {ctx.data_flows && ctx.data_flows.length > 0 && (
+        <Section title="Data flows">
+          <BulletList items={ctx.data_flows} />
+        </Section>
+      )}
+
+      {/* Trust boundaries */}
+      {ctx.trust_boundaries && ctx.trust_boundaries.length > 0 && (
+        <Section title="Trust boundaries">
+          <BulletList items={ctx.trust_boundaries} />
+        </Section>
+      )}
+    </SpaceBetween>
+  );
+}
+
 // ─── Overview Tab Content ───
 function OverviewTab({ tableItems, navigate, appId, versionId }) {
   const COLUMN_DEFINITIONS = [
@@ -539,7 +756,7 @@ export default function ThreatModelSummaryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const activeTab = searchParams.get('tab') || 'overview';
+  const activeTab = searchParams.get('tab') || 'application';
 
   useEffect(() => {
     let cancelled = false;
@@ -620,8 +837,18 @@ export default function ThreatModelSummaryPage() {
             onChange={({ detail }) => setSearchParams({ tab: detail.activeTabId })}
             tabs={[
               {
+                id: 'application',
+                label: 'Application',
+                content: (
+                  <ApplicationOverviewTab
+                    scannerContext={data?.scanner_context}
+                    projectInfo={data?.project_info}
+                  />
+                ),
+              },
+              {
                 id: 'overview',
-                label: 'Overview',
+                label: 'Threats',
                 content: (
                   <OverviewTab
                     tableItems={tableItems}

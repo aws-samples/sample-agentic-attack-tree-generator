@@ -136,6 +136,7 @@ NODE_LABELS = {
     "interviewer": "Context Validation",
     "threat": "Threat Generation",
     "threat_verifier": "Threat Generation",
+    "threat_review": "Threat Review",
     "parallel_pipeline": "Parallel Analysis",
     "parallel_verifier": "Parallel Analysis",
     "report": "Dashboard Generation",
@@ -192,9 +193,9 @@ def _get_stage_summary(project_path: str, node_id: str, run_dir: str | None = No
                 "message": f"Analyzed {len(d.get('files_analyzed', []))} files",
                 "findings": [
                     f"☁️ Cloud: {d.get('cloud_provider', 'unknown').upper()}",
-                    f"🔧 Stack: {d.get('tech_stack', '')[:80]}",
-                    f"📦 Services: {', '.join(d.get('services', [])[:6])}",
-                    f"🔐 Auth: {', '.join(d.get('auth_mechanisms', [])[:4]) or 'none detected'}",
+                    f"🔧 Stack: {d.get('tech_stack', '')}",
+                    f"📦 Services: {', '.join(d.get('services', []))}",
+                    f"🔐 Auth: {', '.join(d.get('auth_mechanisms', [])) or 'none detected'}",
                 ],
             }
         if node_id == "interviewer":
@@ -203,7 +204,7 @@ def _get_stage_summary(project_path: str, node_id: str, run_dir: str | None = No
             summary = d.get("interviewer_summary", "")
             findings = [f"Confidence: {confidence}"]
             if summary:
-                findings.append(summary[:120])
+                findings.append(summary)
             return {"message": f"Context validation: {confidence} confidence", "findings": findings}
         if node_id in ("scanner", "scanner_verifier"):
             d = _json.loads((sd / "scanner_context.json").read_text())
@@ -211,22 +212,29 @@ def _get_stage_summary(project_path: str, node_id: str, run_dir: str | None = No
                 "message": f"Analyzed {len(d.get('files_analyzed', []))} files",
                 "findings": [
                     f"☁️ Cloud: {d.get('cloud_provider', 'unknown').upper()}",
-                    f"🔧 Stack: {d.get('tech_stack', '')[:80]}",
-                    f"📦 Services: {', '.join(d.get('services', [])[:6])}",
-                    f"🔐 Auth: {', '.join(d.get('auth_mechanisms', [])[:4]) or 'none detected'}",
+                    f"🔧 Stack: {d.get('tech_stack', '')}",
+                    f"📦 Services: {', '.join(d.get('services', []))}",
+                    f"🔐 Auth: {', '.join(d.get('auth_mechanisms', [])) or 'none detected'}",
                 ],
             }
         elif node_id in ("threat", "threat_verifier"):
             d = _json.loads((sd / "threats.json").read_text())
             threats = d.get("threats", [])
             findings = [f"{len(threats)} threats identified"]
-            for t in threats[:5]:
+            for t in threats:
                 sev = t.get("priority") or t.get("severity") or "medium"
                 title = t.get("title", t.get("name", t.get("description", "")))
                 findings.append(f"  [{sev.upper()}] {title}")
-            if len(threats) > 5:
-                findings.append(f"  … and {len(threats) - 5} more")
             return {"message": f"{len(threats)} threats identified", "findings": findings}
+        elif node_id == "threat_review":
+            d = _json.loads((sd / "threats.json").read_text())
+            threats = d.get("threats", [])
+            findings = [f"{len(threats)} threats after review"]
+            for t in threats:
+                sev = t.get("priority") or t.get("severity") or "medium"
+                title = t.get("title", t.get("name", t.get("description", "")))
+                findings.append(f"  [{sev.upper()}] {title}")
+            return {"message": f"Threat review complete · {len(threats)} threats", "findings": findings}
         elif node_id in ("parallel_pipeline", "parallel_verifier"):
             trees = _json.loads((sd / "attack_trees.json").read_text()).get("attack_trees", [])
             raw_m = (sd / "ttp_mappings.json").read_text().replace(",\n]", "\n]").replace(",]", "]")
