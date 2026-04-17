@@ -7,6 +7,83 @@ from typing import Literal
 from pydantic import BaseModel, model_validator
 
 
+class BusinessContext(BaseModel):
+    """User-provided business context for an application.
+
+    Captured when the application is created (or edited later) and seeded
+    into ``scanner_context.json`` before the scanner agent runs so the
+    whole pipeline treats these fields as authoritative user input.
+
+    All fields are required — "unknown" sentinel values are available on
+    the literal-typed fields so the create-application form still feels
+    light while guaranteeing the agent has something to reason with.
+    """
+
+    description: str
+    regulatory_frameworks: list[str]
+    data_sensitivity: Literal[
+        "public",
+        "internal",
+        "confidential",
+        "pii",
+        "phi",
+        "regulated_financial",
+        "unknown",
+    ]
+    main_cia_risk: Literal[
+        "confidentiality",
+        "integrity",
+        "availability",
+        "unknown",
+    ]
+
+
+class Application(BaseModel):
+    """A persistent application record owned by the user.
+
+    Introduced in the v2 UX model where the application is a first-class
+    container that owns a user-chosen name, a business context block, and
+    a list of threat model runs over its lifetime. Separate from the
+    on-disk folder name (``run_dir_name``) so the app can be renamed
+    without moving any run artefacts.
+    """
+
+    id: str
+    name: str
+    slug: str
+    project_path: str
+    business_context: BusinessContext
+    created_at: str
+    updated_at: str
+    run_dir_name: str
+
+
+class ApplicationCreateRequest(BaseModel):
+    """Payload for ``POST /api/applications``."""
+
+    name: str
+    project_path: str
+    business_context: BusinessContext
+
+
+class ApplicationUpdateRequest(BaseModel):
+    """Payload for ``PATCH /api/applications/{app_id}``.
+
+    Either field may be provided independently. At least one must be set.
+    """
+
+    name: str | None = None
+    business_context: BusinessContext | None = None
+
+    @model_validator(mode="after")
+    def _require_one_field(self) -> "ApplicationUpdateRequest":
+        if self.name is None and self.business_context is None:
+            raise ValueError(
+                "At least one of 'name' or 'business_context' must be provided"
+            )
+        return self
+
+
 class ApplicationSummary(BaseModel):
     """Summary of a discovered ThreatForest application."""
 
@@ -15,6 +92,7 @@ class ApplicationSummary(BaseModel):
     description: str
     version_count: int
     last_run_date: str
+    business_context: BusinessContext | None = None
 
 
 class VersionSummary(BaseModel):
