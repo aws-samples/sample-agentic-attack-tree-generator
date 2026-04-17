@@ -121,6 +121,12 @@ class RunConfig(BaseModel):
     # Graph nodes whose output files already exist on disk and can be skipped.
     skip_nodes: list[str] = []
 
+    # Links the run to a persistent Application record. Required for new runs
+    # started from the v2 UX; the route layer resolves it to ``project_path``
+    # before ``RunManager`` sees the config. Left optional here because resume
+    # flows reconstruct a config that doesn't carry an app_id.
+    app_id: str | None = None
+
     @model_validator(mode="after")
     def _validate_threat_file(self) -> "RunConfig":
         if self.threat_source == "file" and not self.threat_file_path:

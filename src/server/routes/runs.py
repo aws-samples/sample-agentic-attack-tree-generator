@@ -8,7 +8,9 @@ import time
 
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 
+from server.applications import ApplicationNotFoundError
 from server.models import InteractionResponse, ResumeResponse, RunConfig, RunResponse, RunState
+from server.routes.applications import get_app_repository
 from server.run_manager import RunManager
 
 # Heartbeat interval in seconds — keeps idle WebSocket connections alive
@@ -61,12 +63,31 @@ async def list_runs(status: str | None = None) -> dict:
 async def create_run(config: RunConfig) -> RunResponse:
     """Initiate a new ThreatForest pipeline run.
 
-    Validates the project path, delegates to RunManager, and returns
-    a 202 with the generated run_id.
+    In the v2 UX model, new runs must reference an existing ``Application``
+    via ``app_id``; the route resolves the stored ``project_path`` so the UI
+    never has to re-send it. Resume flows (``resume_run_dir`` set) skip the
+    lookup because they reconstruct the config from ``pause_state.json``.
 
-    - **400** if the project path does not exist or is not a directory
+    - **400** if ``app_id`` is missing for a fresh run, or the project path
+      does not exist / is not a directory
+    - **404** if ``app_id`` does not resolve to a known application
     - **500** if no orchestrator executor is configured
     """
+    if config.resume_run_dir is None:
+        if config.app_id is None:
+            raise HTTPException(
+                status_code=400,
+                detail="app_id is required to start a new run",
+            )
+        try:
+            app = get_app_repository().get_application(config.app_id)
+        except ApplicationNotFoundError as exc:
+            raise HTTPException(status_code=404, detail=str(exc))
+        # Authoritative source of truth for the scan target — override whatever
+        # the client sent (UI should send the same value, but we prefer the
+        # stored path if they drift).
+        config = config.model_copy(update={"project_path": app.project_path})
+
     manager = get_run_manager()
     try:
         run_id = manager.start_run(config)
