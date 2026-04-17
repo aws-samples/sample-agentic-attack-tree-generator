@@ -9,13 +9,30 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 
-from server.models import ApplicationSummary, VersionSummary
+from server.applications import (
+    ApplicationNameConflictError,
+    ApplicationNotFoundError,
+    ApplicationPathConflictError,
+    ApplicationRepository,
+)
+from server.applications import get_repository as _default_repository
+from server.models import (
+    Application,
+    ApplicationCreateRequest,
+    ApplicationSummary,
+    ApplicationUpdateRequest,
+    VersionSummary,
+)
 from server.registry import ApplicationRegistry
 
 router = APIRouter()
 
 # Default registry — will be reconfigured by app.py at startup
 _registry = ApplicationRegistry()
+
+# The persistent application repository (v2 UX). Initialised lazily so tests
+# can swap it in via ``set_app_repository`` before the first request hits.
+_app_repository: ApplicationRepository | None = None
 
 
 def get_registry() -> ApplicationRegistry:
@@ -29,15 +46,130 @@ def set_registry(registry: ApplicationRegistry) -> None:
     _registry = registry
 
 
+def get_app_repository() -> ApplicationRepository:
+    """Return the module-level ``ApplicationRepository`` instance."""
+    global _app_repository
+    if _app_repository is None:
+        _app_repository = _default_repository()
+    return _app_repository
+
+
+def set_app_repository(repository: ApplicationRepository) -> None:
+    """Replace the module-level ``ApplicationRepository`` (used by tests)."""
+    global _app_repository
+    _app_repository = repository
+
+
 @router.get("/applications", response_model=dict)
 async def list_applications() -> dict:
-    """Return all discovered ThreatForest applications.
+    """Return all ThreatForest applications.
 
-    Response: ``{ "applications": [ ApplicationSummary, ... ] }``
+    Merges two sources:
+
+    - Persistent records from ``applications.json`` (v2 — user-created apps
+      with business context).
+    - Folder-derived records discovered under ``.threatforest/runs/`` (v1 —
+      legacy apps whose identity is the run-folder name).
+
+    When both sources describe the same application, the persistent record
+    wins. Response shape: ``{ "applications": [ ApplicationSummary, ... ] }``.
     """
     registry = get_registry()
-    applications = registry.discover_applications()
-    return {"applications": [app.model_dump() for app in applications]}
+    folder_apps = registry.discover_applications()
+
+    repo = get_app_repository()
+    persistent = repo.list_applications()
+    persistent_run_dirs = {app.run_dir_name for app in persistent}
+
+    # Start with persistent records as summaries, keyed by run_dir_name so we
+    # can merge in version counts / last-run-date from the folder scan.
+    merged: list[ApplicationSummary] = []
+    for app in persistent:
+        versions = registry.get_versions(app.run_dir_name)
+        merged.append(
+            ApplicationSummary(
+                id=app.id,
+                name=app.name,
+                description=app.business_context.description,
+                version_count=len(versions),
+                last_run_date=versions[0].run_date if versions else "",
+                business_context=app.business_context,
+            )
+        )
+
+    # Append any folder-derived apps that don't have a persistent record yet.
+    for folder_app in folder_apps:
+        if folder_app.id in persistent_run_dirs:
+            continue
+        merged.append(folder_app)
+
+    return {"applications": [app.model_dump() for app in merged]}
+
+
+@router.post("/applications", response_model=dict, status_code=201)
+async def create_application(body: ApplicationCreateRequest) -> dict:
+    """Create a new application with a user-chosen name and business context.
+
+    - **409** if another application has the same name (case-insensitive) or
+      is already registered for the given ``project_path``.
+    """
+    repo = get_app_repository()
+    try:
+        app = repo.create_application(body)
+    except ApplicationNameConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+    except ApplicationPathConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+    return app.model_dump()
+
+
+@router.get("/applications/by-id/{app_id}", response_model=dict)
+async def get_application(app_id: str) -> dict:
+    """Return the full persistent record for a single application.
+
+    Uses ``/by-id/{app_id}`` rather than ``/{app_id}`` so it does not collide
+    with the folder-derived routes (e.g. ``/applications/{app_id}/versions``)
+    that accept a folder-style identifier.
+
+    - **404** if no application with this ID exists.
+    """
+    repo = get_app_repository()
+    try:
+        app = repo.get_application(app_id)
+    except ApplicationNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    return app.model_dump()
+
+
+@router.patch("/applications/by-id/{app_id}", response_model=dict)
+async def update_application(app_id: str, body: ApplicationUpdateRequest) -> dict:
+    """Apply a partial update (name and/or business_context) to an application.
+
+    - **404** if no application with this ID exists.
+    - **409** if the new name collides with another application.
+    """
+    repo = get_app_repository()
+    try:
+        app = repo.update_application(app_id, body)
+    except ApplicationNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except ApplicationNameConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+    return app.model_dump()
+
+
+@router.delete("/applications/by-id/{app_id}", status_code=200)
+async def delete_application_record(app_id: str) -> dict:
+    """Delete the persistent application record. Does not touch on-disk run artefacts.
+
+    - **404** if no application with this ID exists.
+    """
+    repo = get_app_repository()
+    try:
+        repo.delete_application(app_id)
+    except ApplicationNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    return {"success": True, "message": f"Application '{app_id}' deleted"}
 
 
 @router.get("/applications/{app_id}/versions", response_model=dict)
