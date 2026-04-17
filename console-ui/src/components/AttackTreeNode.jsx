@@ -39,8 +39,24 @@ function collectAllTactics(ttcMappings) {
   return [...set];
 }
 
+function probabilityBadgeColors(reach) {
+  if (typeof reach !== 'number' || isNaN(reach)) return null;
+  if (reach >= 0.5) return { bg: '#fef2f2', fg: '#991b1b' };   // red
+  if (reach >= 0.2) return { bg: '#fff7ed', fg: '#9a3412' };   // amber
+  return { bg: '#f0fdf4', fg: '#166534' };                      // green
+}
+
+function formatProbability(p) {
+  if (typeof p !== 'number' || isNaN(p)) return '—';
+  return Math.round(p * 100) + '%';
+}
+
 export function NodePopoverContent({ data }) {
   const { label, nodeId, description, ttcMappings = [], mitigations = [] } = data || {};
+  const probability = typeof data?.probability === 'number' ? data.probability : null;
+  const reachProbability = typeof data?.reachProbability === 'number' ? data.reachProbability : null;
+  const probabilityRationale = data?.probabilityRationale || '';
+  const hasProbability = probability !== null || reachProbability !== null;
   const hasDescription = description && description.length > 0;
   const hasMappings = ttcMappings && ttcMappings.length > 0;
   const hasMitigations = mitigations && mitigations.length > 0;
@@ -67,6 +83,28 @@ export function NodePopoverContent({ data }) {
         <div>
           <Box variant="awsui-key-label">Description</Box>
           <Box variant="p">{description}</Box>
+        </div>
+      )}
+
+      {/* Likelihood — step probability + cumulative reach probability */}
+      {hasProbability && (
+        <div>
+          <Box variant="awsui-key-label">Likelihood</Box>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '13px' }}>
+            <div>
+              <Box variant="small" color="text-body-secondary">Step</Box>
+              <Box variant="p">{formatProbability(probability)}</Box>
+            </div>
+            <div>
+              <Box variant="small" color="text-body-secondary">Reach (cumulative)</Box>
+              <Box variant="p">{formatProbability(reachProbability)}</Box>
+            </div>
+          </div>
+          {probabilityRationale && (
+            <Box variant="small" color="text-body-secondary" margin={{ top: 'xs' }}>
+              {probabilityRationale}
+            </Box>
+          )}
         </div>
       )}
 
@@ -124,6 +162,8 @@ export default function AttackTreeNode({ data }) {
   const category = data?.category || 'default';
   const colors = CATEGORY_COLORS[category] || CATEGORY_COLORS.default;
   const allTactics = collectAllTactics(data?.ttcMappings);
+  const reach = data?.reachProbability;
+  const badgeColors = probabilityBadgeColors(reach);
 
   return (
     <>
@@ -137,7 +177,17 @@ export default function AttackTreeNode({ data }) {
         onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)'; }}
         onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
       >
-        <div>{data?.label}</div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px' }}>
+          <div style={{ flex: 1 }}>{data?.label}</div>
+          {badgeColors && category !== 'fact' && (
+            <span style={{
+              fontSize: '10px', fontWeight: 700, padding: '1px 6px', borderRadius: '4px',
+              background: badgeColors.bg, color: badgeColors.fg, whiteSpace: 'nowrap',
+            }}>
+              {formatProbability(reach)}
+            </span>
+          )}
+        </div>
         {allTactics.length > 0 && (
           <div style={{ display: 'flex', gap: '3px', flexWrap: 'wrap', marginTop: '4px' }}>
             {allTactics.map((t, i) => (

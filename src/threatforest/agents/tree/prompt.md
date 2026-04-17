@@ -56,10 +56,10 @@ Write a JSON object to the state file:
       "root_goal": "Exfiltrate customer data via SQL injection",
       "steps": [
         {"id": "AT001-S1", "title": "Malicious attacker with network access", "description": "A malicious attacker with network access to the REST API and knowledge of common SQL injection techniques", "parent_id": "", "is_leaf": false, "category": "fact"},
-        {"id": "AT001-S2", "title": "Find injectable endpoint", "description": "Identify injectable API endpoint by fuzzing all REST endpoints with common SQL injection payloads", "parent_id": "AT001-S1", "is_leaf": false},
-        {"id": "AT001-S3", "title": "Craft SQL injection payload", "description": "Craft SQL injection payload targeting PostgreSQL-specific syntax and functions", "parent_id": "AT001-S2", "is_leaf": false},
-        {"id": "AT001-S4", "title": "Extract DB schema", "description": "Extract database schema via UNION-based injection to enumerate tables and columns", "parent_id": "AT001-S3", "is_leaf": true},
-        {"id": "AT001-S5", "title": "Dump customer data", "description": "Dump customer table via blind SQL injection using time-based or boolean-based techniques", "parent_id": "AT001-S3", "is_leaf": true}
+        {"id": "AT001-S2", "title": "Find injectable endpoint", "description": "Identify injectable API endpoint by fuzzing all REST endpoints with common SQL injection payloads", "parent_id": "AT001-S1", "is_leaf": false, "skill_required": "low", "access_required": "none", "detectability": "high", "exploit_maturity": "weaponised"},
+        {"id": "AT001-S3", "title": "Craft SQL injection payload", "description": "Craft SQL injection payload targeting PostgreSQL-specific syntax and functions", "parent_id": "AT001-S2", "is_leaf": false, "skill_required": "med", "access_required": "none", "detectability": "med", "exploit_maturity": "weaponised"},
+        {"id": "AT001-S4", "title": "Extract DB schema", "description": "Extract database schema via UNION-based injection to enumerate tables and columns", "parent_id": "AT001-S3", "is_leaf": true, "skill_required": "med", "access_required": "none", "detectability": "med", "exploit_maturity": "weaponised"},
+        {"id": "AT001-S5", "title": "Dump customer data", "description": "Dump customer table via blind SQL injection using time-based or boolean-based techniques", "parent_id": "AT001-S3", "is_leaf": true, "skill_required": "high", "access_required": "none", "detectability": "low", "exploit_maturity": "poc"}
       ]
     }
   ]
@@ -76,6 +76,33 @@ Write a JSON object to the state file:
 - Root steps have `parent_id: ""`
 - Leaf steps (`is_leaf: true`) are the concrete actions an attacker would take
 - Use the structural analyzer to verify assumptions about the codebase if unsure
+
+### Attacker Factors (per non-fact step)
+
+Every non-fact step must include four attacker-factor fields. These feed the
+downstream probability model, so assign them based on the specific tech stack
+and attack context — not generic defaults.
+
+- `skill_required` — `low` | `med` | `high`
+  - Low: script-kiddie / point-and-click tooling.
+  - Med: adapted public exploits, scripting, moderate domain knowledge.
+  - High: zero-day research, deep protocol/internal knowledge.
+- `access_required` — `none` | `authenticated` | `privileged`
+  - None: unauthenticated / internet-exposed surface.
+  - Authenticated: any valid user session is enough.
+  - Privileged: admin role, internal network, or lateral movement first.
+- `detectability` — `low` | `med` | `high`
+  - Low: stealthy; passive or quiet technique.
+  - Med: generates typical log entries but no obvious alarm.
+  - High: likely to trigger monitoring / alerts.
+- `exploit_maturity` — `theoretical` | `poc` | `weaponised`
+  - Theoretical: conceptual; no public tooling.
+  - PoC: proof-of-concept code exists but requires adaptation.
+  - Weaponised: off-the-shelf exploit / Metasploit-style module.
+
+When genuinely unsure, default to `detectability=med` and
+`exploit_maturity=poc` rather than omitting the fields. The fact node does
+not carry these fields (it's a precondition, not an action).
 
 ### Attack Path Discovery
 Before generating steps for each tree, systematically consider these questions to identify realistic attack paths. Use the ones relevant to the threat being modeled:

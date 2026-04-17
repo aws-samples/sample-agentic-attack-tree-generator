@@ -71,10 +71,23 @@ function FlowProperties({ attackTree, onFieldChange }) {
 /**
  * Node-level properties shown when a node is selected.
  */
+function formatProbability(p) {
+  if (typeof p !== 'number' || isNaN(p)) return '—';
+  return Math.round(p * 100) + '%';
+}
+
+function probabilityColor(reach) {
+  if (typeof reach !== 'number' || isNaN(reach)) return 'grey';
+  if (reach >= 0.5) return 'red';
+  if (reach >= 0.2) return 'grey';
+  return 'green';
+}
+
 function NodeProperties({ nodeData, onNodeFieldChange }) {
   if (!nodeData) return null;
 
-  const { label, nodeId, category, description, ttcMappings = [], mitigations = [] } = nodeData;
+  const { label, nodeId, category, description, ttcMappings = [], mitigations = [],
+    probability, reachProbability, probabilityRationale } = nodeData;
 
   return (
     <SpaceBetween size="s">
@@ -107,6 +120,29 @@ function NodeProperties({ nodeData, onNodeFieldChange }) {
           rows={3}
         />
       </FormField>
+
+      {/* Likelihood */}
+      {category !== 'fact' && (typeof probability === 'number' || typeof reachProbability === 'number') && (
+        <ExpandableSection headerText="Likelihood" defaultExpanded>
+          <SpaceBetween size="xs">
+            <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+              <div>
+                <Box variant="awsui-key-label" fontSize="body-s">Step</Box>
+                <Badge color={probabilityColor(probability)}>{formatProbability(probability)}</Badge>
+              </div>
+              <div>
+                <Box variant="awsui-key-label" fontSize="body-s">Reach (cumulative)</Box>
+                <Badge color={probabilityColor(reachProbability)}>{formatProbability(reachProbability)}</Badge>
+              </div>
+            </div>
+            {probabilityRationale && (
+              <Box variant="small" color="text-body-secondary">
+                {probabilityRationale}
+              </Box>
+            )}
+          </SpaceBetween>
+        </ExpandableSection>
+      )}
 
       {/* TTP Mappings */}
       {ttcMappings.length > 0 && (

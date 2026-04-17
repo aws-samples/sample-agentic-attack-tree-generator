@@ -3,6 +3,13 @@
 import json
 from pathlib import Path
 
+FACTOR_ENUMS = {
+    "skill_required": {"low", "med", "high"},
+    "access_required": {"none", "authenticated", "privileged"},
+    "detectability": {"low", "med", "high"},
+    "exploit_maturity": {"theoretical", "poc", "weaponised"},
+}
+
 
 def verify_tree_output(state_file: str, scanner_state_file: str = "") -> tuple[bool, str]:
     """Verify attack trees for structural validity and feasibility.
@@ -27,6 +34,8 @@ def verify_tree_output(state_file: str, scanner_state_file: str = "") -> tuple[b
     trees = data.get("attack_trees", [])
     if not trees:
         return False, "No attack trees generated"
+
+    factor_warnings_added = False
 
     # --- Structural checks ---
     for tree in trees:
@@ -96,6 +105,35 @@ def verify_tree_output(state_file: str, scanner_state_file: str = "") -> tuple[b
                     f"Tree {tree_id}: step '{sid}' does not trace back to "
                     f"the fact node '{fact_id}'"
                 )
+
+        # --- Factor soft-warning check ---
+        # Non-fact steps should carry the four attacker factors that feed the
+        # probability stage. Missing/invalid values are a soft warning: the
+        # probability stage treats empties as neutral, so we annotate the step
+        # instead of failing the whole tree.
+        for step in steps:
+            if step.get("category") == "fact":
+                continue
+            warnings = []
+            for field, allowed in FACTOR_ENUMS.items():
+                value = step.get(field, "")
+                if not value:
+                    warnings.append(f"{field} missing")
+                elif value not in allowed:
+                    warnings.append(f"{field}='{value}' not in {sorted(allowed)}")
+            if warnings:
+                note = step.get("feasibility_note", "")
+                addition = "probability factors: " + "; ".join(warnings)
+                step["feasibility_note"] = (note + " | " + addition).strip(" |") if note else addition
+                factor_warnings_added = True
+
+    # Persist factor-warning annotations back to the state file so the
+    # probability stage can read them.
+    if factor_warnings_added:
+        try:
+            path.write_text(json.dumps(data, indent=2))
+        except OSError:
+            pass  # annotations are best-effort; don't fail verification
 
     # --- Feasibility check (optional, needs scanner context) ---
     if scanner_state_file:
