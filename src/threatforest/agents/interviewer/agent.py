@@ -46,8 +46,10 @@ class SimpleInterrupt:
 # Fixed interview questions (identical every run)
 # ---------------------------------------------------------------------------
 
+# The data-sensitivity question that used to lead this list is now captured
+# up front by BusinessContext.data_sensitivity when the user creates the
+# application, so the interviewer no longer asks it again.
 FIXED_QUESTIONS = [
-    "What specific types of sensitive data does this application handle?",
     "Is this system in production, early design, or early development?",
     "What is the main risk focus — confidentiality, integrity, or availability?",
 ]
