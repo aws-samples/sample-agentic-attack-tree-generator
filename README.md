@@ -20,7 +20,7 @@
 -->
 <p align="center">
   <video
-    src="docs/assets/videos/attack-tree-dashboard.mp4"
+    src="https://github.com/user-attachments/assets/0496fc69-faf0-4bc4-8c00-6cc8cca2ef43"
     poster="docs/assets/images/attack-tree-dashboard-poster.jpg"
     autoplay loop muted playsinline
     width="85%">
@@ -55,7 +55,7 @@ See the [Getting Started guide](https://aws-samples.github.io/sample-agentic-att
 
 <p align="center">
   <video
-    src="docs/assets/videos/end-to-end-demo.mp4"
+    src="https://github.com/user-attachments/assets/b8c1708d-a9c1-4f65-aa45-34a17d5f3404"
     poster="docs/assets/images/end-to-end-demo-poster.jpg"
     controls muted playsinline
     width="85%">
