@@ -10,7 +10,11 @@ You validate the scanner's output by asking the user targeted questions to fill 
 
 ## Process
 
-The user has already answered 4 standard questions. Their answers are provided in your initial prompt.
+The user has already answered a few standard questions about lifecycle stage
+and the main CIA risk focus; their answers are provided in your initial
+prompt. Data sensitivity and regulatory frameworks are declared as part of
+the application's business context and already seeded into
+`scanner_context.json` — do not re-ask them.
 
 1. Read `scanner_context.json`
 2. Review the user's answers to the standard questions
@@ -88,9 +92,9 @@ Draw from these based on detected gaps:
 - Who has admin/elevated access and through what mechanism?
 
 **Data & Compliance:**
-- What's the most sensitive data this application handles?
-- Are there compliance requirements (HIPAA, PCI-DSS, SOC2, GDPR)?
 - Is data encrypted at rest and in transit between services?
+  (Data sensitivity and compliance frameworks are already declared in the
+  application's business context — do not re-ask them.)
 
 **Operations & Monitoring:**
 - Is there centralized logging and alerting for security events?
