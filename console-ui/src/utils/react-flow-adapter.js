@@ -100,11 +100,17 @@ export function adaptToReactFlow(parserOutput, attackTree, classDefs = {}) {
   // Build lookup maps for enrichment
   const stepMap = {};
   const stepCategoryMap = {};
+  const stepProbabilityMap = {};
   for (const step of attackSteps) {
     stepMap[step.node_id] = step.description;
     if (step.category) {
       stepCategoryMap[step.node_id] = step.category;
     }
+    stepProbabilityMap[step.node_id] = {
+      probability: typeof step.probability === 'number' ? step.probability : null,
+      reachProbability: typeof step.reach_probability === 'number' ? step.reach_probability : null,
+      rationale: step.probability_rationale || '',
+    };
   }
 
   // Map parser nodes → React Flow nodes
@@ -136,6 +142,7 @@ export function adaptToReactFlow(parserOutput, attackTree, classDefs = {}) {
         }
       }
     }
+    const prob = stepProbabilityMap[node.id] || { probability: null, reachProbability: null, rationale: '' };
     return {
       id: node.id,
       type: 'attackTreeNode',
@@ -147,6 +154,9 @@ export function adaptToReactFlow(parserOutput, attackTree, classDefs = {}) {
         description: desc,
         ttcMappings: nodeMappings,
         mitigations: nodeMitigations,
+        probability: prob.probability,
+        reachProbability: prob.reachProbability,
+        probabilityRationale: prob.rationale,
       },
     };
   });

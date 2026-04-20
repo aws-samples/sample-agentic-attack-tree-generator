@@ -330,6 +330,9 @@ def _build_attack_trees_for_ui(state_dir: Path, threats: list) -> list:
                 "label": title or desc,
                 "description": desc,
                 "category": step.get("category", ""),
+                "probability": step.get("probability", 0.0),
+                "reach_probability": step.get("reach_probability", 0.0),
+                "probability_rationale": step.get("probability_rationale", ""),
             }
             if mit:
                 tree_mitigations.append({

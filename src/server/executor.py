@@ -190,6 +190,7 @@ NODE_LABELS = {
     "threat_review": "Threat Review",
     "parallel_pipeline": "Parallel Analysis",
     "parallel_verifier": "Parallel Analysis",
+    "probability": "Probability Scoring",
     "report": "Dashboard Generation",
     "report_verifier": "Dashboard Generation",
 }
@@ -300,6 +301,20 @@ def _get_stage_summary(project_path: str, node_id: str, run_dir: str | None = No
                     f"🌳 {len(trees)} attack trees with {total_steps} total steps",
                     f"🎯 {len(mappings)} TTP mappings across {len(techniques)} unique techniques",
                     f"🛡️ {len(mits)} mitigations generated",
+                ],
+            }
+        elif node_id == "probability":
+            trees = _json.loads((sd / "attack_trees.json").read_text()).get("attack_trees", [])
+            all_steps = [s for t in trees for s in t.get("steps", [])]
+            scored = [s for s in all_steps if s.get("category") != "fact"]
+            high = [s for s in scored if s.get("reach_probability", 0) >= 0.5]
+            avg = (sum(s.get("reach_probability", 0) for s in scored) / len(scored)) if scored else 0
+            return {
+                "message": f"Scored {len(scored)} steps · avg reach {avg:.2f}",
+                "findings": [
+                    f"📊 {len(scored)} non-fact steps scored",
+                    f"🔥 {len(high)} steps with reach probability ≥ 0.5",
+                    f"📈 Average reach probability: {avg:.2f}",
                 ],
             }
     except (FileNotFoundError, _json.JSONDecodeError, OSError):

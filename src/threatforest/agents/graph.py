@@ -149,6 +149,7 @@ def build_graph(
     from threatforest.agents.threat_review.agent import ThreatReviewNode
     from threatforest.agents.parallel import run_parallel_pipeline
     from threatforest.agents.mitigation.verifier import verify_mitigation_output
+    from threatforest.agents.probability.stage import run_probability_stage
     from threatforest.agents.report.agent import run_report_generator
     from threatforest.agents.report.verifier import verify_report_output
 
@@ -236,6 +237,16 @@ def build_graph(
         ))
     )
 
+    # Probability stage — pure-Python, runs after mitigations are consolidated
+    # and before the report generator consumes the tree state.
+    probability = (
+        _make_skip_node("probability", repo_path, run_dir)
+        if "probability" in skip_nodes
+        else GraphNode("probability", FunctionAgent(
+            run_probability_stage, repo_path, "probability", run_dir=run_dir,
+        ))
+    )
+
     report = (
         _make_skip_node("report", repo_path, run_dir)
         if "report" in skip_nodes
@@ -292,8 +303,9 @@ def build_graph(
         GraphEdge(threat_review, parallel),
         GraphEdge(parallel, parallel_v),
 
-        # Parallel → Report
-        GraphEdge(parallel_v, report, condition=_parallel_ok),
+        # Parallel → Probability → Report
+        GraphEdge(parallel_v, probability, condition=_parallel_ok),
+        GraphEdge(probability, report),
         GraphEdge(report, report_v),
 
         # Retry edges
@@ -309,6 +321,7 @@ def build_graph(
         "threat": threat, "threat_verifier": threat_v,
         "threat_review": threat_review,
         "parallel_pipeline": parallel, "parallel_verifier": parallel_v,
+        "probability": probability,
         "report": report, "report_verifier": report_v,
     }
 
@@ -355,6 +368,7 @@ async def run_graph(repo_path: str, run_dir: str | None = None, frameworks: list
         "threat_review": "📋 Threat Review",
         "parallel_pipeline": "⚡ Parallel Pipeline (tree → ttp → mitigation)",
         "parallel_verifier": "✅ Pipeline Verifier",
+        "probability": "📊 Probability Stage",
         "report": "📝 Report Generator",
         "report_verifier": "✅ Report Verifier",
     }
