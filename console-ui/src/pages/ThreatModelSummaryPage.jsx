@@ -21,6 +21,7 @@ import CloudscapeShell from '../components/CloudscapeShell';
 import ExportButton from '../components/ExportButton';
 import { aggregateMitigations } from '../utils/mitigation-aggregator';
 import { renderFormattedText } from '../utils/text-formatter';
+import { getApplication, getApplicationVersions } from '../api-client';
 
 const PRIORITY_COLORS = { 1: 'red', 2: 'red', 3: 'blue', high: 'red', critical: 'red', medium: 'blue', low: 'grey' };
 
@@ -753,6 +754,7 @@ export default function ThreatModelSummaryPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [data, setData] = useState(null);
   const [appName, setAppName] = useState(appId);
+  const [versionLabel, setVersionLabel] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -777,6 +779,34 @@ export default function ThreatModelSummaryPage() {
       }
     }
     fetchVersion();
+    return () => { cancelled = true; };
+  }, [appId, versionId]);
+
+  // Separate fetch: authoritative app name from the persistent record
+  // (falls back silently if the endpoint 404s on legacy folder-derived IDs).
+  useEffect(() => {
+    let cancelled = false;
+    getApplication(appId)
+      .then((app) => { if (!cancelled && app?.name) setAppName(app.name); })
+      .catch(() => { /* swallow — keep whatever fallback we had */ });
+    return () => { cancelled = true; };
+  }, [appId]);
+
+  // Resolve a friendly label for the current version ("Latest" when the URL
+  // param is literal "latest"; otherwise "Version N" pulled from the list).
+  useEffect(() => {
+    let cancelled = false;
+    if (versionId === 'latest') {
+      setVersionLabel('Latest');
+      return () => { cancelled = true; };
+    }
+    getApplicationVersions(appId)
+      .then(({ versions = [] }) => {
+        if (cancelled) return;
+        const match = versions.find((v) => v.id === versionId);
+        setVersionLabel(match?.display_name || versionId);
+      })
+      .catch(() => { if (!cancelled) setVersionLabel(versionId); });
     return () => { cancelled = true; };
   }, [appId, versionId]);
 
@@ -811,7 +841,11 @@ export default function ThreatModelSummaryPage() {
         { text: 'Home', href: '/' },
         { text: 'Applications', href: '/applications' },
         { text: appName, href: `/applications/${appId}` },
-        { text: 'Threat Model', href: `/applications/${appId}/versions/${versionId}` },
+        { text: 'Threat Model', href: `/applications/${appId}` },
+        {
+          text: versionLabel || 'Latest',
+          href: `/applications/${appId}/versions/${versionId}`,
+        },
       ]}
     >
       {error && <Alert type="error" header="Error loading threat model">{error}</Alert>}

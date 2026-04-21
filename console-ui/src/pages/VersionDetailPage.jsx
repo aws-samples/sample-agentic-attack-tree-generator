@@ -13,6 +13,7 @@ import CloudscapeShell from '../components/CloudscapeShell';
 import AttackFlowViewer from '../components/AttackFlowViewer';
 import MitigationsTable from '../components/MitigationsTable';
 import ExportButton from '../components/ExportButton';
+import { getApplication, getApplicationVersions } from '../api-client';
 
 function PriorityBadge({ priority }) {
   const colorMap = { High: 'red', Medium: 'grey', Low: 'green' };
@@ -62,6 +63,7 @@ export default function VersionDetailPage() {
   const selectedIdx = parseInt(threatIndex || '0', 10);
   const [data, setData] = useState(null);
   const [appName, setAppName] = useState(appId);
+  const [versionLabel, setVersionLabel] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -87,6 +89,33 @@ export default function VersionDetailPage() {
     return () => { cancelled = true; };
   }, [appId, versionId]);
 
+  // Authoritative app name from the persistent record (works for both
+  // opaque app_id and folder-slug URLs thanks to the /by-id fallback).
+  useEffect(() => {
+    let cancelled = false;
+    getApplication(appId)
+      .then((app) => { if (!cancelled && app?.name) setAppName(app.name); })
+      .catch(() => { /* keep fallback */ });
+    return () => { cancelled = true; };
+  }, [appId]);
+
+  // Friendly version label for the breadcrumb.
+  useEffect(() => {
+    let cancelled = false;
+    if (versionId === 'latest') {
+      setVersionLabel('Latest');
+      return () => { cancelled = true; };
+    }
+    getApplicationVersions(appId)
+      .then(({ versions = [] }) => {
+        if (cancelled) return;
+        const match = versions.find((v) => v.id === versionId);
+        setVersionLabel(match?.display_name || versionId);
+      })
+      .catch(() => { if (!cancelled) setVersionLabel(versionId); });
+    return () => { cancelled = true; };
+  }, [appId, versionId]);
+
   const attackTrees = data?.attack_trees || [];
   const selectedTree = attackTrees[selectedIdx] || null;
   const threatLabel = selectedTree
@@ -100,7 +129,11 @@ export default function VersionDetailPage() {
         { text: 'Home', href: '/' },
         { text: 'Applications', href: '/applications' },
         { text: appName, href: `/applications/${appId}` },
-        { text: 'Threat Model', href: `/applications/${appId}/versions/${versionId}` },
+        { text: 'Threat Model', href: `/applications/${appId}` },
+        {
+          text: versionLabel || 'Latest',
+          href: `/applications/${appId}/versions/${versionId}`,
+        },
         { text: threatLabel, href: `/applications/${appId}/versions/${versionId}/threats/${threatIndex}` },
       ]}
     >
