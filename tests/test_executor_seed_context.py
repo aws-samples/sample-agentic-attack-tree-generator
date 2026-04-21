@@ -65,15 +65,16 @@ def test_seed_writes_scanner_context(tmp_path: Path) -> None:
 
 
 def test_seed_mirrors_top_level_fields(tmp_path: Path) -> None:
-    """Top-level ``compliance_requirements`` and ``data_sensitivity`` mirror the
-    nested block so existing scanner/interviewer enrichment sees them without
-    any prompt changes."""
-    app = _make_app(frameworks=["SOC2", "PCI-DSS"], sensitivity="pii")
+    """Top-level ``compliance_requirements``, ``data_sensitivity`` and
+    ``main_cia_risk`` mirror the nested block so existing scanner/interviewer
+    enrichment and the threat agent can read them without extra indirection."""
+    app = _make_app(frameworks=["SOC2", "PCI-DSS"], sensitivity="pii", cia="integrity")
     _seed_scanner_context(tmp_path, app)
 
     data = json.loads((tmp_path / "state" / "scanner_context.json").read_text())
     assert data["compliance_requirements"] == ["SOC2", "PCI-DSS"]
     assert data["data_sensitivity"] == "pii"
+    assert data["main_cia_risk"] == "integrity"
 
 
 def test_seed_leaves_existing_file_untouched(tmp_path: Path) -> None:

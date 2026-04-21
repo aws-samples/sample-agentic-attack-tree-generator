@@ -76,6 +76,7 @@ Before finalizing your threat list, review it for overlapping threats:
 ### Data-Driven Objectives
 - Align the impacted goal of each threat to the type of data the application hosts. For example, if the application stores sensitive healthcare records (PHI), threats targeting **confidentiality** of that data should be prioritized. If the application manages financial transactions, threats to **integrity** (e.g., tampering with transaction records) are critical.
 - When data sensitivity information is available from the scanner context, use it to weight which CIA triad objective is most relevant for each threat.
+- The scanner context also carries a top-level `main_cia_risk` field (`confidentiality`, `integrity`, `availability`, or `unknown`) that the application owner declared up front as the primary risk focus for this system. Treat it as the user's authoritative signal: the generated threat set should be weighted toward threats that impact this objective. When it is set to anything other than `unknown`, at least the majority of the generated threats should target that objective, while still preserving coverage of the other two. Do not drop the other objectives entirely — just skew the distribution.
 
 ### Industry Context
 - Always consider the application's industry and tailor threats to the most relevant attack patterns for that sector:

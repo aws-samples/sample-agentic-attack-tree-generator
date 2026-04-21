@@ -13,7 +13,21 @@ const FIELD_HELP = {
   services: 'Discrete services, components, or modules that make up the system.',
   auth: 'How users and services authenticate (e.g. IAM roles, OAuth2, API keys).',
   compliance: 'Regulatory or contractual frameworks the system must meet (e.g. SOC2, HIPAA).',
+  mainCiaRisk: 'Primary CIA risk focus the owner declared when the application was created — weights which objective (confidentiality / integrity / availability) the threat set should emphasise.',
 };
+
+// Human-readable labels for the main_cia_risk Literal values.
+const MAIN_CIA_RISK_LABELS = {
+  confidentiality: 'Confidentiality',
+  integrity: 'Integrity',
+  availability: 'Availability',
+  unknown: 'Unknown',
+};
+
+function formatMainCiaRisk(value) {
+  if (!value) return '\u2014';
+  return MAIN_CIA_RISK_LABELS[value] || value;
+}
 
 function InfoIcon({ text }) {
   return (
@@ -165,6 +179,7 @@ export default function StageCard({
             <div><FieldLabel text="Services" info={FIELD_HELP.services} /><BadgeList items={scannerReview.services} /></div>
             <div><FieldLabel text="Auth" info={FIELD_HELP.auth} /><BadgeList items={scannerReview.auth_mechanisms} /></div>
             <div><FieldLabel text="Compliance" info={FIELD_HELP.compliance} /><BadgeList items={scannerReview.compliance_requirements} /></div>
+            <div data-testid="scanner-review-main-cia-risk"><FieldLabel text="Main CIA risk" info={FIELD_HELP.mainCiaRisk} /><div>{formatMainCiaRisk(scannerReview.main_cia_risk)}</div></div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px' }}>
             <Button variant="primary" onClick={onScannerReviewConfirm} data-testid="scanner-review-confirm">
@@ -273,6 +288,7 @@ export default function StageCard({
             <div><FieldLabel text="Services" info={FIELD_HELP.services} /><BadgeList items={confirmedContext.services} /></div>
             <div><FieldLabel text="Auth" info={FIELD_HELP.auth} /><BadgeList items={confirmedContext.auth_mechanisms} /></div>
             <div><FieldLabel text="Compliance" info={FIELD_HELP.compliance} /><BadgeList items={confirmedContext.compliance_requirements} /></div>
+            <div data-testid="confirmed-context-main-cia-risk"><FieldLabel text="Main CIA risk" info={FIELD_HELP.mainCiaRisk} /><div>{formatMainCiaRisk(confirmedContext.main_cia_risk)}</div></div>
           </div>
         </div>
       )}

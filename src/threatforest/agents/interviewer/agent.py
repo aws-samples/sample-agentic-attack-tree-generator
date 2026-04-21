@@ -46,12 +46,11 @@ class SimpleInterrupt:
 # Fixed interview questions (identical every run)
 # ---------------------------------------------------------------------------
 
-# The data-sensitivity question that used to lead this list is now captured
-# up front by BusinessContext.data_sensitivity when the user creates the
-# application, so the interviewer no longer asks it again.
+# Data sensitivity and main CIA risk focus used to be asked here but are now
+# captured up front by BusinessContext when the user creates the application,
+# so the interviewer no longer re-asks them.
 FIXED_QUESTIONS = [
     "Is this system in production, early design, or early development?",
-    "What is the main risk focus — confidentiality, integrity, or availability?",
 ]
 
 BACK_SENTINEL = "__back__"
@@ -183,6 +182,7 @@ class ScannerReviewNode(MultiAgentBase):
                 "tech_stack": ctx.get("tech_stack", ""),
                 "data_sensitivity": ctx.get("data_sensitivity", ""),
                 "compliance_requirements": ctx.get("compliance_requirements", []),
+                "main_cia_risk": ctx.get("main_cia_risk", ""),
             },
         }
 
@@ -247,6 +247,7 @@ class InterviewerNode(MultiAgentBase):
                     "tech_stack": ctx.get("tech_stack", ""),
                     "data_sensitivity": ctx.get("data_sensitivity", ""),
                     "compliance_requirements": ctx.get("compliance_requirements", []),
+                    "main_cia_risk": ctx.get("main_cia_risk", ""),
                 },
             },
         )

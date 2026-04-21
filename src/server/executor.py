@@ -143,10 +143,11 @@ def _seed_scanner_context(run_dir: Path, app: Application) -> None:
 
     - A nested ``business_context`` block — the authoritative record of what
       the user entered.
-    - Top-level ``compliance_requirements`` and ``data_sensitivity`` — mirrors
-      of the fields the scanner / interviewer already enrich, so existing
-      fill-if-not-set and unique-append logic naturally preserves the user's
-      values.
+    - Top-level ``compliance_requirements``, ``data_sensitivity`` and
+      ``main_cia_risk`` — mirrors of the fields the scanner / interviewer
+      already enrich, so existing fill-if-not-set and unique-append logic
+      naturally preserves the user's values. The threat agent and scanner
+      review UI read them from the top level.
 
     Leaves an existing file untouched (resume flows re-enter with state already
     written from the previous attempt — we never clobber it).
@@ -169,6 +170,7 @@ def _seed_scanner_context(run_dir: Path, app: Application) -> None:
         # already understand, so downstream enrichment logic is zero-change.
         "compliance_requirements": list(bc.regulatory_frameworks),
         "data_sensitivity": bc.data_sensitivity,
+        "main_cia_risk": bc.main_cia_risk,
     }
     state_file.write_text(
         _json_module.dumps(seed, indent=2, sort_keys=True),
@@ -423,12 +425,32 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
                     f"Threat file not found: {config.threat_file_path}"
                 )
 
+        # Look up the Application record (if this run is scoped to one) so we
+        # can both pin the run-folder name to ``app.run_dir_name`` and seed
+        # scanner_context.json from the business context before the pipeline
+        # starts. Done upfront because the folder decision happens before
+        # seeding.
+        app_record = None
+        if config.app_id and not config.resume_run_dir:
+            try:
+                app_record = get_app_repository().get_application(config.app_id)
+            except ApplicationNotFoundError:
+                # Route layer already rejects unknown app_ids with 404, but
+                # guard here too so stale RunConfigs don't crash the executor.
+                app_record = None
+
         # Resolve run directory — reuse existing dir on resume, create fresh otherwise
         if config.resume_run_dir:
             run_dir = Path(config.resume_run_dir)
             project_dir = run_dir.parent  # <runs_root>/<project_folder>/
         else:
-            run_dir, project_dir = create_run_directory(project_path)
+            # For app-scoped runs, force the folder to the app's stable
+            # ``run_dir_name`` so every version for a given Application lands
+            # under the same folder — independent of the project path basename.
+            forced_folder = app_record.run_dir_name if app_record else None
+            run_dir, project_dir = create_run_directory(
+                project_path, folder_name=forced_folder
+            )
         run_dir_str = str(run_dir)
 
         # Tell the ScanControl where the run directory lives so that
@@ -440,15 +462,8 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
         # agent runs. Skipped when the run isn't linked to a persisted app
         # (legacy / resume paths) — the scanner then writes a fresh file the
         # way it always has.
-        if config.app_id and not config.resume_run_dir:
-            try:
-                app_record = get_app_repository().get_application(config.app_id)
-            except ApplicationNotFoundError:
-                # Route layer already rejects unknown app_ids with 404, but
-                # guard here too so stale RunConfigs don't crash the executor.
-                app_record = None
-            if app_record is not None:
-                _seed_scanner_context(run_dir, app_record)
+        if app_record is not None:
+            _seed_scanner_context(run_dir, app_record)
 
         skip_nodes: frozenset[str] = frozenset(config.skip_nodes) if config.skip_nodes else frozenset()
         graph = build_graph(project_path, run_dir=run_dir_str, skip_nodes=skip_nodes, scan_control=scan_control, interaction_fn=interaction_fn)
