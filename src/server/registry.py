@@ -83,7 +83,10 @@ def resolve_project_folder(project_path: str | Path) -> tuple[str, Path]:
     return base_name, runs_root
 
 
-def create_run_directory(project_path: str | Path) -> tuple[Path, Path]:
+def create_run_directory(
+    project_path: str | Path,
+    folder_name: str | None = None,
+) -> tuple[Path, Path]:
     """Create a timestamped run directory for a project scan.
 
     Returns ``(run_dir, project_dir)`` where:
@@ -91,9 +94,19 @@ def create_run_directory(project_path: str | Path) -> tuple[Path, Path]:
     - *project_dir* is ``<runs_root>/<project_folder>/``
 
     Also creates/updates ``metadata.json`` in the project directory.
+
+    ``folder_name`` lets the caller pin the project folder to a specific
+    name (used by v2 Application-scoped runs so every run for a given app
+    lands in the same folder regardless of the project path basename).
+    When omitted, the folder name is derived from the project path basename
+    via ``resolve_project_folder``.
     """
     project = Path(project_path).expanduser().resolve()
-    folder_name, runs_root = resolve_project_folder(project)
+    if folder_name is None:
+        folder_name, runs_root = resolve_project_folder(project)
+    else:
+        runs_root = get_runs_root()
+        runs_root.mkdir(parents=True, exist_ok=True)
     project_dir = runs_root / folder_name
     project_dir.mkdir(parents=True, exist_ok=True)
 
@@ -161,7 +174,11 @@ class ApplicationRegistry:
         return apps
 
     def get_versions(self, app_id: str) -> list[VersionSummary]:
-        """Return version summaries for *app_id*, sorted by run date descending."""
+        """Return version summaries for *app_id*, sorted by run date descending.
+
+        Each version is labelled ``"Version N"`` where ``N`` counts from 1
+        for the oldest run — so the newest run carries the largest number.
+        """
         project_dir = self._find_project_dir(app_id)
         if project_dir is None:
             return []
@@ -176,6 +193,12 @@ class ApplicationRegistry:
             version = self._build_version_summary(child)
             if version is not None:
                 versions.append(version)
+
+        # Assign user-friendly labels. `versions` is sorted newest-first, so
+        # the first element gets the largest number (total count).
+        total = len(versions)
+        for idx, v in enumerate(versions):
+            v.display_name = f"Version {total - idx}"
 
         return versions
 
