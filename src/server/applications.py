@@ -173,6 +173,17 @@ class ApplicationRepository:
                 return app
         return None
 
+    def find_by_run_dir_name(self, run_dir_name: str) -> Application | None:
+        """Return an application whose on-disk ``run_dir_name`` matches, or None.
+
+        Lets callers resolve a folder-derived slug (e.g. ``lams-m2m``) back
+        to the persistent record without needing the opaque ``app_id``.
+        """
+        for app in self.list_applications():
+            if app.run_dir_name == run_dir_name:
+                return app
+        return None
+
     # ------------------------------------------------------------------
     # Public write API
     # ------------------------------------------------------------------
@@ -229,9 +240,14 @@ class ApplicationRepository:
     ) -> Application:
         """Apply partial updates to an application.
 
-        Only ``name`` and ``business_context`` are user-editable. A rename
-        also regenerates ``slug`` but leaves ``run_dir_name`` untouched so
-        existing run artefacts on disk stay where they are.
+        ``name``, ``business_context``, and ``project_path`` are all
+        user-editable through this method. The route layer is responsible
+        for enforcing the "project_path is only editable before the first
+        run" rule since that gate depends on folder-derived state the repo
+        doesn't know about.
+
+        A rename also regenerates ``slug`` but leaves ``run_dir_name``
+        untouched so existing run artefacts on disk stay where they are.
 
         Raises
         ------
@@ -239,6 +255,9 @@ class ApplicationRepository:
             If the app does not exist.
         ApplicationNameConflictError
             If the new name collides with another application.
+        ApplicationPathConflictError
+            If the new ``project_path`` is already registered to a
+            different application.
         """
         with self._lock:
             data = self._load()
@@ -270,11 +289,26 @@ class ApplicationRepository:
                 else current.business_context
             )
 
+            new_project_path = current.project_path
+            if request.project_path is not None:
+                proposed_path = _normalise_path(request.project_path)
+                if proposed_path != _normalise_path(current.project_path):
+                    for other_id, other_rec in data.items():
+                        if other_id == app_id:
+                            continue
+                        other = self._to_model(other_rec)
+                        if _normalise_path(other.project_path) == proposed_path:
+                            raise ApplicationPathConflictError(
+                                f"An application is already registered for project "
+                                f"path '{proposed_path}': '{other.name}'."
+                            )
+                    new_project_path = proposed_path
+
             updated = Application(
                 id=current.id,
                 name=new_name,
                 slug=new_slug,
-                project_path=current.project_path,
+                project_path=new_project_path,
                 business_context=new_context,
                 created_at=current.created_at,
                 updated_at=datetime.now(tz=timezone.utc).isoformat(),

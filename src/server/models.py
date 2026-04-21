@@ -69,17 +69,25 @@ class ApplicationCreateRequest(BaseModel):
 class ApplicationUpdateRequest(BaseModel):
     """Payload for ``PATCH /api/applications/{app_id}``.
 
-    Either field may be provided independently. At least one must be set.
+    Any subset of fields may be provided; at least one must be set. Note
+    that ``project_path`` is only editable before the application has any
+    threat-model runs — the server rejects attempts to change it afterwards
+    so the version history keeps pointing at the same repo.
     """
 
     name: str | None = None
     business_context: BusinessContext | None = None
+    project_path: str | None = None
 
     @model_validator(mode="after")
     def _require_one_field(self) -> "ApplicationUpdateRequest":
-        if self.name is None and self.business_context is None:
+        if (
+            self.name is None
+            and self.business_context is None
+            and self.project_path is None
+        ):
             raise ValueError(
-                "At least one of 'name' or 'business_context' must be provided"
+                "At least one of 'name', 'business_context', or 'project_path' must be provided"
             )
         return self
 
@@ -96,7 +104,13 @@ class ApplicationSummary(BaseModel):
 
 
 class VersionSummary(BaseModel):
-    """Summary of a single threat model version."""
+    """Summary of a single threat model version.
+
+    ``id`` is the on-disk folder name (``YYYYMMDD_HHMMSS``) and is used as
+    the filesystem lookup key for fetching version data. ``display_name``
+    is a user-friendly label (e.g. ``"Version 3"``) assigned by the registry
+    based on chronological order within the application.
+    """
 
     id: str
     run_date: str
@@ -104,6 +118,7 @@ class VersionSummary(BaseModel):
     threat_count: int
     high_severity_count: int = 0
     categories: list[str]
+    display_name: str = ""
 
 
 class RunConfig(BaseModel):

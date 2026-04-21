@@ -214,7 +214,7 @@ export default function NewRunPage() {
               {appError && <Alert type="error">{appError}</Alert>}
               <FormField
                 label="Project directory path"
-                description="Locked to the path registered when the application was created. Edit from the application overview to change it."
+                description="Locked to the path registered when the application was created. Edit from the application overview (only available before the first run)."
               >
                 <Input value={projectPath} disabled readOnly />
               </FormField>
