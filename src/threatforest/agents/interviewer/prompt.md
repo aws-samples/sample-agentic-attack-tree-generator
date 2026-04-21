@@ -10,10 +10,10 @@ You validate the scanner's output by asking the user targeted questions to fill 
 
 ## Process
 
-The user has already answered a few standard questions about lifecycle stage
-and the main CIA risk focus; their answers are provided in your initial
-prompt. Data sensitivity and regulatory frameworks are declared as part of
-the application's business context and already seeded into
+The user has already answered a standard question about the application's
+lifecycle stage; their answer is provided in your initial prompt. Data
+sensitivity, main CIA risk focus, and regulatory frameworks are declared as
+part of the application's business context and already seeded into
 `scanner_context.json` — do not re-ask them.
 
 1. Read `scanner_context.json`
