@@ -134,6 +134,24 @@ def test_create_run_resolves_project_path_from_app(
     assert captured.app_id == app_id
 
 
+def test_list_versions_for_v2_app_without_runs_returns_empty_list(
+    client: TestClient, tmp_path: Path
+) -> None:
+    """Freshly-created v2 app has zero runs — route must return ``[]`` not 404.
+
+    Regression: ``list_versions`` used to pass the raw v2 ``app_id`` token
+    straight to ``registry.get_versions``, which looks up by on-disk folder
+    name. A v2 app with no runs yet is a legitimate state and should render
+    an empty version table on the frontend, not a 404.
+    """
+    app_id, _ = _create_app(tmp_path, name="Fresh App")
+
+    response = client.get(f"/api/applications/{app_id}/versions")
+
+    assert response.status_code == 200
+    assert response.json() == {"versions": []}
+
+
 def test_resume_path_does_not_require_app_id(
     client: TestClient, tmp_path: Path
 ) -> None:
