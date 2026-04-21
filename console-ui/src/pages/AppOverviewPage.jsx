@@ -16,6 +16,7 @@ import Input from '@cloudscape-design/components/input';
 import FormField from '@cloudscape-design/components/form-field';
 import CloudscapeShell from '../components/CloudscapeShell';
 import BusinessContextPanel from '../components/BusinessContextPanel';
+import DirectoryPicker from '../components/DirectoryPicker';
 import {
   getApplication,
   getApplicationVersions,
@@ -68,6 +69,12 @@ export default function AppOverviewPage() {
   const [renameDraft, setRenameDraft] = useState('');
   const [renameError, setRenameError] = useState('');
   const [renameSubmitting, setRenameSubmitting] = useState(false);
+
+  // Project path modal — only available while the app has zero runs on disk.
+  const [editingPath, setEditingPath] = useState(false);
+  const [pathDraft, setPathDraft] = useState('');
+  const [pathError, setPathError] = useState('');
+  const [pathSubmitting, setPathSubmitting] = useState(false);
 
   // Delete modal
   const [deleting, setDeleting] = useState(false);
@@ -141,6 +148,35 @@ export default function AppOverviewPage() {
       setRenameError(err.message || 'Failed to rename application.');
     } finally {
       setRenameSubmitting(false);
+    }
+  };
+
+  const openPathEdit = () => {
+    setPathDraft(app?.project_path || '');
+    setPathError('');
+    setEditingPath(true);
+  };
+
+  const handlePathSave = async () => {
+    const projectPath = pathDraft.trim();
+    if (!projectPath) {
+      setPathError('Project path cannot be empty.');
+      return;
+    }
+    if (projectPath === app?.project_path) {
+      setEditingPath(false);
+      return;
+    }
+    setPathSubmitting(true);
+    setPathError('');
+    try {
+      const updated = await updateApplication(appId, { projectPath });
+      setApp(updated);
+      setEditingPath(false);
+    } catch (err) {
+      setPathError(err.message || 'Failed to update project path.');
+    } finally {
+      setPathSubmitting(false);
     }
   };
 
@@ -230,6 +266,35 @@ export default function AppOverviewPage() {
           />
         )}
 
+        {app && (
+          <Container
+            header={
+              <Header
+                variant="h2"
+                description={
+                  versions.length > 0
+                    ? 'The project repository is locked after the first threat model run so existing versions stay tied to the same code.'
+                    : 'Edit the project repository path. This is only available until the first threat model run.'
+                }
+                actions={
+                  <Button
+                    iconName="edit"
+                    onClick={openPathEdit}
+                    ariaLabel="Edit project repository"
+                    data-testid="edit-project-path"
+                    disabled={versions.length > 0}
+                  />
+                }
+              >
+                Project repository
+              </Header>
+            }
+          >
+            <Box variant="awsui-key-label">Path</Box>
+            <Box data-testid="project-path-value">{app.project_path}</Box>
+          </Container>
+        )}
+
         <Container header={<Header variant="h2">Latest threat model</Header>}>
           {latestVersion ? (
             <ColumnLayout columns={3} variant="text-grid">
@@ -241,7 +306,7 @@ export default function AppOverviewPage() {
                     navigate(`/applications/${appId}/versions/latest`);
                   }}
                 >
-                  {latestVersion.id}
+                  {latestVersion.display_name || latestVersion.id}
                 </Link>
               </div>
               <div>
@@ -294,7 +359,10 @@ export default function AppOverviewPage() {
                         navigate(target);
                       }}
                     >
-                      {isLatest ? `${item.id} (latest)` : item.id}
+                      {(() => {
+                        const label = item.display_name || item.id;
+                        return isLatest ? `${label} (latest)` : label;
+                      })()}
                     </Link>
                   );
                 },
@@ -391,6 +459,49 @@ export default function AppOverviewPage() {
               }}
               autoFocus
               data-testid="rename-input"
+            />
+          </FormField>
+        </Modal>
+
+        {/* Project path modal */}
+        <Modal
+          visible={editingPath}
+          onDismiss={() => !pathSubmitting && setEditingPath(false)}
+          header="Edit project repository"
+          footer={
+            <Box float="right">
+              <SpaceBetween direction="horizontal" size="xs">
+                <Button
+                  variant="link"
+                  onClick={() => setEditingPath(false)}
+                  disabled={pathSubmitting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={handlePathSave}
+                  loading={pathSubmitting}
+                  data-testid="save-project-path"
+                >
+                  Save
+                </Button>
+              </SpaceBetween>
+            </Box>
+          }
+        >
+          <FormField
+            label="Project repository path"
+            description="Absolute path to the repository ThreatForest scans for this application."
+            errorText={pathError}
+          >
+            <DirectoryPicker
+              value={pathDraft}
+              onChange={(v) => {
+                setPathDraft(v);
+                if (v.trim()) setPathError('');
+              }}
+              inputTestId="project-path-input"
             />
           </FormField>
         </Modal>

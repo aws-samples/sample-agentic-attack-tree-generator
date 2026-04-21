@@ -15,6 +15,7 @@ vi.mock('../src/api-client', () => ({
   getApplicationVersions: vi.fn(),
   updateApplication: vi.fn(),
   deleteApplicationRecord: vi.fn(),
+  pickDirectory: vi.fn(),
 }));
 
 import {
@@ -177,6 +178,78 @@ describe('AppOverviewPage', () => {
     renderPage();
     await waitFor(() => {
       expect(screen.getAllByText('Application not found').length).toBeGreaterThan(0);
+    });
+  });
+
+  it('shows the project repository path with an enabled edit button when no runs exist', async () => {
+    getApplication.mockResolvedValueOnce(SAMPLE_APP);
+    getApplicationVersions.mockResolvedValueOnce({ versions: [] });
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getAllByTestId('project-path-value').length).toBeGreaterThan(0);
+    });
+    expect(screen.getAllByText('/tmp/healthcare').length).toBeGreaterThan(0);
+
+    const editEl = screen.getAllByTestId('edit-project-path')[0];
+    const editBtn = editEl.tagName === 'BUTTON' ? editEl : editEl.querySelector('button');
+    expect(editBtn).not.toBeNull();
+    expect(editBtn.disabled).toBe(false);
+  });
+
+  it('disables the edit button once the app has at least one run', async () => {
+    getApplication.mockResolvedValueOnce(SAMPLE_APP);
+    getApplicationVersions.mockResolvedValueOnce({
+      versions: [
+        {
+          id: 'v1',
+          run_date: '2026-01-02T08:00:00Z',
+          status: 'completed',
+          threat_count: 4,
+          high_severity_count: 1,
+          categories: [],
+        },
+      ],
+    });
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getAllByTestId('edit-project-path').length).toBeGreaterThan(0);
+    });
+    const editEl = screen.getAllByTestId('edit-project-path')[0];
+    const editBtn = editEl.tagName === 'BUTTON' ? editEl : editEl.querySelector('button');
+    expect(editBtn.disabled).toBe(true);
+  });
+
+  it('submits projectPath via updateApplication when path edit is saved', async () => {
+    getApplication.mockResolvedValueOnce(SAMPLE_APP);
+    getApplicationVersions.mockResolvedValueOnce({ versions: [] });
+    updateApplication.mockResolvedValueOnce({
+      ...SAMPLE_APP,
+      project_path: '/tmp/healthcare-v2',
+    });
+
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getAllByTestId('edit-project-path').length).toBeGreaterThan(0);
+    });
+    const editEl = screen.getAllByTestId('edit-project-path')[0];
+    const editBtn = editEl.tagName === 'BUTTON' ? editEl : editEl.querySelector('button');
+    fireEvent.click(editBtn);
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Edit project repository').length).toBeGreaterThan(0);
+    });
+
+    const testidEls = screen.getAllByTestId('project-path-input');
+    const pathInput = testidEls[0].querySelector('input') || testidEls[0];
+    fireEvent.change(pathInput, { target: { value: '/tmp/healthcare-v2' } });
+
+    const saveEl = screen.getAllByTestId('save-project-path')[0];
+    const saveBtn = saveEl.tagName === 'BUTTON' ? saveEl : saveEl.querySelector('button');
+    fireEvent.click(saveBtn);
+    await waitFor(() => {
+      expect(updateApplication).toHaveBeenCalledWith('app_abc', {
+        projectPath: '/tmp/healthcare-v2',
+      });
     });
   });
 });

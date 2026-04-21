@@ -60,6 +60,29 @@ def set_app_repository(repository: ApplicationRepository) -> None:
     _app_repository = repository
 
 
+def _resolve_folder_id(app_id: str) -> str:
+    """Translate a route ``app_id`` param to the on-disk folder name.
+
+    URLs can carry two flavours of identifier:
+
+    - The v2 persistent Application ID (e.g. ``app_abc123``) — the frontend
+      always uses this one for its navigation. We need to look up the
+      record and return its ``run_dir_name`` so registry calls target the
+      correct folder under ``.threatforest/runs/``.
+    - A legacy folder-derived slug (e.g. ``lams-m2m``) — used by older
+      clients / direct links. Pass it through unchanged.
+
+    If the persistent lookup fails we return the raw ``app_id`` so callers
+    can still hit folder-derived routes. The registry will 404 naturally
+    if neither resolution finds anything.
+    """
+    try:
+        app = get_app_repository().get_application(app_id)
+    except ApplicationNotFoundError:
+        return app_id
+    return app.run_dir_name
+
+
 @router.get("/applications", response_model=dict)
 async def list_applications() -> dict:
     """Return all ThreatForest applications.
@@ -131,29 +154,75 @@ async def get_application(app_id: str) -> dict:
     with the folder-derived routes (e.g. ``/applications/{app_id}/versions``)
     that accept a folder-style identifier.
 
-    - **404** if no application with this ID exists.
+    Accepts either the opaque v2 ``app_id`` (e.g. ``app_abc123``) or the
+    folder-derived ``run_dir_name`` (e.g. ``lams-m2m``) so callers that only
+    have a URL slug can still resolve back to the persistent record.
+
+    - **404** if no application matches either identifier.
     """
     repo = get_app_repository()
     try:
         app = repo.get_application(app_id)
-    except ApplicationNotFoundError as exc:
-        raise HTTPException(status_code=404, detail=str(exc))
+    except ApplicationNotFoundError:
+        # Fall back to run-dir-name lookup for folder-slug URLs.
+        app = repo.find_by_run_dir_name(app_id)
+        if app is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Unknown application: {app_id}",
+            )
     return app.model_dump()
 
 
 @router.patch("/applications/by-id/{app_id}", response_model=dict)
 async def update_application(app_id: str, body: ApplicationUpdateRequest) -> dict:
-    """Apply a partial update (name and/or business_context) to an application.
+    """Apply a partial update (name, business_context, and/or project_path) to an application.
+
+    ``project_path`` is only editable while the application has zero runs
+    on disk — once a run exists, the path is frozen so the version history
+    keeps pointing at the same repo. Attempting to change it afterwards
+    returns 409.
 
     - **404** if no application with this ID exists.
-    - **409** if the new name collides with another application.
+    - **409** if the new name collides with another application, if the
+      new project_path is already registered to a different application,
+      or if project_path is being changed after the first run has landed.
     """
     repo = get_app_repository()
+    registry = get_registry()
+
+    # Look up existing app first so we can check its run count before
+    # mutating anything. Repo raises NotFound consistently for missing IDs.
+    try:
+        current = repo.get_application(app_id)
+    except ApplicationNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+
+    # Block project_path edits once any run folder has been produced.
+    if body.project_path is not None:
+        # Only enforce the gate if the path would actually change; a no-op
+        # PATCH that re-sends the current path shouldn't be rejected.
+        from server.applications import _normalise_path  # local import avoids cycle
+
+        if _normalise_path(body.project_path) != _normalise_path(current.project_path):
+            versions = registry.get_versions(current.run_dir_name)
+            if versions:
+                raise HTTPException(
+                    status_code=409,
+                    detail=(
+                        "Project path can only be edited before the first "
+                        "threat model run. This application already has "
+                        f"{len(versions)} run(s) on disk."
+                    ),
+                )
+
     try:
         app = repo.update_application(app_id, body)
     except ApplicationNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     except ApplicationNameConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+    except ApplicationPathConflictError as exc:
         raise HTTPException(status_code=409, detail=str(exc))
     return app.model_dump()
 
@@ -176,17 +245,27 @@ async def delete_application_record(app_id: str) -> dict:
 async def list_versions(app_id: str) -> dict:
     """Return threat model versions for a specific application.
 
-    Returns versions sorted by run date descending.
+    Returns versions sorted by run date descending. Accepts either a v2
+    persistent ``app_id`` or a legacy folder-derived slug — both resolve
+    to the same folder under ``.threatforest/runs/``.
 
-    - **404** if the application is not found
+    - **404** if the application is not found and has no runs on disk
     """
     registry = get_registry()
-    versions = registry.get_versions(app_id)
+    folder_id = _resolve_folder_id(app_id)
+    versions = registry.get_versions(folder_id)
     if not versions:
-        # Verify the app actually exists before returning 404
+        # Before 404-ing, confirm no record exists under either identifier —
+        # a freshly created v2 app legitimately has zero runs and should
+        # still return an empty list rather than a 404.
+        try:
+            get_app_repository().get_application(app_id)
+            return {"versions": []}
+        except ApplicationNotFoundError:
+            pass
         apps = registry.discover_applications()
         app_ids = {app.id for app in apps}
-        if app_id not in app_ids:
+        if folder_id not in app_ids:
             raise HTTPException(
                 status_code=404,
                 detail=f"Application '{app_id}' not found",
@@ -248,7 +327,8 @@ async def get_version_data(app_id: str, version_id: str) -> JSONResponse:
     - **500** if the JSON file is malformed
     """
     registry = get_registry()
-    data_file = registry.get_version_data_path(app_id, version_id)
+    folder_id = _resolve_folder_id(app_id)
+    data_file = registry.get_version_data_path(folder_id, version_id)
 
     if data_file is None:
         raise HTTPException(

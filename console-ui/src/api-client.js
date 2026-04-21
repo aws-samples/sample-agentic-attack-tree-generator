@@ -84,10 +84,11 @@ export async function getApplication(appId) {
 }
 
 /** PATCH /api/applications/by-id/{appId} → Application */
-export async function updateApplication(appId, { name, businessContext } = {}) {
+export async function updateApplication(appId, { name, businessContext, projectPath } = {}) {
   const body = {};
   if (name !== undefined) body.name = name;
   if (businessContext !== undefined) body.business_context = businessContext;
+  if (projectPath !== undefined) body.project_path = projectPath;
   return request(`/api/applications/by-id/${encodeURIComponent(appId)}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },

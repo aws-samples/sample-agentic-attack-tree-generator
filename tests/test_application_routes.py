@@ -141,6 +141,34 @@ def test_get_unknown_application_returns_404(client: TestClient) -> None:
     assert response.status_code == 404
 
 
+def test_get_application_by_run_dir_name_falls_back(
+    client: TestClient, tmp_path: Path
+) -> None:
+    """``GET /applications/by-id/{x}`` must accept the folder-slug too.
+
+    Breadcrumb-rendering pages only have a URL segment — sometimes that's
+    the opaque ``app_id``, sometimes it's the folder-derived ``run_dir_name``
+    (for runs created before the v2 UX or via the registry). Both forms
+    must resolve to the persistent record.
+    """
+    created = client.post(
+        "/api/applications",
+        json={
+            "name": "Sony SIE LAMS M2M",
+            "project_path": _mkproject(tmp_path, "lams-m2m"),
+            "business_context": _context_payload(),
+        },
+    ).json()
+
+    # run_dir_name is derived from the name slug.
+    fetched = client.get(
+        f"/api/applications/by-id/{created['run_dir_name']}"
+    )
+    assert fetched.status_code == 200
+    assert fetched.json()["id"] == created["id"]
+    assert fetched.json()["name"] == "Sony SIE LAMS M2M"
+
+
 def test_patch_application_updates_name(
     client: TestClient, tmp_path: Path
 ) -> None:
@@ -236,6 +264,232 @@ def test_delete_application_record(
 def test_delete_unknown_returns_404(client: TestClient) -> None:
     response = client.delete("/api/applications/by-id/app_nope")
     assert response.status_code == 404
+
+
+class _StubRegistry:
+    """Minimal stand-in for ``ApplicationRegistry`` used in project-path tests.
+
+    Only implements the ``get_versions`` / ``discover_applications`` surface
+    the routes touch. Each ``run_dir_name`` can be seeded with an arbitrary
+    version count so tests can simulate "zero runs" vs "has runs" without
+    touching the filesystem.
+    """
+
+    def __init__(self, versions_by_dir: dict[str, int] | None = None) -> None:
+        self._versions = dict(versions_by_dir or {})
+
+    def set_version_count(self, run_dir_name: str, count: int) -> None:
+        self._versions[run_dir_name] = count
+
+    def get_versions(self, run_dir_name: str) -> list:
+        # Return a list of the right length so ``len(versions)`` is accurate;
+        # the routes only ever inspect length/emptiness, not content.
+        return [None] * self._versions.get(run_dir_name, 0)
+
+    def discover_applications(self) -> list:
+        return []
+
+
+def test_patch_project_path_before_first_run(
+    client: TestClient, tmp_path: Path
+) -> None:
+    """Path edits succeed when no runs exist on disk."""
+    from server.routes.applications import set_registry
+
+    registry = _StubRegistry()
+    set_registry(registry)
+
+    created = client.post(
+        "/api/applications",
+        json={
+            "name": "PathEdit",
+            "project_path": _mkproject(tmp_path, "original"),
+            "business_context": _context_payload(),
+        },
+    ).json()
+
+    new_path = _mkproject(tmp_path, "renamed-repo")
+    response = client.patch(
+        f"/api/applications/by-id/{created['id']}",
+        json={"project_path": new_path},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    # The repo normalises to an absolute, resolved path; compare normalised.
+    from server.applications import _normalise_path
+
+    assert _normalise_path(body["project_path"]) == _normalise_path(new_path)
+
+
+def test_patch_project_path_blocked_after_first_run(
+    client: TestClient, tmp_path: Path
+) -> None:
+    """Once a run exists, the path is frozen and PATCH returns 409."""
+    from server.routes.applications import set_registry
+
+    registry = _StubRegistry()
+    set_registry(registry)
+
+    created = client.post(
+        "/api/applications",
+        json={
+            "name": "Locked",
+            "project_path": _mkproject(tmp_path, "locked"),
+            "business_context": _context_payload(),
+        },
+    ).json()
+
+    # Simulate a run having been produced for this app.
+    registry.set_version_count(created["run_dir_name"], 2)
+
+    response = client.patch(
+        f"/api/applications/by-id/{created['id']}",
+        json={"project_path": _mkproject(tmp_path, "new-location")},
+    )
+
+    assert response.status_code == 409
+    detail = response.json()["detail"].lower()
+    assert "before the first" in detail
+    assert "run" in detail
+
+
+def test_patch_project_path_noop_after_runs_is_allowed(
+    client: TestClient, tmp_path: Path
+) -> None:
+    """Re-submitting the same path after runs exist must not 409.
+
+    The lock only applies when the path would actually change.
+    """
+    from server.routes.applications import set_registry
+
+    registry = _StubRegistry()
+    set_registry(registry)
+
+    original_path = _mkproject(tmp_path, "stable")
+    created = client.post(
+        "/api/applications",
+        json={
+            "name": "Stable",
+            "project_path": original_path,
+            "business_context": _context_payload(),
+        },
+    ).json()
+
+    registry.set_version_count(created["run_dir_name"], 3)
+
+    # Re-send the same path (possibly with a trailing slash) — it normalises
+    # to the same value so the change-detection gate should let it through.
+    response = client.patch(
+        f"/api/applications/by-id/{created['id']}",
+        json={"project_path": original_path},
+    )
+
+    assert response.status_code == 200
+
+
+def test_patch_project_path_conflict_returns_409(
+    client: TestClient, tmp_path: Path
+) -> None:
+    """Moving app B onto app A's path (before A has runs) still conflicts."""
+    from server.routes.applications import set_registry
+
+    registry = _StubRegistry()
+    set_registry(registry)
+
+    app_a = client.post(
+        "/api/applications",
+        json={
+            "name": "A",
+            "project_path": _mkproject(tmp_path, "a"),
+            "business_context": _context_payload(),
+        },
+    ).json()
+    app_b = client.post(
+        "/api/applications",
+        json={
+            "name": "B",
+            "project_path": _mkproject(tmp_path, "b"),
+            "business_context": _context_payload(),
+        },
+    ).json()
+
+    response = client.patch(
+        f"/api/applications/by-id/{app_b['id']}",
+        json={"project_path": app_a["project_path"]},
+    )
+
+    assert response.status_code == 409
+
+
+class _StubRegistryWithVersions:
+    """Variant of ``_StubRegistry`` that yields real ``VersionSummary``s.
+
+    ``list_versions`` iterates versions and serializes them via
+    ``.model_dump()``, so the lighter-weight ``_StubRegistry`` (which
+    returns ``[None, ...]``) doesn't work for route-level tests that
+    exercise the full response payload.
+    """
+
+    def __init__(self, versions_by_dir: dict[str, list] | None = None) -> None:
+        self._versions = dict(versions_by_dir or {})
+
+    def set_versions(self, run_dir_name: str, versions: list) -> None:
+        self._versions[run_dir_name] = versions
+
+    def get_versions(self, run_dir_name: str) -> list:
+        return list(self._versions.get(run_dir_name, []))
+
+    def discover_applications(self) -> list:
+        return []
+
+
+def test_list_versions_translates_v2_app_id_to_run_dir_name(
+    client: TestClient, tmp_path: Path
+) -> None:
+    """GET /applications/{app_id}/versions resolves the persistent ID.
+
+    Regression: the route used to pass the opaque v2 ``app_id`` straight
+    to ``registry.get_versions``, which looks up by on-disk folder name.
+    After the fix the route must translate ``app_id → run_dir_name`` so
+    runs actually surface under their owning application.
+    """
+    from server.models import VersionSummary
+    from server.routes.applications import set_registry
+
+    created = client.post(
+        "/api/applications",
+        json={
+            "name": "Versioned",
+            "project_path": _mkproject(tmp_path, "versioned"),
+            "business_context": _context_payload(),
+        },
+    ).json()
+
+    # Seed one version under the app's run_dir_name (what's actually on disk)
+    # — NOT under the opaque app_id.
+    registry = _StubRegistryWithVersions()
+    registry.set_versions(
+        created["run_dir_name"],
+        [
+            VersionSummary(
+                id="v1",
+                run_date="2026-04-20T12:00:00Z",
+                status="completed",
+                threat_count=3,
+                high_severity_count=1,
+                categories=[],
+            )
+        ],
+    )
+    set_registry(registry)
+
+    response = client.get(f"/api/applications/{created['id']}/versions")
+
+    assert response.status_code == 200
+    versions = response.json()["versions"]
+    assert len(versions) == 1
+    assert versions[0]["id"] == "v1"
 
 
 def test_list_applications_includes_business_context(

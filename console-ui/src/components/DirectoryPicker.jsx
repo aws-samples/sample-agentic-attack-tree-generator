@@ -4,7 +4,7 @@ import SpaceBetween from '@cloudscape-design/components/space-between';
 import Input from '@cloudscape-design/components/input';
 import { pickDirectory } from '../api-client';
 
-export default function DirectoryPicker({ value, onChange, placeholder }) {
+export default function DirectoryPicker({ value, onChange, placeholder, inputTestId }) {
   const [picking, setPicking] = useState(false);
 
   const handleBrowse = async () => {
@@ -28,6 +28,7 @@ export default function DirectoryPicker({ value, onChange, placeholder }) {
           value={value}
           onChange={({ detail }) => onChange(detail.value)}
           placeholder={placeholder || '/path/to/project'}
+          data-testid={inputTestId}
         />
       </div>
       <Button
