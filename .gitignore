@@ -170,6 +170,7 @@ cython_debug/
 tf-output/
 .tf/
 .threatforest/
+.threatforest-*.md
 
 # AWS credentials (never commit these)
 .aws/
