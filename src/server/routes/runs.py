@@ -199,7 +199,9 @@ async def resume_run(run_id: str) -> ResumeResponse:
     """
     manager = get_run_manager()
     try:
-        new_run_id = manager.resume_run(run_id)
+        # resume_run may block waiting for a "pausing" run to finish its
+        # current stage, so run it off the event loop.
+        new_run_id = await asyncio.to_thread(manager.resume_run, run_id)
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     except (RuntimeError, FileNotFoundError) as exc:

@@ -204,7 +204,7 @@ class RunState(BaseModel):
     """Tracks the state of an active or completed run."""
 
     run_id: str
-    status: str  # "pending" | "running" | "paused" | "stopped" | "complete" | "failed"
+    status: str  # "pending" | "running" | "pausing" | "paused" | "stopped" | "complete" | "failed"
     config: RunConfig
     started_at: str
     completed_at: str | None = None

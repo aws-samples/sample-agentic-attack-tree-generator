@@ -210,12 +210,14 @@ export default function RunProgressPage() {
     setControlPending(true);
     try {
       await pauseRun(runId);
-      // scanStatus will update when the "scan_paused" WebSocket event arrives.
+      setScanStatus('pausing');
+      setControlPending(false);
+      appendActivity('Pausing after current stage completes...', 'stage-complete');
     } catch (err) {
       setErrorMessage(`Failed to pause: ${err.message}`);
       setControlPending(false);
     }
-  }, [runId]);
+  }, [runId, appendActivity]);
 
   const handleStop = useCallback(async () => {
     setControlPending(true);
@@ -654,7 +656,7 @@ export default function RunProgressPage() {
                   Pause
                 </Button>
               )}
-              {scanStatus === 'paused' && (
+              {(scanStatus === 'paused' || scanStatus === 'pausing') && (
                 <Button
                   variant="primary"
                   onClick={handleResume}
@@ -664,7 +666,7 @@ export default function RunProgressPage() {
                   Resume
                 </Button>
               )}
-              {(scanStatus === 'running' || scanStatus === 'paused') && (
+              {(scanStatus === 'running' || scanStatus === 'paused' || scanStatus === 'pausing') && (
                 <Button
                   onClick={handleStop}
                   disabled={controlPending}
@@ -709,6 +711,14 @@ export default function RunProgressPage() {
                 View Applications
               </Link>
             )}
+          </Alert>
+        )}
+
+        {/* Pausing banner */}
+        {scanStatus === 'pausing' && (
+          <Alert type="info">
+            Pausing after the current stage completes. You can click <strong>Resume</strong> now
+            — it will wait for the pause to finish, then continue automatically.
           </Alert>
         )}
 

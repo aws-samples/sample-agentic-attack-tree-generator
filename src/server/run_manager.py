@@ -228,6 +228,7 @@ class RunManager:
         control = self._controls.get(run_id)
         if control is None:
             raise RuntimeError(f"No control object for run {run_id}")
+        state.status = "pausing"
         control.request_pause()
 
     def stop_run(self, run_id: str) -> None:
@@ -259,7 +260,7 @@ class RunManager:
                     pause_file.unlink()
             return
 
-        if state.status not in ("pending", "running"):
+        if state.status not in ("pending", "running", "pausing"):
             raise RuntimeError(
                 f"Run {run_id} cannot be stopped (current status: {state.status})"
             )
@@ -288,6 +289,19 @@ class RunManager:
         state = self.active_runs.get(run_id)
         if state is None:
             raise KeyError(f"Unknown run_id: {run_id}")
+
+        if state.status == "pausing":
+            # Pause was requested but the current stage hasn't finished yet.
+            # Wait up to 120s for the executor to complete the stage and flip
+            # status to "paused".
+            deadline = time.monotonic() + 120
+            while state.status == "pausing" and time.monotonic() < deadline:
+                time.sleep(0.5)
+            if state.status == "pausing":
+                raise RuntimeError(
+                    f"Run {run_id} is still pausing (current stage has not "
+                    "finished yet). Try again shortly."
+                )
 
         if state.status not in ("paused", "stopped"):
             raise RuntimeError(

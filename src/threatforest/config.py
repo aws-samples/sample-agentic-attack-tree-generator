@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from threatforest.frameworks import FRAMEWORKS
 
 # Root directory of the ThreatForest project - use __file__ path, not cwd
-# This gives us the repo root: /path/to/ThreatForest-internal
+# This gives us the repo root: /path/to/threatforest
 ROOT_DIR = Path(__file__).parent.parent.parent
 
 # Load environment variables — check cwd first, then ROOT_DIR
