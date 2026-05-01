@@ -14,6 +14,7 @@ import Table from '@cloudscape-design/components/table';
 import Modal from '@cloudscape-design/components/modal';
 import Input from '@cloudscape-design/components/input';
 import FormField from '@cloudscape-design/components/form-field';
+import ExpandableSection from '@cloudscape-design/components/expandable-section';
 import CloudscapeShell from '../components/CloudscapeShell';
 import BusinessContextPanel from '../components/BusinessContextPanel';
 import DirectoryPicker from '../components/DirectoryPicker';
@@ -46,6 +47,7 @@ function renderStatus(status) {
     case 'failed':
       return <StatusIndicator type="error">Failed</StatusIndicator>;
     case 'in_progress':
+    case 'in-progress':
     case 'running':
       return <StatusIndicator type="in-progress">In progress</StatusIndicator>;
     case 'pending':
@@ -53,6 +55,21 @@ function renderStatus(status) {
     default:
       return <StatusIndicator type="info">{status || '—'}</StatusIndicator>;
   }
+}
+
+// Versions without a completed dashboard should open the live progress
+// page; if the backend enriches the row with an active run_id we can route
+// there directly, otherwise the version has been abandoned and we fall
+// back to the dashboard route (which surfaces its own "no data" state).
+function isLiveVersion(version) {
+  return (
+    version &&
+    (version.status === 'in-progress' ||
+      version.status === 'in_progress' ||
+      version.status === 'running' ||
+      version.status === 'pending') &&
+    Boolean(version.run_id)
+  );
 }
 
 export default function AppOverviewPage() {
@@ -239,11 +256,11 @@ export default function AppOverviewPage() {
               />
               <Button
                 onClick={() => {
-                  const el = document.getElementById('version-history');
+                  const el = document.getElementById('threat-models');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }}
               >
-                View all versions
+                Jump to threat models
               </Button>
               <Button
                 variant="primary"
@@ -273,7 +290,7 @@ export default function AppOverviewPage() {
                 variant="h2"
                 description={
                   versions.length > 0
-                    ? 'The project repository is locked after the first threat model run so existing versions stay tied to the same code.'
+                    ? 'The project repository is locked after the first threat model run so existing threat models stay tied to the same code.'
                     : 'Edit the project repository path. This is only available until the first threat model run.'
                 }
                 actions={
@@ -299,11 +316,15 @@ export default function AppOverviewPage() {
           {latestVersion ? (
             <ColumnLayout columns={3} variant="text-grid">
               <div>
-                <Box variant="awsui-key-label">Version</Box>
+                <Box variant="awsui-key-label">Threat model</Box>
                 <Link
                   onFollow={(e) => {
                     e.preventDefault();
-                    navigate(`/applications/${appId}/versions/latest`);
+                    if (isLiveVersion(latestVersion)) {
+                      navigate(`/runs/${latestVersion.run_id}/progress`);
+                    } else {
+                      navigate(`/applications/${appId}/versions/latest`);
+                    }
                   }}
                 >
                   {latestVersion.display_name || latestVersion.id}
@@ -341,15 +362,18 @@ export default function AppOverviewPage() {
           )}
         </Container>
 
-        <div id="version-history">
+        <div id="threat-models">
           <Table
             columnDefinitions={[
               {
                 id: 'version_id',
-                header: 'Version',
+                header: 'Threat model',
                 cell: (item) => {
                   const isLatest = item.id === latestVersion?.id;
-                  const target = isLatest
+                  const live = isLiveVersion(item);
+                  const target = live
+                    ? `/runs/${item.run_id}/progress`
+                    : isLatest
                     ? `/applications/${appId}/versions/latest`
                     : `/applications/${appId}/versions/${item.id}`;
                   return (
@@ -385,13 +409,13 @@ export default function AppOverviewPage() {
               },
             ]}
             items={sortedVersions}
-            header={<Header variant="h2">Version history</Header>}
+            header={<Header variant="h2">Threat models</Header>}
             empty={
               <Box textAlign="center" color="inherit" padding="l">
                 <SpaceBetween size="m">
-                  <b>No versions</b>
+                  <b>No threat models yet</b>
                   <Box color="inherit">
-                    Start a threat model to create the first version.
+                    Run an analysis to create the first threat model.
                   </Box>
                 </SpaceBetween>
               </Box>
@@ -399,17 +423,16 @@ export default function AppOverviewPage() {
           />
         </div>
 
-        <Container
-          header={
-            <Header variant="h2" description="Permanent — deleted applications cannot be recovered.">
-              Danger zone
-            </Header>
-          }
+        <ExpandableSection
+          variant="container"
+          headerText="Advanced"
+          headerDescription="Destructive actions. Collapsed by default to prevent accidental clicks."
         >
           <SpaceBetween size="s">
+            <Box variant="h3">Delete application</Box>
             <Box variant="p">
-              Delete this application record. Run artefacts on disk are kept so
-              you can re-import them later if needed.
+              Permanently removes this application record and its threat model history
+              from the console. This cannot be undone.
             </Box>
             <Button
               onClick={() => {
@@ -421,7 +444,7 @@ export default function AppOverviewPage() {
               Delete application
             </Button>
           </SpaceBetween>
-        </Container>
+        </ExpandableSection>
 
         {/* Rename modal */}
         <Modal

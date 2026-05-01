@@ -86,6 +86,7 @@ def resolve_project_folder(project_path: str | Path) -> tuple[str, Path]:
 def create_run_directory(
     project_path: str | Path,
     folder_name: str | None = None,
+    display_name: str | None = None,
 ) -> tuple[Path, Path]:
     """Create a timestamped run directory for a project scan.
 
@@ -100,6 +101,11 @@ def create_run_directory(
     lands in the same folder regardless of the project path basename).
     When omitted, the folder name is derived from the project path basename
     via ``resolve_project_folder``.
+
+    ``display_name`` overrides the human-readable ``name`` written into
+    ``metadata.json``. v2 callers pass ``Application.name`` so the folder
+    doesn't end up labelled with the project path basename (which can be a
+    cryptic directory name that leaks into breadcrumbs).
     """
     project = Path(project_path).expanduser().resolve()
     if folder_name is None:
@@ -124,9 +130,13 @@ def create_run_directory(
     if meta_file.is_file():
         meta = json.loads(meta_file.read_text(encoding="utf-8"))
         meta["path"] = str(project)
+        # Refresh the display name if the caller provided an authoritative one
+        # — pre-existing metadata may hold a stale project-basename fallback.
+        if display_name:
+            meta["name"] = display_name
     else:
         meta = {
-            "name": project.name,
+            "name": display_name or project.name,
             "path": str(project),
             "description": "",
             "created_at": datetime.now(tz=timezone.utc).isoformat(),
@@ -173,11 +183,22 @@ class ApplicationRegistry:
 
         return apps
 
-    def get_versions(self, app_id: str) -> list[VersionSummary]:
+    def get_versions(
+        self,
+        app_id: str,
+        active_run_ids: dict[str, str] | None = None,
+    ) -> list[VersionSummary]:
         """Return version summaries for *app_id*, sorted by run date descending.
 
         Each version is labelled ``"Version N"`` where ``N`` counts from 1
         for the oldest run — so the newest run carries the largest number.
+
+        ``active_run_ids`` maps version folder names (``YYYYMMDD_HHMMSS``) to
+        the in-flight ``run_id`` tracked by ``RunManager``. When provided, any
+        version whose folder is still the target of a live run is tagged with
+        that ``run_id`` and keeps an ``in-progress`` status — so the UI can
+        route the user to the progress page instead of a not-yet-written
+        dashboard.
         """
         project_dir = self._find_project_dir(app_id)
         if project_dir is None:
@@ -190,7 +211,8 @@ class ApplicationRegistry:
             # Skip non-timestamp directories
             if not re.match(r"^\d{8}_\d{6}$", child.name):
                 continue
-            version = self._build_version_summary(child)
+            active_run_id = (active_run_ids or {}).get(child.name)
+            version = self._build_version_summary(child, active_run_id=active_run_id)
             if version is not None:
                 versions.append(version)
 
@@ -309,13 +331,25 @@ class ApplicationRegistry:
             last_run_date=last_run_date,
         )
 
-    def _build_version_summary(self, version_dir: Path) -> VersionSummary | None:
-        """Build a VersionSummary from a timestamped run directory."""
+    def _build_version_summary(
+        self,
+        version_dir: Path,
+        active_run_id: str | None = None,
+    ) -> VersionSummary | None:
+        """Build a VersionSummary from a timestamped run directory.
+
+        The presence of ``output/threatforest_data.json`` is the completion
+        marker — if it's missing we treat the version as still in progress
+        rather than silently reporting "complete". When ``active_run_id`` is
+        provided the version is forced to ``in-progress`` and tagged with the
+        live run id regardless of any stale metadata on disk.
+        """
         run_date = self._extract_run_date(version_dir)
 
         data_file = version_dir / "output" / self.METADATA_FILE
+        has_output = data_file.is_file()
         metadata: dict = {}
-        if data_file.is_file():
+        if has_output:
             metadata = self._read_json(data_file) or {}
 
         threat_count = metadata.get("threat_count", 0)
@@ -327,7 +361,14 @@ class ApplicationRegistry:
                 "high_severity_count", 0
             )
         categories = metadata.get("categories", [])
-        status = metadata.get("status", "complete")
+
+        # Without an output artefact the run either never reached the report
+        # stage or is still executing; don't claim "complete" in that case.
+        default_status = "complete" if has_output else "in-progress"
+        status = metadata.get("status", default_status)
+        if active_run_id is not None:
+            # Live run still running — override any stale status we read.
+            status = "in-progress"
 
         return VersionSummary(
             id=version_dir.name,
@@ -336,6 +377,7 @@ class ApplicationRegistry:
             threat_count=threat_count,
             high_severity_count=high_severity_count,
             categories=categories,
+            run_id=active_run_id,
         )
 
     # ------------------------------------------------------------------

@@ -166,8 +166,8 @@ export default function PausedRunsPage() {
                   <b>No paused runs</b>
                   <Box color="inherit">
                     There are no paused scans to resume.{' '}
-                    <Link onFollow={(e) => { e.preventDefault(); navigate('/new-run'); }}>
-                      Start a new run
+                    <Link onFollow={(e) => { e.preventDefault(); navigate('/applications'); }}>
+                      Go to applications
                     </Link>
                   </Box>
                 </SpaceBetween>

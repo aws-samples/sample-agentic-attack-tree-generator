@@ -166,6 +166,18 @@ export default function ConfigurePage() {
         result.message || (result.success ? 'Connection successful.' : 'Connection failed.'),
         'test-result'
       );
+      if (result.success) {
+        try {
+          const signature = JSON.stringify({
+            provider: modelProvider?.value || '',
+            model_id: modelId,
+            aws_profile: awsProfile || '',
+          });
+          window.localStorage.setItem('threatforest.configVerified', signature);
+        } catch (_) {
+          // localStorage unavailable — non-fatal
+        }
+      }
     } catch (err) {
       addFlash('error', err.message || 'Connection test failed.', 'test-result');
     } finally {
@@ -276,6 +288,7 @@ export default function ConfigurePage() {
                 <Button
                   onClick={handleTestConnection}
                   loading={testingConnection}
+                  disabled={!modelProvider?.value || !modelId}
                   iconName="status-positive"
                 >
                   Test Connection
@@ -284,6 +297,7 @@ export default function ConfigurePage() {
                   variant="primary"
                   onClick={handleSave}
                   loading={saving}
+                  disabled={!modelProvider?.value || !modelId}
                 >
                   Save Configuration
                 </Button>

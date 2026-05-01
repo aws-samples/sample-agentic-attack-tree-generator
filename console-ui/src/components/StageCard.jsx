@@ -8,7 +8,7 @@ import ScannerReviewEditModal, { BadgeList } from './ScannerReviewPanel';
 
 const FIELD_HELP = {
   cloud: 'Cloud platform(s) hosting the application (e.g. AWS, Azure, GCP).',
-  stack: 'Primary languages, frameworks, and runtimes used in the codebase.',
+  stack: 'Primary languages, frameworks, and runtimes detected in the repository.',
   industry: 'Business domain of the application — shapes threat relevance and compliance.',
   services: 'Discrete services, components, or modules that make up the system.',
   auth: 'How users and services authenticate (e.g. IAM roles, OAuth2, API keys).',
@@ -193,12 +193,14 @@ export default function StageCard({
               Skip
             </Button>
           </div>
-          <ScannerReviewEditModal
-            visible={editModalVisible}
-            scannerData={scannerReview}
-            onSubmit={(edits) => { setEditModalVisible(false); onScannerReviewEdit(edits); }}
-            onDismiss={() => setEditModalVisible(false)}
-          />
+          {editModalVisible && (
+            <ScannerReviewEditModal
+              visible={editModalVisible}
+              scannerData={scannerReview}
+              onSubmit={(edits) => { setEditModalVisible(false); onScannerReviewEdit(edits); }}
+              onDismiss={() => setEditModalVisible(false)}
+            />
+          )}
         </div>
       )}
       {isAwaitingInput && !scannerReview && (

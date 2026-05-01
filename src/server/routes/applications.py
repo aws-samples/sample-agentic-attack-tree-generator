@@ -27,6 +27,37 @@ from server.registry import ApplicationRegistry
 
 router = APIRouter()
 
+
+def _active_runs_for_folder(folder_id: str) -> dict[str, str]:
+    """Return a map of ``version_folder_basename -> run_id`` for live runs.
+
+    Queries the run manager for runs that are still pending or running and
+    whose ScanControl points at a timestamped subdirectory under *folder_id*.
+    The frontend uses the run_id to route the user to the progress page
+    instead of a dashboard that hasn't been rendered yet.
+    """
+    # Imported here to avoid a circular import between the routes modules and
+    # the run manager (which is configured by ``app.py`` at startup).
+    from server.routes.runs import get_run_manager
+
+    manager = get_run_manager()
+    active: dict[str, str] = {}
+    for run_id, state in list(manager.active_runs.items()):
+        if state.status not in ("pending", "running"):
+            continue
+        control = manager._controls.get(run_id)
+        run_dir = control.run_dir if control else None
+        if not run_dir:
+            continue
+        run_dir_path = Path(run_dir)
+        # Match by parent folder name — the project folder under
+        # ``.threatforest/runs/`` — so we don't accidentally associate a
+        # run with another app's version directory.
+        if run_dir_path.parent.name != folder_id:
+            continue
+        active[run_dir_path.name] = run_id
+    return active
+
 # Default registry — will be reconfigured by app.py at startup
 _registry = ApplicationRegistry()
 
@@ -108,7 +139,10 @@ async def list_applications() -> dict:
     # can merge in version counts / last-run-date from the folder scan.
     merged: list[ApplicationSummary] = []
     for app in persistent:
-        versions = registry.get_versions(app.run_dir_name)
+        versions = registry.get_versions(
+            app.run_dir_name,
+            active_run_ids=_active_runs_for_folder(app.run_dir_name),
+        )
         merged.append(
             ApplicationSummary(
                 id=app.id,
@@ -178,43 +212,15 @@ async def get_application(app_id: str) -> dict:
 async def update_application(app_id: str, body: ApplicationUpdateRequest) -> dict:
     """Apply a partial update (name, business_context, and/or project_path) to an application.
 
-    ``project_path`` is only editable while the application has zero runs
-    on disk — once a run exists, the path is frozen so the version history
-    keeps pointing at the same repo. Attempting to change it afterwards
-    returns 409.
+    ``project_path`` is freely editable at any point so users can track folder
+    renames or moves; the stable ``run_dir_name`` keeps the on-disk version
+    history attached to the application regardless.
 
     - **404** if no application with this ID exists.
-    - **409** if the new name collides with another application, if the
-      new project_path is already registered to a different application,
-      or if project_path is being changed after the first run has landed.
+    - **409** if the new name collides with another application or if the
+      new ``project_path`` is already registered to a different application.
     """
     repo = get_app_repository()
-    registry = get_registry()
-
-    # Look up existing app first so we can check its run count before
-    # mutating anything. Repo raises NotFound consistently for missing IDs.
-    try:
-        current = repo.get_application(app_id)
-    except ApplicationNotFoundError as exc:
-        raise HTTPException(status_code=404, detail=str(exc))
-
-    # Block project_path edits once any run folder has been produced.
-    if body.project_path is not None:
-        # Only enforce the gate if the path would actually change; a no-op
-        # PATCH that re-sends the current path shouldn't be rejected.
-        from server.applications import _normalise_path  # local import avoids cycle
-
-        if _normalise_path(body.project_path) != _normalise_path(current.project_path):
-            versions = registry.get_versions(current.run_dir_name)
-            if versions:
-                raise HTTPException(
-                    status_code=409,
-                    detail=(
-                        "Project path can only be edited before the first "
-                        "threat model run. This application already has "
-                        f"{len(versions)} run(s) on disk."
-                    ),
-                )
 
     try:
         app = repo.update_application(app_id, body)
@@ -253,7 +259,10 @@ async def list_versions(app_id: str) -> dict:
     """
     registry = get_registry()
     folder_id = _resolve_folder_id(app_id)
-    versions = registry.get_versions(folder_id)
+    versions = registry.get_versions(
+        folder_id,
+        active_run_ids=_active_runs_for_folder(folder_id),
+    )
     if not versions:
         # Before 404-ing, confirm no record exists under either identifier —
         # a freshly created v2 app legitimately has zero runs and should

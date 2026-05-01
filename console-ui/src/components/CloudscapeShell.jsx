@@ -7,7 +7,6 @@ import BreadcrumbGroup from '@cloudscape-design/components/breadcrumb-group';
 
 const NAV_ITEMS = [
   { type: 'link', text: 'Home', href: '/' },
-  { type: 'link', text: 'New Run', href: '/new-run' },
   { type: 'link', text: 'Applications', href: '/applications' },
   { type: 'link', text: 'Configure', href: '/configure' },
 ];
