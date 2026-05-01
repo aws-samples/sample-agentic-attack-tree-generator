@@ -8,8 +8,15 @@ import time
 
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 
-from server.applications import ApplicationNotFoundError
-from server.models import InteractionResponse, ResumeResponse, RunConfig, RunResponse, RunState
+from server.applications import ApplicationNotFoundError, ApplicationPathConflictError
+from server.models import (
+    ApplicationUpdateRequest,
+    InteractionResponse,
+    ResumeResponse,
+    RunConfig,
+    RunResponse,
+    RunState,
+)
 from server.routes.applications import get_app_repository
 from server.run_manager import RunManager
 
@@ -79,14 +86,41 @@ async def create_run(config: RunConfig) -> RunResponse:
                 status_code=400,
                 detail="app_id is required to start a new run",
             )
+        repo = get_app_repository()
         try:
-            app = get_app_repository().get_application(config.app_id)
-        except ApplicationNotFoundError as exc:
-            raise HTTPException(status_code=404, detail=str(exc))
-        # Authoritative source of truth for the scan target — override whatever
-        # the client sent (UI should send the same value, but we prefer the
-        # stored path if they drift).
-        config = config.model_copy(update={"project_path": app.project_path})
+            app = repo.get_application(config.app_id)
+        except ApplicationNotFoundError:
+            # Fall back to run-dir-name lookup so folder-slug URLs (e.g. the
+            # AppOverviewPage reached via ``/applications/lams-m2m``) still
+            # resolve to the persistent record.
+            app = repo.find_by_run_dir_name(config.app_id)
+            if app is None:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Unknown application: {config.app_id}",
+                )
+
+        # Users can edit the project_path per run (handles folder renames /
+        # moves). If the submitted path differs from the stored one, persist
+        # the edit so every future run picks up the new location.
+        from server.applications import _normalise_path  # local import avoids cycle
+
+        submitted = config.project_path
+        if submitted and _normalise_path(submitted) != _normalise_path(app.project_path):
+            try:
+                app = repo.update_application(
+                    app.id,
+                    ApplicationUpdateRequest(project_path=submitted),
+                )
+            except ApplicationPathConflictError as exc:
+                raise HTTPException(status_code=409, detail=str(exc))
+
+        # Normalise app_id to the opaque form and lock project_path to the
+        # (possibly just-updated) stored value so downstream code always sees
+        # the canonical pair.
+        config = config.model_copy(
+            update={"project_path": app.project_path, "app_id": app.id}
+        )
 
     manager = get_run_manager()
     try:

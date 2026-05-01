@@ -89,14 +89,20 @@ function SummaryBar({ data, totalMitigations }) {
   ];
   return (
     <Container>
-      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${stats.length}, 1fr)` }}>
+      <ColumnLayout columns={stats.length} variant="text-grid">
         {stats.map((s, i) => (
-          <div key={i} style={{ textAlign: 'center' }}>
+          <Box key={i} textAlign="center">
             <Box variant="awsui-key-label">{s.label}</Box>
-            <div style={{ fontSize: '24px', fontWeight: 700, color: s.color || 'inherit' }}>{s.value}</div>
-          </div>
+            <Box
+              fontSize="display-l"
+              fontWeight="bold"
+              color={s.color ? 'text-status-error' : 'inherit'}
+            >
+              {s.value}
+            </Box>
+          </Box>
         ))}
-      </div>
+      </ColumnLayout>
     </Container>
   );
 }
@@ -528,7 +534,7 @@ function ApplicationOverviewTab({ scannerContext, projectInfo }) {
           <SpaceBetween size="xs">
             <BadgeList items={ctx.files_analyzed} color="grey" />
             {ctx.files_skipped_reason && ctx.files_skipped_reason.length > 0 && (
-              <ExpandableSection headerText={`${ctx.files_skipped_reason.length} file${ctx.files_skipped_reason.length !== 1 ? 's' : ''} skipped`} variant="footer">
+              <ExpandableSection headerText={`${ctx.files_skipped_reason.length} file${ctx.files_skipped_reason.length !== 1 ? 's' : ''} or director${ctx.files_skipped_reason.length !== 1 ? 'ies' : 'y'} skipped`} variant="footer">
                 <BulletList items={ctx.files_skipped_reason} />
               </ExpandableSection>
             )}
@@ -754,6 +760,10 @@ export default function ThreatModelSummaryPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [data, setData] = useState(null);
   const [appName, setAppName] = useState(appId);
+  // True once we've confirmed a persistent app record owns this appId — at
+  // that point we stop trusting project_info.application_name from the run
+  // data, which can be a stale folder basename.
+  const [persistentAppLoaded, setPersistentAppLoaded] = useState(false);
   const [versionLabel, setVersionLabel] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -770,8 +780,12 @@ export default function ThreatModelSummaryPage() {
         const json = await response.json();
         if (cancelled) return;
         setData(json);
-        if (json.project_info?.application_name) setAppName(json.project_info.application_name);
-        else if (json.application_name) setAppName(json.application_name);
+        // Only use the run-data app name for legacy folder-derived apps
+        // that have no persistent record.
+        if (!persistentAppLoaded) {
+          if (json.project_info?.application_name) setAppName(json.project_info.application_name);
+          else if (json.application_name) setAppName(json.application_name);
+        }
       } catch (err) {
         if (!cancelled) setError(err.message || 'Failed to load');
       } finally {
@@ -780,15 +794,20 @@ export default function ThreatModelSummaryPage() {
     }
     fetchVersion();
     return () => { cancelled = true; };
-  }, [appId, versionId]);
+  }, [appId, versionId, persistentAppLoaded]);
 
-  // Separate fetch: authoritative app name from the persistent record
-  // (falls back silently if the endpoint 404s on legacy folder-derived IDs).
+  // Authoritative app name from the persistent record. Wins over any name
+  // embedded in run-data. If the record is missing (legacy folder-derived
+  // app), silently fall back to whatever fetchVersion populated.
   useEffect(() => {
     let cancelled = false;
     getApplication(appId)
-      .then((app) => { if (!cancelled && app?.name) setAppName(app.name); })
-      .catch(() => { /* swallow — keep whatever fallback we had */ });
+      .then((app) => {
+        if (cancelled || !app?.name) return;
+        setAppName(app.name);
+        setPersistentAppLoaded(true);
+      })
+      .catch(() => { /* keep legacy fallback */ });
     return () => { cancelled = true; };
   }, [appId]);
 
@@ -841,9 +860,8 @@ export default function ThreatModelSummaryPage() {
         { text: 'Home', href: '/' },
         { text: 'Applications', href: '/applications' },
         { text: appName, href: `/applications/${appId}` },
-        { text: 'Threat Model', href: `/applications/${appId}` },
         {
-          text: versionLabel || 'Latest',
+          text: versionLabel || 'Latest threat model',
           href: `/applications/${appId}/versions/${versionId}`,
         },
       ]}

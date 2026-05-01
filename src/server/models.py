@@ -110,6 +110,11 @@ class VersionSummary(BaseModel):
     the filesystem lookup key for fetching version data. ``display_name``
     is a user-friendly label (e.g. ``"Version 3"``) assigned by the registry
     based on chronological order within the application.
+
+    ``run_id`` is populated only when the version corresponds to an
+    in-progress run that ``RunManager`` is still tracking — the UI uses it
+    to route the user to the live progress page instead of the (non-existent)
+    dashboard for that version.
     """
 
     id: str
@@ -119,6 +124,7 @@ class VersionSummary(BaseModel):
     high_severity_count: int = 0
     categories: list[str]
     display_name: str = ""
+    run_id: str | None = None
 
 
 class RunConfig(BaseModel):

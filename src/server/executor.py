@@ -447,9 +447,14 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
             # For app-scoped runs, force the folder to the app's stable
             # ``run_dir_name`` so every version for a given Application lands
             # under the same folder — independent of the project path basename.
+            # Also hand in the user-chosen display name so metadata.json
+            # doesn't get stuck holding a cryptic project-basename fallback.
             forced_folder = app_record.run_dir_name if app_record else None
+            forced_display_name = app_record.name if app_record else None
             run_dir, project_dir = create_run_directory(
-                project_path, folder_name=forced_folder
+                project_path,
+                folder_name=forced_folder,
+                display_name=forced_display_name,
             )
         run_dir_str = str(run_dir)
 

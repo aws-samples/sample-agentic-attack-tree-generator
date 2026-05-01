@@ -63,6 +63,9 @@ export default function VersionDetailPage() {
   const selectedIdx = parseInt(threatIndex || '0', 10);
   const [data, setData] = useState(null);
   const [appName, setAppName] = useState(appId);
+  // True once a persistent app record is found — blocks the legacy
+  // project_info.application_name fallback from clobbering the real name.
+  const [persistentAppLoaded, setPersistentAppLoaded] = useState(false);
   const [versionLabel, setVersionLabel] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -77,8 +80,10 @@ export default function VersionDetailPage() {
         const json = await response.json();
         if (cancelled) return;
         setData(json);
-        if (json.project_info?.application_name) setAppName(json.project_info.application_name);
-        else if (json.application_name) setAppName(json.application_name);
+        if (!persistentAppLoaded) {
+          if (json.project_info?.application_name) setAppName(json.project_info.application_name);
+          else if (json.application_name) setAppName(json.application_name);
+        }
       } catch (err) {
         if (!cancelled) setError(err.message || 'Failed to load');
       } finally {
@@ -87,15 +92,19 @@ export default function VersionDetailPage() {
     }
     fetchVersion();
     return () => { cancelled = true; };
-  }, [appId, versionId]);
+  }, [appId, versionId, persistentAppLoaded]);
 
   // Authoritative app name from the persistent record (works for both
   // opaque app_id and folder-slug URLs thanks to the /by-id fallback).
   useEffect(() => {
     let cancelled = false;
     getApplication(appId)
-      .then((app) => { if (!cancelled && app?.name) setAppName(app.name); })
-      .catch(() => { /* keep fallback */ });
+      .then((app) => {
+        if (cancelled || !app?.name) return;
+        setAppName(app.name);
+        setPersistentAppLoaded(true);
+      })
+      .catch(() => { /* keep legacy fallback */ });
     return () => { cancelled = true; };
   }, [appId]);
 
@@ -129,9 +138,8 @@ export default function VersionDetailPage() {
         { text: 'Home', href: '/' },
         { text: 'Applications', href: '/applications' },
         { text: appName, href: `/applications/${appId}` },
-        { text: 'Threat Model', href: `/applications/${appId}` },
         {
-          text: versionLabel || 'Latest',
+          text: versionLabel || 'Latest threat model',
           href: `/applications/${appId}/versions/${versionId}`,
         },
         { text: threatLabel, href: `/applications/${appId}/versions/${versionId}/threats/${threatIndex}` },

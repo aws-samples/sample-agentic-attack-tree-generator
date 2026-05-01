@@ -111,14 +111,18 @@ def test_create_run_with_unknown_app_id_returns_404(
 def test_create_run_resolves_project_path_from_app(
     client: TestClient, tmp_path: Path
 ) -> None:
+    """When the client omits project_path, the route fills it from the record.
+
+    The NewRunPage normally surfaces the stored path as (editable) default and
+    submits it verbatim, but omitting the field must still work — the stored
+    path is the authoritative fallback.
+    """
     app_id, stored_path = _create_app(tmp_path)
 
-    # Client sends a wrong project_path intentionally — the route should
-    # override it with the stored one.
     response = client.post(
         "/api/runs",
         json={
-            "project_path": "/some/other/path",
+            "project_path": "",  # empty — no user edit, fall back to record
             "threat_source": "auto",
             "app_id": app_id,
         },
@@ -128,10 +132,80 @@ def test_create_run_resolves_project_path_from_app(
     body = response.json()
     assert "run_id" in body
 
-    # The executor stub captured the resolved config — verify the override.
+    # The executor stub captured the resolved config — verify the fallback.
     captured: RunConfig = _noop_executor.last_config  # type: ignore[attr-defined]
     assert captured.project_path == stored_path
     assert captured.app_id == app_id
+
+
+def test_create_run_accepts_run_dir_name_as_app_id(
+    client: TestClient, tmp_path: Path
+) -> None:
+    """Folder-slug URLs reach POST /runs too — must resolve to the record.
+
+    Regression: if the UI navigated to ``/applications/<run_dir_name>`` (e.g.
+    via a legacy folder-derived row) and then started a new run, the payload's
+    ``app_id`` was the slug, not the opaque ID. The route used to 404 with
+    'Unknown application: <slug>'; it now falls back to run-dir-name lookup
+    and normalises the stored app_id on the config.
+    """
+    from server.applications import ApplicationRepository
+
+    app_id, stored_path = _create_app(tmp_path)
+    repo = ApplicationRepository(store_path=tmp_path / "applications.json")
+    app = repo.get_application(app_id)
+
+    response = client.post(
+        "/api/runs",
+        json={
+            "project_path": stored_path,
+            "threat_source": "auto",
+            "app_id": app.run_dir_name,  # folder-slug, not opaque id
+        },
+    )
+
+    assert response.status_code == 202
+    captured: RunConfig = _noop_executor.last_config  # type: ignore[attr-defined]
+    assert captured.project_path == stored_path
+    # app_id on the config is normalised to the opaque form.
+    assert captured.app_id == app_id
+
+
+def test_create_run_persists_edited_project_path_back_to_app(
+    client: TestClient, tmp_path: Path
+) -> None:
+    """Submitting a *different* project_path at run time updates the record.
+
+    Rationale: users can rename / relocate their source tree. The NewRunPage
+    surfaces the stored path as editable; if they change it the new location
+    must stick so every future run (and the app overview) picks it up.
+    """
+    from server.applications import ApplicationRepository, _normalise_path
+
+    app_id, original_path = _create_app(tmp_path, name="Relocatable")
+
+    # A real, different directory that the backend can resolve.
+    new_location = tmp_path / "moved"
+    new_location.mkdir()
+
+    response = client.post(
+        "/api/runs",
+        json={
+            "project_path": str(new_location),
+            "threat_source": "auto",
+            "app_id": app_id,
+        },
+    )
+
+    assert response.status_code == 202
+    captured: RunConfig = _noop_executor.last_config  # type: ignore[attr-defined]
+    assert _normalise_path(captured.project_path) == _normalise_path(str(new_location))
+
+    # And the change is persisted.
+    repo = ApplicationRepository(store_path=tmp_path / "applications.json")
+    stored = repo.get_application(app_id)
+    assert _normalise_path(stored.project_path) == _normalise_path(str(new_location))
+    assert _normalise_path(stored.project_path) != _normalise_path(original_path)
 
 
 def test_list_versions_for_v2_app_without_runs_returns_empty_list(

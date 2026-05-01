@@ -11,7 +11,7 @@ import Badge from '@cloudscape-design/components/badge';
 
 const FIELD_HELP = {
   cloud_provider: 'Cloud platform(s) hosting the application (e.g. AWS, Azure, GCP).',
-  tech_stack: 'Primary languages, frameworks, and runtimes used in the codebase.',
+  tech_stack: 'Primary languages, frameworks, and runtimes detected in the repository.',
   industry: 'Business domain of the application — shapes threat relevance and compliance.',
   services: 'Discrete services, components, or modules that make up the system.',
   auth_mechanisms: 'How users and services authenticate (e.g. IAM roles, OAuth2, API keys).',

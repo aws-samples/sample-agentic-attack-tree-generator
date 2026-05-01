@@ -281,7 +281,9 @@ class _StubRegistry:
     def set_version_count(self, run_dir_name: str, count: int) -> None:
         self._versions[run_dir_name] = count
 
-    def get_versions(self, run_dir_name: str) -> list:
+    def get_versions(
+        self, run_dir_name: str, active_run_ids: dict[str, str] | None = None
+    ) -> list:
         # Return a list of the right length so ``len(versions)`` is accurate;
         # the routes only ever inspect length/emptiness, not content.
         return [None] * self._versions.get(run_dir_name, 0)
@@ -322,10 +324,13 @@ def test_patch_project_path_before_first_run(
     assert _normalise_path(body["project_path"]) == _normalise_path(new_path)
 
 
-def test_patch_project_path_blocked_after_first_run(
+def test_patch_project_path_allowed_after_first_run(
     client: TestClient, tmp_path: Path
 ) -> None:
-    """Once a run exists, the path is frozen and PATCH returns 409."""
+    """Path edits remain allowed after runs exist so users can track folder
+    renames or moves. The stable run_dir_name keeps on-disk history attached
+    to the application regardless of where the source lives now.
+    """
     from server.routes.applications import set_registry
 
     registry = _StubRegistry()
@@ -334,8 +339,8 @@ def test_patch_project_path_blocked_after_first_run(
     created = client.post(
         "/api/applications",
         json={
-            "name": "Locked",
-            "project_path": _mkproject(tmp_path, "locked"),
+            "name": "Movable",
+            "project_path": _mkproject(tmp_path, "original-location"),
             "business_context": _context_payload(),
         },
     ).json()
@@ -343,15 +348,18 @@ def test_patch_project_path_blocked_after_first_run(
     # Simulate a run having been produced for this app.
     registry.set_version_count(created["run_dir_name"], 2)
 
+    new_path = _mkproject(tmp_path, "new-location")
     response = client.patch(
         f"/api/applications/by-id/{created['id']}",
-        json={"project_path": _mkproject(tmp_path, "new-location")},
+        json={"project_path": new_path},
     )
 
-    assert response.status_code == 409
-    detail = response.json()["detail"].lower()
-    assert "before the first" in detail
-    assert "run" in detail
+    assert response.status_code == 200
+    from server.applications import _normalise_path
+
+    assert _normalise_path(response.json()["project_path"]) == _normalise_path(new_path)
+    # run_dir_name stays pinned so on-disk history does not drift.
+    assert response.json()["run_dir_name"] == created["run_dir_name"]
 
 
 def test_patch_project_path_noop_after_runs_is_allowed(
@@ -437,7 +445,9 @@ class _StubRegistryWithVersions:
     def set_versions(self, run_dir_name: str, versions: list) -> None:
         self._versions[run_dir_name] = versions
 
-    def get_versions(self, run_dir_name: str) -> list:
+    def get_versions(
+        self, run_dir_name: str, active_run_ids: dict[str, str] | None = None
+    ) -> list:
         return list(self._versions.get(run_dir_name, []))
 
     def discover_applications(self) -> list:

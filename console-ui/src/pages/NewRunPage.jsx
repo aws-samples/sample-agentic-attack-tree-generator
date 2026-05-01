@@ -209,31 +209,16 @@ export default function NewRunPage() {
       title: 'Project Path',
       content: (
         <Container header={<Header variant="h2">Project Path</Header>}>
-          {isAppScoped ? (
-            <SpaceBetween size="m">
-              {appError && <Alert type="error">{appError}</Alert>}
-              <FormField
-                label="Project directory path"
-                description="Locked to the path registered when the application was created. Edit from the application overview (only available before the first run)."
-              >
-                <Input value={projectPath} disabled readOnly />
-              </FormField>
-              {appRegulatory.length > 0 && (
-                <Box variant="small" color="text-body-secondary">
-                  Regulatory frameworks from this app's business context:{' '}
-                  {appRegulatory.map((f, i) => (
-                    <Badge key={i} color="blue">
-                      {f}
-                    </Badge>
-                  ))}
-                </Box>
-              )}
-            </SpaceBetween>
-          ) : (
+          <SpaceBetween size="m">
+            {isAppScoped && appError && <Alert type="error">{appError}</Alert>}
             <FormField
               label="Project directory path"
               errorText={projectPathError}
-              description="Enter the path or browse to the project directory to analyze."
+              description={
+                isAppScoped
+                  ? 'Pre-filled from the application record. Edit if the folder has been renamed or moved — the change is saved back to the application.'
+                  : 'Enter the path or browse to the project directory to analyze.'
+              }
             >
               <DirectoryPicker
                 value={projectPath}
@@ -244,28 +229,35 @@ export default function NewRunPage() {
                 placeholder="/path/to/project"
               />
             </FormField>
-          )}
+          </SpaceBetween>
         </Container>
       ),
     },
     {
-      title: 'Threat Statements',
+      title: 'Threat Source',
       content: (
-        <Container header={<Header variant="h2">Threat Statements</Header>}>
+        <Container
+          header={
+            <Header
+              variant="h2"
+              description="Choose whether ThreatForest should generate threat statements from the repository or use an existing file."
+            >
+              Threat Source
+            </Header>
+          }
+        >
           <SpaceBetween size="l">
-            <FormField label="Threat source">
-              <RadioGroup
-                value={threatSource}
-                onChange={({ detail }) => {
-                  setThreatSource(detail.value);
-                  if (detail.value === 'auto') setThreatFilePathError('');
-                }}
-                items={[
-                  { value: 'auto', label: 'Auto-generate using AI' },
-                  { value: 'file', label: 'Provide existing threat statements file' },
-                ]}
-              />
-            </FormField>
+            <RadioGroup
+              value={threatSource}
+              onChange={({ detail }) => {
+                setThreatSource(detail.value);
+                if (detail.value === 'auto') setThreatFilePathError('');
+              }}
+              items={[
+                { value: 'auto', label: 'Auto-generate using AI' },
+                { value: 'file', label: 'Provide existing threat statements file' },
+              ]}
+            />
             {threatSource === 'file' && (
               <FormField
                 label="Threat file path"
@@ -386,16 +378,17 @@ export default function NewRunPage() {
         { text: 'Home', href: '/' },
         { text: 'Applications', href: '/applications' },
         { text: app?.name || appId, href: `/applications/${appId}` },
-        { text: 'New run', href: `/applications/${appId}/runs/new` },
+        { text: 'New threat model', href: `/applications/${appId}/runs/new` },
       ]
     : [
         { text: 'Home', href: '/' },
-        { text: 'New Run', href: '/new-run' },
+        { text: 'Applications', href: '/applications' },
+        { text: 'New threat model', href: '/new-run' },
       ];
 
   if (isAppScoped && appLoading) {
     return (
-      <CloudscapeShell activePage={isAppScoped ? '/applications' : '/new-run'} breadcrumbs={breadcrumbs}>
+      <CloudscapeShell activePage="/applications" breadcrumbs={breadcrumbs}>
         <Box textAlign="center" padding="l" data-testid="loading-spinner">
           <Spinner size="large" />
         </Box>
@@ -405,7 +398,7 @@ export default function NewRunPage() {
 
   return (
     <CloudscapeShell
-      activePage={isAppScoped ? '/applications' : '/new-run'}
+      activePage="/applications"
       breadcrumbs={breadcrumbs}
     >
       <Wizard

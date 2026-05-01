@@ -14,7 +14,7 @@ import StageCard from '../components/StageCard';
 import ActivityFeed from '../components/ActivityFeed';
 import InterviewerPanel from '../components/InterviewerPanel';
 import ThreatReviewPanel from '../components/ThreatReviewPanel';
-import { connectRunWebSocket, pauseRun, stopRun, resumeRun, submitRunResponse } from '../api-client';
+import { connectRunWebSocket, pauseRun, stopRun, resumeRun, submitRunResponse, getRun, getApplication } from '../api-client';
 
 const STAGES = [
   'Repository Analysis',
@@ -78,6 +78,8 @@ export default function RunProgressPage() {
   const [errorMessage, setErrorMessage] = useState('');
   const [pipelineComplete, setPipelineComplete] = useState(false);
   const [completedAppId, setCompletedAppId] = useState('');
+  const [runAppId, setRunAppId] = useState('');
+  const [runAppName, setRunAppName] = useState('');
   const [lowConfidence, setLowConfidence] = useState(false);
   // "running" | "paused" | "stopped" | "complete" | "failed"
   const [scanStatus, setScanStatus] = useState('running');
@@ -587,13 +589,32 @@ export default function RunProgressPage() {
     };
   }, [runId, handleMessage, appendActivity]);
 
+  // Fetch the run's owning application so breadcrumbs can reflect context.
+  useEffect(() => {
+    if (!runId) return;
+    let cancelled = false;
+    getRun(runId)
+      .then((data) => {
+        if (cancelled) return;
+        const id = data?.config?.app_id || data?.app_id || '';
+        if (id) {
+          setRunAppId(id);
+          return getApplication(id).then((app) => {
+            if (!cancelled) setRunAppName(app?.name || '');
+          });
+        }
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [runId]);
+
   if (!runId) {
     return (
       <CloudscapeShell
-        activePage="/new-run"
+        activePage="/applications"
         breadcrumbs={[
           { text: 'Home', href: '/' },
-          { text: 'New Run', href: '/new-run' },
+          { text: 'Applications', href: '/applications' },
           { text: 'Progress', href: '#' },
         ]}
       >
@@ -602,14 +623,23 @@ export default function RunProgressPage() {
     );
   }
 
+  const progressBreadcrumbs = runAppId
+    ? [
+        { text: 'Home', href: '/' },
+        { text: 'Applications', href: '/applications' },
+        { text: runAppName || 'Application', href: `/applications/${runAppId}` },
+        { text: 'Progress', href: `/runs/${runId}/progress` },
+      ]
+    : [
+        { text: 'Home', href: '/' },
+        { text: 'Applications', href: '/applications' },
+        { text: 'Progress', href: `/runs/${runId}/progress` },
+      ];
+
   return (
     <CloudscapeShell
-      activePage="/new-run"
-      breadcrumbs={[
-        { text: 'Home', href: '/' },
-        { text: 'New Run', href: '/new-run' },
-        { text: 'Progress', href: `/runs/${runId}/progress` },
-      ]}
+      activePage="/applications"
+      breadcrumbs={progressBreadcrumbs}
     >
       <SpaceBetween size="l">
         <Header
