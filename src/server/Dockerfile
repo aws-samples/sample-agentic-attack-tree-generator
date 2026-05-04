@@ -1,6 +1,13 @@
 # syntax=docker/dockerfile:1.7
 # ThreatForest API server — Fargate image.
-FROM public.ecr.aws/docker/library/python:3.12-slim-bookworm
+# Multi-stage build: compile deps in `builder`, ship only the venv + app in `runtime`.
+
+ARG PYTHON_IMAGE=public.ecr.aws/docker/library/python:3.12-slim-bookworm
+
+# -----------------------------------------------------------------------------
+# Builder — installs Python deps and pre-downloads the ATTACK-BERT model.
+# -----------------------------------------------------------------------------
+FROM ${PYTHON_IMAGE} AS builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -12,14 +19,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     HF_HUB_DISABLE_TELEMETRY=1 \
     TQDM_DISABLE=1 \
     TOKENIZERS_PARALLELISM=false \
-    THREATFOREST_BACKEND=aws \
     VIRTUAL_ENV=/opt/venv \
-    PATH="/opt/venv/bin:/root/.local/bin:${PATH}"
+    PATH="/opt/venv/bin:${PATH}"
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       git \
-      curl \
       build-essential \
  && rm -rf /var/lib/apt/lists/*
 
@@ -27,19 +32,45 @@ RUN pip install --no-cache-dir uv==0.5.11 && uv venv "${VIRTUAL_ENV}"
 
 WORKDIR /app
 
-# --- Install dependencies (cached layer — changes only when pyproject.toml does) ---
 COPY pyproject.toml ./
 RUN uv pip compile pyproject.toml -o /tmp/requirements.txt \
  && uv pip install --no-cache -r /tmp/requirements.txt \
  && rm /tmp/requirements.txt
 
-# --- Install the application itself ---
 COPY src/ ./src/
 COPY README.md ./
 RUN uv pip install --no-cache --no-deps .
 
-# --- Pre-bake the ATTACK-BERT embedding model so first request is fast ---
 RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('basel/ATTACK-BERT')"
+
+# -----------------------------------------------------------------------------
+# Runtime — minimal image that only contains what's needed to serve traffic.
+# -----------------------------------------------------------------------------
+FROM ${PYTHON_IMAGE} AS runtime
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    HF_HOME=/opt/models \
+    TRANSFORMERS_CACHE=/opt/models \
+    HF_HUB_DISABLE_TELEMETRY=1 \
+    TQDM_DISABLE=1 \
+    TOKENIZERS_PARALLELISM=false \
+    THREATFOREST_BACKEND=aws \
+    VIRTUAL_ENV=/opt/venv \
+    PATH="/opt/venv/bin:${PATH}"
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends curl \
+ && rm -rf /var/lib/apt/lists/* \
+ && groupadd --gid 1000 appuser \
+ && useradd --uid 1000 --gid 1000 --shell /sbin/nologin --no-create-home appuser
+
+COPY --from=builder --chown=appuser:appuser /opt/venv /opt/venv
+COPY --from=builder --chown=appuser:appuser /opt/models /opt/models
+COPY --from=builder --chown=appuser:appuser /app /app
+
+WORKDIR /app
+USER appuser
 
 EXPOSE 8000
 
