@@ -194,7 +194,9 @@ nav:
     - Workflow Phases: how-it-works/phases.md
   
   - Architecture: architecture/overview.md
-  
+
+  - Internal Deployment: internal-deployment.md
+
   - FAQ: faq.md
   
   - About:
