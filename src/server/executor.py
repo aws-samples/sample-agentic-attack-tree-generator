@@ -23,9 +23,13 @@ from server.applications import (
 )
 from server.models import Application, RunConfig
 from server.run_manager import OrchestratorExecutor, ProgressEvent
+from threatforest.workspace import LocalFilesystemWorkspace
 
 if TYPE_CHECKING:
     from server.scan_control import ScanControl
+
+
+PAUSE_STATE_KEY = "pause_state.json"
 
 
 def _save_pause_state(
@@ -51,9 +55,7 @@ def _save_pause_state(
             "app_id": config.app_id,
         },
     }
-    (run_dir / "pause_state.json").write_text(
-        _json_module.dumps(pause_data, indent=2), encoding="utf-8"
-    )
+    LocalFilesystemWorkspace(run_dir).write_json(PAUSE_STATE_KEY, pause_data)
 
 
 _otel_initialized = False
@@ -751,9 +753,7 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
 
         # Clean up pause_state.json on successful completion so the run
         # no longer appears in the "paused runs" list.
-        pause_file = run_dir / "pause_state.json"
-        if pause_file.is_file():
-            pause_file.unlink()
+        LocalFilesystemWorkspace(run_dir).delete(PAUSE_STATE_KEY)
 
         # Update metadata.json description from scan output
         try:

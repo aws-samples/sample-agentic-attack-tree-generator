@@ -19,6 +19,9 @@ from typing import Any, Callable, Protocol
 
 from server.models import RunConfig, RunState
 from server.scan_control import ScanControl
+from threatforest.workspace import LocalFilesystemWorkspace
+
+PAUSE_STATE_KEY = "pause_state.json"
 
 logger = logging.getLogger(__name__)
 
@@ -255,9 +258,7 @@ class RunManager:
             # Remove pause_state.json so this run no longer appears as resumable
             control = self._controls.get(run_id)
             if control and control.run_dir:
-                pause_file = Path(control.run_dir) / "pause_state.json"
-                if pause_file.is_file():
-                    pause_file.unlink()
+                LocalFilesystemWorkspace(Path(control.run_dir)).delete(PAUSE_STATE_KEY)
             return
 
         if state.status not in ("pending", "running", "pausing"):
@@ -317,14 +318,14 @@ class RunManager:
                 "The server may have restarted — please start a new run."
             )
 
-        pause_file = Path(run_dir_str) / "pause_state.json"
-        if not pause_file.is_file():
+        workspace = LocalFilesystemWorkspace(Path(run_dir_str))
+        if not workspace.exists(PAUSE_STATE_KEY):
             raise RuntimeError(
                 f"No pause_state.json found in {run_dir_str}. "
                 "Cannot resume this run."
             )
 
-        pause_data = json.loads(pause_file.read_text(encoding="utf-8"))
+        pause_data = workspace.read_json(PAUSE_STATE_KEY)
         config_data = pause_data.get("config", {})
         completed_nodes: list[str] = pause_data.get("completed_nodes", [])
 
