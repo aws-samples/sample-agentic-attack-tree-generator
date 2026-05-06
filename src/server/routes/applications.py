@@ -235,15 +235,43 @@ async def update_application(app_id: str, body: ApplicationUpdateRequest) -> dic
 
 @router.delete("/applications/by-id/{app_id}", status_code=200)
 async def delete_application_record(app_id: str) -> dict:
-    """Delete the persistent application record. Does not touch on-disk run artefacts.
+    """Delete the persistent application record and its on-disk run artefacts.
+
+    Removes both the entry in ``applications.json`` and the matching folder
+    under ``.threatforest/runs/{run_dir_name}/`` (if one exists). The on-disk
+    cleanup is best-effort: if the folder is missing we proceed silently,
+    and if ``shutil.rmtree`` fails we surface a 500 so the caller knows the
+    disk was left in an inconsistent state.
 
     - **404** if no application with this ID exists.
+    - **500** if the on-disk folder cleanup fails.
     """
     repo = get_app_repository()
+    try:
+        app = repo.get_application(app_id)
+    except ApplicationNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+
+    registry = get_registry()
+    project_dir = registry.get_project_dir(app.run_dir_name)
+
     try:
         repo.delete_application(app_id)
     except ApplicationNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
+
+    if project_dir is not None and project_dir.is_dir():
+        try:
+            shutil.rmtree(str(project_dir))
+        except OSError as exc:
+            raise HTTPException(
+                status_code=500,
+                detail=(
+                    f"Application record deleted, but on-disk folder "
+                    f"{project_dir} could not be removed: {exc}"
+                ),
+            )
+
     return {"success": True, "message": f"Application '{app_id}' deleted"}
 
 
@@ -280,6 +308,53 @@ async def list_versions(app_id: str) -> dict:
                 detail=f"Application '{app_id}' not found",
             )
     return {"versions": [v.model_dump() for v in versions]}
+
+
+@router.delete("/applications/{app_id}/versions/{version_id}")
+async def delete_version(app_id: str, version_id: str) -> dict:
+    """Delete a single threat-model version (timestamped run folder).
+
+    Accepts either a v2 persistent ``app_id`` or a legacy folder-derived
+    slug. Refuses to delete a version that's currently the target of a live
+    run — the user should cancel or wait for completion instead, otherwise
+    the in-flight pipeline would error out mid-write.
+
+    - **400** if the version is still the target of an active run.
+    - **404** if the application or version is not found.
+    - **500** if the on-disk folder removal fails.
+    """
+    registry = get_registry()
+    folder_id = _resolve_folder_id(app_id)
+
+    active = _active_runs_for_folder(folder_id)
+    if version_id in active:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Version '{version_id}' is currently running "
+                f"(run_id={active[version_id]}). Cancel the run before "
+                f"deleting."
+            ),
+        )
+
+    try:
+        deleted = registry.delete_version(folder_id, version_id)
+    except OSError as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to delete version '{version_id}': {exc}",
+        )
+
+    if not deleted:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                f"Version '{version_id}' not found for application "
+                f"'{app_id}'"
+            ),
+        )
+
+    return {"success": True, "message": f"Version '{version_id}' deleted"}
 
 
 @router.delete("/applications/{app_id}")

@@ -23,6 +23,7 @@ import {
   getApplicationVersions,
   updateApplication,
   deleteApplicationRecord,
+  deleteApplicationVersion,
 } from '../api-client';
 
 /**
@@ -52,6 +53,8 @@ function renderStatus(status) {
       return <StatusIndicator type="in-progress">In progress</StatusIndicator>;
     case 'pending':
       return <StatusIndicator type="pending">Pending</StatusIndicator>;
+    case 'abandoned':
+      return <StatusIndicator type="warning">Abandoned</StatusIndicator>;
     default:
       return <StatusIndicator type="info">{status || '—'}</StatusIndicator>;
   }
@@ -59,8 +62,7 @@ function renderStatus(status) {
 
 // Versions without a completed dashboard should open the live progress
 // page; if the backend enriches the row with an active run_id we can route
-// there directly, otherwise the version has been abandoned and we fall
-// back to the dashboard route (which surfaces its own "no data" state).
+// there directly, otherwise the version has been abandoned.
 function isLiveVersion(version) {
   return (
     version &&
@@ -69,6 +71,21 @@ function isLiveVersion(version) {
       version.status === 'running' ||
       version.status === 'pending') &&
     Boolean(version.run_id)
+  );
+}
+
+// Abandoned versions have no output artefact and no live run — typically a
+// crashed or interrupted scan from a prior server session. We render them as
+// non-clickable so the user doesn't hit a 404 trying to open them.
+function isAbandonedVersion(version) {
+  return (
+    version &&
+    (version.status === 'abandoned' ||
+      ((version.status === 'in-progress' ||
+        version.status === 'in_progress' ||
+        version.status === 'running' ||
+        version.status === 'pending') &&
+        !version.run_id))
   );
 }
 
@@ -97,6 +114,12 @@ export default function AppOverviewPage() {
   const [deleting, setDeleting] = useState(false);
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
+
+  // Delete-version modal. ``versionDeleteTarget`` doubles as the modal's
+  // visibility flag — null means closed.
+  const [versionDeleteTarget, setVersionDeleteTarget] = useState(null);
+  const [versionDeleteSubmitting, setVersionDeleteSubmitting] = useState(false);
+  const [versionDeleteError, setVersionDeleteError] = useState('');
 
   const loadAll = useCallback(
     async (signal) => {
@@ -209,6 +232,24 @@ export default function AppOverviewPage() {
     }
   };
 
+  const handleVersionDelete = async () => {
+    if (!versionDeleteTarget) return;
+    setVersionDeleteSubmitting(true);
+    setVersionDeleteError('');
+    try {
+      await deleteApplicationVersion(appId, versionDeleteTarget.id);
+      // Optimistically drop the row rather than refetching — the backend has
+      // already removed the folder and any follow-up fetch would just confirm
+      // the same state.
+      setVersions((prev) => prev.filter((v) => v.id !== versionDeleteTarget.id));
+      setVersionDeleteTarget(null);
+    } catch (err) {
+      setVersionDeleteError(err.message || 'Failed to delete threat model.');
+    } finally {
+      setVersionDeleteSubmitting(false);
+    }
+  };
+
   const appName = app?.name || appId;
 
   if (loading) {
@@ -288,18 +329,13 @@ export default function AppOverviewPage() {
             header={
               <Header
                 variant="h2"
-                description={
-                  versions.length > 0
-                    ? 'The project repository is locked after the first threat model run so existing threat models stay tied to the same code.'
-                    : 'Edit the project repository path. This is only available until the first threat model run.'
-                }
+                description="Edit the path whenever the repository is moved or renamed. Existing threat models stay attached to this application regardless of where the code lives now. Tip: point this only at the same codebase — a path belonging to a different application will produce misleading future threat models."
                 actions={
                   <Button
                     iconName="edit"
                     onClick={openPathEdit}
                     ariaLabel="Edit project repository"
                     data-testid="edit-project-path"
-                    disabled={versions.length > 0}
                   />
                 }
               >
@@ -317,18 +353,24 @@ export default function AppOverviewPage() {
             <ColumnLayout columns={3} variant="text-grid">
               <div>
                 <Box variant="awsui-key-label">Threat model</Box>
-                <Link
-                  onFollow={(e) => {
-                    e.preventDefault();
-                    if (isLiveVersion(latestVersion)) {
-                      navigate(`/runs/${latestVersion.run_id}/progress`);
-                    } else {
-                      navigate(`/applications/${appId}/versions/latest`);
-                    }
-                  }}
-                >
-                  {latestVersion.display_name || latestVersion.id}
-                </Link>
+                {isAbandonedVersion(latestVersion) ? (
+                  <Box color="text-status-inactive">
+                    {latestVersion.display_name || latestVersion.id}
+                  </Box>
+                ) : (
+                  <Link
+                    onFollow={(e) => {
+                      e.preventDefault();
+                      if (isLiveVersion(latestVersion)) {
+                        navigate(`/runs/${latestVersion.run_id}/progress`);
+                      } else {
+                        navigate(`/applications/${appId}/versions/latest`);
+                      }
+                    }}
+                  >
+                    {latestVersion.display_name || latestVersion.id}
+                  </Link>
+                )}
               </div>
               <div>
                 <Box variant="awsui-key-label">Run date</Box>
@@ -371,6 +413,17 @@ export default function AppOverviewPage() {
                 cell: (item) => {
                   const isLatest = item.id === latestVersion?.id;
                   const live = isLiveVersion(item);
+                  const abandoned = isAbandonedVersion(item);
+                  const label = item.display_name || item.id;
+                  const displayLabel = isLatest ? `${label} (latest)` : label;
+                  if (abandoned) {
+                    // Non-clickable: there is nothing to render for an
+                    // abandoned run. Keep the label so the user can still
+                    // correlate with timestamps.
+                    return (
+                      <Box color="text-status-inactive">{displayLabel}</Box>
+                    );
+                  }
                   const target = live
                     ? `/runs/${item.run_id}/progress`
                     : isLatest
@@ -383,10 +436,7 @@ export default function AppOverviewPage() {
                         navigate(target);
                       }}
                     >
-                      {(() => {
-                        const label = item.display_name || item.id;
-                        return isLatest ? `${label} (latest)` : label;
-                      })()}
+                      {displayLabel}
                     </Link>
                   );
                 },
@@ -406,6 +456,29 @@ export default function AppOverviewPage() {
                 id: 'high_severity_count',
                 header: 'High-severity threats',
                 cell: (item) => item.high_severity_count ?? 0,
+              },
+              {
+                id: 'actions',
+                header: 'Actions',
+                cell: (item) => {
+                  // Don't let the user delete a live run out from under an
+                  // in-flight pipeline — the backend will 400 anyway, but
+                  // hiding the control entirely avoids confusion.
+                  const live = isLiveVersion(item);
+                  return (
+                    <Button
+                      variant="inline-link"
+                      onClick={() => {
+                        setVersionDeleteError('');
+                        setVersionDeleteTarget(item);
+                      }}
+                      disabled={live}
+                      data-testid={`delete-version-${item.id}`}
+                    >
+                      Delete
+                    </Button>
+                  );
+                },
               },
             ]}
             items={sortedVersions}
@@ -515,7 +588,7 @@ export default function AppOverviewPage() {
         >
           <FormField
             label="Project repository path"
-            description="Absolute path to the repository ThreatForest scans for this application."
+            description="Absolute path to the repository ThreatForest scans for this application. Use this when the repo has been moved or renamed — don't point it at a different application's codebase, or future threat models will drift from past runs."
             errorText={pathError}
           >
             <DirectoryPicker
@@ -561,6 +634,50 @@ export default function AppOverviewPage() {
             <Box variant="p">
               Are you sure you want to delete <strong>{appName}</strong>? This
               removes the application record but keeps run artefacts on disk.
+            </Box>
+          </SpaceBetween>
+        </Modal>
+
+        {/* Delete-version modal */}
+        <Modal
+          visible={versionDeleteTarget !== null}
+          onDismiss={() =>
+            !versionDeleteSubmitting && setVersionDeleteTarget(null)
+          }
+          header="Delete threat model"
+          footer={
+            <Box float="right">
+              <SpaceBetween direction="horizontal" size="xs">
+                <Button
+                  variant="link"
+                  onClick={() => setVersionDeleteTarget(null)}
+                  disabled={versionDeleteSubmitting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={handleVersionDelete}
+                  loading={versionDeleteSubmitting}
+                  data-testid="confirm-delete-version"
+                >
+                  Delete
+                </Button>
+              </SpaceBetween>
+            </Box>
+          }
+        >
+          <SpaceBetween size="s">
+            {versionDeleteError && (
+              <Alert type="error">{versionDeleteError}</Alert>
+            )}
+            <Box variant="p">
+              Are you sure you want to delete{' '}
+              <strong>
+                {versionDeleteTarget?.display_name || versionDeleteTarget?.id}
+              </strong>
+              ? The threat statements, attack trees, and dashboard for this run
+              will be removed from disk. This cannot be undone.
             </Box>
           </SpaceBetween>
         </Modal>

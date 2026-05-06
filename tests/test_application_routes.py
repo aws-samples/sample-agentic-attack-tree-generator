@@ -521,3 +521,102 @@ def test_list_applications_includes_business_context(
     by_name = {a["name"]: a for a in apps}
     assert "Listed" in by_name
     assert by_name["Listed"]["business_context"]["data_sensitivity"] == "pii"
+
+
+# ---------------------------------------------------------------------------
+# Version deletion
+# ---------------------------------------------------------------------------
+
+
+def _seed_version_folder(
+    runs_root: Path, folder_name: str, version_id: str
+) -> Path:
+    """Create a fake run-folder layout on disk that the registry will discover."""
+    project_dir = runs_root / folder_name
+    (project_dir / version_id / "output").mkdir(parents=True, exist_ok=True)
+    (project_dir / version_id / "state").mkdir(parents=True, exist_ok=True)
+    (project_dir / "metadata.json").write_text(
+        '{"name": "x", "path": "/tmp"}', encoding="utf-8"
+    )
+    return project_dir / version_id
+
+
+def test_delete_version_removes_folder(
+    client: TestClient, tmp_path: Path, monkeypatch
+) -> None:
+    """Happy path: DELETE removes the timestamped run folder from disk."""
+    from server.registry import ApplicationRegistry
+    from server.routes.applications import set_registry
+
+    runs_root = tmp_path / "runs"
+    runs_root.mkdir()
+    monkeypatch.setattr(
+        "server.registry.get_runs_root", lambda: runs_root
+    )
+
+    version_dir = _seed_version_folder(runs_root, "demo", "20260101_120000")
+    assert version_dir.is_dir()
+
+    # Fresh registry so it picks up the monkey-patched runs_root.
+    set_registry(ApplicationRegistry())
+
+    response = client.delete("/api/applications/demo/versions/20260101_120000")
+
+    assert response.status_code == 200
+    assert not version_dir.exists()
+    # Parent project dir remains so other versions (or the metadata) survive.
+    assert version_dir.parent.is_dir()
+
+
+def test_delete_version_missing_version_returns_404(
+    client: TestClient, tmp_path: Path, monkeypatch
+) -> None:
+    from server.registry import ApplicationRegistry
+    from server.routes.applications import set_registry
+
+    runs_root = tmp_path / "runs"
+    runs_root.mkdir()
+    monkeypatch.setattr(
+        "server.registry.get_runs_root", lambda: runs_root
+    )
+    _seed_version_folder(runs_root, "demo", "20260101_120000")
+    set_registry(ApplicationRegistry())
+
+    response = client.delete("/api/applications/demo/versions/20260202_999999")
+    assert response.status_code == 404
+
+
+def test_delete_version_rejects_live_run(
+    client: TestClient, tmp_path: Path, monkeypatch
+) -> None:
+    """A version tracked by an active RunManager run must 400, not be wiped."""
+    from server.registry import ApplicationRegistry
+    from server.routes.applications import set_registry
+
+    runs_root = tmp_path / "runs"
+    runs_root.mkdir()
+    monkeypatch.setattr(
+        "server.registry.get_runs_root", lambda: runs_root
+    )
+    version_dir = _seed_version_folder(runs_root, "demo", "20260101_120000")
+    set_registry(ApplicationRegistry())
+
+    # Stub the run manager to report the target version as still running.
+    class _FakeState:
+        status = "running"
+
+    class _FakeControl:
+        def __init__(self, path: Path) -> None:
+            self.run_dir = str(path)
+
+    class _FakeManager:
+        active_runs = {"run_abc": _FakeState()}
+        _controls = {"run_abc": _FakeControl(version_dir)}
+
+    monkeypatch.setattr(
+        "server.routes.runs.get_run_manager", lambda: _FakeManager()
+    )
+
+    response = client.delete("/api/applications/demo/versions/20260101_120000")
+    assert response.status_code == 400
+    assert version_dir.is_dir()  # not deleted

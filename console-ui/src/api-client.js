@@ -61,6 +61,14 @@ export async function deleteApplication(appId) {
   });
 }
 
+/** DELETE /api/applications/{appId}/versions/{versionId} → void */
+export async function deleteApplicationVersion(appId, versionId) {
+  await request(
+    `/api/applications/${encodeURIComponent(appId)}/versions/${encodeURIComponent(versionId)}`,
+    { method: 'DELETE' },
+  );
+}
+
 // --- v2 persistent-application CRUD --------------------------------------
 // These hit /api/applications/by-id/* to avoid colliding with the legacy
 // folder-identifier routes above (/{appId}/versions etc.).

@@ -228,6 +228,34 @@ class ApplicationRegistry:
         """Return the project directory for an app_id, or None."""
         return self._find_project_dir(app_id)
 
+    def delete_version(self, app_id: str, version_id: str) -> bool:
+        """Remove a single timestamped run directory for an application.
+
+        Returns ``True`` if the folder was deleted, ``False`` if the project
+        directory or version folder could not be found. The ``version_id``
+        must be the on-disk ``YYYYMMDD_HHMMSS`` folder name — ``"latest"`` is
+        not accepted here because deletion of "whichever version is newest
+        right now" is ambiguous and error-prone.
+
+        Raises
+        ------
+        OSError
+            If the folder exists but ``shutil.rmtree`` fails. The caller is
+            responsible for surfacing this to the user.
+        """
+        import shutil
+
+        project_dir = self._find_project_dir(app_id)
+        if project_dir is None:
+            return False
+        if not re.match(r"^\d{8}_\d{6}$", version_id):
+            return False
+        version_dir = project_dir / version_id
+        if not version_dir.is_dir():
+            return False
+        shutil.rmtree(str(version_dir))
+        return True
+
     def get_version_data_path(self, app_id: str, version_id: str) -> Path | None:
         """Return the path to threatforest_data.json for a specific version.
 
@@ -362,13 +390,19 @@ class ApplicationRegistry:
             )
         categories = metadata.get("categories", [])
 
-        # Without an output artefact the run either never reached the report
-        # stage or is still executing; don't claim "complete" in that case.
-        default_status = "complete" if has_output else "in-progress"
-        status = metadata.get("status", default_status)
-        if active_run_id is not None:
-            # Live run still running — override any stale status we read.
+        # Status resolution:
+        #   - output artefact present → trust its ``status`` field (or default
+        #     to "complete" for legacy runs that didn't record one).
+        #   - no artefact but a live run is tracking this folder → in-progress.
+        #   - no artefact and no live run → the run crashed or was abandoned
+        #     by a previous server session; mark "abandoned" so the UI can
+        #     avoid routing users to a dashboard that will never render.
+        if has_output:
+            status = metadata.get("status", "complete")
+        elif active_run_id is not None:
             status = "in-progress"
+        else:
+            status = "abandoned"
 
         return VersionSummary(
             id=version_dir.name,
