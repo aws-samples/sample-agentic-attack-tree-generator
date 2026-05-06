@@ -11,7 +11,11 @@ import SpaceBetween from '@cloudscape-design/components/space-between';
 import Link from '@cloudscape-design/components/link';
 import Spinner from '@cloudscape-design/components/spinner';
 import CloudscapeShell from '../components/CloudscapeShell';
-import { getApplications, deleteApplication } from '../api-client';
+import {
+  getApplications,
+  deleteApplicationRecord,
+  deleteApplication,
+} from '../api-client';
 import { exportCsv, exportPdf } from '../utils/export-service';
 
 const EXPORT_ITEMS = [
@@ -116,7 +120,14 @@ export default function ApplicationsPage() {
     try {
       setDeleting(true);
       setDeleteError(null);
-      await deleteApplication(deleteTarget.id);
+      // v2 persistent records carry an ``app_*`` id; legacy folder-derived
+      // apps carry a slug. Dispatch to the right endpoint so both kinds
+      // can be deleted from the same list view.
+      if (String(deleteTarget.id || '').startsWith('app_')) {
+        await deleteApplicationRecord(deleteTarget.id);
+      } else {
+        await deleteApplication(deleteTarget.id);
+      }
       setApplications((prev) => prev.filter((app) => app.id !== deleteTarget.id));
       setDeleteTarget(null);
     } catch (err) {
