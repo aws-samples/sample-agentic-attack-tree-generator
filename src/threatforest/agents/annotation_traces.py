@@ -11,6 +11,8 @@ import os
 from pathlib import Path
 from typing import Any
 
+from threatforest.workspace import LocalFilesystemWorkspace, Workspace
+
 logger = logging.getLogger(__name__)
 
 _client = None
@@ -39,11 +41,19 @@ def init(session_id: str) -> bool:
         return False
 
 
-def _read_json(path: Path) -> Any:
-    try:
-        return json.loads(path.read_text())
-    except (FileNotFoundError, json.JSONDecodeError, OSError):
+def _read_json(workspace: Workspace, key: str) -> Any:
+    if not workspace.exists(key):
         return None
+    try:
+        return workspace.read_json(key)
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
+def _state_workspace(repo_path: str, run_dir: str | None) -> Workspace:
+    if run_dir:
+        return LocalFilesystemWorkspace(Path(run_dir) / "state")
+    return LocalFilesystemWorkspace(Path(repo_path) / STATE_DIR)
 
 
 def push_subgraph_trace(node_id: str, repo_path: str, run_dir: str | None = None) -> None:
@@ -51,16 +61,13 @@ def push_subgraph_trace(node_id: str, repo_path: str, run_dir: str | None = None
     if not _client:
         return
 
-    if run_dir:
-        sd = Path(run_dir) / "state"
-    else:
-        sd = Path(repo_path) / STATE_DIR
+    ws = _state_workspace(repo_path, run_dir)
 
     # Map node pairs to a single subgraph trace (only push on verifier completion)
     traces = {
-        "scanner_verifier": lambda: _scanner_trace(sd),
-        "threat_verifier": lambda: _threat_trace(sd),
-        "parallel_verifier": lambda: _parallel_traces(sd),
+        "scanner_verifier": lambda: _scanner_trace(ws),
+        "threat_verifier": lambda: _threat_trace(ws),
+        "parallel_verifier": lambda: _parallel_traces(ws),
     }
 
     builder = traces.get(node_id)
@@ -83,8 +90,8 @@ def push_subgraph_trace(node_id: str, repo_path: str, run_dir: str | None = None
         logger.warning("Failed to push subgraph trace for %s: %s", node_id, e)
 
 
-def _scanner_trace(sd: Path):
-    output = _read_json(sd / "scanner_context.json")
+def _scanner_trace(ws: Workspace):
+    output = _read_json(ws, "scanner_context.json")
     return (
         "scanner",
         {"task": "Analyze repository and extract project context"},
@@ -93,9 +100,9 @@ def _scanner_trace(sd: Path):
     )
 
 
-def _threat_trace(sd: Path):
-    scanner_ctx = _read_json(sd / "scanner_context.json")
-    threats = _read_json(sd / "threats.json")
+def _threat_trace(ws: Workspace):
+    scanner_ctx = _read_json(ws, "scanner_context.json")
+    threats = _read_json(ws, "threats.json")
     return (
         "threat-generation",
         scanner_ctx,
@@ -104,12 +111,12 @@ def _threat_trace(sd: Path):
     )
 
 
-def _parallel_traces(sd: Path):
-    threats = _read_json(sd / "threats.json")
-    scanner_ctx = _read_json(sd / "scanner_context.json")
-    trees = _read_json(sd / "attack_trees.json")
-    mappings = _read_json(sd / "ttp_mappings.json")
-    mitigations = _read_json(sd / "mitigations.json")
+def _parallel_traces(ws: Workspace):
+    threats = _read_json(ws, "threats.json")
+    scanner_ctx = _read_json(ws, "scanner_context.json")
+    trees = _read_json(ws, "attack_trees.json")
+    mappings = _read_json(ws, "ttp_mappings.json")
+    mitigations = _read_json(ws, "mitigations.json")
     return [
         (
             "attack-tree-generation",
@@ -152,12 +159,9 @@ def push_ttp_dataset_items(repo_path: str, dataset_name: str = "ttp-mappings", r
     if not _client:
         return 0
 
-    if run_dir:
-        sd = Path(run_dir) / "state"
-    else:
-        sd = Path(repo_path) / STATE_DIR
-    trees_data = _read_json(sd / "attack_trees.json") or {}
-    mappings_data = _read_json(sd / "ttp_mappings.json") or {}
+    ws = _state_workspace(repo_path, run_dir)
+    trees_data = _read_json(ws, "attack_trees.json") or {}
+    mappings_data = _read_json(ws, "ttp_mappings.json") or {}
 
     # Build step lookup: id → {title, description}
     steps = {}
