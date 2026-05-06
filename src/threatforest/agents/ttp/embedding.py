@@ -4,10 +4,8 @@ Not an LLM. Uses the existing TTCMatcher to embed attack steps and
 find top-K technique candidates via cosine similarity.
 """
 
-import json
-from pathlib import Path
-
 from threatforest.agents.scanner.agent import STATE_DIR, resolve_state_dir
+from threatforest.workspace import LocalFilesystemWorkspace
 
 
 STATE_FILE = "ttp_candidates.json"
@@ -19,11 +17,11 @@ def run_ttp_embedding(repo_path: str, top_k: int = 3, run_dir: str | None = None
     Returns the state file path.
     """
     state_dir = resolve_state_dir(repo_path, run_dir)
-    trees_file = state_dir / "attack_trees.json"
+    workspace = LocalFilesystemWorkspace(state_dir)
     out_file = state_dir / STATE_FILE
 
     # Load attack steps from trees
-    trees_data = json.loads(trees_file.read_text())
+    trees_data = workspace.read_json("attack_trees.json")
     steps = []
     step_ids = []
     for tree in trees_data.get("attack_trees", []):
@@ -32,7 +30,7 @@ def run_ttp_embedding(repo_path: str, top_k: int = 3, run_dir: str | None = None
             step_ids.append(step.get("id", ""))
 
     if not steps:
-        out_file.write_text(json.dumps({"ttp_candidates": []}))
+        workspace.write_json(STATE_FILE, {"ttp_candidates": []})
         return str(out_file)
 
     # Use existing matcher infrastructure
@@ -65,7 +63,7 @@ def run_ttp_embedding(repo_path: str, top_k: int = 3, run_dir: str | None = None
             ],
         })
 
-    out_file.write_text(json.dumps({"ttp_candidates": candidates}, indent=2))
+    workspace.write_json(STATE_FILE, {"ttp_candidates": candidates})
 
     # Write slim top-1 summary for the reviewer
     summary = []
@@ -78,8 +76,6 @@ def run_ttp_embedding(repo_path: str, top_k: int = 3, run_dir: str | None = None
             "technique_name": top1.get("technique_name", ""),
             "similarity_score": top1.get("similarity_score", 0),
         })
-    (state_dir / "ttp_top1_summary.json").write_text(
-        json.dumps({"ttp_top1": summary}, indent=2)
-    )
+    workspace.write_json("ttp_top1_summary.json", {"ttp_top1": summary})
 
     return str(out_file)

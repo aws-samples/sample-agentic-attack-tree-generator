@@ -4,9 +4,9 @@ Checks that every attack step in every tree has exactly one final TTP mapping.
 """
 
 import json
-from pathlib import Path
 
 from threatforest.agents.scanner.agent import STATE_DIR, resolve_state_dir
+from threatforest.workspace import LocalFilesystemWorkspace
 
 
 def verify_ttp_coverage(repo_path: str, run_dir: str | None = None) -> tuple[bool, str]:
@@ -15,18 +15,16 @@ def verify_ttp_coverage(repo_path: str, run_dir: str | None = None) -> tuple[boo
     Returns:
         (passed, feedback)
     """
-    state_dir = resolve_state_dir(repo_path, run_dir)
-    trees_file = state_dir / "attack_trees.json"
-    mappings_file = state_dir / "ttp_mappings.json"
+    workspace = LocalFilesystemWorkspace(resolve_state_dir(repo_path, run_dir))
 
-    if not trees_file.exists():
+    if not workspace.exists("attack_trees.json"):
         return False, "attack_trees.json does not exist"
-    if not mappings_file.exists():
+    if not workspace.exists("ttp_mappings.json"):
         return False, "ttp_mappings.json does not exist"
 
     try:
-        trees_data = json.loads(trees_file.read_text())
-        raw = mappings_file.read_text()
+        trees_data = workspace.read_json("attack_trees.json")
+        raw = workspace.read_text("ttp_mappings.json")
         raw = raw.replace(",\n]", "\n]").replace(",]", "]")
         mappings_data = json.loads(raw)
     except (json.JSONDecodeError, OSError) as e:
