@@ -12,7 +12,6 @@ Idempotent — re-running on the same state produces the same output.
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 from threatforest.agents.scanner.agent import resolve_state_dir
 from threatforest.agents.probability.prior import factor_prior
@@ -21,14 +20,15 @@ from threatforest.agents.probability.posterior import (
     detect_tech_stack_mismatch,
     update_posterior,
 )
+from threatforest.workspace import LocalFilesystemWorkspace, Workspace
 
 
-def _load_json(path: Path) -> dict:
-    if not path.exists():
+def _load_json(workspace: Workspace, key: str) -> dict:
+    if not workspace.exists(key):
         return {}
     try:
         # Tolerate trailing commas the mitigation state sometimes ends up with.
-        raw = path.read_text().replace(",\n]", "\n]").replace(",]", "]")
+        raw = workspace.read_text(key).replace(",\n]", "\n]").replace(",]", "]")
         return json.loads(raw) or {}
     except (json.JSONDecodeError, OSError):
         return {}
@@ -95,18 +95,19 @@ def run_probability_stage(repo_path: str, run_dir: str | None = None) -> str:
     Returns a short status string for the orchestrator logs.
     """
     state_dir = resolve_state_dir(repo_path, run_dir)
-    tree_path = state_dir / "attack_trees.json"
-    if not tree_path.exists():
+    workspace = LocalFilesystemWorkspace(state_dir)
+    tree_key = "attack_trees.json"
+    if not workspace.exists(tree_key):
         return "probability: no attack_trees.json to process"
 
-    tree_blob = _load_json(tree_path)
+    tree_blob = _load_json(workspace, tree_key)
     trees = tree_blob.get("attack_trees", [])
     if not trees:
         return "probability: no trees to process"
 
-    ttp_blob = _load_json(state_dir / "ttp_mappings.json")
-    mit_blob = _load_json(state_dir / "mitigations.json")
-    scanner_blob = _load_json(state_dir / "scanner_context.json")
+    ttp_blob = _load_json(workspace, "ttp_mappings.json")
+    mit_blob = _load_json(workspace, "mitigations.json")
+    scanner_blob = _load_json(workspace, "scanner_context.json")
 
     ttp_by_step = _index_by_step(ttp_blob.get("ttp_mappings", []), id_key="attack_step_id")
     mitigations_by_step = _index_by_step(mit_blob.get("mitigations", []), id_key="attack_step_id")
@@ -115,7 +116,7 @@ def run_probability_stage(repo_path: str, run_dir: str | None = None) -> str:
     compute_probabilities(trees, ttp_by_step, mitigations_by_step, tech_stack=tech_stack)
 
     tree_blob["attack_trees"] = trees
-    tree_path.write_text(json.dumps(tree_blob, indent=2))
+    workspace.write_json(tree_key, tree_blob)
 
     total_steps = sum(len(t.get("steps", [])) for t in trees)
     return f"probability: scored {total_steps} steps across {len(trees)} trees"

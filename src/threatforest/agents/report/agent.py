@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from threatforest.agents.scanner.agent import STATE_DIR, resolve_state_dir
+from threatforest.workspace import LocalFilesystemWorkspace, Workspace
 
 OUTPUT_DIR = ".threatforest/output"  # legacy default, overridden by run_dir
 OUTPUT_FILE = "threat_model_report.md"
@@ -22,10 +23,9 @@ def _resolve_output_dir(repo_path: str, run_dir: str | None = None) -> Path:
     return od
 
 
-def _read_json(path: Path) -> dict:
+def _read_json(workspace: Workspace, key: str) -> dict:
     try:
-        raw = path.read_text()
-        raw = raw.replace(",\n]", "\n]").replace(",]", "]")
+        raw = workspace.read_text(key).replace(",\n]", "\n]").replace(",]", "]")
         return json.loads(raw)
     except (FileNotFoundError, json.JSONDecodeError, OSError):
         return {}
@@ -35,12 +35,13 @@ def run_report_generator(repo_path: str, run_dir: str | None = None) -> str:
     """Generate the threat model report from state files. No LLM needed."""
     state_dir = resolve_state_dir(repo_path, run_dir)
     output_dir = _resolve_output_dir(repo_path, run_dir)
+    state_ws = LocalFilesystemWorkspace(state_dir)
 
-    scanner = _read_json(state_dir / "scanner_context.json")
-    threats_data = _read_json(state_dir / "threats.json")
-    trees_data = _read_json(state_dir / "attack_trees.json")
-    mappings_data = _read_json(state_dir / "ttp_mappings.json")
-    mitigations_data = _read_json(state_dir / "mitigations.json")
+    scanner = _read_json(state_ws, "scanner_context.json")
+    threats_data = _read_json(state_ws, "threats.json")
+    trees_data = _read_json(state_ws, "attack_trees.json")
+    mappings_data = _read_json(state_ws, "ttp_mappings.json")
+    mitigations_data = _read_json(state_ws, "mitigations.json")
 
     threats = threats_data.get("threats", [])
     trees = trees_data.get("attack_trees", [])
@@ -178,7 +179,7 @@ def run_report_generator(repo_path: str, run_dir: str | None = None) -> str:
     lines.append("")
 
     report = "\n".join(lines)
-    (output_dir / OUTPUT_FILE).write_text(report)
+    LocalFilesystemWorkspace(output_dir).write_text(OUTPUT_FILE, report)
 
     # Generate HTML dashboard and registry metadata
     _generate_html_dashboard(repo_path, run_dir=run_dir)
@@ -261,7 +262,7 @@ def _steps_to_mermaid(steps: list, mappings_by_step: dict, root_goal: str) -> st
     return "\n".join(lines)
 
 
-def _build_attack_trees_for_ui(state_dir: Path, threats: list) -> list:
+def _build_attack_trees_for_ui(state_ws: Workspace, threats: list) -> list:
     """Build attack_trees array in the format the web UI expects."""
     import json as _json
 
@@ -270,25 +271,25 @@ def _build_attack_trees_for_ui(state_dir: Path, threats: list) -> list:
     mitigations_by_step = {}
 
     try:
-        tree_data = _json.loads((state_dir / "attack_trees.json").read_text()).get("attack_trees", [])
-    except (FileNotFoundError, _json.JSONDecodeError):
+        tree_data = state_ws.read_json("attack_trees.json").get("attack_trees", [])
+    except (FileNotFoundError, _json.JSONDecodeError, OSError):
         tree_data = []
 
     try:
-        raw = (state_dir / "ttp_mappings.json").read_text().replace(",\n]", "\n]").replace(",]", "]")
+        raw = state_ws.read_text("ttp_mappings.json").replace(",\n]", "\n]").replace(",]", "]")
         for m in _json.loads(raw).get("ttp_mappings", []):
             mappings_by_step[m.get("attack_step_id", "")] = m
-    except (FileNotFoundError, _json.JSONDecodeError):
+    except (FileNotFoundError, _json.JSONDecodeError, OSError):
         pass
 
     try:
-        raw = (state_dir / "mitigations.json").read_text().replace(",\n]", "\n]").replace(",]", "]")
+        raw = state_ws.read_text("mitigations.json").replace(",\n]", "\n]").replace(",]", "]")
         for m in _json.loads(raw).get("mitigations", []):
             sid = m.get("attack_step_id", "")
             mitigations_by_step[sid] = m
             for also in m.get("also_applies_to", []):
                 mitigations_by_step[also] = m
-    except (FileNotFoundError, _json.JSONDecodeError):
+    except (FileNotFoundError, _json.JSONDecodeError, OSError):
         pass
 
     # Map threat_id to threat data
@@ -442,14 +443,11 @@ def _build_short_summary(
 def _generate_html_dashboard(repo_path: str, run_dir: str | None = None) -> None:
     """Wrap the markdown report in an HTML dashboard and write registry metadata."""
     output_dir = _resolve_output_dir(repo_path, run_dir)
-    state_dir = resolve_state_dir(repo_path, run_dir)
-    md_file = output_dir / OUTPUT_FILE
+    state_ws = LocalFilesystemWorkspace(resolve_state_dir(repo_path, run_dir))
+    output_ws = LocalFilesystemWorkspace(output_dir)
 
-    if not md_file.exists():
+    if not output_ws.exists(OUTPUT_FILE):
         return
-
-    # --- Write registry metadata to .threatforest/output/ ---
-    registry_dir = output_dir  # same as .threatforest/output/
 
     import json as _json
 
@@ -460,15 +458,15 @@ def _generate_html_dashboard(repo_path: str, run_dir: str | None = None) -> None
     scanner_ctx = {}
 
     try:
-        scanner_ctx = _json.loads((state_dir / "scanner_context.json").read_text())
-    except (FileNotFoundError, _json.JSONDecodeError):
+        scanner_ctx = state_ws.read_json("scanner_context.json")
+    except (FileNotFoundError, _json.JSONDecodeError, OSError):
         pass
 
     try:
-        threats = _json.loads((state_dir / "threats.json").read_text()).get("threats", [])
+        threats = state_ws.read_json("threats.json").get("threats", [])
         threat_count = len(threats)
         high_sev = sum(1 for t in threats if t.get("priority", t.get("severity", "")).lower() in ("critical", "high"))
-    except (FileNotFoundError, _json.JSONDecodeError):
+    except (FileNotFoundError, _json.JSONDecodeError, OSError):
         pass
 
     project_name = Path(repo_path).name
@@ -499,7 +497,7 @@ def _generate_html_dashboard(repo_path: str, run_dir: str | None = None) -> None
             "high_severity_count": high_sev,
         },
         "threats": threats,
-        "attack_trees": _build_attack_trees_for_ui(state_dir, threats),
+        "attack_trees": _build_attack_trees_for_ui(state_ws, threats),
         "scanner_context": scanner_ctx,
     }
     # Count total mappings
@@ -509,6 +507,6 @@ def _generate_html_dashboard(repo_path: str, run_dir: str | None = None) -> None
         "total_mappings": total_mappings,
     }
 
-    (registry_dir / "threatforest_data.json").write_text(_json.dumps(metadata, indent=2))
+    output_ws.write_json("threatforest_data.json", metadata)
 
 

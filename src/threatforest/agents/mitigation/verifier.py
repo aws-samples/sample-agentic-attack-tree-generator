@@ -1,9 +1,9 @@
 """Mitigation Verifier — deterministic quality checks on mitigations."""
 
 import json
-from pathlib import Path
 
 from threatforest.agents.scanner.agent import STATE_DIR, resolve_state_dir
+from threatforest.workspace import LocalFilesystemWorkspace
 
 BOILERPLATE = {
     "implement proper access controls",
@@ -24,21 +24,18 @@ def verify_mitigation_output(repo_path: str, run_dir: str | None = None) -> tupl
     Returns:
         (passed, feedback)
     """
-    state_dir = resolve_state_dir(repo_path, run_dir)
-    mit_file = state_dir / "mitigations.json"
-    trees_file = state_dir / "attack_trees.json"
+    workspace = LocalFilesystemWorkspace(resolve_state_dir(repo_path, run_dir))
 
-    if not mit_file.exists():
+    if not workspace.exists("mitigations.json"):
         return False, "mitigations.json does not exist"
-    if not trees_file.exists():
+    if not workspace.exists("attack_trees.json"):
         return False, "attack_trees.json does not exist"
 
     try:
-        raw = mit_file.read_text()
         # Fix trailing commas from JSONL append pattern
-        raw = raw.replace(",\n]", "\n]").replace(",]", "]")
+        raw = workspace.read_text("mitigations.json").replace(",\n]", "\n]").replace(",]", "]")
         mit_data = json.loads(raw)
-        trees_data = json.loads(trees_file.read_text())
+        trees_data = workspace.read_json("attack_trees.json")
     except (json.JSONDecodeError, OSError) as e:
         return False, f"Failed to read state files: {e}"
 
@@ -46,10 +43,9 @@ def verify_mitigation_output(repo_path: str, run_dir: str | None = None) -> tupl
 
     # Collect step IDs that have TTP mappings (only these can have mitigations)
     all_step_ids = set()
-    mappings_file = state_dir / "ttp_mappings.json"
-    if mappings_file.exists():
+    if workspace.exists("ttp_mappings.json"):
         try:
-            mappings_data = json.loads(mappings_file.read_text())
+            mappings_data = workspace.read_json("ttp_mappings.json")
             for m in mappings_data.get("ttp_mappings", []):
                 sid = m.get("attack_step_id", "")
                 if sid:
