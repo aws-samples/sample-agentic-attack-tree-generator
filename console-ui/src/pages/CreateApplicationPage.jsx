@@ -138,7 +138,7 @@ export default function CreateApplicationPage() {
                   setName(detail.value);
                   if (detail.value.trim()) setNameError('');
                 }}
-                placeholder="e.g. LAMS M2M"
+                placeholder="e.g. Payments API"
               />
             </FormField>
 
