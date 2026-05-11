@@ -24,6 +24,17 @@ ThreatForest needs at least one of:
 
 The more context you provide, the more accurate the threat model will be — but a single README is enough to get started.
 
+## Business Context
+
+When you create an application in the web console, the wizard captures business context alongside the project path:
+
+- **Description** — short summary of what the application does
+- **Regulatory frameworks** — e.g. SOC2, HIPAA, PCI-DSS
+- **Data sensitivity** — public, internal, confidential, PII
+- **Main CIA risk** — confidentiality, integrity, or availability
+
+This context is fed to the scanner agent and steers threat generation toward what actually matters for your application. It's worth filling in — generic threats are less useful than ones grounded in your compliance and data context.
+
 ## Project Structure Examples
 
 ### Minimal

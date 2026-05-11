@@ -23,13 +23,16 @@ project/
         └── threatforest_data.json        # JSON export
 ```
 
-## Interactive Dashboard ⭐ PRIMARY INTERFACE
+## Exploring Results in the Web Console ⭐ PRIMARY INTERFACE
 
-The HTML dashboard is your main way to explore results.
+The web console is your main way to explore results.
 
-### Opening the Dashboard
+- **Threat Model Summary** — lists every threat for a run with severity and category. Open it from the application overview by clicking a version.
+- **Version Detail** — click a threat from the summary to view its attack tree, MITRE ATT&CK mappings, and mitigations.
 
-The web console links directly to the dashboard from the run results page. Or open it manually:
+### Standalone HTML Dashboard
+
+Each run also produces a self-contained HTML dashboard you can share or open offline:
 
 ```bash
 # Mac
@@ -244,7 +247,7 @@ print(f"Unique MITRE techniques: {len(techniques)}")
 
 ## Analysis Report
 
-**File:** `threatforest_analysis_report.md`
+**File:** `threat_model_report.md`
 
 **Purpose:** Executive summary with key findings and statistics.
 

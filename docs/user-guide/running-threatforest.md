@@ -21,11 +21,18 @@ threatforest --host 0.0.0.0       # bind to all interfaces
 
 ### Pages
 
-#### Applications
-Lists all discovered projects from your home directory and the included `sample-applications/`. Select a project to view its runs and results.
+#### Home
+Lists your applications as cards and surfaces any paused runs that can be resumed. Click **Add application** to register a new one — name, project path, and business context are captured up front.
+
+#### Application Overview
+Shows the application's threat models (one per run) plus its business context and project path. From here you can:
+
+- **New run** — start an analysis for this application
+- Edit the **project path** when the repository moves or is renamed; on-disk run history stays attached
+- Open a past version, or **delete** a version you no longer need
 
 #### New Run
-Start a new analysis for the selected application. Specify the project path and click **Start Analysis**.
+Confirms the application's project path and business context, then starts the pipeline. The application's saved context flows straight into the scanner.
 
 #### Run Progress
 Live view of the pipeline as it executes — shows each stage completing in real time:
@@ -35,8 +42,8 @@ Live view of the pipeline as it executes — shows each stage completing in real
 3. **Parallel Pipeline** — attack trees, TTP mapping, mitigations (all threats run concurrently)
 4. **Report Generator** — compiles final outputs
 
-#### Application Detail / Version Detail
-Browse past runs, view generated attack trees, MITRE ATT&CK mappings, and mitigations.
+#### Threat Model Summary / Version Detail
+The summary lists all threats for a run with severity and category. Click a threat to open the version detail view — attack tree, MITRE ATT&CK mappings, and mitigations.
 
 #### Configure
 Set your LLM provider credentials and Langfuse tracing without touching the config file. See [Configuration](../getting-started/configuration.md).
