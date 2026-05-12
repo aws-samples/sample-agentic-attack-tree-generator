@@ -21,7 +21,7 @@ import CloudscapeShell from '../components/CloudscapeShell';
 import ExportButton from '../components/ExportButton';
 import { aggregateMitigations } from '../utils/mitigation-aggregator';
 import { renderFormattedText } from '../utils/text-formatter';
-import { getApplication, getApplicationVersions } from '../api-client';
+import { getApplication, getApplicationVersions, getFrameworks } from '../api-client';
 
 const PRIORITY_COLORS = { 1: 'red', 2: 'red', 3: 'blue', high: 'red', critical: 'red', medium: 'blue', low: 'grey' };
 
@@ -74,6 +74,100 @@ function InterviewerSummarySections({ text }) {
         );
       })}
     </SpaceBetween>
+  );
+}
+
+function formatDuration(seconds) {
+  if (seconds == null) return '—';
+  if (seconds < 60) return `${Math.round(seconds)} s`;
+  const minutes = Math.floor(seconds / 60);
+  const remaining = Math.round(seconds - minutes * 60);
+  if (minutes < 60) return remaining ? `${minutes} m ${remaining} s` : `${minutes} m`;
+  const hours = Math.floor(minutes / 60);
+  const restMin = minutes - hours * 60;
+  return restMin ? `${hours} h ${restMin} m` : `${hours} h`;
+}
+
+function formatStartedAt(iso) {
+  if (!iso) return '—';
+  try {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  } catch {
+    return iso;
+  }
+}
+
+/**
+ * Map a Bedrock / Anthropic model ID to a human-friendly label.
+ *
+ *   global.anthropic.claude-opus-4-7   → Claude Opus 4.7
+ *   anthropic.claude-sonnet-4-6-...    → Claude Sonnet 4.6
+ *   us.anthropic.claude-haiku-4-5      → Claude Haiku 4.5
+ *
+ * Falls back to the raw id when the pattern doesn't match.
+ */
+function friendlyModelName(id) {
+  if (!id) return '';
+  const match = id.match(/claude-(opus|sonnet|haiku)-(\d+)-(\d+)/i);
+  if (!match) return id;
+  const family = match[1].charAt(0).toUpperCase() + match[1].slice(1).toLowerCase();
+  return `Claude ${family} ${match[2]}.${match[3]}`;
+}
+
+function buildRunMetaParts(meta, frameworkCatalog) {
+  const keys = meta?.frameworks || [];
+  const frameworkNames = keys.length
+    ? keys.map((k) => frameworkCatalog?.[k]?.name || k)
+    : [];
+  let frameworksLabel;
+  if (frameworkNames.length === 0) {
+    frameworksLabel = 'all frameworks';
+  } else if (frameworkNames.length <= 2) {
+    frameworksLabel = frameworkNames.join(', ');
+  } else {
+    frameworksLabel = `${frameworkNames[0]} + ${frameworkNames.length - 1} more`;
+  }
+  return {
+    model: friendlyModelName(meta?.model_id),
+    started: formatStartedAt(meta?.started_at),
+    duration: meta?.duration_seconds != null ? formatDuration(meta.duration_seconds) : null,
+    frameworks: frameworksLabel,
+    frameworkNames,
+  };
+}
+
+function RunMetaBar({ meta, frameworkCatalog }) {
+  if (!meta) return null;
+  const p = buildRunMetaParts(meta, frameworkCatalog);
+  return (
+    <ExpandableSection
+      variant="container"
+      headerText="Run metadata"
+    >
+      <ColumnLayout columns={4} variant="text-grid">
+        <div>
+          <Box variant="awsui-key-label">Model</Box>
+          <div>{p.model || '—'}</div>
+        </div>
+        <div>
+          <Box variant="awsui-key-label">Started</Box>
+          <div>{p.started}</div>
+        </div>
+        <div>
+          <Box variant="awsui-key-label">Duration</Box>
+          <div>{p.duration ?? '—'}</div>
+        </div>
+        <div>
+          <Box variant="awsui-key-label">Frameworks</Box>
+          <div>
+            {p.frameworkNames.length ? p.frameworkNames.join(', ') : 'all frameworks'}
+          </div>
+        </div>
+      </ColumnLayout>
+    </ExpandableSection>
   );
 }
 
@@ -767,6 +861,7 @@ export default function ThreatModelSummaryPage() {
   const [versionLabel, setVersionLabel] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [frameworkCatalog, setFrameworkCatalog] = useState({});
 
   const activeTab = searchParams.get('tab') || 'application';
 
@@ -795,6 +890,16 @@ export default function ThreatModelSummaryPage() {
     fetchVersion();
     return () => { cancelled = true; };
   }, [appId, versionId, persistentAppLoaded]);
+
+  // Load the framework catalog once so we can render run_metadata.frameworks
+  // with friendly names (e.g. "MITRE ATT&CK Enterprise") instead of keys.
+  useEffect(() => {
+    let cancelled = false;
+    getFrameworks()
+      .then((d) => { if (!cancelled && d?.frameworks) setFrameworkCatalog(d.frameworks); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   // Authoritative app name from the persistent record. Wins over any name
   // embedded in run-data. If the record is missing (legacy folder-derived
@@ -922,6 +1027,7 @@ export default function ThreatModelSummaryPage() {
               },
             ]}
           />
+          <RunMetaBar meta={data?.run_metadata} frameworkCatalog={frameworkCatalog} />
         </SpaceBetween>
       ) : null}
     </CloudscapeShell>
