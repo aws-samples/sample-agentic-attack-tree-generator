@@ -120,23 +120,17 @@ export function NodePopoverContent({ data }) {
         </ExpandableSection>
       )}
 
-      {/* Mitigations — each one is collapsible with name as header */}
+      {/* Mitigations — title-only list. Full implementation guidance lives on
+          the per-threat mitigations table; the side panel stays scannable. */}
       {hasMitigations && (
         <ExpandableSection headerText={`🛡️ Mitigations (${mitigations.length})`} defaultExpanded={false}>
-          <SpaceBetween size="s">
+          <ul style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
             {mitigations.map((mit, idx) => (
-              <ExpandableSection
-                key={idx}
-                headerText={mit.name || mit.mitigation || `Mitigation ${idx + 1}`}
-                variant="footer"
-                defaultExpanded={false}
-              >
-                <Box variant="small" color="text-body-secondary">
-                  {mit.description || mit.details || 'No details available.'}
-                </Box>
-              </ExpandableSection>
+              <li key={idx} style={{ fontSize: '13px' }}>
+                {mit.name || mit.mitigation || `Mitigation ${idx + 1}`}
+              </li>
             ))}
-          </SpaceBetween>
+          </ul>
         </ExpandableSection>
       )}
 

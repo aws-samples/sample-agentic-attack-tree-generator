@@ -13,6 +13,7 @@ import Link from '@cloudscape-design/components/link';
 import Popover from '@cloudscape-design/components/popover';
 import Tabs from '@cloudscape-design/components/tabs';
 import ExpandableSection from '@cloudscape-design/components/expandable-section';
+import CopyToClipboard from '@cloudscape-design/components/copy-to-clipboard';
 import Select from '@cloudscape-design/components/select';
 import FormField from '@cloudscape-design/components/form-field';
 import Grid from '@cloudscape-design/components/grid';
@@ -21,6 +22,7 @@ import CloudscapeShell from '../components/CloudscapeShell';
 import ExportButton from '../components/ExportButton';
 import { aggregateMitigations } from '../utils/mitigation-aggregator';
 import { renderFormattedText } from '../utils/text-formatter';
+import { mitigationToMarkdown } from '../utils/mitigation-markdown';
 import { getApplication, getApplicationVersions, getFrameworks } from '../api-client';
 import { buildTechniqueUrl } from '../utils/technique-url';
 
@@ -385,9 +387,19 @@ function MitigationsTab({ attackTrees, threats }) {
           <div>{item.name}</div>
           {item.description && (
             <ExpandableSection headerText="Implementation guidance" variant="footer">
-              <div style={{ lineHeight: '1.6', color: '#414d5c' }}>
-                {renderFormattedText(item.description)}
-              </div>
+              <SpaceBetween size="xs">
+                <div style={{ lineHeight: '1.6', color: '#414d5c' }}>
+                  {renderFormattedText(item.description)}
+                </div>
+                <CopyToClipboard
+                  variant="button"
+                  copyButtonText="Copy as Markdown"
+                  textToCopy={mitigationToMarkdown(item)}
+                  copyButtonAriaLabel={`Copy ${item.name} as Markdown`}
+                  copySuccessText="Copied to clipboard"
+                  copyErrorText="Failed to copy"
+                />
+              </SpaceBetween>
             </ExpandableSection>
           )}
         </div>

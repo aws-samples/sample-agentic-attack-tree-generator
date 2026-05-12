@@ -32,8 +32,9 @@ export function renderInlineFormatting(text, keyPrefix) {
 export function renderFormattedText(text) {
   if (!text) return null;
 
-  // Try to split on numbered steps: "1. ... 2. ... 3. ..."
-  const numberedParts = text.split(/(?:^|\s)(\d+)\.\s+/);
+  // Try to split on numbered steps. Handles both "1. ..." and "1) ..." styles
+  // because the mitigation LLM tends to use the parenthesis form.
+  const numberedParts = text.split(/(?:^|\s)(\d+)[.)]\s+/);
 
   // If we found numbered steps (at least 2 items), render as ordered list
   if (numberedParts.length >= 5) {

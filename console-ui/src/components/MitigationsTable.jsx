@@ -10,6 +10,7 @@ import SpaceBetween from '@cloudscape-design/components/space-between';
 import Grid from '@cloudscape-design/components/grid';
 import Popover from '@cloudscape-design/components/popover';
 import ExpandableSection from '@cloudscape-design/components/expandable-section';
+import CopyToClipboard from '@cloudscape-design/components/copy-to-clipboard';
 import { aggregateMitigations } from '../utils/mitigation-aggregator';
 import { buildTechniqueUrl } from '../utils/technique-url';
 import {
@@ -18,6 +19,7 @@ import {
   getUniqueMitigationNames,
 } from '../utils/mitigation-filter';
 import { renderFormattedText } from '../utils/text-formatter';
+import { mitigationToMarkdown } from '../utils/mitigation-markdown';
 
 const PRIORITY_COLORS = { 1: 'red', 2: 'red', 3: 'blue', high: 'red', critical: 'red', medium: 'blue', low: 'grey' };
 
@@ -61,9 +63,19 @@ const COLUMN_DEFINITIONS = [
         <div>{item.name}</div>
         {item.description && (
           <ExpandableSection headerText="Implementation guidance" variant="footer">
-            <div style={{ lineHeight: '1.6', color: '#414d5c' }}>
-              {renderFormattedText(item.description)}
-            </div>
+            <SpaceBetween size="xs">
+              <div style={{ lineHeight: '1.6', color: '#414d5c' }}>
+                {renderFormattedText(item.description)}
+              </div>
+              <CopyToClipboard
+                variant="button"
+                copyButtonText="Copy as Markdown"
+                textToCopy={mitigationToMarkdown(item)}
+                copyButtonAriaLabel={`Copy ${item.name} as Markdown`}
+                copySuccessText="Copied to clipboard"
+                copyErrorText="Failed to copy"
+              />
+            </SpaceBetween>
           </ExpandableSection>
         )}
       </div>
