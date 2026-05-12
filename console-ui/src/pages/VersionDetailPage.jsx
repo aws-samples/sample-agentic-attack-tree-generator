@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ColumnLayout from '@cloudscape-design/components/column-layout';
 import Box from '@cloudscape-design/components/box';
@@ -69,6 +69,21 @@ export default function VersionDetailPage() {
   const [versionLabel, setVersionLabel] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // Bumped each time the user clicks an attack-step badge in the mitigations
+  // table so the AttackFlowViewer pans/highlights the matching node. Pairs the
+  // step id with a counter so clicking the *same* step twice still re-fires
+  // the focus effect (otherwise React would skip the second re-render).
+  const [focusRequest, setFocusRequest] = useState({ stepId: null, ts: 0 });
+  // Anchor for scrolling the attack-tree viewer into view when the user
+  // clicks a step badge while scrolled below it.
+  const attackTreeAnchorRef = useRef(null);
+
+  function handleFocusStep(stepId) {
+    if (attackTreeAnchorRef.current) {
+      attackTreeAnchorRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    setFocusRequest({ stepId, ts: Date.now() });
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -178,7 +193,7 @@ export default function VersionDetailPage() {
           }>{threatLabel}</Header>
           {selectedTree && <ThreatDetailsBar tree={selectedTree} />}
           {selectedTree && (
-            <div>
+            <div ref={attackTreeAnchorRef}>
               <Header variant="h3">Attack Tree</Header>
               <Box variant="p" color="text-status-inactive" fontSize="body-s" margin={{ bottom: 'xs' }}>
                 Click any node to view and edit its properties in the right panel.
@@ -188,11 +203,16 @@ export default function VersionDetailPage() {
                 borderRadius: 8,
                 overflow: 'hidden',
               }}>
-                <AttackFlowViewer attackTree={selectedTree} />
+                <AttackFlowViewer attackTree={selectedTree} focusRequest={focusRequest} />
               </div>
             </div>
           )}
-          {selectedTree && <MitigationsTable attackTree={selectedTree} />}
+          {selectedTree && (
+            <MitigationsTable
+              attackTree={selectedTree}
+              onFocusStep={handleFocusStep}
+            />
+          )}
           {!selectedTree && (
             <Box color="text-status-inactive" textAlign="center" padding="l">
               Attack tree not found for this threat.

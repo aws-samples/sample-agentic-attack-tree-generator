@@ -6,6 +6,7 @@ import {
   MiniMap,
   ReactFlowProvider,
   applyNodeChanges,
+  useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import Box from '@cloudscape-design/components/box';
@@ -19,6 +20,35 @@ import { parseClassDefs, adaptToReactFlow } from '../utils/react-flow-adapter';
 const nodeTypes = { attackTreeNode: ActionNode };
 
 /**
+ * Side-effect-only child that lives inside ReactFlowProvider so it can use
+ * useReactFlow(). When `focusRequest` changes (the user clicked an attack-step
+ * badge in the mitigations table) it pans the viewport to the matching node,
+ * temporarily marks it as selected so it draws with the highlight ring, and
+ * surfaces it on the right-side PropertiesPanel.
+ *
+ * Matching is done on `data.nodeId` (the AT-prefixed step id from the source
+ * tree) rather than the ReactFlow internal node id, because the badges in the
+ * mitigations table carry the source step id.
+ */
+function FocusController({ focusRequest, nodes, onSelectNode, onMarkSelected }) {
+  const { fitView } = useReactFlow();
+  useEffect(() => {
+    if (!focusRequest?.stepId || !nodes.length) return;
+    const target = nodes.find((n) => n.data?.nodeId === focusRequest.stepId);
+    if (!target) return;
+    fitView({
+      nodes: [{ id: target.id }],
+      duration: 600,
+      padding: 0.4,
+      maxZoom: 1.2,
+    });
+    if (target.data) onSelectNode(target.data);
+    onMarkSelected(target.id);
+  }, [focusRequest, nodes, fitView, onSelectNode, onMarkSelected]);
+  return null;
+}
+
+/**
  * AttackFlowViewer — Attack Flow Builder-styled viewer with:
  * - Dark canvas with dot grid background
  * - Attack Flow-styled nodes (ActionNode)
@@ -26,7 +56,7 @@ const nodeTypes = { attackTreeNode: ActionNode };
  * - Click-to-select → properties update
  * - MiniMap for navigation
  */
-export default function AttackFlowViewer({ attackTree, onFlowFieldChange }) {
+export default function AttackFlowViewer({ attackTree, onFlowFieldChange, focusRequest }) {
   const wrapperRef = useRef(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [selectedNode, setSelectedNode] = useState(null);
@@ -229,6 +259,16 @@ export default function AttackFlowViewer({ attackTree, onFlowFieldChange }) {
         </div>
 
         <ReactFlowProvider>
+          <FocusController
+            focusRequest={focusRequest}
+            nodes={nodes}
+            onSelectNode={setSelectedNode}
+            onMarkSelected={(id) =>
+              setNodes((nds) =>
+                nds.map((n) => ({ ...n, selected: n.id === id }))
+              )
+            }
+          />
           <ReactFlow
             nodes={nodes}
             edges={edges}

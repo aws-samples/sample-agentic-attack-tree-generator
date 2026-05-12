@@ -5,13 +5,12 @@
  */
 
 /**
- * Build a lookup from attack_step identifier to a human-readable label.
- * Attack steps have node_id and description; the label used in the tree
- * is typically the short mermaid node label. Since we don't have the parsed
- * mermaid graph here, we use the attack_step's description or node_id as the label.
+ * Build a lookup from any attack-step identifier (node_id, label, description)
+ * to a tuple of {label, nodeId} so the aggregator can both display a friendly
+ * label *and* preserve the raw node_id needed to focus the ReactFlow viewer.
  *
  * @param {Array} attackSteps - The attack_steps array from the attack tree
- * @returns {Map<string, string>} Map from any identifier to the best display label
+ * @returns {Map<string, {label: string, nodeId: string}>}
  */
 function buildStepLabelMap(attackSteps) {
   const labelMap = new Map();
@@ -19,28 +18,27 @@ function buildStepLabelMap(attackSteps) {
 
   for (const step of attackSteps) {
     const label = step.label || step.description || step.node_id || '';
-    if (step.node_id) {
-      labelMap.set(step.node_id, label);
-    }
-    if (step.description) {
-      labelMap.set(step.description, label);
-    }
-    if (step.label) {
-      labelMap.set(step.label, label);
-    }
+    const entry = { label, nodeId: step.node_id || '' };
+    if (step.node_id) labelMap.set(step.node_id, entry);
+    if (step.description) labelMap.set(step.description, entry);
+    if (step.label) labelMap.set(step.label, entry);
   }
   return labelMap;
 }
 
 /**
- * Resolve the display label for an attack step reference.
- * @param {string} attackStepRef - The attack_step field value from a mitigation or ttc_mapping
- * @param {Map<string, string>} labelMap - Lookup map from buildStepLabelMap
- * @returns {string} The best display label, or the reference itself as fallback
+ * Resolve a display label and the underlying node_id for an attack-step
+ * reference (which may itself be the node_id, label, or description).
+ *
+ * @param {string} attackStepRef
+ * @param {Map<string, {label: string, nodeId: string}>} labelMap
+ * @returns {{label: string, nodeId: string}}
  */
-function resolveStepLabel(attackStepRef, labelMap) {
-  if (!attackStepRef) return '';
-  return labelMap.get(attackStepRef) || attackStepRef;
+function resolveStepRef(attackStepRef, labelMap) {
+  if (!attackStepRef) return { label: '', nodeId: '' };
+  const hit = labelMap.get(attackStepRef);
+  if (hit) return hit;
+  return { label: attackStepRef, nodeId: '' };
 }
 
 /**
@@ -73,10 +71,10 @@ export function aggregateMitigations(attackTree) {
 
   /**
    * Add a mitigation to the aggregation map.
-   * @param {Object} mit - Mitigation object with name and description
-   * @param {string} stepLabel - The attack step label to associate
+   * @param {Object} mit
+   * @param {{label: string, nodeId: string}} stepRef
    */
-  function addMitigation(mit, stepLabel) {
+  function addMitigation(mit, stepRef) {
     if (!mit || typeof mit !== 'object') return;
     const name = mit.mitigation_text || mit.name || mit.mitigation || '';
     if (!name) return;
@@ -88,7 +86,7 @@ export function aggregateMitigations(attackTree) {
       mitigationMap.set(name, {
         description,
         remediationType,
-        attackSteps: new Set(),
+        attackSteps: new Map(),  // label → nodeId
         priority: mit.priority || null,
         techniqueId: mit.technique_id || '',
         evidence: mit.evidence || [],
@@ -112,17 +110,26 @@ export function aggregateMitigations(attackTree) {
       entry.evidence = mit.evidence;
     }
 
-    if (stepLabel) {
-      entry.attackSteps.add(stepLabel);
+    if (stepRef && stepRef.label) {
+      // Prefer the first non-empty nodeId we see for a given label.
+      const existing = entry.attackSteps.get(stepRef.label);
+      if (!existing || (!existing && stepRef.nodeId)) {
+        entry.attackSteps.set(stepRef.label, stepRef.nodeId || existing || '');
+      } else if (!existing && stepRef.nodeId) {
+        entry.attackSteps.set(stepRef.label, stepRef.nodeId);
+      }
     }
   }
 
   // 1. Collect from attack_steps[].mitigations
   for (const step of attackSteps) {
-    const stepLabel = step.label || step.description || step.node_id || '';
+    const stepRef = {
+      label: step.label || step.description || step.node_id || '',
+      nodeId: step.node_id || '',
+    };
     if (Array.isArray(step.mitigations)) {
       for (const mit of step.mitigations) {
-        addMitigation(mit, stepLabel);
+        addMitigation(mit, stepRef);
       }
     }
   }
@@ -130,31 +137,36 @@ export function aggregateMitigations(attackTree) {
   // 2. Collect from ttc_mappings[].mitigations
   // Skip STIX reference mitigations (generic MITRE controls with only name/description/relationship_description)
   for (const mapping of ttcMappings) {
-    const stepRef = mapping.attack_step || '';
-    const stepLabel = resolveStepLabel(stepRef, labelMap);
+    const stepRef = resolveStepRef(mapping.attack_step || '', labelMap);
     if (Array.isArray(mapping.mitigations)) {
       for (const mit of mapping.mitigations) {
         if (mit.relationship_description && !mit.priority) continue;
-        addMitigation(mit, stepLabel);
+        addMitigation(mit, stepRef);
       }
     }
   }
 
   // 3. Collect from tree-level mitigations
   for (const mit of treeMitigations) {
-    const stepRef = mit.attack_step || '';
-    const stepLabel = resolveStepLabel(stepRef, labelMap);
-    addMitigation(mit, stepLabel);
+    const stepRef = resolveStepRef(mit.attack_step || '', labelMap);
+    addMitigation(mit, stepRef);
   }
 
-  // Convert map to array, converting Sets to sorted arrays
+  // Convert map to array.
+  // attackSteps stays a string[] (labels) so existing callers + tests don't
+  // break; attackStepRefs is the new {label, nodeId}[] used for click-to-focus.
   const result = [];
   for (const [name, entry] of mitigationMap) {
+    const refs = [];
+    for (const [label, nodeId] of entry.attackSteps) {
+      if (label) refs.push({ label, nodeId });
+    }
     result.push({
       name,
       description: entry.description,
       remediationType: entry.remediationType,
-      attackSteps: [...entry.attackSteps].filter(Boolean),
+      attackSteps: refs.map((r) => r.label),
+      attackStepRefs: refs,
       priority: entry.priority,
       techniqueId: entry.techniqueId,
       evidence: entry.evidence,
