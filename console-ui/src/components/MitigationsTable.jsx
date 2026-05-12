@@ -115,32 +115,85 @@ const COLUMN_DEFINITIONS = [
     },
     minWidth: 150,
   },
-  {
-    id: "attackSteps",
-    header: "Attack Steps",
-    cell: (item) =>
-      item.attackSteps.length > 0 ? (
-        <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
-          {item.attackSteps.map((step) => (
-            <Badge key={step} color="blue">{step}</Badge>
-          ))}
-        </div>
-      ) : (
-        "—"
-      ),
-    width: 250,
-    minWidth: 200,
-  },
 ];
 
+/**
+ * Attack-step column factory. Lives outside COLUMN_DEFINITIONS because the
+ * cell renderer needs to close over the page-level onFocusStep callback so
+ * clicking a step badge can pan the ReactFlow viewer to the matching node.
+ */
+function makeAttackStepsColumn(onFocusStep) {
+  return {
+    id: "attackSteps",
+    header: "Attack Steps",
+    cell: (item) => {
+      // Prefer the new {label, nodeId} refs so clicks can focus the matching
+      // ReactFlow node; fall back to legacy string-only attackSteps for older
+      // aggregator output and tests.
+      const refs = Array.isArray(item.attackStepRefs) && item.attackStepRefs.length
+        ? item.attackStepRefs
+        : (item.attackSteps || []).map((label) => ({ label, nodeId: '' }));
+      if (refs.length === 0) return "—";
+      return (
+        <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+          {refs.map(({ label, nodeId }, idx) => {
+            const focusable = !!(onFocusStep && nodeId);
+            return (
+              <button
+                key={`${label}-${idx}`}
+                type="button"
+                onClick={() => focusable && onFocusStep(nodeId)}
+                disabled={!focusable}
+                title={focusable ? `Show ${label} on the attack tree` : label}
+                onMouseEnter={(e) => {
+                  if (focusable) e.currentTarget.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+                style={{
+                  background: 'transparent',
+                  border: 0,
+                  padding: 0,
+                  cursor: focusable ? 'pointer' : 'default',
+                  font: 'inherit',
+                  display: 'inline-block',
+                  transition: 'transform 0.1s ease',
+                }}
+              >
+                {/* Block pointer events on the Badge so the cursor falls
+                    through to the parent <button>. Cloudscape Badge sets its
+                    own cursor that otherwise wins on hover. Click handling
+                    stays on the button, which is unaffected. */}
+                <span style={{ pointerEvents: 'none' }}>
+                  <Badge color="blue">{label}</Badge>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      );
+    },
+    width: 250,
+    minWidth: 200,
+  };
+}
 
 
-export default function MitigationsTable({ attackTree }) {
+
+export default function MitigationsTable({ attackTree, onFocusStep }) {
   const mitigations = useMemo(() => aggregateMitigations(attackTree), [attackTree]);
+
+  // Compose the static columns with a stage-aware Attack Steps column that
+  // can route clicks to the AttackFlowViewer above.
+  const allColumns = useMemo(
+    () => [...COLUMN_DEFINITIONS, makeAttackStepsColumn(onFocusStep)],
+    [onFocusStep]
+  );
 
   // --- Column widths state for resizable columns ---
   const [columnWidths, setColumnWidths] = useState(() =>
-    COLUMN_DEFINITIONS.reduce((acc, col) => {
+    allColumns.reduce((acc, col) => {
       if (col.width) acc[col.id] = col.width;
       return acc;
     }, {})
@@ -157,11 +210,11 @@ export default function MitigationsTable({ attackTree }) {
   // Apply current widths to column definitions
   const resizableColumns = useMemo(
     () =>
-      COLUMN_DEFINITIONS.map(col => ({
+      allColumns.map(col => ({
         ...col,
         width: columnWidths[col.id] || col.width,
       })),
-    [columnWidths]
+    [allColumns, columnWidths]
   );
 
   // --- Task 2.1: Filter state ---
