@@ -120,6 +120,51 @@ function friendlyModelName(id) {
   return `Claude ${family} ${match[2]}.${match[3]}`;
 }
 
+/**
+ * One-time onboarding banner that explains how to read the report. Shown
+ * until the user dismisses it; the dismissal is stored in localStorage under
+ * a single global key so returning users don't keep seeing it.
+ *
+ * The key is intentionally global (not per-app or per-version) because the
+ * banner teaches how to use the tool, not how to interpret a specific run.
+ */
+const ONBOARDING_DISMISS_KEY = 'tf-summary-onboarding-dismissed-v1';
+
+function OnboardingBanner() {
+  const [dismissed, setDismissed] = useState(() => {
+    try {
+      return localStorage.getItem(ONBOARDING_DISMISS_KEY) === '1';
+    } catch {
+      return false;
+    }
+  });
+
+  if (dismissed) return null;
+
+  const handleDismiss = () => {
+    try { localStorage.setItem(ONBOARDING_DISMISS_KEY, '1'); } catch { /* ignore */ }
+    setDismissed(true);
+  };
+
+  return (
+    <Alert
+      type="info"
+      header="Where do I start?"
+      dismissible
+      onDismiss={handleDismiss}
+    >
+      <SpaceBetween size="xxs">
+        <Box variant="p">
+          <strong>Developers:</strong> jump to the <em>Mitigations</em> tab, filter by <em>Quick Win</em>, and use the <em>Copy as Markdown</em> buttons to drop guidance into your tickets.
+        </Box>
+        <Box variant="p">
+          <strong>Security reviewers:</strong> open the <em>Threats</em> tab to triage by priority, then click into a threat to inspect the attack tree, mapped MITRE ATT&amp;CK techniques, and recommended controls.
+        </Box>
+      </SpaceBetween>
+    </Alert>
+  );
+}
+
 function buildRunMetaParts(meta, frameworkCatalog) {
   const keys = meta?.frameworks || [];
   const frameworkNames = keys.length
@@ -386,21 +431,21 @@ function MitigationsTab({ attackTrees, threats }) {
         <div style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
           <div>{item.name}</div>
           {item.description && (
-            <ExpandableSection headerText="Implementation guidance" variant="footer">
-              <SpaceBetween size="xs">
+            <SpaceBetween size="xs">
+              <ExpandableSection headerText="Implementation guidance" variant="footer">
                 <div style={{ lineHeight: '1.6', color: '#414d5c' }}>
                   {renderFormattedText(item.description)}
                 </div>
-                <CopyToClipboard
-                  variant="button"
-                  copyButtonText="Copy as Markdown"
-                  textToCopy={mitigationToMarkdown(item)}
-                  copyButtonAriaLabel={`Copy ${item.name} as Markdown`}
-                  copySuccessText="Copied to clipboard"
-                  copyErrorText="Failed to copy"
-                />
-              </SpaceBetween>
-            </ExpandableSection>
+              </ExpandableSection>
+              <CopyToClipboard
+                variant="button"
+                copyButtonText="Copy as Markdown"
+                textToCopy={mitigationToMarkdown(item)}
+                copyButtonAriaLabel={`Copy ${item.name} as Markdown`}
+                copySuccessText="Copied to clipboard"
+                copyErrorText="Failed to copy"
+              />
+            </SpaceBetween>
           )}
         </div>
       ),
@@ -997,6 +1042,7 @@ export default function ThreatModelSummaryPage() {
           >
             Threat Model Summary
           </Header>
+          <OnboardingBanner />
           <SummaryBar data={data} totalMitigations={globalMitigations.length} />
           <Tabs
             activeTabId={activeTab}
