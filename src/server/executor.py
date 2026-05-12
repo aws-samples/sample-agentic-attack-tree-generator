@@ -30,6 +30,64 @@ if TYPE_CHECKING:
 
 
 PAUSE_STATE_KEY = "pause_state.json"
+RUN_METADATA_KEY = "run_metadata.json"
+
+
+def _attack_version_label() -> str:
+    """Return a human-readable ATT&CK version derived from the bundled STIX file.
+
+    The stix bundle is named ``enterprise-attack-<version>.json``; we surface
+    just the version portion (``"v18.0"``) in the UI metadata header.
+    """
+    try:
+        from threatforest.config import config as _cfg
+        path = Path(_cfg.stix_bundle_path)
+        match = re.search(r"enterprise-attack-([\d.]+)\.json$", path.name)
+        if match:
+            return f"v{match.group(1)}"
+        return path.stem
+    except Exception:
+        return ""
+
+
+def _write_run_metadata_start(run_dir: Path, config: "RunConfig") -> None:
+    """Write the initial run-metadata stub (model, frameworks, started_at, ATT&CK version)."""
+    try:
+        from threatforest.config import config as _cfg
+        model_id = _cfg.default_bedrock_model
+    except Exception:
+        model_id = ""
+
+    payload = {
+        "model_id": model_id,
+        "frameworks": list(config.frameworks) if config.frameworks else [],
+        "attack_version": _attack_version_label(),
+        "started_at": datetime.now(tz=timezone.utc).isoformat(),
+        "completed_at": None,
+        "duration_seconds": None,
+    }
+    LocalFilesystemWorkspace(run_dir).write_json(RUN_METADATA_KEY, payload)
+
+
+def _write_run_metadata_complete(run_dir: Path) -> None:
+    """Stamp completed_at + duration_seconds onto the run metadata file."""
+    ws = LocalFilesystemWorkspace(run_dir)
+    if not ws.exists(RUN_METADATA_KEY):
+        return
+    try:
+        meta = ws.read_json(RUN_METADATA_KEY)
+    except Exception:
+        return
+    completed = datetime.now(tz=timezone.utc)
+    meta["completed_at"] = completed.isoformat()
+    started_iso = meta.get("started_at")
+    if started_iso:
+        try:
+            started = datetime.fromisoformat(started_iso)
+            meta["duration_seconds"] = round((completed - started).total_seconds(), 1)
+        except ValueError:
+            pass
+    ws.write_json(RUN_METADATA_KEY, meta)
 
 
 def _save_pause_state(
@@ -472,6 +530,11 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
         if app_record is not None:
             _seed_scanner_context(run_dir, app_record)
 
+        # Capture run-level metadata (model, frameworks, ATT&CK version, started_at)
+        # before any agent runs so it survives even if the run crashes.
+        if not config.resume_run_dir:
+            _write_run_metadata_start(run_dir, config)
+
         skip_nodes: frozenset[str] = frozenset(config.skip_nodes) if config.skip_nodes else frozenset()
         graph = build_graph(project_path, run_dir=run_dir_str, skip_nodes=skip_nodes, scan_control=scan_control, interaction_fn=interaction_fn)
 
@@ -754,6 +817,9 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
         # Clean up pause_state.json on successful completion so the run
         # no longer appears in the "paused runs" list.
         LocalFilesystemWorkspace(run_dir).delete(PAUSE_STATE_KEY)
+
+        # Stamp completion timestamp + duration onto run_metadata.json
+        _write_run_metadata_complete(run_dir)
 
         # Update metadata.json description from scan output
         try:

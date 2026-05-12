@@ -429,6 +429,34 @@ async def get_version_data(app_id: str, version_id: str) -> JSONResponse:
             detail="Failed to parse threat data",
         )
 
+    # Attach run-level metadata (model, frameworks, ATT&CK version, started_at,
+    # completed_at, duration_seconds) when the run-metadata sidecar exists.
+    # For older runs without the sidecar, derive started_at from the run-folder
+    # timestamp so the UI can still surface something useful.
+    run_meta_file = data_file.parent.parent / "run_metadata.json"
+    if run_meta_file.is_file():
+        try:
+            data["run_metadata"] = json.loads(
+                run_meta_file.read_text(encoding="utf-8")
+            )
+        except (json.JSONDecodeError, ValueError):
+            pass
+    else:
+        folder_name = data_file.parent.parent.name  # YYYYMMDD_HHMMSS
+        try:
+            from datetime import datetime as _dt, timezone as _tz
+            started = _dt.strptime(folder_name, "%Y%m%d_%H%M%S").replace(tzinfo=_tz.utc)
+            data["run_metadata"] = {
+                "model_id": "",
+                "frameworks": [],
+                "attack_version": "",
+                "started_at": started.isoformat(),
+                "completed_at": None,
+                "duration_seconds": None,
+            }
+        except ValueError:
+            pass
+
     # Enrich TTC mappings with mitigations from STIX bundle (if available)
     for tree in data.get("attack_trees", []):
         for mapping in tree.get("ttc_mappings", []):
