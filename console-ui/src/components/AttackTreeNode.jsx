@@ -5,6 +5,7 @@ import Box from '@cloudscape-design/components/box';
 import Badge from '@cloudscape-design/components/badge';
 import Link from '@cloudscape-design/components/link';
 import ExpandableSection from '@cloudscape-design/components/expandable-section';
+import { buildTechniqueUrl } from '../utils/technique-url';
 
 const CATEGORY_COLORS = {
   attack:     { bg: '#fef2f2', border: '#dc2626', text: '#991b1b' },
@@ -17,20 +18,6 @@ const CATEGORY_COLORS = {
 function formatConfidence(score) {
   if (typeof score !== 'number' || isNaN(score)) return '0%';
   return Math.round(score * 100) + '%';
-}
-
-function buildTechniqueUrl(techniqueId) {
-  if (!techniqueId) return null;
-  if (techniqueId.startsWith('AML.')) {
-    return `https://atlas.mitre.org/techniques/${techniqueId}`;
-  }
-  // Wiz slugs: lowercase with hyphens, no T-number or AML. prefix
-  if (/^[a-z][a-z0-9-]+$/.test(techniqueId)) {
-    return `https://threats.wiz.io/all-techniques/${techniqueId}`;
-  }
-  const parts = techniqueId.split('.');
-  if (parts[1]) return `https://attack.mitre.org/techniques/${parts[0]}/${parts[1]}/`;
-  return `https://attack.mitre.org/techniques/${parts[0]}/`;
 }
 
 function collectAllTactics(ttcMappings) {

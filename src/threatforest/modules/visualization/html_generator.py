@@ -4,6 +4,7 @@ import base64
 from typing import Dict, List, Any
 from pathlib import Path
 from ..utils.logger import ThreatForestLogger
+from threatforest.frameworks import technique_url as _technique_url
 
 
 class HTMLGenerator:
@@ -69,10 +70,10 @@ class HTMLGenerator:
                 for mapping in ttc_mappings:
                     technique_id = mapping.get('technique_id', '')
                     if technique_id:
-                        # Construct proper MITRE ATT&CK URL (convert dots to slashes)
-                        tech_url_id = technique_id.replace('.', '/')
-                        mapping['technique_url'] = f"https://attack.mitre.org/techniques/{tech_url_id}/"
-                        
+                        url = _technique_url(technique_id)
+                        if url:
+                            mapping['technique_url'] = url
+
                         # Fetch mitigations if not already present
                         if 'mitigations' not in mapping:
                             mitigations = mitigation_mapper.get_mitigations(technique_id)

@@ -22,6 +22,7 @@ import ExportButton from '../components/ExportButton';
 import { aggregateMitigations } from '../utils/mitigation-aggregator';
 import { renderFormattedText } from '../utils/text-formatter';
 import { getApplication, getApplicationVersions, getFrameworks } from '../api-client';
+import { buildTechniqueUrl } from '../utils/technique-url';
 
 const PRIORITY_COLORS = { 1: 'red', 2: 'red', 3: 'blue', high: 'red', critical: 'red', medium: 'blue', low: 'grey' };
 
@@ -445,12 +446,8 @@ function MitigationsTab({ attackTrees, threats }) {
       header: 'Mapped TTP',
       cell: (item) => {
         if (!item.techniqueId) return '\u2014';
-        let url;
-        if (item.techniqueId.startsWith('AML.')) {
-          url = `https://atlas.mitre.org/techniques/${item.techniqueId}`;
-        } else {
-          url = `https://attack.mitre.org/techniques/${item.techniqueId.replace('.', '/')}/`;
-        }
+        const url = buildTechniqueUrl(item.techniqueId);
+        if (!url) return item.techniqueId;
         return <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: '#0972d3' }}>{item.techniqueId}</a>;
       },
       width: 130,

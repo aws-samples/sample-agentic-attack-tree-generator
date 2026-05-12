@@ -41,3 +41,30 @@ FRAMEWORKS: dict[str, dict[str, str]] = {
 STIX_SOURCE_NAMES: list[str] = [
     fw["source_name"] for fw in FRAMEWORKS.values()
 ] + ["aaf"]  # legacy alias used by some ATT&CK bundles
+
+
+import re as _re
+
+
+def technique_url(technique_id: str) -> str | None:
+    """Build a deep link for a technique id across the supported frameworks.
+
+    Format detection:
+      - ``"AML.*"``        → ATLAS    https://atlas.mitre.org/techniques/<id>
+      - ``"T1234[.001]"``  → ATT&CK   https://attack.mitre.org/techniques/T1234[/001]/
+      - lowercase slug     → Wiz      https://threats.wiz.io/all-techniques/<slug>
+
+    The Wiz check has to live before any ATT&CK fallback; otherwise slugs
+    like ``refresh-token-compromise`` get mistakenly routed to attack.mitre.org
+    and produce a 404.
+    """
+    if not technique_id:
+        return None
+    if technique_id.startswith("AML."):
+        return f"https://atlas.mitre.org/techniques/{technique_id}"
+    if _re.match(r"^[a-z][a-z0-9-]+$", technique_id):
+        return f"https://threats.wiz.io/all-techniques/{technique_id}"
+    parts = technique_id.split(".")
+    if len(parts) > 1 and parts[1]:
+        return f"https://attack.mitre.org/techniques/{parts[0]}/{parts[1]}/"
+    return f"https://attack.mitre.org/techniques/{parts[0]}/"

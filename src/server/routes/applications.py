@@ -458,14 +458,14 @@ async def get_version_data(app_id: str, version_id: str) -> JSONResponse:
             pass
 
     # Enrich TTC mappings with mitigations from STIX bundle (if available)
+    from threatforest.frameworks import technique_url as _technique_url
     for tree in data.get("attack_trees", []):
         for mapping in tree.get("ttc_mappings", []):
             technique_id = mapping.get("technique_id", "")
             if technique_id and "technique_url" not in mapping:
-                tech_url_id = technique_id.replace(".", "/")
-                mapping["technique_url"] = (
-                    f"https://attack.mitre.org/techniques/{tech_url_id}/"
-                )
+                url = _technique_url(technique_id)
+                if url:
+                    mapping["technique_url"] = url
             mapping.pop("reasoning", None)
 
     try:

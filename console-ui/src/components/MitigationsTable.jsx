@@ -11,6 +11,7 @@ import Grid from '@cloudscape-design/components/grid';
 import Popover from '@cloudscape-design/components/popover';
 import ExpandableSection from '@cloudscape-design/components/expandable-section';
 import { aggregateMitigations } from '../utils/mitigation-aggregator';
+import { buildTechniqueUrl } from '../utils/technique-url';
 import {
   filterMitigations,
   getUniqueAttackSteps,
@@ -75,12 +76,8 @@ const COLUMN_DEFINITIONS = [
     header: "Mapped TTP",
     cell: (item) => {
       if (!item.techniqueId) return "—";
-      let url;
-      if (item.techniqueId.startsWith('AML.')) {
-        url = `https://atlas.mitre.org/techniques/${item.techniqueId}`;
-      } else {
-        url = `https://attack.mitre.org/techniques/${item.techniqueId.replace('.', '/')}/`;
-      }
+      const url = buildTechniqueUrl(item.techniqueId);
+      if (!url) return item.techniqueId;
       return <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: '#0972d3' }}>{item.techniqueId}</a>;
     },
     width: 130,
