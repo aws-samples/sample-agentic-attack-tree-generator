@@ -183,31 +183,27 @@ function NodeProperties({ nodeData, onNodeFieldChange }) {
         </ExpandableSection>
       )}
 
-      {/* Mitigations */}
+      {/* Mitigations — title-only summary. The full implementation guidance
+          lives in the mitigations table below the attack tree, so the side
+          panel stays scannable. */}
       <ExpandableSection
         headerText={`🛡️ Mitigations (${mitigations.length})`}
         defaultExpanded={false}
       >
         {mitigations.length > 0 ? (
-          <SpaceBetween size="xs">
+          <ul style={{
+            margin: 0,
+            paddingLeft: 18,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 4,
+          }}>
             {mitigations.map((mit, idx) => (
-              <div key={idx} style={{
-                padding: '6px 10px',
-                background: '#f0fdf4',
-                borderRadius: 6,
-                border: '1px solid #C8E6C9',
-              }}>
-                <div style={{ fontWeight: 600, fontSize: 12, color: '#2E7D32' }}>
-                  {mit.name || mit.mitigation || `Mitigation ${idx + 1}`}
-                </div>
-                {(mit.description || mit.details) && (
-                  <div style={{ fontSize: 11, color: '#555', marginTop: 2 }}>
-                    {mit.description || mit.details}
-                  </div>
-                )}
-              </div>
+              <li key={idx} style={{ fontSize: 12, color: '#2E7D32', fontWeight: 600 }}>
+                {mit.name || mit.mitigation || `Mitigation ${idx + 1}`}
+              </li>
             ))}
-          </SpaceBetween>
+          </ul>
         ) : (
           <Box variant="p" color="text-body-secondary" fontSize="body-s">
             No mitigations for this node.
