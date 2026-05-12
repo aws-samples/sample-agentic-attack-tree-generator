@@ -24,8 +24,8 @@ import DirectoryPicker from '../components/DirectoryPicker';
  * the ``/applications/:appId/runs/new`` route:
  *
  *   - project_path is locked to the application's stored path (read-only).
- *   - regulatory_frameworks from the application's business context are
- *     surfaced as pre-selected in the Threat Frameworks step.
+ *   - All TTP frameworks (MITRE ATT&CK, ATLAS, Wiz Cloud, …) are checked by
+ *     default; the user can deselect any before starting the run.
  *   - The submission carries ``app_id`` so the run links back to the app.
  *
  * The legacy ``/new-run`` route still works for backwards compatibility
@@ -95,36 +95,15 @@ export default function NewRunPage() {
     return () => { cancelled = true; };
   }, [appId, isAppScoped]);
 
-  /*
-   * Preselection rule:
-   *   - In app-scoped mode, any framework whose key *or* display name matches
-   *     an entry in ``app.business_context.regulatory_frameworks`` starts
-   *     checked; everything else starts unchecked.
-   *   - Otherwise all frameworks are checked by default (legacy behaviour).
-   * The match is case-insensitive so users who type "soc2" or "SOC 2" in
-   * business context still get an intuitive result.
-   */
   useEffect(() => {
     if (frameworksInitialized) return;
     const keys = Object.keys(availableFrameworks);
     if (keys.length === 0) return;
     if (isAppScoped && !app) return; // wait for app to land
 
-    const preferred = new Set(
-      (app?.business_context?.regulatory_frameworks || []).map((f) =>
-        String(f).trim().toLowerCase()
-      )
-    );
-
     const initial = {};
     for (const key of keys) {
-      const name = availableFrameworks[key]?.name || key;
-      if (isAppScoped && preferred.size > 0) {
-        initial[key] =
-          preferred.has(key.toLowerCase()) || preferred.has(name.toLowerCase());
-      } else {
-        initial[key] = true;
-      }
+      initial[key] = true;
     }
     setSelectedFrameworks(initial);
     setFrameworksInitialized(true);
@@ -201,8 +180,6 @@ export default function NewRunPage() {
   const selectedNames = Object.entries(selectedFrameworks)
     .filter(([, checked]) => checked)
     .map(([key]) => availableFrameworks[key]?.name || key);
-
-  const appRegulatory = app?.business_context?.regulatory_frameworks || [];
 
   const steps = [
     {
@@ -284,9 +261,7 @@ export default function NewRunPage() {
         <Container header={<Header variant="h2">Threat Frameworks</Header>}>
           <SpaceBetween size="l">
             <Box variant="p" color="text-body-secondary">
-              {isAppScoped && appRegulatory.length > 0
-                ? "Frameworks declared in this application's business context are pre-selected. You can still adjust the selection for this run."
-                : 'Select which knowledge bases to map attack steps against. All frameworks are selected by default.'}
+              Select which knowledge bases to map attack steps against. All frameworks are selected by default.
             </Box>
             {frameworkError && (
               <Alert type="error" dismissible onDismiss={() => setFrameworkError('')}>
