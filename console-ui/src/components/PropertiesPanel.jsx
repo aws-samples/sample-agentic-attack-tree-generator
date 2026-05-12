@@ -10,20 +10,7 @@ import Button from '@cloudscape-design/components/button';
 import ExpandableSection from '@cloudscape-design/components/expandable-section';
 import Link from '@cloudscape-design/components/link';
 import StatusIndicator from '@cloudscape-design/components/status-indicator';
-
-function buildTechniqueUrl(techniqueId) {
-  if (!techniqueId) return null;
-  if (techniqueId.startsWith('AML.')) {
-    return `https://atlas.mitre.org/techniques/${techniqueId}`;
-  }
-  // Wiz slugs: lowercase with hyphens, no T-number or AML. prefix
-  if (/^[a-z][a-z0-9-]+$/.test(techniqueId)) {
-    return `https://threats.wiz.io/all-techniques/${techniqueId}`;
-  }
-  const parts = techniqueId.split('.');
-  if (parts[1]) return `https://attack.mitre.org/techniques/${parts[0]}/${parts[1]}/`;
-  return `https://attack.mitre.org/techniques/${parts[0]}/`;
-}
+import { buildTechniqueUrl } from '../utils/technique-url';
 
 /**
  * Flow-level properties shown when no node is selected.
