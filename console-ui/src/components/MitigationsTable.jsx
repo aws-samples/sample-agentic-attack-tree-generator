@@ -62,21 +62,21 @@ const COLUMN_DEFINITIONS = [
       <div style={{ whiteSpace: "normal", wordBreak: "break-word" }}>
         <div>{item.name}</div>
         {item.description && (
-          <ExpandableSection headerText="Implementation guidance" variant="footer">
-            <SpaceBetween size="xs">
+          <SpaceBetween size="xs">
+            <ExpandableSection headerText="Implementation guidance" variant="footer">
               <div style={{ lineHeight: '1.6', color: '#414d5c' }}>
                 {renderFormattedText(item.description)}
               </div>
-              <CopyToClipboard
-                variant="button"
-                copyButtonText="Copy as Markdown"
-                textToCopy={mitigationToMarkdown(item)}
-                copyButtonAriaLabel={`Copy ${item.name} as Markdown`}
-                copySuccessText="Copied to clipboard"
-                copyErrorText="Failed to copy"
-              />
-            </SpaceBetween>
-          </ExpandableSection>
+            </ExpandableSection>
+            <CopyToClipboard
+              variant="button"
+              copyButtonText="Copy as Markdown"
+              textToCopy={mitigationToMarkdown(item)}
+              copyButtonAriaLabel={`Copy ${item.name} as Markdown`}
+              copySuccessText="Copied to clipboard"
+              copyErrorText="Failed to copy"
+            />
+          </SpaceBetween>
         )}
       </div>
     ),
