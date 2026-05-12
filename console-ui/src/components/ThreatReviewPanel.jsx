@@ -251,7 +251,16 @@ export default function ThreatReviewPanel({
               Thinking in progress…
             </Box>
           )}
+          {/*
+            Button precedence flips with pending state. With unsaved edits or
+            feedback, "Apply changes" is the action the user almost certainly
+            means; "Ready to proceed" demotes to a secondary "Continue without
+            changes" so the prominent green button doesn't silently discard
+            their work. Without pending edits, proceeding is the obvious
+            next step and reclaims the primary slot.
+          */}
           <Button
+            variant={canApply ? 'primary' : 'normal'}
             onClick={handleApply}
             disabled={!canApply}
             loading={waiting}
@@ -260,12 +269,12 @@ export default function ThreatReviewPanel({
             Apply changes
           </Button>
           <Button
-            variant="primary"
+            variant={canApply ? 'normal' : 'primary'}
             onClick={handleProceed}
             disabled={waiting}
             data-testid="threat-review-proceed"
           >
-            Ready to proceed
+            {canApply ? 'Continue without changes' : 'Continue'}
           </Button>
         </div>
       </SpaceBetween>
