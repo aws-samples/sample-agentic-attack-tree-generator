@@ -111,6 +111,40 @@ export async function deleteApplicationRecord(appId) {
   });
 }
 
+// ---------------------------------------------------------------------------
+// Mitigation overrides (M3 v1)
+// Status + comment dispositions a user records against individual mitigations
+// in a given version. Storage is server-side, edits are surfaced live in the
+// merged /data response (override_status / override_comment / override_updated_at).
+// ---------------------------------------------------------------------------
+
+/** GET → { overrides: { [mitigationKey]: { status, comment, updated_at } } } */
+export async function getMitigationOverrides(appId, versionId) {
+  return request(
+    `/api/applications/${encodeURIComponent(appId)}/versions/${encodeURIComponent(versionId)}/mitigation-overrides`
+  );
+}
+
+/** PUT → { override: { status, comment, updated_at } } */
+export async function setMitigationOverride(appId, versionId, mitigationKey, { status, comment }) {
+  return request(
+    `/api/applications/${encodeURIComponent(appId)}/versions/${encodeURIComponent(versionId)}/mitigation-overrides/${encodeURIComponent(mitigationKey)}`,
+    {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status, comment }),
+    }
+  );
+}
+
+/** DELETE → { success: true } */
+export async function clearMitigationOverride(appId, versionId, mitigationKey) {
+  return request(
+    `/api/applications/${encodeURIComponent(appId)}/versions/${encodeURIComponent(versionId)}/mitigation-overrides/${encodeURIComponent(mitigationKey)}`,
+    { method: 'DELETE' }
+  );
+}
+
 /** GET /api/config → Config object */
 export async function getConfig() {
   return request('/api/config');

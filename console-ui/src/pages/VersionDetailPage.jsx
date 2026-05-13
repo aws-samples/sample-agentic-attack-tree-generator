@@ -211,6 +211,8 @@ export default function VersionDetailPage() {
             <MitigationsTable
               attackTree={selectedTree}
               onFocusStep={handleFocusStep}
+              appId={appId}
+              versionId={versionId}
             />
           )}
           {!selectedTree && (

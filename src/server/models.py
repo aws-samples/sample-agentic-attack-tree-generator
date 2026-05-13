@@ -262,3 +262,54 @@ class LangfuseConfigSaveRequest(BaseModel):
     public_key: str | None = None
     secret_key: str | None = None
     host: str = "https://cloud.langfuse.com"
+
+
+# ---------------------------------------------------------------------------
+# Mitigation overrides (M3 v1)
+#
+# A user-editable disposition layer that sits *over* the immutable pipeline
+# output in ``threatforest_data.json``. Each override applies to a single
+# mitigation (keyed by its ``mitigation_text``) within a single run. The
+# overrides file lives at ``<run_dir>/mitigation_overrides.json`` and is
+# merged into the data response by the /data route.
+#
+# Storage shape carries a ``version`` marker so we can introduce per-threat
+# scoping later without breaking the v1 file layout.
+# ---------------------------------------------------------------------------
+
+MitigationStatus = Literal[
+    "not_relevant",
+    "already_implemented",
+    "in_progress",
+    "wont_do",
+    "accepted_risk",
+]
+
+
+class MitigationOverride(BaseModel):
+    """A user disposition recorded against a single mitigation."""
+
+    status: MitigationStatus
+    # Required. The rationale survives across runs once carry-forward lands;
+    # asking for it on every status set keeps that future feature useful.
+    comment: str
+    updated_at: str  # ISO 8601, set server-side
+
+    @model_validator(mode="after")
+    def _validate_comment(self) -> "MitigationOverride":
+        if not self.comment or not self.comment.strip():
+            raise ValueError("comment is required when setting a mitigation status")
+        return self
+
+
+class MitigationOverrideRequest(BaseModel):
+    """Inbound payload from the UI when setting an override."""
+
+    status: MitigationStatus
+    comment: str
+
+    @model_validator(mode="after")
+    def _validate_comment(self) -> "MitigationOverrideRequest":
+        if not self.comment or not self.comment.strip():
+            raise ValueError("comment is required when setting a mitigation status")
+        return self

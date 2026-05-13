@@ -156,7 +156,13 @@ export default function AppOverviewPage() {
     const bt = b.run_date ? new Date(b.run_date).getTime() : 0;
     return bt - at;
   });
-  const latestVersion = sortedVersions[0] || null;
+  // "Latest threat model" should reflect the latest *usable* run — a completed
+  // model the user can open, or a live run they can resume. Crashed/abandoned
+  // versions get skipped because the link routes to a dashboard that will
+  // never render. Falls back to the most recent abandoned version only when
+  // nothing else exists, so users still see *something* and can clean it up.
+  const latestVersion =
+    sortedVersions.find((v) => !isAbandonedVersion(v)) || sortedVersions[0] || null;
 
   const handleBusinessContextUpdated = (updatedApp) => {
     setApp(updatedApp);
@@ -364,7 +370,10 @@ export default function AppOverviewPage() {
                       if (isLiveVersion(latestVersion)) {
                         navigate(`/runs/${latestVersion.run_id}/progress`);
                       } else {
-                        navigate(`/applications/${appId}/versions/latest`);
+                        // Use the explicit version id rather than the "latest"
+                        // alias so the URL reflects what's open and survives
+                        // future runs landing on top.
+                        navigate(`/applications/${appId}/versions/${latestVersion.id}`);
                       }
                     }}
                   >
@@ -424,10 +433,12 @@ export default function AppOverviewPage() {
                       <Box color="text-status-inactive">{displayLabel}</Box>
                     );
                   }
+                  // Always use the explicit version id, even for the "latest"
+                  // row. The /versions/latest alias would resolve server-side
+                  // to whatever's most recent on disk at click-time, which can
+                  // shift if a new run lands between render and click.
                   const target = live
                     ? `/runs/${item.run_id}/progress`
-                    : isLatest
-                    ? `/applications/${appId}/versions/latest`
                     : `/applications/${appId}/versions/${item.id}`;
                   return (
                     <Link

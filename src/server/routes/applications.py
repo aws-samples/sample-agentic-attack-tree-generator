@@ -21,6 +21,8 @@ from server.models import (
     ApplicationCreateRequest,
     ApplicationSummary,
     ApplicationUpdateRequest,
+    MitigationOverride,
+    MitigationOverrideRequest,
     VersionSummary,
 )
 from server.registry import ApplicationRegistry
@@ -489,4 +491,155 @@ async def get_version_data(app_id: str, version_id: str) -> JSONResponse:
             f"Mitigation enrichment failed: {_enrich_err}"
         )
 
+    # Merge user-edited mitigation overrides (status + comment) over the
+    # immutable pipeline output. Keyed by mitigation_text — the canonical
+    # name field. See _load_mitigation_overrides for storage shape.
+    overrides = _load_mitigation_overrides_for_version(folder_id, version_id)
+    if overrides:
+        _apply_mitigation_overrides(data, overrides)
+
     return JSONResponse(content=data)
+
+
+# ---------------------------------------------------------------------------
+# Mitigation overrides (M3 v1)
+# ---------------------------------------------------------------------------
+
+MITIGATION_OVERRIDES_FILE = "mitigation_overrides.json"
+MITIGATION_OVERRIDES_VERSION = 1
+
+
+def _overrides_path(folder_id: str, version_id: str) -> Path | None:
+    """Resolve the on-disk path to ``mitigation_overrides.json`` for a version."""
+    registry = get_registry()
+    run_dir = registry.get_version_run_dir(folder_id, version_id)
+    if run_dir is None:
+        return None
+    return run_dir / MITIGATION_OVERRIDES_FILE
+
+
+def _load_mitigation_overrides_for_version(
+    folder_id: str, version_id: str
+) -> dict[str, dict]:
+    """Read the overrides sidecar; return ``{mitigation_text: override_record}``.
+
+    Returns an empty dict if the file is absent or unreadable. Missing/malformed
+    files are not an error — overrides are entirely optional.
+    """
+    path = _overrides_path(folder_id, version_id)
+    if path is None or not path.is_file():
+        return {}
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+    overrides = raw.get("overrides") or {}
+    return overrides if isinstance(overrides, dict) else {}
+
+
+def _save_mitigation_overrides(
+    folder_id: str, version_id: str, overrides: dict[str, dict]
+) -> None:
+    """Persist the full overrides dict back to disk."""
+    path = _overrides_path(folder_id, version_id)
+    if path is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Version '{version_id}' not found for application",
+        )
+    payload = {"version": MITIGATION_OVERRIDES_VERSION, "overrides": overrides}
+    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+
+def _apply_mitigation_overrides(
+    data: dict, overrides: dict[str, dict]
+) -> None:
+    """Stitch override status/comment into every mitigation in *data*.
+
+    Mitigations live in two places per attack tree:
+      1. ``ttc_mappings[].mitigations[]``
+      2. ``mitigations[]`` (tree-level)
+
+    The match is by the mitigation's name field (``mitigation_text`` falling
+    back to ``name``/``mitigation``) — the same field the aggregator uses on
+    the client. Mutates *data* in place.
+    """
+    def _stitch(mit: dict) -> None:
+        key = mit.get("mitigation_text") or mit.get("name") or mit.get("mitigation") or ""
+        if not key:
+            return
+        record = overrides.get(key)
+        if not record:
+            return
+        # Only attach known fields; never echo arbitrary user input back into
+        # the model output namespace.
+        mit["override_status"] = record.get("status")
+        mit["override_comment"] = record.get("comment")
+        mit["override_updated_at"] = record.get("updated_at")
+
+    for tree in data.get("attack_trees", []):
+        for mapping in tree.get("ttc_mappings", []):
+            for mit in mapping.get("mitigations", []) or []:
+                _stitch(mit)
+        for mit in tree.get("mitigations", []) or []:
+            _stitch(mit)
+
+
+@router.get("/applications/{app_id}/versions/{version_id}/mitigation-overrides")
+async def list_mitigation_overrides(app_id: str, version_id: str) -> dict:
+    """Return all mitigation overrides recorded for a version.
+
+    Response shape::
+
+        {"overrides": {"<mitigation_text>": {status, comment, updated_at}}}
+    """
+    folder_id = _resolve_folder_id(app_id)
+    overrides = _load_mitigation_overrides_for_version(folder_id, version_id)
+    return {"overrides": overrides}
+
+
+@router.put(
+    "/applications/{app_id}/versions/{version_id}/mitigation-overrides/{mitigation_key:path}"
+)
+async def set_mitigation_override(
+    app_id: str,
+    version_id: str,
+    mitigation_key: str,
+    body: MitigationOverrideRequest,
+) -> dict:
+    """Create or update the override for a single mitigation.
+
+    ``mitigation_key`` is the URL-encoded ``mitigation_text``. Pydantic
+    validation rejects empty comments before we touch the filesystem.
+    """
+    folder_id = _resolve_folder_id(app_id)
+    overrides = _load_mitigation_overrides_for_version(folder_id, version_id)
+    record = MitigationOverride(
+        status=body.status,
+        comment=body.comment.strip(),
+        updated_at=_iso_now(),
+    )
+    overrides[mitigation_key] = record.model_dump()
+    _save_mitigation_overrides(folder_id, version_id, overrides)
+    return {"override": overrides[mitigation_key]}
+
+
+@router.delete(
+    "/applications/{app_id}/versions/{version_id}/mitigation-overrides/{mitigation_key:path}"
+)
+async def clear_mitigation_override(
+    app_id: str, version_id: str, mitigation_key: str
+) -> dict:
+    """Remove an override. 200 even if no override existed (idempotent)."""
+    folder_id = _resolve_folder_id(app_id)
+    overrides = _load_mitigation_overrides_for_version(folder_id, version_id)
+    overrides.pop(mitigation_key, None)
+    _save_mitigation_overrides(folder_id, version_id, overrides)
+    return {"success": True}
+
+
+def _iso_now() -> str:
+    """ISO 8601 UTC timestamp — separated so tests can monkeypatch."""
+    from datetime import datetime, timezone
+
+    return datetime.now(tz=timezone.utc).isoformat()
