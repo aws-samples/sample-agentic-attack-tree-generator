@@ -20,6 +20,7 @@ import {
 } from '../utils/mitigation-filter';
 import { renderFormattedText } from '../utils/text-formatter';
 import { mitigationToMarkdown } from '../utils/mitigation-markdown';
+import { statusInfo } from '../utils/mitigation-status';
 
 const PRIORITY_COLORS = { 1: 'red', 2: 'red', 3: 'blue', high: 'red', critical: 'red', medium: 'blue', low: 'grey' };
 
@@ -118,6 +119,65 @@ const COLUMN_DEFINITIONS = [
 ];
 
 /**
+ * Read-only Status column for the per-threat MitigationsTable. Mirrors what
+ * the user sees on the Mitigations tab but without the editor — edits live
+ * in one place. The "Edit on the Mitigations tab" link opens a new tab so
+ * the user doesn't lose their place inside the per-threat view.
+ */
+function makeStatusColumn(appId, versionId) {
+  return {
+    id: 'status',
+    header: 'Status',
+    cell: (item) => {
+      const info = statusInfo(item.overrideStatus);
+      const editHref = appId && versionId
+        ? `/applications/${encodeURIComponent(appId)}/versions/${encodeURIComponent(versionId)}?tab=mitigations`
+        : null;
+      return (
+        <div style={{ minWidth: 160 }}>
+          {info ? (
+            <SpaceBetween size="xxs">
+              <Badge color={info.color}>{info.label}</Badge>
+              {item.overrideComment && (
+                <Box variant="small" color="text-body-secondary">{item.overrideComment}</Box>
+              )}
+              {editHref && (
+                <a
+                  href={editHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontSize: 12, color: '#0972d3' }}
+                >
+                  Edit on the Mitigations tab ↗
+                </a>
+              )}
+            </SpaceBetween>
+          ) : (
+            <Box variant="small" color="text-status-inactive">
+              Open
+              {editHref && (
+                <>
+                  {' — '}
+                  <a
+                    href={editHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: '#0972d3' }}
+                  >
+                    Set status ↗
+                  </a>
+                </>
+              )}
+            </Box>
+          )}
+        </div>
+      );
+    },
+    width: 220,
+  };
+}
+
+/**
  * Attack-step column factory. Lives outside COLUMN_DEFINITIONS because the
  * cell renderer needs to close over the page-level onFocusStep callback so
  * clicking a step badge can pan the ReactFlow viewer to the matching node.
@@ -181,15 +241,26 @@ function makeAttackStepsColumn(onFocusStep) {
 
 
 
-export default function MitigationsTable({ attackTree, onFocusStep }) {
+export default function MitigationsTable({ attackTree, onFocusStep, appId, versionId }) {
   const mitigations = useMemo(() => aggregateMitigations(attackTree), [attackTree]);
 
-  // Compose the static columns with a stage-aware Attack Steps column that
-  // can route clicks to the AttackFlowViewer above.
-  const allColumns = useMemo(
-    () => [...COLUMN_DEFINITIONS, makeAttackStepsColumn(onFocusStep)],
-    [onFocusStep]
-  );
+  // Compose the static columns with the read-only Status column and the
+  // attack-step column that wires clicks to the AttackFlowViewer above. Both
+  // need values from the parent so they're built per-render.
+  //
+  // Column order matches the dedup view: ...prefix · Mitigation · Status · ...
+  // — Status sits next to the name so users can read the disposition before
+  // they look at the Mapped TTP / Evidence / Attack Steps detail.
+  const allColumns = useMemo(() => {
+    const nameIdx = COLUMN_DEFINITIONS.findIndex((c) => c.id === 'name');
+    const insertAt = nameIdx >= 0 ? nameIdx + 1 : COLUMN_DEFINITIONS.length;
+    return [
+      ...COLUMN_DEFINITIONS.slice(0, insertAt),
+      makeStatusColumn(appId, versionId),
+      ...COLUMN_DEFINITIONS.slice(insertAt),
+      makeAttackStepsColumn(onFocusStep),
+    ];
+  }, [appId, versionId, onFocusStep]);
 
   // --- Column widths state for resizable columns ---
   const [columnWidths, setColumnWidths] = useState(() =>

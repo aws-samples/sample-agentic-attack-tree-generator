@@ -90,6 +90,11 @@ export function aggregateMitigations(attackTree) {
         priority: mit.priority || null,
         techniqueId: mit.technique_id || '',
         evidence: mit.evidence || [],
+        // M3 v1: user-disposition layer merged into the API response. Same
+        // override applies to every duplicate, so first-seen wins.
+        overrideStatus: mit.override_status || null,
+        overrideComment: mit.override_comment || '',
+        overrideUpdatedAt: mit.override_updated_at || '',
       });
     }
 
@@ -108,6 +113,11 @@ export function aggregateMitigations(attackTree) {
     }
     if (entry.evidence.length === 0 && mit.evidence && mit.evidence.length > 0) {
       entry.evidence = mit.evidence;
+    }
+    if (!entry.overrideStatus && mit.override_status) {
+      entry.overrideStatus = mit.override_status;
+      entry.overrideComment = mit.override_comment || '';
+      entry.overrideUpdatedAt = mit.override_updated_at || '';
     }
 
     if (stepRef && stepRef.label) {
@@ -170,6 +180,9 @@ export function aggregateMitigations(attackTree) {
       priority: entry.priority,
       techniqueId: entry.techniqueId,
       evidence: entry.evidence,
+      overrideStatus: entry.overrideStatus,
+      overrideComment: entry.overrideComment,
+      overrideUpdatedAt: entry.overrideUpdatedAt,
     });
   }
 

@@ -23,8 +23,14 @@ import ExportButton from '../components/ExportButton';
 import { aggregateMitigations } from '../utils/mitigation-aggregator';
 import { renderFormattedText } from '../utils/text-formatter';
 import { mitigationToMarkdown } from '../utils/mitigation-markdown';
-import { getApplication, getApplicationVersions, getFrameworks } from '../api-client';
+import { getApplication, getApplicationVersions, getFrameworks, getMitigationOverrides } from '../api-client';
 import { buildTechniqueUrl } from '../utils/technique-url';
+import {
+  MITIGATION_STATUSES,
+  isTerminal as isTerminalStatus,
+  statusInfo,
+} from '../utils/mitigation-status';
+import MitigationStatusEditor from '../components/MitigationStatusEditor';
 
 const PRIORITY_COLORS = { 1: 'red', 2: 'red', 3: 'blue', high: 'red', critical: 'red', medium: 'blue', low: 'grey' };
 
@@ -305,6 +311,9 @@ function aggregateAllMitigations(attackTrees, threats) {
           attackSteps: [...mit.attackSteps],
           threats: [],
           allAffectedAssets: new Set(),
+          overrideStatus: mit.overrideStatus || null,
+          overrideComment: mit.overrideComment || '',
+          overrideUpdatedAt: mit.overrideUpdatedAt || '',
         });
       }
 
@@ -316,6 +325,11 @@ function aggregateAllMitigations(attackTrees, threats) {
       if (!entry.priority && mit.priority) entry.priority = mit.priority;
       if (!entry.techniqueId && mit.techniqueId) entry.techniqueId = mit.techniqueId;
       if (entry.evidence.length === 0 && mit.evidence?.length > 0) entry.evidence = mit.evidence;
+      if (!entry.overrideStatus && mit.overrideStatus) {
+        entry.overrideStatus = mit.overrideStatus;
+        entry.overrideComment = mit.overrideComment || '';
+        entry.overrideUpdatedAt = mit.overrideUpdatedAt || '';
+      }
 
       // Track related threats
       if (threatId && !entry.threats.some(t => t.id === threatId)) {
@@ -336,16 +350,65 @@ function aggregateAllMitigations(attackTrees, threats) {
 }
 
 // ─── Mitigations Tab Content ───
-function MitigationsTab({ attackTrees, threats }) {
-  const allMitigations = useMemo(
+//
+// `overrides` is owned by the parent page so it survives tab unmount/remount.
+// Saved/cleared edits flow back up via the callback props rather than living
+// in local state here.
+function MitigationsTab({
+  attackTrees,
+  threats,
+  appId,
+  versionId,
+  overrides,
+  onOverrideSaved,
+  onOverrideCleared,
+}) {
+  const navigate = useNavigate();
+
+  const aggregated = useMemo(
     () => aggregateAllMitigations(attackTrees, threats),
     [attackTrees, threats]
+  );
+
+  // Map threat_id → its index in attackTrees so the Related Threats column
+  // can deep-link into the per-threat dashboard. The dashboard URL uses the
+  // tree index, not the TS-prefixed id.
+  const threatIdxById = useMemo(() => {
+    const m = new Map();
+    attackTrees.forEach((tree, idx) => {
+      const id = tree.threat_id;
+      if (id && !m.has(id)) m.set(id, idx);
+    });
+    return m;
+  }, [attackTrees]);
+
+  // Project the aggregated list with the live override layer applied. The
+  // /data response also carries server-side override fields, but we always
+  // prefer the page-level `overrides` map because it reflects in-flight edits
+  // the data blob hasn't been refetched for.
+  const allMitigations = useMemo(
+    () => aggregated.map((m) => {
+      const o = overrides?.[m.name];
+      if (o) {
+        return {
+          ...m,
+          overrideStatus: o.status,
+          overrideComment: o.comment,
+          overrideUpdatedAt: o.updated_at,
+        };
+      }
+      // No override in the lifted state — strip any stale fields from the
+      // aggregator so a Clear() is reflected immediately.
+      return { ...m, overrideStatus: null, overrideComment: '', overrideUpdatedAt: '' };
+    }),
+    [aggregated, overrides]
   );
 
   // Filter state
   const [selectedThreat, setSelectedThreat] = useState(null);
   const [selectedRemediation, setSelectedRemediation] = useState(null);
   const [selectedPriority, setSelectedPriority] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState(null);
 
   const threatOptions = useMemo(() => {
     const ids = new Set();
@@ -379,8 +442,15 @@ function MitigationsTab({ attackTrees, threats }) {
     if (selectedPriority) {
       items = items.filter(m => String(m.priority) === selectedPriority.value);
     }
+    if (selectedStatus) {
+      // 'open' is the synthetic value for "no status set" — anything else is a
+      // direct match against override status.
+      const v = selectedStatus.value;
+      if (v === 'open') items = items.filter(m => !m.overrideStatus);
+      else items = items.filter(m => m.overrideStatus === v);
+    }
     return items;
-  }, [allMitigations, selectedThreat, selectedRemediation, selectedPriority]);
+  }, [allMitigations, selectedThreat, selectedRemediation, selectedPriority, selectedStatus]);
 
   // Sorting
   const [sortingColumn, setSortingColumn] = useState(null);
@@ -408,7 +478,7 @@ function MitigationsTab({ attackTrees, threats }) {
     return sortingDescending ? sorted.reverse() : sorted;
   }, [filteredMitigations, sortingColumn, sortingDescending]);
 
-  const isFiltered = selectedThreat || selectedRemediation || selectedPriority;
+  const isFiltered = selectedThreat || selectedRemediation || selectedPriority || selectedStatus;
   const counterText = isFiltered
     ? `(${filteredMitigations.length} of ${allMitigations.length})`
     : `(${allMitigations.length})`;
@@ -427,30 +497,52 @@ function MitigationsTab({ attackTrees, threats }) {
     {
       id: 'name',
       header: 'Mitigation',
-      cell: (item) => (
-        <div style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
-          <div>{item.name}</div>
-          {item.description && (
-            <SpaceBetween size="xs">
-              <ExpandableSection headerText="Implementation guidance" variant="footer">
-                <div style={{ lineHeight: '1.6', color: '#414d5c' }}>
-                  {renderFormattedText(item.description)}
-                </div>
-              </ExpandableSection>
-              <CopyToClipboard
-                variant="button"
-                copyButtonText="Copy as Markdown"
-                textToCopy={mitigationToMarkdown(item)}
-                copyButtonAriaLabel={`Copy ${item.name} as Markdown`}
-                copySuccessText="Copied to clipboard"
-                copyErrorText="Failed to copy"
-              />
-            </SpaceBetween>
-          )}
-        </div>
-      ),
+      cell: (item) => {
+        // Dim terminal-status rows so the user's eye lands on Open / In progress
+        // mitigations first. Editor column stays full-strength so terminal
+        // statuses can be inspected and changed.
+        const dim = isTerminalStatus(item.overrideStatus);
+        return (
+          <div style={{ whiteSpace: 'normal', wordBreak: 'break-word', opacity: dim ? 0.55 : 1 }}>
+            <div>{item.name}</div>
+            {item.description && (
+              <SpaceBetween size="xs">
+                <ExpandableSection headerText="Implementation guidance" variant="footer">
+                  <div style={{ lineHeight: '1.6', color: '#414d5c' }}>
+                    {renderFormattedText(item.description)}
+                  </div>
+                </ExpandableSection>
+                <CopyToClipboard
+                  variant="button"
+                  copyButtonText="Copy as Markdown"
+                  textToCopy={mitigationToMarkdown(item)}
+                  copyButtonAriaLabel={`Copy ${item.name} as Markdown`}
+                  copySuccessText="Copied to clipboard"
+                  copyErrorText="Failed to copy"
+                />
+              </SpaceBetween>
+            )}
+          </div>
+        );
+      },
       sortingField: 'name',
       minWidth: 250,
+    },
+    {
+      id: 'status',
+      header: 'Status',
+      cell: (item) => (
+        <MitigationStatusEditor
+          mitigationKey={item.name}
+          appId={appId}
+          versionId={versionId}
+          status={item.overrideStatus}
+          comment={item.overrideComment}
+          onSaved={(override) => onOverrideSaved?.(item.name, override)}
+          onCleared={() => onOverrideCleared?.(item.name)}
+        />
+      ),
+      width: 240,
     },
     {
       id: 'remediationType',
@@ -471,12 +563,29 @@ function MitigationsTab({ attackTrees, threats }) {
         if (!item.threats || item.threats.length === 0) return '\u2014';
         return (
           <div style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
-            {item.threats.map((t, i) => (
-              <div key={i} style={{ marginBottom: i < item.threats.length - 1 ? '4px' : 0 }}>
-                <span style={{ fontWeight: 500 }}>{t.id}</span>
-                {t.category && <span style={{ fontSize: '12px', color: '#5f6b7a' }}> — {t.category}</span>}
-              </div>
-            ))}
+            {item.threats.map((t, i) => {
+              const idx = threatIdxById.get(t.id);
+              const linkable = idx !== undefined && appId && versionId;
+              const href = linkable
+                ? `/applications/${appId}/versions/${versionId}/threats/${idx}`
+                : null;
+              return (
+                <div key={i} style={{ marginBottom: i < item.threats.length - 1 ? '4px' : 0 }}>
+                  {linkable ? (
+                    <Link
+                      href={href}
+                      onFollow={(e) => { e.preventDefault(); navigate(href); }}
+                      fontWeight="bold"
+                    >
+                      {t.id}
+                    </Link>
+                  ) : (
+                    <span style={{ fontWeight: 500 }}>{t.id}</span>
+                  )}
+                  {t.category && <span style={{ fontSize: '12px', color: '#5f6b7a' }}> — {t.category}</span>}
+                </div>
+              );
+            })}
           </div>
         );
       },
@@ -489,10 +598,29 @@ function MitigationsTab({ attackTrees, threats }) {
       cell: (item) => {
         const comps = Array.isArray(item.affectedAssets) ? item.affectedAssets : [];
         if (comps.length === 0) return '\u2014';
+        const overflow = comps.slice(3);
         return (
           <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
             {comps.slice(0, 3).map((c, i) => <Badge key={i} color="blue">{c}</Badge>)}
-            {comps.length > 3 && <Badge color="grey">+{comps.length - 3}</Badge>}
+            {overflow.length > 0 && (
+              <Popover
+                size="small"
+                triggerType="custom"
+                dismissButton={false}
+                header={`${overflow.length} more asset${overflow.length === 1 ? '' : 's'}`}
+                content={
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    {overflow.map((c, i) => (
+                      <Badge key={i} color="blue">{c}</Badge>
+                    ))}
+                  </div>
+                }
+              >
+                <span style={{ cursor: 'pointer' }}>
+                  <Badge color="grey">+{overflow.length}</Badge>
+                </span>
+              </Popover>
+            )}
           </div>
         );
       },
@@ -535,7 +663,7 @@ function MitigationsTab({ attackTrees, threats }) {
   return (
     <SpaceBetween size="m">
       {/* Filter Bar */}
-      <Grid gridDefinition={[{ colspan: 3 }, { colspan: 3 }, { colspan: 3 }, { colspan: 3 }]}>
+      <Grid gridDefinition={[{ colspan: 3 }, { colspan: 3 }, { colspan: 2 }, { colspan: 2 }, { colspan: 2 }]}>
         <FormField label="Filter by threat">
           <Select
             selectedOption={selectedThreat}
@@ -560,10 +688,26 @@ function MitigationsTab({ attackTrees, threats }) {
             placeholder="All priorities"
           />
         </FormField>
+        <FormField label="Filter by status">
+          <Select
+            selectedOption={selectedStatus}
+            onChange={({ detail }) => setSelectedStatus(detail.selectedOption)}
+            options={[
+              { value: 'open', label: 'Open (no status)' },
+              ...MITIGATION_STATUSES.map((s) => ({ value: s.value, label: s.label })),
+            ]}
+            placeholder="All statuses"
+          />
+        </FormField>
         <Box padding={{ top: 'l' }}>
           <Button
             variant="link"
-            onClick={() => { setSelectedThreat(null); setSelectedRemediation(null); setSelectedPriority(null); }}
+            onClick={() => {
+              setSelectedThreat(null);
+              setSelectedRemediation(null);
+              setSelectedPriority(null);
+              setSelectedStatus(null);
+            }}
             disabled={!isFiltered}
           >
             Clear filters
@@ -916,6 +1060,11 @@ export default function ThreatModelSummaryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [frameworkCatalog, setFrameworkCatalog] = useState({});
+  // Mitigation overrides live at the page level so they survive when the
+  // user switches between Application / Threats / Mitigations tabs (Cloudscape
+  // Tabs unmounts the inactive tab body, which would otherwise wipe local
+  // state on every tab swap).
+  const [overrides, setOverrides] = useState({});
 
   const activeTab = searchParams.get('tab') || 'application';
 
@@ -944,6 +1093,17 @@ export default function ThreatModelSummaryPage() {
     fetchVersion();
     return () => { cancelled = true; };
   }, [appId, versionId, persistentAppLoaded]);
+
+  // Load mitigation overrides once at page level so they persist across
+  // tab swaps. Mutations from the editor go through onOverrideSaved /
+  // onOverrideCleared which update this same state directly.
+  useEffect(() => {
+    let cancelled = false;
+    getMitigationOverrides(appId, versionId)
+      .then((d) => { if (!cancelled && d?.overrides) setOverrides(d.overrides); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [appId, versionId]);
 
   // Load the framework catalog once so we can render run_metadata.frameworks
   // with friendly names (e.g. "MITRE ATT&CK Enterprise") instead of keys.
@@ -1077,6 +1237,19 @@ export default function ThreatModelSummaryPage() {
                   <MitigationsTab
                     attackTrees={attackTrees}
                     threats={threats}
+                    appId={appId}
+                    versionId={versionId}
+                    overrides={overrides}
+                    onOverrideSaved={(name, override) =>
+                      setOverrides((prev) => ({ ...prev, [name]: override }))
+                    }
+                    onOverrideCleared={(name) =>
+                      setOverrides((prev) => {
+                        const next = { ...prev };
+                        delete next[name];
+                        return next;
+                      })
+                    }
                   />
                 ),
               },

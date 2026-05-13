@@ -285,6 +285,23 @@ class ApplicationRegistry:
             return data_file
         return None
 
+    def get_version_run_dir(self, app_id: str, version_id: str) -> Path | None:
+        """Return the run directory itself (parent of ``output/``) for a version.
+
+        Used by the mitigation-overrides endpoints to locate the sidecar file
+        that lives next to ``run_metadata.json``. Returns ``None`` if the
+        application or version cannot be resolved.
+        """
+        project_dir = self._find_project_dir(app_id)
+        if project_dir is None:
+            return None
+        if version_id == "latest":
+            version_id = self._resolve_latest_version(project_dir)
+            if version_id is None:
+                return None
+        run_dir = project_dir / version_id
+        return run_dir if run_dir.is_dir() else None
+
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
@@ -302,14 +319,29 @@ class ApplicationRegistry:
 
     @staticmethod
     def _resolve_latest_version(project_dir: Path) -> str | None:
-        """Return the most recent YYYYMMDD_HHMMSS directory name, or None."""
-        candidates = [
-            d for d in project_dir.iterdir()
-            if d.is_dir() and re.match(r"^\d{8}_\d{6}$", d.name)
-        ]
+        """Return the most recent YYYYMMDD_HHMMSS directory name, or None.
+
+        Prefers the most recent run that has ``output/threatforest_data.json``
+        on disk — i.e. a completed model the API can actually serve. Falls
+        back to the most recent folder of any kind only if no completed run
+        exists, so legacy callers that just want "any version id" still get
+        an answer rather than ``None``. Without this filter the API would
+        happily resolve ``"latest"`` to a crashed run and 404 the dashboard.
+        """
+        candidates = sorted(
+            (
+                d for d in project_dir.iterdir()
+                if d.is_dir() and re.match(r"^\d{8}_\d{6}$", d.name)
+            ),
+            key=lambda d: d.name,
+            reverse=True,
+        )
         if not candidates:
             return None
-        return sorted(candidates, key=lambda d: d.name, reverse=True)[0].name
+        for d in candidates:
+            if (d / "output" / "threatforest_data.json").is_file():
+                return d.name
+        return candidates[0].name
 
     def _build_application_summary(self, project_dir: Path) -> ApplicationSummary | None:
         """Build an ApplicationSummary from a project directory."""
