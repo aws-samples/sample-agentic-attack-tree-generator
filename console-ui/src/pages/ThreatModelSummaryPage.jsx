@@ -20,7 +20,11 @@ import Grid from '@cloudscape-design/components/grid';
 import ColumnLayout from '@cloudscape-design/components/column-layout';
 import CloudscapeShell from '../components/CloudscapeShell';
 import ExportButton from '../components/ExportButton';
-import { aggregateMitigations } from '../utils/mitigation-aggregator';
+import {
+  aggregateMitigations,
+  aggregateAllMitigations,
+  getAffectedComponentsForTree as getAffectedComponents,
+} from '../utils/mitigation-aggregator';
 import { renderFormattedText } from '../utils/text-formatter';
 import { mitigationToMarkdown } from '../utils/mitigation-markdown';
 import { getApplication, getApplicationVersions, getFrameworks, getMitigationOverrides } from '../api-client';
@@ -278,75 +282,6 @@ function MitigationsList({ mitigations }) {
       })}
     </div>
   );
-}
-
-// ─── Helper: get affected components for a threat ───
-function getAffectedComponents(tree, threats) {
-  const matchId = (tree.threat_id || '').replace(/ \[AttackTree.*\]/, '');
-  const match = threats.find(t => (t.id || t.threat_id) === matchId);
-  return match?.affected_components || match?.impactedAssets || [];
-}
-
-// ─── Globally-deduplicated mitigations across all trees ───
-function aggregateAllMitigations(attackTrees, threats) {
-  const map = new Map(); // key = mitigation name
-
-  for (const tree of attackTrees) {
-    const threatId = tree.threat_id || '';
-    const threatCategory = tree.threat_category || '';
-    const affected = getAffectedComponents(tree, threats);
-    const mits = aggregateMitigations(tree);
-
-    for (const mit of mits) {
-      if (!mit.name) continue;
-
-      if (!map.has(mit.name)) {
-        map.set(mit.name, {
-          name: mit.name,
-          description: mit.description || '',
-          remediationType: mit.remediationType || '',
-          priority: mit.priority,
-          techniqueId: mit.techniqueId || '',
-          evidence: mit.evidence || [],
-          attackSteps: [...mit.attackSteps],
-          threats: [],
-          allAffectedAssets: new Set(),
-          overrideStatus: mit.overrideStatus || null,
-          overrideComment: mit.overrideComment || '',
-          overrideUpdatedAt: mit.overrideUpdatedAt || '',
-        });
-      }
-
-      const entry = map.get(mit.name);
-
-      // Merge fields if missing
-      if (!entry.description && mit.description) entry.description = mit.description;
-      if (!entry.remediationType && mit.remediationType) entry.remediationType = mit.remediationType;
-      if (!entry.priority && mit.priority) entry.priority = mit.priority;
-      if (!entry.techniqueId && mit.techniqueId) entry.techniqueId = mit.techniqueId;
-      if (entry.evidence.length === 0 && mit.evidence?.length > 0) entry.evidence = mit.evidence;
-      if (!entry.overrideStatus && mit.overrideStatus) {
-        entry.overrideStatus = mit.overrideStatus;
-        entry.overrideComment = mit.overrideComment || '';
-        entry.overrideUpdatedAt = mit.overrideUpdatedAt || '';
-      }
-
-      // Track related threats
-      if (threatId && !entry.threats.some(t => t.id === threatId)) {
-        entry.threats.push({ id: threatId, category: threatCategory });
-      }
-
-      // Track affected assets
-      for (const a of affected) entry.allAffectedAssets.add(a);
-    }
-  }
-
-  // Convert Sets to arrays
-  return [...map.values()].map(entry => ({
-    ...entry,
-    affectedAssets: [...entry.allAffectedAssets],
-    allAffectedAssets: undefined,
-  }));
 }
 
 // ─── Mitigations Tab Content ───

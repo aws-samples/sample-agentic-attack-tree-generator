@@ -188,3 +188,88 @@ export function aggregateMitigations(attackTree) {
 
   return result;
 }
+
+
+/**
+ * Look up the affected_components / impactedAssets list for an attack tree
+ * by matching its threat_id against the top-level threats list.
+ *
+ * Strips the trailing ``" [AttackTree…]"`` debug suffix that some legacy
+ * runs leave on tree.threat_id so the match still works.
+ */
+export function getAffectedComponentsForTree(tree, threats) {
+  const matchId = (tree?.threat_id || '').replace(/ \[AttackTree.*\]/, '');
+  const match = (threats || []).find(
+    (t) => (t.id || t.threat_id) === matchId
+  );
+  return match?.affected_components || match?.impactedAssets || [];
+}
+
+
+/**
+ * Globally-deduplicated mitigations across every attack tree, keyed by the
+ * mitigation name. Same dedup the dedup tab uses on the summary page —
+ * exporters call this so the PDF/CSV totals match what's on screen.
+ *
+ * Each result row carries:
+ *   - description, remediationType, priority, techniqueId, evidence
+ *   - attackSteps (string labels) + attackStepRefs ({label, nodeId})
+ *   - overrideStatus / overrideComment / overrideUpdatedAt (when an override
+ *     is recorded for that mitigation in the merged /data response)
+ *   - threats: [{id, category}] — every threat that surfaced this mitigation
+ *   - affectedAssets: string[]  — union of impacted assets across those threats
+ */
+export function aggregateAllMitigations(attackTrees, threats) {
+  const map = new Map();
+
+  for (const tree of attackTrees || []) {
+    const threatId = tree.threat_id || '';
+    const threatCategory = tree.threat_category || '';
+    const affected = getAffectedComponentsForTree(tree, threats);
+    const mits = aggregateMitigations(tree);
+
+    for (const mit of mits) {
+      if (!mit.name) continue;
+
+      if (!map.has(mit.name)) {
+        map.set(mit.name, {
+          name: mit.name,
+          description: mit.description || '',
+          remediationType: mit.remediationType || '',
+          priority: mit.priority,
+          techniqueId: mit.techniqueId || '',
+          evidence: mit.evidence || [],
+          attackSteps: [...(mit.attackSteps || [])],
+          attackStepRefs: [...(mit.attackStepRefs || [])],
+          threats: [],
+          allAffectedAssets: new Set(),
+          overrideStatus: mit.overrideStatus || null,
+          overrideComment: mit.overrideComment || '',
+          overrideUpdatedAt: mit.overrideUpdatedAt || '',
+        });
+      }
+
+      const entry = map.get(mit.name);
+      if (!entry.description && mit.description) entry.description = mit.description;
+      if (!entry.remediationType && mit.remediationType) entry.remediationType = mit.remediationType;
+      if (!entry.priority && mit.priority) entry.priority = mit.priority;
+      if (!entry.techniqueId && mit.techniqueId) entry.techniqueId = mit.techniqueId;
+      if (entry.evidence.length === 0 && mit.evidence?.length > 0) entry.evidence = mit.evidence;
+      if (!entry.overrideStatus && mit.overrideStatus) {
+        entry.overrideStatus = mit.overrideStatus;
+        entry.overrideComment = mit.overrideComment || '';
+        entry.overrideUpdatedAt = mit.overrideUpdatedAt || '';
+      }
+      if (threatId && !entry.threats.some((t) => t.id === threatId)) {
+        entry.threats.push({ id: threatId, category: threatCategory });
+      }
+      for (const a of affected) entry.allAffectedAssets.add(a);
+    }
+  }
+
+  return [...map.values()].map((entry) => ({
+    ...entry,
+    affectedAssets: [...entry.allAffectedAssets],
+    allAffectedAssets: undefined,
+  }));
+}

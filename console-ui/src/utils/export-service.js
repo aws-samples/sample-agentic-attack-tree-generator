@@ -5,7 +5,12 @@
  */
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { aggregateMitigations } from './mitigation-aggregator';
+import {
+  aggregateMitigations,
+  aggregateAllMitigations,
+  getAffectedComponentsForTree,
+} from './mitigation-aggregator';
+import { statusInfo } from './mitigation-status';
 
 /**
  * Escape a CSV field value per RFC 4180.
@@ -19,15 +24,8 @@ function escapeCsvField(value) {
   return str;
 }
 
-/**
- * Get affected components for a threat by matching threat_id against the threats array.
- */
-function getAffectedComponents(tree, threats) {
-  const threatsList = Array.isArray(threats) ? threats : [];
-  const matchId = (tree.threat_id || '').replace(/ \[AttackTree.*\]/, '');
-  const match = threatsList.find(t => (t.id || t.threat_id) === matchId);
-  return match?.affected_components || match?.impactedAssets || [];
-}
+// Backwards-compat shim — keep the local name so callers below don't change.
+const getAffectedComponents = getAffectedComponentsForTree;
 
 /**
  * Remediation type display labels.
@@ -161,7 +159,12 @@ export function exportThreatsCsv(summaryData, filename) {
 // ─── Mitigations-only CSV ─────────────────────────────────────
 
 /**
- * Generate a mitigations-focused CSV with one row per unique mitigation.
+ * Generate a mitigations-focused CSV with one row per *unique* mitigation
+ * (deduplicated across all attack trees the same way the dedup tab does).
+ *
+ * Threats / Attack Steps columns hold semicolon-separated lists when a
+ * mitigation surfaced against more than one. Override status + comment are
+ * included so external trackers (Jira, Linear) can carry the disposition.
  */
 export function generateMitigationsCsvContent(summaryData) {
   if (!summaryData || typeof summaryData !== 'object') return '';
@@ -169,32 +172,40 @@ export function generateMitigationsCsvContent(summaryData) {
   const attackTrees = Array.isArray(summaryData.attack_trees) ? summaryData.attack_trees : [];
   if (attackTrees.length === 0) return '';
 
+  const threats = Array.isArray(summaryData.threats) ? summaryData.threats : [];
+  const allMitigations = aggregateAllMitigations(attackTrees, threats);
+
   const header = [
-    'Priority', 'Mitigation', 'Remediation Type', 'Mapped TTP', 'Threat ID', 'Attack Steps', 'Implementation Guidance',
+    'Priority',
+    'Status',
+    'Status Comment',
+    'Mitigation',
+    'Remediation Type',
+    'Mapped TTP',
+    'Threats',
+    'Attack Steps',
+    'Implementation Guidance',
   ];
   const rows = [header.map(escapeCsvField).join(',')];
-
-  const allMitigations = [];
-  for (const tree of attackTrees) {
-    for (const mit of aggregateMitigations(tree)) {
-      allMitigations.push({ ...mit, threatId: tree.threat_id || '' });
-    }
-  }
 
   allMitigations.sort((a, b) => {
     const pa = typeof a.priority === 'number' ? a.priority : 99;
     const pb = typeof b.priority === 'number' ? b.priority : 99;
-    return pa - pb;
+    if (pa !== pb) return pa - pb;
+    return (a.name || '').localeCompare(b.name || '');
   });
 
   for (const m of allMitigations) {
+    const info = statusInfo(m.overrideStatus);
     rows.push([
       escapeCsvField(priorityLabel(m.priority)),
+      escapeCsvField(info ? info.label : ''),
+      escapeCsvField(m.overrideComment || ''),
       escapeCsvField(m.name || ''),
       escapeCsvField(REMEDIATION_LABELS[m.remediationType] || m.remediationType || ''),
       escapeCsvField(m.techniqueId || ''),
-      escapeCsvField(m.threatId),
-      escapeCsvField(m.attackSteps.join('; ')),
+      escapeCsvField((m.threats || []).map(t => t.id).filter(Boolean).join('; ')),
+      escapeCsvField((m.attackSteps || []).join('; ')),
       escapeCsvField(m.description || ''),
     ].join(','));
   }
@@ -663,24 +674,25 @@ export function exportMitigationsPdf(summaryData, filename) {
   try {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
     const margin = 14;
+    const contentWidth = pageWidth - margin * 2;
     const appName = summaryData.project_info?.application_name || summaryData.application_name || 'Threat Model';
 
-    // Collect all mitigations
-    const allMitigations = [];
-    for (const tree of attackTrees) {
-      for (const mit of aggregateMitigations(tree)) {
-        allMitigations.push({ ...mit, threatId: tree.threat_id || '' });
-      }
-    }
+    // Same dedup the UI uses — one row per unique mitigation_text rather than
+    // one row per (mitigation × threat) pair, which was inflating counts
+    // (UI showed 82, export was producing 130).
+    const threats = Array.isArray(summaryData.threats) ? summaryData.threats : [];
+    const allMitigations = aggregateAllMitigations(attackTrees, threats);
 
     if (allMitigations.length === 0) { alert('No mitigations found.'); return; }
 
-    // Sort by priority
+    // Sort by priority, then by name for stable ordering across re-exports.
     allMitigations.sort((a, b) => {
       const pa = typeof a.priority === 'number' ? a.priority : 99;
       const pb = typeof b.priority === 'number' ? b.priority : 99;
-      return pa - pb;
+      if (pa !== pb) return pa - pb;
+      return (a.name || '').localeCompare(b.name || '');
     });
 
     // Title
@@ -697,22 +709,37 @@ export function exportMitigationsPdf(summaryData, filename) {
     doc.setLineWidth(0.5);
     doc.line(margin, 72, pageWidth - margin, 72);
 
-    // Summary
+    // ─── Summary ───────────────────────────────────────────────────
     doc.setFontSize(14);
     doc.setTextColor(...DARK_COLOR);
     doc.text('Summary', margin, 82);
 
     const criticalCount = allMitigations.filter(m => m.priority === 1).length;
     const highCount = allMitigations.filter(m => m.priority === 2).length;
+    const threatsCovered = new Set();
+    for (const m of allMitigations) {
+      for (const t of m.threats || []) if (t.id) threatsCovered.add(t.id);
+    }
+    const statusCounts = allMitigations.reduce((acc, m) => {
+      const key = m.overrideStatus || 'open';
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
 
     autoTable(doc, {
       startY: 87,
       head: [['Metric', 'Value']],
       body: [
-        ['Total Mitigations', String(allMitigations.length)],
-        ['Critical Priority', String(criticalCount)],
-        ['High Priority', String(highCount)],
-        ['Threats Covered', String(new Set(allMitigations.map(m => m.threatId)).size)],
+        ['Total mitigations', String(allMitigations.length)],
+        ['Critical priority', String(criticalCount)],
+        ['High priority', String(highCount)],
+        ['Threats covered', String(threatsCovered.size)],
+        ['Already implemented', String(statusCounts.already_implemented || 0)],
+        ['In progress', String(statusCounts.in_progress || 0)],
+        ['Accepted risk', String(statusCounts.accepted_risk || 0)],
+        ['Not relevant', String(statusCounts.not_relevant || 0)],
+        ["Won't do", String(statusCounts.wont_do || 0)],
+        ['Open (no status)', String(statusCounts.open || 0)],
       ],
       theme: 'grid',
       headStyles: { fillColor: THEME_COLOR, fontSize: 10 },
@@ -722,36 +749,138 @@ export function exportMitigationsPdf(summaryData, filename) {
       tableWidth: 100,
     });
 
-    // Mitigations table
+    // ─── Overview table ────────────────────────────────────────────
+    // Compact one-line-per-mitigation index. Full guidance lives below in
+    // the per-mitigation detail section so we don't truncate it here.
     doc.addPage();
     doc.setFontSize(14);
     doc.setTextColor(...DARK_COLOR);
-    doc.text('Mitigations', margin, 20);
+    doc.text('Mitigations overview', margin, 20);
 
     autoTable(doc, {
       startY: 25,
-      head: [['Priority', 'Mitigation', 'Remediation', 'Mapped TTP', 'Threat', 'Guidance']],
-      body: allMitigations.map(m => [
-        priorityLabel(m.priority),
-        m.name || '',
-        REMEDIATION_LABELS[m.remediationType] || m.remediationType || '',
-        m.techniqueId || '',
-        m.threatId || '',
-        (m.description || '').slice(0, 120) + ((m.description || '').length > 120 ? '...' : ''),
-      ]),
+      head: [['#', 'Priority', 'Status', 'Mitigation', 'Type', 'Mapped TTP', 'Threats']],
+      body: allMitigations.map((m, i) => {
+        const info = statusInfo(m.overrideStatus);
+        return [
+          String(i + 1),
+          priorityLabel(m.priority),
+          info ? info.label : 'Open',
+          m.name || '',
+          REMEDIATION_LABELS[m.remediationType] || m.remediationType || '',
+          m.techniqueId || '',
+          (m.threats || []).map(t => t.id).filter(Boolean).join(', '),
+        ];
+      }),
       theme: 'striped',
-      headStyles: { fillColor: THEME_COLOR, fontSize: 7 },
-      bodyStyles: { fontSize: 6 },
+      headStyles: { fillColor: THEME_COLOR, fontSize: 8 },
+      bodyStyles: { fontSize: 7, valign: 'top' },
       columnStyles: {
-        0: { cellWidth: 16 },
-        1: { cellWidth: 40 },
-        2: { cellWidth: 22 },
-        3: { cellWidth: 20 },
-        4: { cellWidth: 18 },
-        5: { cellWidth: 62 },
+        0: { cellWidth: 8 },
+        1: { cellWidth: 16 },
+        2: { cellWidth: 26 },
+        3: { cellWidth: 60 },
+        4: { cellWidth: 22 },
+        5: { cellWidth: 22 },
+        6: { cellWidth: 28 },
       },
       margin: { left: margin, right: margin },
     });
+
+    // ─── Per-mitigation detail with full implementation guidance ──
+    doc.addPage();
+    let yPos = 20;
+    doc.setFontSize(14);
+    doc.setTextColor(...DARK_COLOR);
+    doc.text('Mitigation detail', margin, yPos);
+    yPos += 9;
+
+    /**
+     * Reserve `needed` units of vertical space; emit a page break first if
+     * we'd otherwise render below the bottom margin.
+     */
+    function ensureSpace(needed) {
+      if (yPos + needed > pageHeight - 20) {
+        doc.addPage();
+        yPos = 20;
+      }
+    }
+
+    for (let i = 0; i < allMitigations.length; i++) {
+      const m = allMitigations[i];
+      const info = statusInfo(m.overrideStatus);
+
+      ensureSpace(28);
+
+      // Heading: "1. <name>"
+      doc.setFontSize(11);
+      doc.setTextColor(...DARK_COLOR);
+      const headingLines = doc.splitTextToSize(`${i + 1}. ${m.name || ''}`, contentWidth);
+      doc.text(headingLines, margin, yPos);
+      yPos += headingLines.length * 5 + 1;
+
+      // Meta line: priority · type · technique · threats
+      doc.setFontSize(8);
+      doc.setTextColor(100, 100, 100);
+      const metaParts = [
+        `Priority: ${priorityLabel(m.priority)}`,
+        `Type: ${REMEDIATION_LABELS[m.remediationType] || m.remediationType || '—'}`,
+        `Mapped TTP: ${m.techniqueId || '—'}`,
+        `Threats: ${(m.threats || []).map(t => t.id).filter(Boolean).join(', ') || '—'}`,
+      ];
+      const metaLines = doc.splitTextToSize(metaParts.join('   ·   '), contentWidth);
+      ensureSpace(metaLines.length * 4 + 3);
+      doc.text(metaLines, margin, yPos);
+      yPos += metaLines.length * 4 + 3;
+
+      // Status row (only when one is set — Open is implicit otherwise).
+      if (info) {
+        ensureSpace(8);
+        doc.setFontSize(9);
+        doc.setTextColor(...DARK_COLOR);
+        doc.text(`Status: ${info.label}`, margin, yPos);
+        yPos += 5;
+        if (m.overrideComment) {
+          doc.setFontSize(8);
+          doc.setTextColor(80, 80, 80);
+          const commentLines = doc.splitTextToSize(`Comment: ${m.overrideComment}`, contentWidth);
+          ensureSpace(commentLines.length * 4 + 2);
+          doc.text(commentLines, margin, yPos);
+          yPos += commentLines.length * 4 + 2;
+        }
+      }
+
+      // Implementation guidance — full text, wrapped, no truncation.
+      if (m.description) {
+        ensureSpace(8);
+        doc.setFontSize(9);
+        doc.setTextColor(...DARK_COLOR);
+        doc.text('Implementation guidance', margin, yPos);
+        yPos += 4;
+        doc.setFontSize(8);
+        doc.setTextColor(60, 60, 60);
+        const guidanceLines = doc.splitTextToSize(m.description, contentWidth);
+        // Long lists may not fit on this page — break per-line so we never
+        // overrun the bottom margin.
+        const lineHeight = 4;
+        for (const line of guidanceLines) {
+          ensureSpace(lineHeight);
+          doc.text(line, margin, yPos);
+          yPos += lineHeight;
+        }
+      }
+
+      yPos += 4; // gap between mitigations
+
+      // Light divider between entries (skip after the last).
+      if (i < allMitigations.length - 1) {
+        ensureSpace(2);
+        doc.setDrawColor(220, 220, 220);
+        doc.setLineWidth(0.2);
+        doc.line(margin, yPos, pageWidth - margin, yPos);
+        yPos += 4;
+      }
+    }
 
     addPdfFooter(doc, pageWidth, margin);
     doc.save(filename || 'mitigations-report.pdf');
