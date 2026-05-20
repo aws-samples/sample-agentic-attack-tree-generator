@@ -20,7 +20,7 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 
-from server.models import ApplicationSummary, VersionSummary
+from server.models import ApplicationSummary, BusinessContext, VersionSummary
 
 PAUSE_STATE_KEY = "pause_state.json"
 
@@ -174,7 +174,25 @@ class ApplicationRegistry:
     # ------------------------------------------------------------------
 
     def discover_applications(self) -> list[ApplicationSummary]:
-        """Scan ``.threatforest/runs/`` and return discovered applications."""
+        """Scan ``.threatforest/runs/`` and return discovered applications.
+
+        Before scanning, processes any ``*.tfreport`` bundles dropped into
+        ``.threatforest/imports/``. Import failures are logged but never
+        raise — the apps list must still load even when an import fails.
+        """
+        # Local import to avoid a circular at module load time.
+        from server.report_import import process_pending_imports
+
+        imports_dir = self.runs_root.parent / "imports"
+        if imports_dir.is_dir():
+            try:
+                process_pending_imports(imports_dir, self)
+            except Exception:  # noqa: BLE001 — never break app listing
+                import logging
+                logging.getLogger(__name__).exception(
+                    "Failed to process pending imports"
+                )
+
         if not self.runs_root.is_dir():
             return []
 
@@ -392,12 +410,36 @@ class ApplicationRegistry:
                         json.dumps(meta, indent=2), encoding="utf-8"
                     )
 
+        # Imported-app marker: bundles dropped into ``.threatforest/imports/``
+        # write ``imported_from_app_name`` into metadata.json so the UI can
+        # mark the app read-only and show provenance.
+        imported = bool(meta.get("imported_from_app_id"))
+        imported_from = meta.get("imported_from_app_name") if imported else None
+
+        # Imported apps may carry a sidecar ``business_context.json`` next to
+        # ``metadata.json``. Surface it on the summary so the apps-list and
+        # the AppOverviewPage can render the same panel they would for a
+        # locally-scanned v2 app.
+        business_context = None
+        if imported:
+            bc_file = project_dir / "business_context.json"
+            if bc_file.is_file():
+                bc_raw = self._read_json(bc_file)
+                if bc_raw:
+                    try:
+                        business_context = BusinessContext.model_validate(bc_raw)
+                    except Exception:  # noqa: BLE001 — bad sidecar shouldn't 500
+                        business_context = None
+
         return ApplicationSummary(
             id=app_id,
             name=display_name,
             description=description,
             version_count=version_count,
             last_run_date=last_run_date,
+            imported=imported,
+            imported_from=imported_from,
+            business_context=business_context,
         )
 
     def _build_version_summary(

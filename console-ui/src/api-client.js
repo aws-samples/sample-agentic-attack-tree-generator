@@ -49,6 +49,41 @@ export async function getApplications() {
   return request('/api/applications');
 }
 
+// --- Report imports -------------------------------------------------------
+
+/** GET /api/imports/info → { imports_dir, processed[], failed[] } */
+export async function getImportsInfo() {
+  return request('/api/imports/info');
+}
+
+/**
+ * POST /api/imports/tfreport — multipart upload of a .tfreport bundle.
+ * Returns ``{ result: { status, folder_name, versions_added, ... } }``.
+ *
+ * We intentionally bypass ``request()`` here because that helper sets
+ * Content-Type explicitly when given a body, but multipart uploads need
+ * the browser to set the Content-Type with the auto-generated boundary.
+ */
+export async function uploadTfReport(file) {
+  const form = new FormData();
+  form.append('file', file);
+  const response = await fetch('/api/imports/tfreport', {
+    method: 'POST',
+    body: form,
+  });
+  if (!response.ok) {
+    let detail = '';
+    try {
+      const body = await response.json();
+      detail = body?.detail || '';
+    } catch {
+      // Ignore non-JSON error bodies.
+    }
+    throw new Error(detail || `Upload failed (HTTP ${response.status}).`);
+  }
+  return response.json();
+}
+
 /** GET /api/applications/{appId}/versions → { versions: Version[] } */
 export async function getApplicationVersions(appId) {
   return request(`/api/applications/${encodeURIComponent(appId)}/versions`);

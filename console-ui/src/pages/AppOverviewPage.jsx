@@ -15,11 +15,16 @@ import Modal from '@cloudscape-design/components/modal';
 import Input from '@cloudscape-design/components/input';
 import FormField from '@cloudscape-design/components/form-field';
 import ExpandableSection from '@cloudscape-design/components/expandable-section';
+import ButtonDropdown from '@cloudscape-design/components/button-dropdown';
+import Toggle from '@cloudscape-design/components/toggle';
 import CloudscapeShell from '../components/CloudscapeShell';
 import BusinessContextPanel from '../components/BusinessContextPanel';
 import DirectoryPicker from '../components/DirectoryPicker';
+import VersionRowExportMenu from '../components/VersionRowExportMenu';
+import { downloadThreatforestReport } from '../utils/export-service';
 import {
   getApplication,
+  getApplications,
   getApplicationVersions,
   updateApplication,
   deleteApplicationRecord,
@@ -118,22 +123,63 @@ export default function AppOverviewPage() {
   // Delete-version modal. ``versionDeleteTarget`` doubles as the modal's
   // visibility flag — null means closed.
   const [versionDeleteTarget, setVersionDeleteTarget] = useState(null);
+  // Surfaces fetch / generation failures from the per-row export menu so
+  // they don't get lost in the toolbar.
+  const [exportError, setExportError] = useState('');
   const [versionDeleteSubmitting, setVersionDeleteSubmitting] = useState(false);
   const [versionDeleteError, setVersionDeleteError] = useState('');
+
+  // ThreatForest Report export modal — page-level button, scope is either
+  // "version" (latest) or "full".
+  const [reportPrompt, setReportPrompt] = useState(null);
+  const [reportIncludeContext, setReportIncludeContext] = useState(true);
+  const [reportSubmitting, setReportSubmitting] = useState(false);
 
   const loadAll = useCallback(
     async (signal) => {
       setLoading(true);
       setError(null);
       try {
-        // Parallel fetch — the persistent record and the folder-derived
-        // version list are independent resources.
-        const [appData, versionsData] = await Promise.all([
-          getApplication(appId),
+        // Persistent record + folder-derived version list are independent
+        // resources, so they fan out in parallel. Imported apps lack a
+        // persistent record entirely (the importer doesn't write to
+        // applications.json), so a 404 on getApplication falls back to a
+        // minimal stub built from the apps-list summary — that's enough to
+        // render the page in read-only mode.
+        const [appResult, versionsData] = await Promise.all([
+          getApplication(appId).catch((err) => ({ __error: err })),
           getApplicationVersions(appId).catch(() => ({ versions: [] })),
         ]);
         if (signal?.aborted) return;
-        setApp(appData);
+
+        if (appResult?.__error) {
+          // Try the folder-derived listing for an imported-app summary.
+          let stub = null;
+          try {
+            const list = await getApplications();
+            stub = (list?.applications || []).find((a) => a.id === appId) || null;
+          } catch {
+            // Ignore — we'll surface the original error if no stub exists.
+          }
+          if (stub) {
+            setApp({
+              id: stub.id,
+              name: stub.name,
+              description: stub.description,
+              imported: stub.imported,
+              imported_from: stub.imported_from,
+              project_path: '',
+              // Imported apps may still carry a business context — the
+              // registry surfaces the sidecar JSON written at import time
+              // alongside the apps-list summary.
+              business_context: stub.business_context || null,
+            });
+          } else {
+            throw appResult.__error;
+          }
+        } else {
+          setApp(appResult);
+        }
         setVersions(versionsData.versions || []);
       } catch (err) {
         if (signal?.aborted) return;
@@ -238,6 +284,27 @@ export default function AppOverviewPage() {
     }
   };
 
+  const handleReportExport = async () => {
+    if (!reportPrompt) return;
+    setReportSubmitting(true);
+    setExportError('');
+    try {
+      await downloadThreatforestReport({
+        appId,
+        // ``version`` mode targets the latest *completed* version explicitly so
+        // the URL doesn't accidentally bundle an in-progress run.
+        versionId:
+          reportPrompt === 'version' && latestVersion ? latestVersion.id : undefined,
+        includeScannerContext: reportIncludeContext,
+      });
+      setReportPrompt(null);
+    } catch (err) {
+      setExportError(err.message || 'Failed to export ThreatForest Report.');
+    } finally {
+      setReportSubmitting(false);
+    }
+  };
+
   const handleVersionDelete = async () => {
     if (!versionDeleteTarget) return;
     setVersionDeleteSubmitting(true);
@@ -257,6 +324,16 @@ export default function AppOverviewPage() {
   };
 
   const appName = app?.name || appId;
+
+  // Imported applications are read-only — the recipient has no source code,
+  // so re-running, editing the project path, or editing the business context
+  // makes no sense. We hide those affordances instead of letting users click
+  // them and hit a backend error. The flag is set by the apps-list endpoint
+  // when the folder's metadata.json carries an ``imported_from_app_id``.
+  const isImported = Boolean(app?.imported);
+  const hasCompletedVersion = sortedVersions.some(
+    (v) => v.status === 'complete' || v.status === 'completed'
+  );
 
   if (loading) {
     return (
@@ -295,12 +372,14 @@ export default function AppOverviewPage() {
           variant="h1"
           actions={
             <SpaceBetween direction="horizontal" size="xs">
-              <Button
-                iconName="edit"
-                onClick={openRename}
-                ariaLabel="Rename application"
-                data-testid="rename-app"
-              />
+              {!isImported && (
+                <Button
+                  iconName="edit"
+                  onClick={openRename}
+                  ariaLabel="Rename application"
+                  data-testid="rename-app"
+                />
+              )}
               <Button
                 onClick={() => {
                   const el = document.getElementById('threat-models');
@@ -309,28 +388,60 @@ export default function AppOverviewPage() {
               >
                 Jump to threat models
               </Button>
-              <Button
-                variant="primary"
-                onClick={() => navigate(`/applications/${appId}/runs/new`)}
-                data-testid="start-new-threat-model"
-              >
-                Start new threat model
-              </Button>
+              {hasCompletedVersion && (
+                <ButtonDropdown
+                  items={[
+                    { id: 'tfreport-version', text: 'Latest version only' },
+                    { id: 'tfreport-full', text: 'Full application history' },
+                  ]}
+                  onItemClick={({ detail }) => {
+                    setReportIncludeContext(true);
+                    setReportPrompt(detail.id === 'tfreport-version' ? 'version' : 'full');
+                  }}
+                  data-testid="export-tfreport-button"
+                >
+                  Export ThreatForest Report
+                </ButtonDropdown>
+              )}
+              {!isImported && (
+                <Button
+                  variant="primary"
+                  onClick={() => navigate(`/applications/${appId}/runs/new`)}
+                  data-testid="start-new-threat-model"
+                >
+                  Start new threat model
+                </Button>
+              )}
             </SpaceBetween>
           }
         >
           {appName}
         </Header>
 
-        {app && (
+        {isImported && (
+          <Alert
+            type="info"
+            header="Imported application"
+            data-testid="imported-banner"
+          >
+            This application was imported from{' '}
+            <strong>{app?.imported_from || 'another ThreatForest install'}</strong>.
+            The source code is not available here, so re-running and editing
+            the business context are disabled. You can still browse threat
+            models, edit mitigation status, and export.
+          </Alert>
+        )}
+
+        {app && app.business_context && (
           <BusinessContextPanel
             appId={appId}
             businessContext={app.business_context}
             onUpdated={handleBusinessContextUpdated}
+            readOnly={isImported}
           />
         )}
 
-        {app && (
+        {app && !isImported && (
           <Container
             header={
               <Header
@@ -398,22 +509,36 @@ export default function AppOverviewPage() {
             <Box textAlign="center" color="inherit" padding="m">
               <SpaceBetween size="m">
                 <b>No threat models yet</b>
-                <Box color="inherit">
-                  Start one to generate threats, attack trees, and mitigations for this
-                  application.
-                </Box>
-                <Button
-                  variant="primary"
-                  onClick={() => navigate(`/applications/${appId}/runs/new`)}
-                >
-                  Start new threat model
-                </Button>
+                {!isImported && (
+                  <>
+                    <Box color="inherit">
+                      Start one to generate threats, attack trees, and
+                      mitigations for this application.
+                    </Box>
+                    <Button
+                      variant="primary"
+                      onClick={() => navigate(`/applications/${appId}/runs/new`)}
+                    >
+                      Start new threat model
+                    </Button>
+                  </>
+                )}
               </SpaceBetween>
             </Box>
           )}
         </Container>
 
         <div id="threat-models">
+          {exportError && (
+            <Alert
+              type="error"
+              dismissible
+              onDismiss={() => setExportError('')}
+              header="Export failed"
+            >
+              {exportError}
+            </Alert>
+          )}
           <Table
             columnDefinitions={[
               {
@@ -474,20 +599,32 @@ export default function AppOverviewPage() {
                 cell: (item) => {
                   // Don't let the user delete a live run out from under an
                   // in-flight pipeline — the backend will 400 anyway, but
-                  // hiding the control entirely avoids confusion.
+                  // hiding the control entirely avoids confusion. Likewise,
+                  // exports need a completed dashboard to read from, so
+                  // disable for live and abandoned rows.
                   const live = isLiveVersion(item);
+                  const abandoned = isAbandonedVersion(item);
                   return (
-                    <Button
-                      variant="inline-link"
-                      onClick={() => {
-                        setVersionDeleteError('');
-                        setVersionDeleteTarget(item);
-                      }}
-                      disabled={live}
-                      data-testid={`delete-version-${item.id}`}
-                    >
-                      Delete
-                    </Button>
+                    <SpaceBetween direction="horizontal" size="xs">
+                      <VersionRowExportMenu
+                        appId={appId}
+                        appName={app?.name}
+                        version={item}
+                        disabled={live || abandoned}
+                        onError={setExportError}
+                      />
+                      <Button
+                        variant="inline-link"
+                        onClick={() => {
+                          setVersionDeleteError('');
+                          setVersionDeleteTarget(item);
+                        }}
+                        disabled={live}
+                        data-testid={`delete-version-${item.id}`}
+                      >
+                        Delete
+                      </Button>
+                    </SpaceBetween>
                   );
                 },
               },
@@ -689,6 +826,58 @@ export default function AppOverviewPage() {
               </strong>
               ? The threat statements, attack trees, and dashboard for this run
               will be removed from disk. This cannot be undone.
+            </Box>
+          </SpaceBetween>
+        </Modal>
+
+        {/* ThreatForest Report export modal */}
+        <Modal
+          visible={reportPrompt !== null}
+          onDismiss={() => !reportSubmitting && setReportPrompt(null)}
+          header="Export ThreatForest Report"
+          footer={
+            <Box float="right">
+              <SpaceBetween direction="horizontal" size="xs">
+                <Button
+                  variant="link"
+                  onClick={() => setReportPrompt(null)}
+                  disabled={reportSubmitting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={handleReportExport}
+                  loading={reportSubmitting}
+                  data-testid="confirm-tfreport-export"
+                >
+                  Download
+                </Button>
+              </SpaceBetween>
+            </Box>
+          }
+        >
+          <SpaceBetween size="m">
+            <Box variant="p">
+              Bundles{' '}
+              {reportPrompt === 'full'
+                ? 'every completed threat model for this application'
+                : 'the latest completed threat model'}{' '}
+              as a <code>.tfreport</code> file. Recipients can drop it into
+              their <code>.threatforest/imports/</code> folder to load this
+              application into their own ThreatForest install. Imported
+              applications are read-only.
+            </Box>
+            <Toggle
+              checked={reportIncludeContext}
+              onChange={({ detail }) => setReportIncludeContext(detail.checked)}
+              data-testid="toggle-scanner-context"
+            >
+              Include scanner context (file paths and code excerpts)
+            </Toggle>
+            <Box variant="small" color="text-body-secondary">
+              On by default for intra-team handoff. Turn off when sharing
+              outside your team to redact source-code references.
             </Box>
           </SpaceBetween>
         </Modal>

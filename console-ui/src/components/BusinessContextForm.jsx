@@ -7,6 +7,37 @@ import TokenGroup from '@cloudscape-design/components/token-group';
 import Button from '@cloudscape-design/components/button';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import ColumnLayout from '@cloudscape-design/components/column-layout';
+import CiaPriorityList from './CiaPriorityList';
+
+/**
+ * Default CIA ordering used when a context is freshly created — the user can
+ * (and is expected to) drag the rows to reflect their actual priorities. Kept
+ * in sync with ``CIA_DEFAULT_ORDER`` in ``src/server/models.py``.
+ */
+export const CIA_DEFAULT_ORDER = ['confidentiality', 'integrity', 'availability'];
+
+/**
+ * Treat any malformed cia_priority (missing, wrong length, dupes, unknown
+ * values) as if the user hadn't ranked yet — fall back to the canonical
+ * ordering so the drag UI never renders in a broken state.
+ */
+export function normaliseCiaPriority(input) {
+  const known = new Set(CIA_DEFAULT_ORDER);
+  if (!Array.isArray(input)) return [...CIA_DEFAULT_ORDER];
+  const seen = new Set();
+  const ordered = [];
+  for (const v of input) {
+    if (known.has(v) && !seen.has(v)) {
+      seen.add(v);
+      ordered.push(v);
+    }
+  }
+  // Append any objectives the user's list omitted, preserving canonical order.
+  for (const v of CIA_DEFAULT_ORDER) {
+    if (!seen.has(v)) ordered.push(v);
+  }
+  return ordered;
+}
 
 /**
  * Option lists mirror the BusinessContext Pydantic Literals in
@@ -18,17 +49,11 @@ export const DATA_SENSITIVITY_OPTIONS = [
   { value: 'public',              label: 'Public — no access restrictions' },
   { value: 'internal',            label: 'Internal — staff or partners only' },
   { value: 'confidential',        label: 'Confidential — limited business exposure' },
+  { value: 'highly_confidential', label: 'Highly confidential — restricted to a named group, severe damage on leak' },
   { value: 'pii',                 label: 'PII — personally identifiable information' },
   { value: 'phi',                 label: 'PHI — protected health information' },
   { value: 'regulated_financial', label: 'Regulated financial — PCI / SOX / similar' },
   { value: 'unknown',             label: "Unknown — I don't know yet" },
-];
-
-export const MAIN_CIA_RISK_OPTIONS = [
-  { value: 'confidentiality', label: 'Confidentiality — leaks and data exposure are worst-case' },
-  { value: 'integrity',       label: 'Integrity — tampering or corrupted data is worst-case' },
-  { value: 'availability',    label: 'Availability — downtime or DoS is worst-case' },
-  { value: 'unknown',         label: "Unknown — I don't know yet" },
 ];
 
 /**
@@ -41,7 +66,7 @@ export const MAIN_CIA_RISK_OPTIONS = [
  *     description: string,
  *     regulatory_frameworks: string[],
  *     data_sensitivity: <one of DATA_SENSITIVITY_OPTIONS.value>,
- *     main_cia_risk:    <one of MAIN_CIA_RISK_OPTIONS.value>,
+ *     cia_priority:    [<rank-1>, <rank-2>, <rank-3>] of CIA objectives,
  *   }
  */
 export default function BusinessContextForm({ value, onChange, errors = {} }) {
@@ -49,8 +74,7 @@ export default function BusinessContextForm({ value, onChange, errors = {} }) {
 
   const sensitivityOption =
     DATA_SENSITIVITY_OPTIONS.find((o) => o.value === value.data_sensitivity) ?? null;
-  const ciaOption =
-    MAIN_CIA_RISK_OPTIONS.find((o) => o.value === value.main_cia_risk) ?? null;
+  const ciaPriority = normaliseCiaPriority(value.cia_priority);
 
   const [frameworkDraft, setFrameworkDraft] = React.useState('');
   const frameworks = value.regulatory_frameworks || [];
@@ -120,58 +144,54 @@ export default function BusinessContextForm({ value, onChange, errors = {} }) {
         </SpaceBetween>
       </FormField>
 
-      <ColumnLayout columns={2}>
-        <FormField
-          label="Data sensitivity"
-          description="Highest-classification data the application handles."
-          errorText={errors.data_sensitivity}
-        >
-          <Select
-            selectedOption={sensitivityOption}
-            onChange={({ detail }) =>
-              patch({ data_sensitivity: detail.selectedOption.value })
-            }
-            options={DATA_SENSITIVITY_OPTIONS}
-            placeholder="Choose a sensitivity level"
-          />
-        </FormField>
+      <FormField
+        label="Data sensitivity"
+        description="Highest-classification data the application handles."
+        errorText={errors.data_sensitivity}
+      >
+        <Select
+          selectedOption={sensitivityOption}
+          onChange={({ detail }) =>
+            patch({ data_sensitivity: detail.selectedOption.value })
+          }
+          options={DATA_SENSITIVITY_OPTIONS}
+          placeholder="Choose a sensitivity level"
+        />
+      </FormField>
 
-        <FormField
-          label="Main CIA risk"
-          description="Which pillar of CIA would hurt the most if compromised."
-          errorText={errors.main_cia_risk}
-        >
-          <Select
-            selectedOption={ciaOption}
-            onChange={({ detail }) =>
-              patch({ main_cia_risk: detail.selectedOption.value })
-            }
-            options={MAIN_CIA_RISK_OPTIONS}
-            placeholder="Choose a risk pillar"
-          />
-        </FormField>
-      </ColumnLayout>
+      <FormField
+        label="CIA priority"
+        description="Rank confidentiality, integrity, and availability for this application — drag the rows to reorder."
+        errorText={errors.cia_priority}
+      >
+        <CiaPriorityList
+          value={ciaPriority}
+          onChange={(next) => patch({ cia_priority: next })}
+        />
+      </FormField>
     </SpaceBetween>
   );
 }
 
 /**
  * Return an empty BusinessContext — useful for seeding page state before the
- * user has typed anything. Matches the required-field contract: all fields
- * are present but empty, so the form doesn't crash on undefined access.
+ * user has typed anything. ``cia_priority`` is initialised to the canonical
+ * default ordering rather than empty because the drag UI always renders three
+ * rows; the user's expected interaction is to drag them, not to pick from
+ * scratch.
  */
 export function emptyBusinessContext() {
   return {
     description: '',
     regulatory_frameworks: [],
     data_sensitivity: '',
-    main_cia_risk: '',
+    cia_priority: [...CIA_DEFAULT_ORDER],
   };
 }
 
 /**
  * Validate a BusinessContext. Returns an errors object keyed by field — empty
- * when the context is valid. All four fields are required.
+ * when the context is valid.
  */
 export function validateBusinessContext(ctx) {
   const errors = {};
@@ -185,8 +205,9 @@ export function validateBusinessContext(ctx) {
   if (!ctx.data_sensitivity) {
     errors.data_sensitivity = 'Choose a data sensitivity level.';
   }
-  if (!ctx.main_cia_risk) {
-    errors.main_cia_risk = 'Choose the main CIA risk.';
+  const cia = ctx.cia_priority;
+  if (!Array.isArray(cia) || cia.length !== 3 || new Set(cia).size !== 3) {
+    errors.cia_priority = 'Rank all three CIA objectives.';
   }
   return errors;
 }

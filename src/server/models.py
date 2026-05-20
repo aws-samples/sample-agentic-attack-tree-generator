@@ -4,7 +4,18 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, Field, model_validator
+
+
+CiaObjective = Literal["confidentiality", "integrity", "availability"]
+
+# Canonical default ordering when the user hasn't expressed a preference and
+# we don't have a legacy ``main_cia_risk`` value to derive from.
+CIA_DEFAULT_ORDER: list[CiaObjective] = [
+    "confidentiality",
+    "integrity",
+    "availability",
+]
 
 
 class BusinessContext(BaseModel):
@@ -14,9 +25,11 @@ class BusinessContext(BaseModel):
     into ``scanner_context.json`` before the scanner agent runs so the
     whole pipeline treats these fields as authoritative user input.
 
-    All fields are required — "unknown" sentinel values are available on
-    the literal-typed fields so the create-application form still feels
-    light while guaranteeing the agent has something to reason with.
+    ``cia_priority`` is a length-3 ranking of the CIA objectives, most
+    important first. The threat agent uses this to distribute generated
+    threats roughly 50/30/20 across rank 1/2/3. The legacy
+    ``main_cia_risk`` field is no longer accepted on input but is migrated
+    transparently for any persisted records that still carry it.
     """
 
     description: str
@@ -25,17 +38,50 @@ class BusinessContext(BaseModel):
         "public",
         "internal",
         "confidential",
+        "highly_confidential",
         "pii",
         "phi",
         "regulated_financial",
         "unknown",
     ]
-    main_cia_risk: Literal[
-        "confidentiality",
-        "integrity",
-        "availability",
-        "unknown",
-    ]
+    cia_priority: list[CiaObjective] = Field(
+        default_factory=lambda: list(CIA_DEFAULT_ORDER),
+        description="CIA objectives ranked by user — index 0 = most important.",
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _migrate_main_cia_risk(cls, data: object) -> object:
+        """Accept legacy ``main_cia_risk`` on input and turn it into a ranking.
+
+        Any persisted record (or a UI client that hasn't been redeployed yet)
+        may still send ``main_cia_risk`` as a single value. Promote it to the
+        rank-1 position with the remaining objectives in their canonical
+        order. ``"unknown"`` and missing values both fall back to the default
+        ordering.
+        """
+        if not isinstance(data, dict):
+            return data
+        if data.get("cia_priority"):
+            data.pop("main_cia_risk", None)
+            return data
+
+        legacy = data.pop("main_cia_risk", None)
+        if legacy in {"confidentiality", "integrity", "availability"}:
+            rest = [o for o in CIA_DEFAULT_ORDER if o != legacy]
+            data["cia_priority"] = [legacy, *rest]
+        else:
+            data["cia_priority"] = list(CIA_DEFAULT_ORDER)
+        return data
+
+    @model_validator(mode="after")
+    def _validate_priority(self) -> "BusinessContext":
+        if len(self.cia_priority) != 3 or set(self.cia_priority) != set(CIA_DEFAULT_ORDER):
+            raise ValueError(
+                "cia_priority must contain confidentiality, integrity, and availability "
+                "exactly once, in the user's preferred order."
+            )
+        return self
 
 
 class Application(BaseModel):
@@ -93,7 +139,14 @@ class ApplicationUpdateRequest(BaseModel):
 
 
 class ApplicationSummary(BaseModel):
-    """Summary of a discovered ThreatForest application."""
+    """Summary of a discovered ThreatForest application.
+
+    ``imported`` is True when the on-disk folder originated from a
+    ``.tfreport`` bundle dropped into ``.threatforest/imports/`` — those
+    apps are read-only because the recipient doesn't have the source code.
+    ``imported_from`` carries the source application's display name so the
+    UI can show ``"Imported from <name>"`` in tooltips/badges.
+    """
 
     id: str
     name: str
@@ -101,6 +154,8 @@ class ApplicationSummary(BaseModel):
     version_count: int
     last_run_date: str
     business_context: BusinessContext | None = None
+    imported: bool = False
+    imported_from: str | None = None
 
 
 class VersionSummary(BaseModel):

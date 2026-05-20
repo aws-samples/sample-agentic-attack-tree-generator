@@ -156,6 +156,45 @@ export function exportThreatsCsv(summaryData, filename) {
   downloadBlob(content, 'text/csv;charset=utf-8;', filename || 'threats.csv');
 }
 
+/**
+ * Generate a threats-only CSV that omits the per-step attack-tree summary —
+ * one row per threat with category, priority, statement, and affected
+ * components only. Useful for sharing the threat list with stakeholders who
+ * don't need the kill-chain detail.
+ */
+export function generateThreatsOnlyCsvContent(summaryData) {
+  if (!summaryData || typeof summaryData !== 'object') return '';
+
+  const attackTrees = Array.isArray(summaryData.attack_trees) ? summaryData.attack_trees : [];
+  const threats = Array.isArray(summaryData.threats) ? summaryData.threats : [];
+  if (attackTrees.length === 0) return '';
+
+  const header = ['Threat ID', 'Category', 'Priority', 'Statement', 'Affected Components'];
+  const rows = [header.map(escapeCsvField).join(',')];
+
+  for (const tree of attackTrees) {
+    const affected = getAffectedComponents(tree, threats);
+    rows.push([
+      escapeCsvField(tree.threat_id || ''),
+      escapeCsvField(tree.threat_category || ''),
+      escapeCsvField(tree.priority || ''),
+      escapeCsvField(tree.threat_statement || tree.threat_description || ''),
+      escapeCsvField(affected.join(', ')),
+    ].join(','));
+  }
+
+  return rows.join('\n');
+}
+
+/**
+ * Download a threats-only CSV without the per-step attack-tree summary.
+ */
+export function exportThreatsOnlyCsv(summaryData, filename) {
+  const content = generateThreatsOnlyCsvContent(summaryData);
+  if (!content) { alert('No threat data available to export.'); return; }
+  downloadBlob(content, 'text/csv;charset=utf-8;', filename || 'threats.csv');
+}
+
 // ─── Mitigations-only CSV ─────────────────────────────────────
 
 /**
@@ -220,6 +259,464 @@ export function exportMitigationsCsv(summaryData, filename) {
   const content = generateMitigationsCsvContent(summaryData);
   if (!content) { alert('No mitigation data available to export.'); return; }
   downloadBlob(content, 'text/csv;charset=utf-8;', filename || 'mitigations.csv');
+}
+
+// ─── Customisable export ──────────────────────────────────────
+//
+// Drives both the page-level and row-level "Customise export" modal.
+// ``sections`` is a set of section keys; absent sections are dropped from
+// the rendered output entirely. This replaces the old fixed-scope exports
+// (Export All / Threats with steps / Threats only / Mitigations) which
+// couldn't be combined.
+//
+// Section keys:
+//   - "threats"       Threats overview table (one row per threat)
+//   - "attackSteps"   Per-threat attack-step pages (the bulky one — opt-in)
+//   - "ttp"           TTP mappings table
+//   - "mitigations"   Mitigations table
+
+export const EXPORT_SECTIONS = ['threats', 'attackSteps', 'ttp', 'mitigations'];
+
+/** Default section selection — Attack steps OFF to avoid 30-page reports. */
+export const DEFAULT_SECTIONS = {
+  threats: true,
+  attackSteps: false,
+  ttp: true,
+  mitigations: true,
+};
+
+/**
+ * Generate and download a section-customised PDF.
+ *
+ * Renders only the sections in ``sections``. Title page + executive summary
+ * always render — they're essential framing and trivially short.
+ */
+export function exportCustomPdf(summaryData, sections, filename) {
+  if (!summaryData || typeof summaryData !== 'object') {
+    alert('No threat model data available to export.');
+    return;
+  }
+
+  const attackTrees = Array.isArray(summaryData.attack_trees) ? summaryData.attack_trees : [];
+  if (attackTrees.length === 0) {
+    alert('No attack trees available to export.');
+    return;
+  }
+  if (!sections || EXPORT_SECTIONS.every((s) => !sections[s])) {
+    alert('Select at least one section to include in the report.');
+    return;
+  }
+
+  try {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 14;
+    const contentWidth = pageWidth - margin * 2;
+
+    const appName = summaryData.project_info?.application_name
+      || summaryData.application_name || 'Threat Model';
+    const ext = summaryData.extraction_summary || {};
+    const map = summaryData.mapping_summary || {};
+    const threats = summaryData.threats || [];
+
+    // Aggregate once — both the executive summary counts and the optional
+    // sections below need these arrays.
+    const allMitigations = [];
+    const allTtpMappings = [];
+    for (const tree of attackTrees) {
+      const treeMits = aggregateMitigations(tree);
+      for (const mit of treeMits) {
+        allMitigations.push({ ...mit, threatId: tree.threat_id || '' });
+      }
+      const ttcMappings = Array.isArray(tree.ttc_mappings) ? tree.ttc_mappings : [];
+      for (const m of ttcMappings) {
+        allTtpMappings.push({ ...m, threatId: tree.threat_id || '' });
+      }
+    }
+
+    // ─── Title + Executive Summary ───
+    doc.setFontSize(22);
+    doc.setTextColor(...DARK_COLOR);
+    doc.text('ThreatForest', pageWidth / 2, 35, { align: 'center' });
+    doc.setFontSize(16);
+    doc.text('Threat Model Report', pageWidth / 2, 45, { align: 'center' });
+    doc.setFontSize(12);
+    doc.setTextColor(100, 100, 100);
+    doc.text(appName, pageWidth / 2, 57, { align: 'center' });
+    doc.text(
+      new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+      pageWidth / 2,
+      65,
+      { align: 'center' }
+    );
+    doc.setDrawColor(...THEME_COLOR);
+    doc.setLineWidth(0.5);
+    doc.line(margin, 72, pageWidth - margin, 72);
+
+    doc.setFontSize(14);
+    doc.setTextColor(...DARK_COLOR);
+    doc.text('Executive Summary', margin, 82);
+
+    const totalMitigations = attackTrees.reduce(
+      (sum, tree) => sum + aggregateMitigations(tree).length,
+      0
+    );
+    autoTable(doc, {
+      startY: 87,
+      head: [['Metric', 'Value']],
+      body: [
+        ['Total Threats', String(ext.total_threats ?? attackTrees.length)],
+        ['High Severity', String(ext.high_severity_count ?? 0)],
+        ['Attack Trees', String(attackTrees.length)],
+        ['TTP Mappings', String(map.total_mappings ?? allTtpMappings.length)],
+        ['Mitigations', String(totalMitigations)],
+      ],
+      theme: 'grid',
+      headStyles: { fillColor: THEME_COLOR, fontSize: 10 },
+      bodyStyles: { fontSize: 10 },
+      columnStyles: { 0: { cellWidth: 60, fontStyle: 'bold' }, 1: { cellWidth: 40 } },
+      margin: { left: margin, right: margin },
+      tableWidth: 100,
+    });
+
+    // ─── Threats Overview ───
+    if (sections.threats) {
+      doc.addPage();
+      doc.setFontSize(14);
+      doc.setTextColor(...DARK_COLOR);
+      doc.text('Threats Overview', margin, 20);
+      const threatRows = attackTrees.map((tree) => {
+        const affected = getAffectedComponents(tree, threats);
+        return [
+          tree.threat_id || '',
+          tree.threat_category || '',
+          tree.priority || '',
+          tree.threat_statement || tree.threat_description || '',
+          affected.slice(0, 3).join(', ') + (affected.length > 3 ? ` (+${affected.length - 3})` : ''),
+        ];
+      });
+      autoTable(doc, {
+        startY: 25,
+        head: [['ID', 'Category', 'Priority', 'Statement', 'Affected Assets']],
+        body: threatRows,
+        theme: 'striped',
+        headStyles: { fillColor: THEME_COLOR, fontSize: 8 },
+        bodyStyles: { fontSize: 7 },
+        columnStyles: {
+          0: { cellWidth: 20 },
+          1: { cellWidth: 30 },
+          2: { cellWidth: 18 },
+          3: { cellWidth: 75 },
+          4: { cellWidth: 35 },
+        },
+        margin: { left: margin, right: margin },
+      });
+    }
+
+    // ─── Attack Steps ───
+    // Compact rendering: trees flow back-to-back rather than each starting
+    // a new page, with smaller fonts. The historical exportPdf added a page
+    // break per tree which produced 30+ page reports for 10 threats.
+    if (sections.attackSteps) {
+      doc.addPage();
+      let yPos = 20;
+      doc.setFontSize(14);
+      doc.setTextColor(...DARK_COLOR);
+      doc.text('Attack Steps', margin, yPos);
+      yPos += 8;
+
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const ensureSpace = (needed) => {
+        if (yPos + needed > pageHeight - 20) {
+          doc.addPage();
+          yPos = 20;
+        }
+      };
+
+      for (const tree of attackTrees) {
+        ensureSpace(20);
+        doc.setFontSize(11);
+        doc.setTextColor(...DARK_COLOR);
+        doc.text(`${tree.threat_id || 'Unknown'} — ${tree.threat_category || ''}`, margin, yPos);
+        yPos += 6;
+
+        if (tree.priority) {
+          doc.setFontSize(8);
+          doc.setTextColor(80, 80, 80);
+          doc.text(`Priority: ${tree.priority}`, margin, yPos);
+          yPos += 5;
+        }
+
+        const steps = Array.isArray(tree.attack_steps) ? tree.attack_steps : [];
+        if (steps.length === 0) {
+          doc.setFontSize(8);
+          doc.setTextColor(120, 120, 120);
+          doc.text('(no attack steps)', margin, yPos);
+          yPos += 6;
+          continue;
+        }
+
+        autoTable(doc, {
+          startY: yPos,
+          head: [['Step ID', 'Label', 'Description']],
+          body: steps.map((s) => [
+            s.node_id || '',
+            s.label || s.description || '',
+            s.description || '',
+          ]),
+          theme: 'striped',
+          headStyles: { fillColor: THEME_COLOR, fontSize: 8 },
+          bodyStyles: { fontSize: 7 },
+          columnStyles: {
+            0: { cellWidth: 22 },
+            1: { cellWidth: 45 },
+            2: { cellWidth: 'auto' },
+          },
+          margin: { left: margin, right: margin },
+        });
+        yPos = (doc.lastAutoTable?.finalY ?? yPos) + 6;
+      }
+    }
+
+    // ─── TTP Mappings ───
+    if (sections.ttp && allTtpMappings.length > 0) {
+      doc.addPage();
+      doc.setFontSize(14);
+      doc.setTextColor(...DARK_COLOR);
+      doc.text('TTP Mappings', margin, 20);
+      autoTable(doc, {
+        startY: 25,
+        head: [['Threat', 'Attack Step', 'TTP ID', 'TTP Name', 'Confidence']],
+        body: allTtpMappings.map((m) => [
+          m.threatId || '',
+          m.attack_step || '',
+          m.technique_id || '',
+          m.technique_name || '',
+          m.confidence != null ? String(Math.round(m.confidence * 100) / 100) : '',
+        ]),
+        theme: 'striped',
+        headStyles: { fillColor: THEME_COLOR, fontSize: 8 },
+        bodyStyles: { fontSize: 6.5 },
+        columnStyles: {
+          0: { cellWidth: 20 },
+          1: { cellWidth: 30 },
+          2: { cellWidth: 22 },
+          3: { cellWidth: 60 },
+          4: { cellWidth: 20 },
+        },
+        margin: { left: margin, right: margin },
+      });
+    }
+
+    // ─── Mitigations ───
+    if (sections.mitigations && allMitigations.length > 0) {
+      doc.addPage();
+      doc.setFontSize(14);
+      doc.setTextColor(...DARK_COLOR);
+      doc.text('Mitigations', margin, 20);
+      const sorted = [...allMitigations].sort((a, b) => {
+        const pa = typeof a.priority === 'number' ? a.priority : 99;
+        const pb = typeof b.priority === 'number' ? b.priority : 99;
+        return pa - pb;
+      });
+      autoTable(doc, {
+        startY: 25,
+        head: [['Priority', 'Mitigation', 'Remediation', 'Mapped TTP', 'Threat']],
+        body: sorted.map((m) => [
+          priorityLabel(m.priority),
+          m.name || '',
+          REMEDIATION_LABELS[m.remediationType] || m.remediationType || '',
+          m.techniqueId || '',
+          m.threatId || '',
+        ]),
+        theme: 'striped',
+        headStyles: { fillColor: THEME_COLOR, fontSize: 8 },
+        bodyStyles: { fontSize: 6.5 },
+        columnStyles: {
+          0: { cellWidth: 18 },
+          1: { cellWidth: 75 },
+          2: { cellWidth: 25 },
+          3: { cellWidth: 22 },
+          4: { cellWidth: 20 },
+        },
+        margin: { left: margin, right: margin },
+      });
+    }
+
+    addPdfFooter(doc, pageWidth, margin);
+    doc.save(filename || 'threat-model-report.pdf');
+  } catch (err) {
+    alert(`PDF generation failed: ${err.message || 'Unknown error'}`);
+  }
+}
+
+/**
+ * Generate and download a section-customised CSV bundle.
+ *
+ * Single section selected → one ``.csv`` download. Multiple sections →
+ * a ``.zip`` containing one CSV per section. JSZip is dynamically imported
+ * so the (~25KB gzip) cost only lands when a multi-section CSV is actually
+ * exported, not on every page load.
+ *
+ * Each CSV reuses the section's existing generator to keep field shapes
+ * stable across the new modal and any external tooling that consumes them.
+ */
+export async function exportCustomCsvBundle(summaryData, sections, baseFilename) {
+  if (!summaryData || typeof summaryData !== 'object') {
+    alert('No threat model data available to export.');
+    return;
+  }
+  const attackTrees = Array.isArray(summaryData.attack_trees) ? summaryData.attack_trees : [];
+  if (attackTrees.length === 0) {
+    alert('No threat model data available to export.');
+    return;
+  }
+
+  const csvBySection = {};
+  if (sections.threats) {
+    csvBySection['threats.csv'] = generateThreatsOnlyCsvContent(summaryData);
+  }
+  if (sections.attackSteps) {
+    // Reuse the existing threats-with-steps generator for the attack-step
+    // CSV — the step list per threat is the load-bearing column there.
+    csvBySection['attack-steps.csv'] = generateThreatsCsvContent(summaryData);
+  }
+  if (sections.ttp) {
+    csvBySection['ttp-mappings.csv'] = generateTtpMappingsCsvContent(summaryData);
+  }
+  if (sections.mitigations) {
+    csvBySection['mitigations.csv'] = generateMitigationsCsvContent(summaryData);
+  }
+
+  const entries = Object.entries(csvBySection).filter(([, body]) => Boolean(body));
+  if (entries.length === 0) {
+    alert('Select at least one section that has data to export.');
+    return;
+  }
+
+  const stem = (baseFilename || 'threat-model').replace(/\.(csv|zip)$/i, '');
+
+  if (entries.length === 1) {
+    const [name, body] = entries[0];
+    downloadBlob(body, 'text/csv;charset=utf-8;', `${stem}-${name}`);
+    return;
+  }
+
+  // Multiple sections → zip them. Dynamic import keeps JSZip out of the
+  // initial bundle for users who never multi-section export.
+  const { default: JSZip } = await import('jszip');
+  const zip = new JSZip();
+  for (const [name, body] of entries) zip.file(name, body);
+  const blob = await zip.generateAsync({ type: 'blob' });
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${stem}.zip`;
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Generate the TTP mappings CSV — one row per (threat × technique) pair.
+ *
+ * Pulled out as a named export so ``exportCustomCsvBundle`` can include
+ * a TTP-only CSV when the user selects only that section. Mirrors the
+ * shape of the TTP table in the PDF.
+ */
+export function generateTtpMappingsCsvContent(summaryData) {
+  if (!summaryData || typeof summaryData !== 'object') return '';
+  const attackTrees = Array.isArray(summaryData.attack_trees) ? summaryData.attack_trees : [];
+  if (attackTrees.length === 0) return '';
+
+  const header = ['Threat ID', 'Attack Step', 'TTP ID', 'TTP Name', 'Confidence'];
+  const rows = [header.map(escapeCsvField).join(',')];
+
+  for (const tree of attackTrees) {
+    const ttp = Array.isArray(tree.ttc_mappings) ? tree.ttc_mappings : [];
+    for (const m of ttp) {
+      rows.push([
+        escapeCsvField(tree.threat_id || ''),
+        escapeCsvField(m.attack_step || ''),
+        escapeCsvField(m.technique_id || ''),
+        escapeCsvField(m.technique_name || ''),
+        escapeCsvField(m.confidence != null ? String(Math.round(m.confidence * 100) / 100) : ''),
+      ].join(','));
+    }
+  }
+  return rows.join('\n');
+}
+
+// ─── ThreatForest Report bundle (.tfreport) ───────────────────
+
+/**
+ * Stream a ``.tfreport`` bundle from the server and trigger a browser
+ * download. Used for both the per-version export (``versionId`` set) and
+ * the full-application export (``versionId`` omitted).
+ *
+ * The actual bundle is built server-side; the client only orchestrates
+ * the fetch and the temp-link download. Errors are surfaced as thrown
+ * Errors so the caller can show them in an Alert.
+ *
+ * @param {object} params
+ * @param {string} params.appId               URL-encoded application id (v2 or legacy slug).
+ * @param {string=} params.versionId          When set, exports just that version. Omit for full-app.
+ * @param {boolean} params.includeScannerContext  Send through to the server's query param.
+ * @param {string=} params.filename           Override the server-supplied download filename.
+ */
+export async function downloadThreatforestReport({
+  appId,
+  versionId,
+  includeScannerContext,
+  filename,
+}) {
+  if (!appId) throw new Error('appId is required to export a ThreatForest report.');
+
+  const qs = new URLSearchParams({
+    include_scanner_context: includeScannerContext ? 'true' : 'false',
+  }).toString();
+  const url = versionId
+    ? `/api/applications/${encodeURIComponent(appId)}/versions/${encodeURIComponent(versionId)}/report?${qs}`
+    : `/api/applications/${encodeURIComponent(appId)}/report?${qs}`;
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    // Try to surface the JSON ``detail`` field from FastAPI when present —
+    // otherwise fall back to status text so the user has *something*.
+    let detail = '';
+    try {
+      const body = await response.json();
+      detail = body?.detail || '';
+    } catch {
+      // Non-JSON error body — ignore.
+    }
+    throw new Error(
+      detail || `Failed to export report (HTTP ${response.status}).`
+    );
+  }
+
+  // Prefer the server-supplied filename when the caller didn't override.
+  // Falls back to a generic name if Content-Disposition is missing.
+  const blob = await response.blob();
+  let downloadName = filename;
+  if (!downloadName) {
+    const disposition = response.headers.get('content-disposition') || '';
+    const match = /filename="?([^"]+)"?/.exec(disposition);
+    downloadName = (match && match[1]) || 'threatforest-report.tfreport';
+  }
+
+  const blobUrl = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = blobUrl;
+  link.download = downloadName;
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(blobUrl);
 }
 
 // ─── Shared download helper ───────────────────────────────────
@@ -649,6 +1146,73 @@ export function exportThreatsPdf(summaryData, filename) {
         });
       }
     }
+
+    addPdfFooter(doc, pageWidth, margin);
+    doc.save(filename || 'threats-report.pdf');
+  } catch (err) {
+    alert(`PDF generation failed: ${err.message || 'Unknown error'}`);
+  }
+}
+
+/**
+ * Generate and download a threats-only PDF without per-step attack-tree
+ * detail — overview table only. Mirrors ``exportThreatsPdf`` but omits the
+ * per-threat attack-step pages.
+ */
+export function exportThreatsOnlyPdf(summaryData, filename) {
+  if (!summaryData || typeof summaryData !== 'object') {
+    alert('No threat model data available to export.');
+    return;
+  }
+
+  const attackTrees = Array.isArray(summaryData.attack_trees) ? summaryData.attack_trees : [];
+  if (attackTrees.length === 0) { alert('No threats available to export.'); return; }
+
+  try {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 14;
+    const threats = summaryData.threats || [];
+    const appName = summaryData.project_info?.application_name || summaryData.application_name || 'Threat Model';
+
+    doc.setFontSize(22);
+    doc.setTextColor(...DARK_COLOR);
+    doc.text('ThreatForest', pageWidth / 2, 35, { align: 'center' });
+    doc.setFontSize(16);
+    doc.text('Threats Report', pageWidth / 2, 45, { align: 'center' });
+    doc.setFontSize(12);
+    doc.setTextColor(100, 100, 100);
+    doc.text(appName, pageWidth / 2, 57, { align: 'center' });
+    doc.text(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), pageWidth / 2, 65, { align: 'center' });
+    doc.setDrawColor(...THEME_COLOR);
+    doc.setLineWidth(0.5);
+    doc.line(margin, 72, pageWidth - margin, 72);
+
+    doc.setFontSize(14);
+    doc.setTextColor(...DARK_COLOR);
+    doc.text('Threats Overview', margin, 82);
+
+    const threatRows = attackTrees.map((tree) => {
+      const affected = getAffectedComponents(tree, threats);
+      return [
+        tree.threat_id || '',
+        tree.threat_category || '',
+        tree.priority || '',
+        tree.threat_statement || tree.threat_description || '',
+        affected.slice(0, 3).join(', ') + (affected.length > 3 ? ` (+${affected.length - 3})` : ''),
+      ];
+    });
+
+    autoTable(doc, {
+      startY: 87,
+      head: [['ID', 'Category', 'Priority', 'Statement', 'Affected Assets']],
+      body: threatRows,
+      theme: 'striped',
+      headStyles: { fillColor: THEME_COLOR, fontSize: 8 },
+      bodyStyles: { fontSize: 7 },
+      columnStyles: { 0: { cellWidth: 20 }, 1: { cellWidth: 30 }, 2: { cellWidth: 18 }, 3: { cellWidth: 75 }, 4: { cellWidth: 35 } },
+      margin: { left: margin, right: margin },
+    });
 
     addPdfFooter(doc, pageWidth, margin);
     doc.save(filename || 'threats-report.pdf');

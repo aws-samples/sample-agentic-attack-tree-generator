@@ -31,17 +31,20 @@ def _make_app(
     sensitivity: str = "phi",
     cia: str = "confidentiality",
 ) -> Application:
+    # ``main_cia_risk`` is the legacy single-value field; the model validator
+    # migrates it into a length-3 ``cia_priority`` ranking with the named
+    # objective at rank 1 and the rest in canonical order.
     return Application(
         id="app_test123",
         name="Test App",
         slug="test-app",
         project_path="/tmp/does-not-matter",
-        business_context=BusinessContext(
-            description=description,
-            regulatory_frameworks=frameworks or ["HIPAA", "SOC2"],
-            data_sensitivity=sensitivity,  # type: ignore[arg-type]
-            main_cia_risk=cia,  # type: ignore[arg-type]
-        ),
+        business_context=BusinessContext.model_validate({
+            "description": description,
+            "regulatory_frameworks": frameworks or ["HIPAA", "SOC2"],
+            "data_sensitivity": sensitivity,
+            "main_cia_risk": cia,
+        }),
         created_at="2026-04-17T00:00:00+00:00",
         updated_at="2026-04-17T00:00:00+00:00",
         run_dir_name="test-app",
@@ -60,20 +63,24 @@ def test_seed_writes_scanner_context(tmp_path: Path) -> None:
         "description": app.business_context.description,
         "regulatory_frameworks": ["HIPAA", "SOC2"],
         "data_sensitivity": "phi",
-        "main_cia_risk": "confidentiality",
+        "cia_priority": ["confidentiality", "integrity", "availability"],
     }
 
 
 def test_seed_mirrors_top_level_fields(tmp_path: Path) -> None:
-    """Top-level ``compliance_requirements``, ``data_sensitivity`` and
-    ``main_cia_risk`` mirror the nested block so existing scanner/interviewer
-    enrichment and the threat agent can read them without extra indirection."""
+    """Top-level ``compliance_requirements``, ``data_sensitivity``,
+    ``cia_priority`` and the legacy ``main_cia_risk`` mirror the nested block
+    so existing scanner/interviewer enrichment and the threat agent can read
+    them without extra indirection."""
     app = _make_app(frameworks=["SOC2", "PCI-DSS"], sensitivity="pii", cia="integrity")
     _seed_scanner_context(tmp_path, app)
 
     data = json.loads((tmp_path / "state" / "scanner_context.json").read_text())
     assert data["compliance_requirements"] == ["SOC2", "PCI-DSS"]
     assert data["data_sensitivity"] == "pii"
+    # Migration places the legacy single-value at rank 1 and fills the rest
+    # in canonical order.
+    assert data["cia_priority"] == ["integrity", "confidentiality", "availability"]
     assert data["main_cia_risk"] == "integrity"
 
 

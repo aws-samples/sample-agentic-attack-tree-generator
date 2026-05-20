@@ -6,8 +6,8 @@ import json
 import shutil
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import JSONResponse, Response
 
 from server.applications import (
     ApplicationNameConflictError,
@@ -499,6 +499,164 @@ async def get_version_data(app_id: str, version_id: str) -> JSONResponse:
         _apply_mitigation_overrides(data, overrides)
 
     return JSONResponse(content=data)
+
+
+# ---------------------------------------------------------------------------
+# ThreatForest report bundles (.tfreport)
+# ---------------------------------------------------------------------------
+
+
+def _slugify_for_filename(text: str) -> str:
+    """Lowercase, dash-separated form safe for use in download filenames."""
+    import re
+    out = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
+    return out or "threatforest"
+
+
+def _bundle_filename(app_name: str, version_label: str | None) -> str:
+    """Build a human-readable ``.tfreport`` filename."""
+    base = _slugify_for_filename(app_name)
+    if version_label:
+        return f"{base}-{_slugify_for_filename(version_label)}.tfreport"
+    return f"{base}-full.tfreport"
+
+
+def _build_and_respond(
+    *,
+    folder_id: str,
+    version_ids: list[str],
+    include_scanner_context: bool,
+    filename: str,
+) -> Response:
+    """Shared body for both export endpoints — build the bundle and stream it."""
+    from server.report_bundle import ReportBundleError, build_report_bundle
+
+    try:
+        from threatforest import __version__ as tf_version  # type: ignore[attr-defined]
+    except (ImportError, AttributeError):
+        tf_version = ""
+
+    try:
+        payload = build_report_bundle(
+            folder_id=folder_id,
+            version_ids=version_ids,
+            include_scanner_context=include_scanner_context,
+            registry=get_registry(),
+            app_repository=get_app_repository(),
+            threatforest_version=tf_version,
+        )
+    except ReportBundleError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+
+    return Response(
+        content=payload,
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+        },
+    )
+
+
+@router.get("/applications/{app_id}/versions/{version_id}/report")
+async def export_version_report(
+    app_id: str,
+    version_id: str,
+    include_scanner_context: bool = Query(
+        True,
+        description=(
+            "Include scanner_context.json (file paths and code excerpts) in "
+            "the bundle. Default True for intra-team handoff; pass False to "
+            "redact when sharing more broadly."
+        ),
+    ),
+) -> Response:
+    """Build and download a single-version ``.tfreport`` bundle."""
+    folder_id = _resolve_folder_id(app_id)
+    registry = get_registry()
+
+    if version_id == "latest":
+        # Resolve so the manifest carries a real timestamp.
+        resolved = registry._resolve_latest_version(  # noqa: SLF001
+            registry.get_project_dir(folder_id) or Path("/")
+        )
+        if resolved is None:
+            raise HTTPException(
+                status_code=404,
+                detail=(
+                    f"No completed versions for application '{app_id}' to "
+                    f"export."
+                ),
+            )
+        version_id = resolved
+
+    # Use display name when available so filenames don't carry slugs.
+    app_name = folder_id
+    try:
+        app_name = get_app_repository().get_application(app_id).name
+    except ApplicationNotFoundError:
+        record = get_app_repository().find_by_run_dir_name(folder_id)
+        if record is not None:
+            app_name = record.name
+
+    filename = _bundle_filename(app_name, version_id)
+    return _build_and_respond(
+        folder_id=folder_id,
+        version_ids=[version_id],
+        include_scanner_context=include_scanner_context,
+        filename=filename,
+    )
+
+
+@router.get("/applications/{app_id}/report")
+async def export_application_report(
+    app_id: str,
+    include_scanner_context: bool = Query(
+        True,
+        description=(
+            "Include scanner_context.json (file paths and code excerpts) in "
+            "the bundle. Default True for intra-team handoff; pass False to "
+            "redact when sharing more broadly."
+        ),
+    ),
+) -> Response:
+    """Build and download a full-application ``.tfreport`` bundle.
+
+    Includes every completed version of the application. Versions still in
+    progress (no ``output/threatforest_data.json``) are filtered out — the
+    bundle would fail to import them anyway.
+    """
+    folder_id = _resolve_folder_id(app_id)
+    registry = get_registry()
+
+    versions = registry.get_versions(folder_id)
+    completed = [v.id for v in versions if v.status == "complete"]
+    if not completed:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                f"No completed versions for application '{app_id}' to export."
+            ),
+        )
+
+    # Bundle versions in chronological (oldest-first) order so the
+    # recipient's UI labels them ``Version 1, 2, 3...`` consistently.
+    completed.reverse()
+
+    app_name = folder_id
+    try:
+        app_name = get_app_repository().get_application(app_id).name
+    except ApplicationNotFoundError:
+        record = get_app_repository().find_by_run_dir_name(folder_id)
+        if record is not None:
+            app_name = record.name
+
+    filename = _bundle_filename(app_name, None)
+    return _build_and_respond(
+        folder_id=folder_id,
+        version_ids=completed,
+        include_scanner_context=include_scanner_context,
+        filename=filename,
+    )
 
 
 # ---------------------------------------------------------------------------

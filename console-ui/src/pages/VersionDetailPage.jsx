@@ -188,6 +188,8 @@ export default function VersionDetailPage() {
                 summaryData={data}
                 appId={appId}
                 versionId={versionId}
+                appName={appName}
+                versionLabel={versionLabel}
               />
             </SpaceBetween>
           }>{threatLabel}</Header>

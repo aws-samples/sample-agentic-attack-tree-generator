@@ -3,74 +3,105 @@ import { useNavigate } from 'react-router-dom';
 import Table from '@cloudscape-design/components/table';
 import Header from '@cloudscape-design/components/header';
 import Button from '@cloudscape-design/components/button';
-import ButtonDropdown from '@cloudscape-design/components/button-dropdown';
 import Modal from '@cloudscape-design/components/modal';
 import Alert from '@cloudscape-design/components/alert';
 import Box from '@cloudscape-design/components/box';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import Link from '@cloudscape-design/components/link';
 import Spinner from '@cloudscape-design/components/spinner';
+import Badge from '@cloudscape-design/components/badge';
 import CloudscapeShell from '../components/CloudscapeShell';
+import ImportReportButton from '../components/ImportReportButton';
 import {
   getApplications,
   deleteApplicationRecord,
   deleteApplication,
 } from '../api-client';
-import { exportCsv, exportPdf } from '../utils/export-service';
+import { exportCustomPdf, exportCustomCsvBundle } from '../utils/export-service';
+import CustomiseExportModal from '../components/CustomiseExportModal';
 
-const EXPORT_ITEMS = [
-  { id: 'export-pdf', text: 'Export PDF' },
-  { id: 'export-csv', text: 'Export CSV' },
-];
-
-function AppExportButton({ appId }) {
-  const [exporting, setExporting] = useState(false);
+/**
+ * Per-row export entry on the Applications table. Operates on the latest
+ * completed version of an application; opens the same customise-export
+ * modal used across the app so users see a consistent flow.
+ *
+ * The full ``/data`` blob is fetched lazily when the user clicks Export so
+ * we don't pre-fetch for every app on the page.
+ */
+function AppExportButton({ appId, appName }) {
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [data, setData] = useState(null);
   const [error, setError] = useState(null);
 
-  async function handleExport({ detail }) {
+  async function handleClick() {
     setError(null);
-    setExporting(true);
+    setOpen(true);
+    setBusy(true);
     try {
       const response = await fetch(
         `/api/applications/${encodeURIComponent(appId)}/versions/latest/data`
       );
-      if (!response.ok) throw new Error(`Failed to fetch data (HTTP ${response.status})`);
-      const data = await response.json();
-      const attackTree = data?.attack_trees?.[0];
-      if (!attackTree || !Array.isArray(attackTree.attack_steps) || attackTree.attack_steps.length === 0) {
-        setError('No attack tree data available to export.');
-        return;
+      if (!response.ok) {
+        throw new Error(`Failed to fetch data (HTTP ${response.status})`);
       }
-      const filename = `attack-tree-${appId}`;
-      if (detail.id === 'export-csv') {
-        exportCsv(attackTree, `${filename}.csv`);
-      } else if (detail.id === 'export-pdf') {
-        exportPdf(attackTree, data, `${filename}.pdf`);
-      }
+      setData(await response.json());
     } catch (err) {
-      setError(err.message || 'Export failed');
+      setError(err.message || 'Failed to load version data.');
     } finally {
-      setExporting(false);
+      setBusy(false);
     }
   }
 
+  async function handleConfirm({ sections, format }) {
+    if (!data) {
+      setError('Version data not loaded yet — please wait.');
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      const safeName = (appName || appId).replace(/\s+/g, '-').toLowerCase();
+      const filename =
+        format === 'pdf'
+          ? `${safeName}-latest.pdf`
+          : `${safeName}-latest.csv`;
+      if (format === 'pdf') {
+        exportCustomPdf(data, sections, filename);
+      } else {
+        await exportCustomCsvBundle(data, sections, filename);
+      }
+      setOpen(false);
+    } catch (err) {
+      setError(err.message || 'Failed to generate export.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const threatCount = Array.isArray(data?.attack_trees)
+    ? data.attack_trees.length
+    : 0;
+
   return (
-    <SpaceBetween size="xs">
-      {error && (
-        <Alert type="error" dismissible onDismiss={() => setError(null)} data-testid={`export-error-${appId}`}>
-          {error}
-        </Alert>
-      )}
-      <ButtonDropdown
-        items={EXPORT_ITEMS}
-        onItemClick={handleExport}
-        loading={exporting}
-        variant="inline-icon"
+    <>
+      <Button
+        variant="inline-link"
+        onClick={handleClick}
+        loading={busy && !open}
         data-testid={`export-button-${appId}`}
       >
         Export
-      </ButtonDropdown>
-    </SpaceBetween>
+      </Button>
+      <CustomiseExportModal
+        visible={open}
+        onDismiss={() => !busy && setOpen(false)}
+        onConfirm={handleConfirm}
+        loading={busy}
+        error={error}
+        threatCount={threatCount}
+      />
+    </>
   );
 }
 
@@ -84,6 +115,16 @@ export default function ApplicationsPage() {
   const [deleting, setDeleting] = useState(false);
   const [sortingColumn, setSortingColumn] = useState({ sortingField: 'name' });
   const [sortingDescending, setSortingDescending] = useState(false);
+
+  const refreshApps = async () => {
+    try {
+      setError(null);
+      const data = await getApplications();
+      setApplications(data.applications || []);
+    } catch (err) {
+      setError(err.message || 'Failed to load applications');
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -142,11 +183,26 @@ export default function ApplicationsPage() {
       id: 'name',
       header: 'Application',
       sortingField: 'name',
-      width: 180,
+      width: 220,
       cell: (item) => (
-        <Link onFollow={(e) => { e.preventDefault(); navigate(`/applications/${item.id}`); }}>
-          {item.name}
-        </Link>
+        <SpaceBetween direction="horizontal" size="xs">
+          <Link onFollow={(e) => { e.preventDefault(); navigate(`/applications/${item.id}`); }}>
+            {item.name}
+          </Link>
+          {item.imported && (
+            <Badge
+              color="blue"
+              data-testid={`imported-badge-${item.id}`}
+              title={
+                item.imported_from
+                  ? `Imported from ${item.imported_from} — read-only`
+                  : 'Imported — read-only'
+              }
+            >
+              Imported
+            </Badge>
+          )}
+        </SpaceBetween>
       ),
     },
     {
@@ -187,7 +243,7 @@ export default function ApplicationsPage() {
       id: 'export',
       header: 'Export',
       width: 110,
-      cell: (item) => <AppExportButton appId={item.id} />,
+      cell: (item) => <AppExportButton appId={item.id} appName={item.name} />,
     },
     {
       id: 'actions',
@@ -231,13 +287,16 @@ export default function ApplicationsPage() {
               <Header
                 description="Browse and manage your threat model applications"
                 actions={
-                  <Button
-                    variant="primary"
-                    onClick={() => navigate('/applications/new')}
-                    data-testid="create-application"
-                  >
-                    Create application
-                  </Button>
+                  <SpaceBetween direction="horizontal" size="xs">
+                    <ImportReportButton onImported={refreshApps} />
+                    <Button
+                      variant="primary"
+                      onClick={() => navigate('/applications/new')}
+                      data-testid="create-application"
+                    >
+                      Create application
+                    </Button>
+                  </SpaceBetween>
                 }
               >
                 Applications
