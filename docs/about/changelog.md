@@ -21,6 +21,19 @@ pip install --upgrade threatforest
 
 ---
 
+## Version 0.4.1
+
+**Release Date:** May 20, 2026
+
+### Security
+
+- **`jspdf` 4.2.0 → 4.2.1** — clears [GHSA-wfv2-pwc8-crg5](https://github.com/advisories/GHSA-wfv2-pwc8-crg5) (HTML injection in New Window paths) and [GHSA-7x6v-j9x4-qf24](https://github.com/advisories/GHSA-7x6v-j9x4-qf24) (PDF object injection via FreeText color). Neither code path was reachable from ThreatForest's exports, but the patch upgrade is free.
+- **`rollup` 4.57.1 → 4.60.4** — clears [GHSA-mw96-cpmx-2vgc](https://github.com/advisories/GHSA-mw96-cpmx-2vgc) (arbitrary file write via path traversal). Transitive build-time dependency via Vite.
+
+Vite / esbuild / postcss moderate alerts are deferred to a separate Vite 5 → 6 upgrade — they affect the dev server only and don't ship in the production SPA bundle.
+
+---
+
 ## Version 0.4.0
 
 **Release Date:** May 20, 2026
