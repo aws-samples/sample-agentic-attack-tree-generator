@@ -21,6 +21,16 @@ pip install --upgrade threatforest
 
 ---
 
+## Version 0.4.2
+
+**Release Date:** May 20, 2026
+
+### Onboarding
+
+- **Import a report on a fresh install** — The HomePage's unconfigured-state card is now "Get started" and exposes both *Configure model access* and *Import a report*. Recipients of a shared `.tfreport` no longer have to set up an LLM provider before viewing the bundle; on successful import they're routed straight to Applications. Configuration is still required to run new analyses.
+
+---
+
 ## Version 0.4.1
 
 **Release Date:** May 20, 2026
