@@ -11,6 +11,7 @@ import ColumnLayout from '@cloudscape-design/components/column-layout';
 import Link from '@cloudscape-design/components/link';
 import StatusIndicator from '@cloudscape-design/components/status-indicator';
 import CloudscapeShell from '../components/CloudscapeShell';
+import ImportReportButton from '../components/ImportReportButton';
 import { getPausedRuns, getActiveRuns, getConfig, getApplications } from '../api-client';
 
 export const PIPELINE_STAGES = [
@@ -136,9 +137,9 @@ export default function HomePage() {
                   header={
                     <Header
                       variant="h2"
-                      description="Connect ThreatForest to a model provider before running your first analysis."
+                      description="Connect ThreatForest to a model provider before running your first analysis — or import a report someone shared with you to view it without running the pipeline."
                     >
-                      Set up model access
+                      Get started
                     </Header>
                   }
                 >
@@ -146,8 +147,9 @@ export default function HomePage() {
                     <Button variant="primary" onClick={() => navigate('/configure')}>
                       Configure model access
                     </Button>
+                    <ImportReportButton onImported={() => navigate('/applications')} />
                     <Box variant="small" color="text-body-secondary">
-                      Required once per workstation. Takes about a minute.
+                      Configuration is required to run analyses. Imports work without a provider.
                     </Box>
                   </SpaceBetween>
                 </Container>
