@@ -45,6 +45,19 @@ Live view of the pipeline as it executes — shows each stage completing in real
 #### Threat Model Summary / Version Detail
 The summary lists all threats for a run with severity and category. Click a threat to open the version detail view — attack tree, MITRE ATT&CK mappings, and mitigations.
 
+The summary page also surfaces:
+
+- **Editable mitigation statuses** — on the Mitigations tab, mark each mitigation as *Already implemented*, *In progress*, *Accepted risk*, *Not relevant*, or *Won't do* with a required comment. Statuses are shown read-only on the per-threat tables and persist alongside the run.
+- **Run metadata** — collapsible footer with the model id, frameworks selected, ATT&CK version, and start / completion times for the run.
+- **Export and import** — see the next section.
+
+#### Sharing Reports
+Each version row in the application overview has an **Export** menu and an **Import report** button:
+
+- **PDF / CSV / JSON** — formatted reports of the threats and mitigations
+- **`.tfreport` bundle** — a self-contained zip of state files, business context, and run metadata. Open the **Customise export** dialog to pick which sections to include and override the filename.
+- **Import a `.tfreport`** — upload a bundle (or drop it into `.threatforest/imports/`); the server materialises a read-only Application + Version, badged "Imported from \<name\>" so recipients without the source code can still review the model.
+
 #### Configure
 Set your LLM provider credentials and Langfuse tracing without touching the config file. See [Configuration](../getting-started/configuration.md).
 

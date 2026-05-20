@@ -335,10 +335,20 @@ git tag -a v1.0-threat-analysis -m "Initial threat analysis"
 
 ### Sharing Results
 
+**Per-version exports** (from the application overview row, or the **Export** button on the summary page):
+
+- **PDF** — formatted threat list and mitigation summary, with full implementation guidance per mitigation. Counts and statuses match the on-screen Mitigations tab.
+- **CSV** — rows of mitigations including override status and status comment, suitable for spreadsheets.
+- **JSON** — the same `threatforest_data.json` schema documented above.
+- **`.tfreport` bundle** — a self-contained zip of state files, business context, run metadata, and overrides. Open the **Customise export** dialog to pick which sections to include and override the filename.
+
+**Importing a `.tfreport`:** the **Import report** button uploads a bundle (or drop it into `.threatforest/imports/`) and the server registers a read-only Application + Version, badged "Imported from \<name\>". Recipients without access to the source code can still review the model, attack trees, mitigations, and override statuses.
+
+**Tracking remediation:** edit each mitigation's status on the Mitigations tab — *Already implemented*, *In progress*, *Accepted risk*, *Not relevant*, or *Won't do*, with a required comment. Statuses are persisted alongside the run and exported in PDF / CSV / `.tfreport` so reviewers see your current posture.
+
 **Dashboard for Presentations:**
 
 - Host on internal web server for team access
-- Export to PDF for email distribution
 - Screenshot key findings for reports
 
 **JSON for Automation:**

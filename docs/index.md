@@ -148,8 +148,8 @@ Generate comprehensive attack trees in minutes:
 - Interactive node exploration
 - Real-time filtering and search
 - MITRE ATT&CK technique details
-- Expandable mitigation strategies
-- Export and sharing capabilities
+- Expandable mitigation strategies with editable status tracking (Already implemented / In progress / Accepted risk / Not relevant / Won't do)
+- PDF / CSV / JSON exports plus a self-contained `.tfreport` bundle for sharing with reviewers who don't have the source code
 
 </div>
 

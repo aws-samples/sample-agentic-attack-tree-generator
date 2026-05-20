@@ -30,8 +30,8 @@ When you create an application in the web console, the wizard captures business 
 
 - **Description** — short summary of what the application does
 - **Regulatory frameworks** — e.g. SOC2, HIPAA, PCI-DSS
-- **Data sensitivity** — public, internal, confidential, PII
-- **Main CIA risk** — confidentiality, integrity, or availability
+- **Data sensitivity** — public, internal, confidential, highly confidential, PII, PHI, regulated financial
+- **CIA priority** — drag the three security objectives (confidentiality, integrity, availability) into your preferred order. Rank 1 is the most important; the threat agent biases generated threats toward it (roughly 50/30/20 across ranks 1/2/3)
 
 This context is fed to the scanner agent and steers threat generation toward what actually matters for your application. It's worth filling in — generic threats are less useful than ones grounded in your compliance and data context.
 
