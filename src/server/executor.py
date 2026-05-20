@@ -207,11 +207,12 @@ def _seed_scanner_context(run_dir: Path, app: Application) -> None:
 
     - A nested ``business_context`` block — the authoritative record of what
       the user entered.
-    - Top-level ``compliance_requirements``, ``data_sensitivity`` and
-      ``main_cia_risk`` — mirrors of the fields the scanner / interviewer
-      already enrich, so existing fill-if-not-set and unique-append logic
-      naturally preserves the user's values. The threat agent and scanner
-      review UI read them from the top level.
+    - Top-level ``compliance_requirements``, ``data_sensitivity``,
+      ``cia_priority`` (length-3 ranking) and ``main_cia_risk`` (= rank 1,
+      kept for back-compat with downstream code that still reads the single
+      value). Mirrors of the fields the scanner / interviewer already
+      enrich, so existing fill-if-not-set and unique-append logic naturally
+      preserves the user's values.
 
     Leaves an existing file untouched (resume flows re-enter with state already
     written from the previous attempt — we never clobber it).
@@ -223,18 +224,20 @@ def _seed_scanner_context(run_dir: Path, app: Application) -> None:
         return
 
     bc = app.business_context
+    cia_priority = list(bc.cia_priority)
+    main_cia_risk = cia_priority[0]  # rank 1 — for any caller still keying off it
     seed: dict[str, Any] = {
         "business_context": {
             "description": bc.description,
             "regulatory_frameworks": list(bc.regulatory_frameworks),
             "data_sensitivity": bc.data_sensitivity,
-            "main_cia_risk": bc.main_cia_risk,
+            "cia_priority": cia_priority,
         },
-        # Mirrored into top-level fields that the scanner + interviewer
-        # already understand, so downstream enrichment logic is zero-change.
+        # Mirrored into top-level fields the scanner + interviewer enrich.
         "compliance_requirements": list(bc.regulatory_frameworks),
         "data_sensitivity": bc.data_sensitivity,
-        "main_cia_risk": bc.main_cia_risk,
+        "cia_priority": cia_priority,
+        "main_cia_risk": main_cia_risk,
     }
     state_file.write_text(
         _json_module.dumps(seed, indent=2, sort_keys=True),

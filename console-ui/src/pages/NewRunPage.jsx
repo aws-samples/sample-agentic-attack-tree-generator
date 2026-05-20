@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import CloudscapeShell from '../components/CloudscapeShell';
-import Wizard from '@cloudscape-design/components/wizard';
+import Form from '@cloudscape-design/components/form';
 import FormField from '@cloudscape-design/components/form-field';
 import Input from '@cloudscape-design/components/input';
 import RadioGroup from '@cloudscape-design/components/radio-group';
@@ -13,7 +13,7 @@ import Box from '@cloudscape-design/components/box';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import ColumnLayout from '@cloudscape-design/components/column-layout';
 import Spinner from '@cloudscape-design/components/spinner';
-import Badge from '@cloudscape-design/components/badge';
+import Button from '@cloudscape-design/components/button';
 import { getApplication, getConfig, getFrameworks, createRun } from '../api-client';
 import DirectoryPicker from '../components/DirectoryPicker';
 
@@ -37,7 +37,6 @@ export default function NewRunPage() {
   const { appId } = useParams();
   const isAppScoped = Boolean(appId);
 
-  const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [projectPath, setProjectPath] = useState('');
   const [threatSource, setThreatSource] = useState('auto');
   const [threatFilePath, setThreatFilePath] = useState('');
@@ -109,47 +108,44 @@ export default function NewRunPage() {
     setFrameworksInitialized(true);
   }, [availableFrameworks, app, isAppScoped, frameworksInitialized]);
 
-  const validateStep = (stepIndex) => {
-    if (stepIndex === 0) {
-      // In app-scoped mode the project path is locked and already valid.
-      if (isAppScoped) return true;
-      if (!projectPath.trim()) {
-        setProjectPathError('Project path is required.');
-        return false;
-      }
-      setProjectPathError('');
-      return true;
-    }
-    if (stepIndex === 1) {
-      if (threatSource === 'file' && !threatFilePath.trim()) {
-        setThreatFilePathError('Threat file path is required when using a file source.');
-        return false;
-      }
-      setThreatFilePathError('');
-      return true;
-    }
-    if (stepIndex === 2) {
-      const anySelected = Object.values(selectedFrameworks).some(Boolean);
-      if (!anySelected) {
-        setFrameworkError('Select at least one framework.');
-        return false;
-      }
-      setFrameworkError('');
-      return true;
-    }
-    return true;
-  };
+  /**
+   * Single-page validator — runs all field checks at once on submit and
+   * returns true only when every required field is filled. Each failing
+   * field surfaces its own inline error via the field-level state, so the
+   * user sees every problem in one pass rather than discovering them step
+   * by step.
+   */
+  function validateAll() {
+    let ok = true;
 
-  const handleNavigate = (event) => {
-    const { requestedStepIndex, reason } = event.detail;
-    if (reason === 'next') {
-      if (!validateStep(activeStepIndex)) return;
+    if (!isAppScoped && !projectPath.trim()) {
+      setProjectPathError('Project path is required.');
+      ok = false;
+    } else {
+      setProjectPathError('');
     }
-    setActiveStepIndex(requestedStepIndex);
-  };
+
+    if (threatSource === 'file' && !threatFilePath.trim()) {
+      setThreatFilePathError('Threat file path is required when using a file source.');
+      ok = false;
+    } else {
+      setThreatFilePathError('');
+    }
+
+    const anySelected = Object.values(selectedFrameworks).some(Boolean);
+    if (!anySelected) {
+      setFrameworkError('Select at least one framework.');
+      ok = false;
+    } else {
+      setFrameworkError('');
+    }
+
+    return ok;
+  }
 
   const handleSubmit = async () => {
     setSubmitError('');
+    if (!validateAll()) return;
     setSubmitting(true);
     try {
       const chosenFrameworks = Object.entries(selectedFrameworks)
@@ -177,176 +173,6 @@ export default function NewRunPage() {
   };
 
   const frameworkKeys = Object.keys(availableFrameworks);
-  const selectedNames = Object.entries(selectedFrameworks)
-    .filter(([, checked]) => checked)
-    .map(([key]) => availableFrameworks[key]?.name || key);
-
-  const steps = [
-    {
-      title: 'Project Path',
-      content: (
-        <Container header={<Header variant="h2">Project Path</Header>}>
-          <SpaceBetween size="m">
-            {isAppScoped && appError && <Alert type="error">{appError}</Alert>}
-            <FormField
-              label="Project directory path"
-              errorText={projectPathError}
-              description={
-                isAppScoped
-                  ? 'Pre-filled from the application record. Edit if the folder has been renamed or moved — the change is saved back to the application.'
-                  : 'Enter the path or browse to the project directory to analyze.'
-              }
-            >
-              <DirectoryPicker
-                value={projectPath}
-                onChange={(val) => {
-                  setProjectPath(val);
-                  if (val.trim()) setProjectPathError('');
-                }}
-                placeholder="/path/to/project"
-              />
-            </FormField>
-          </SpaceBetween>
-        </Container>
-      ),
-    },
-    {
-      title: 'Threat Source',
-      content: (
-        <Container
-          header={
-            <Header
-              variant="h2"
-              description="Choose whether ThreatForest should generate threat statements from the repository or use an existing file."
-            >
-              Threat Source
-            </Header>
-          }
-        >
-          <SpaceBetween size="l">
-            <RadioGroup
-              value={threatSource}
-              onChange={({ detail }) => {
-                setThreatSource(detail.value);
-                if (detail.value === 'auto') setThreatFilePathError('');
-              }}
-              items={[
-                { value: 'auto', label: 'Auto-generate using AI' },
-                { value: 'file', label: 'Provide existing threat statements file' },
-              ]}
-            />
-            {threatSource === 'file' && (
-              <FormField
-                label="Threat file path"
-                errorText={threatFilePathError}
-                description="Enter the path to the threat statements file."
-              >
-                <Input
-                  value={threatFilePath}
-                  onChange={({ detail }) => {
-                    setThreatFilePath(detail.value);
-                    if (detail.value.trim()) setThreatFilePathError('');
-                  }}
-                  placeholder="/path/to/threats.json"
-                />
-              </FormField>
-            )}
-          </SpaceBetween>
-        </Container>
-      ),
-    },
-    {
-      title: 'Threat Frameworks',
-      content: (
-        <Container header={<Header variant="h2">Threat Frameworks</Header>}>
-          <SpaceBetween size="l">
-            <Box variant="p" color="text-body-secondary">
-              Select which knowledge bases to map attack steps against. All frameworks are selected by default.
-            </Box>
-            {frameworkError && (
-              <Alert type="error" dismissible onDismiss={() => setFrameworkError('')}>
-                {frameworkError}
-              </Alert>
-            )}
-            <FormField label="Frameworks">
-              <SpaceBetween size="xs">
-                {frameworkKeys.map((key) => (
-                  <Checkbox
-                    key={key}
-                    checked={!!selectedFrameworks[key]}
-                    onChange={({ detail }) => {
-                      setSelectedFrameworks((prev) => ({ ...prev, [key]: detail.checked }));
-                      setFrameworkError('');
-                    }}
-                  >
-                    <Box variant="strong">{availableFrameworks[key].name}</Box>
-                    {' '}
-                    <Box variant="small" color="text-body-secondary" display="inline">
-                      — {availableFrameworks[key].description}
-                    </Box>
-                  </Checkbox>
-                ))}
-              </SpaceBetween>
-            </FormField>
-          </SpaceBetween>
-        </Container>
-      ),
-    },
-    {
-      title: 'Review & Confirm',
-      content: (
-        <Container header={<Header variant="h2">Review & Confirm</Header>}>
-          <SpaceBetween size="l">
-            {submitError && (
-              <Alert type="error" dismissible onDismiss={() => setSubmitError('')}>
-                {submitError}
-              </Alert>
-            )}
-            {configLoading ? (
-              <Box textAlign="center" padding="l">
-                <Spinner size="large" />
-              </Box>
-            ) : (
-              <ColumnLayout columns={2} variant="text-grid">
-                {isAppScoped && (
-                  <div>
-                    <Box variant="awsui-key-label">Application</Box>
-                    <div>{app?.name || appId}</div>
-                  </div>
-                )}
-                <div>
-                  <Box variant="awsui-key-label">Project path</Box>
-                  <div>{projectPath}</div>
-                </div>
-                <div>
-                  <Box variant="awsui-key-label">Threat source</Box>
-                  <div>{threatSource === 'auto' ? 'Auto-generate using AI' : 'File'}</div>
-                </div>
-                {threatSource === 'file' && (
-                  <div>
-                    <Box variant="awsui-key-label">Threat file path</Box>
-                    <div>{threatFilePath}</div>
-                  </div>
-                )}
-                <div>
-                  <Box variant="awsui-key-label">Frameworks</Box>
-                  <div>{selectedNames.join(', ') || 'None selected'}</div>
-                </div>
-                <div>
-                  <Box variant="awsui-key-label">Model provider</Box>
-                  <div>{config?.model_provider || '—'}</div>
-                </div>
-                <div>
-                  <Box variant="awsui-key-label">Model ID</Box>
-                  <div>{config?.model_id || '—'}</div>
-                </div>
-              </ColumnLayout>
-            )}
-          </SpaceBetween>
-        </Container>
-      ),
-    },
-  ];
 
   const breadcrumbs = isAppScoped
     ? [
@@ -376,26 +202,161 @@ export default function NewRunPage() {
       activePage="/applications"
       breadcrumbs={breadcrumbs}
     >
-      <Wizard
-        i18nStrings={{
-          stepNumberLabel: (stepNumber) => `Step ${stepNumber}`,
-          collapsedStepsLabel: (stepNumber, stepsCount) =>
-            `Step ${stepNumber} of ${stepsCount}`,
-          submitButton: 'Submit',
-          previousButton: 'Previous',
-          nextButton: 'Next',
-          cancelButton: 'Cancel',
-          optional: 'optional',
-        }}
-        steps={steps}
-        activeStepIndex={activeStepIndex}
-        onNavigate={handleNavigate}
-        onSubmit={handleSubmit}
-        onCancel={() =>
-          navigate(isAppScoped ? `/applications/${appId}` : '/')
+      {/*
+        Single-page form. Replaces what used to be a four-step Wizard
+        (Project Path → Threat Source → Threat Frameworks → Review).
+        The original review step is gone — on a single page the user can
+        already see what they typed, so a separate confirm screen was
+        unused chrome. Run config (model provider / id) is now a small
+        "Run with" panel above the submit button so users still see what
+        will execute, without a dedicated step.
+      */}
+      <Form
+        header={
+          <Header variant="h1" description="Configure and start a new threat model run.">
+            New threat model
+          </Header>
         }
-        isLoadingNextStep={submitting}
-      />
+        errorText={submitError || undefined}
+        actions={
+          <SpaceBetween direction="horizontal" size="xs">
+            <Button
+              variant="link"
+              onClick={() =>
+                navigate(isAppScoped ? `/applications/${appId}` : '/')
+              }
+              disabled={submitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleSubmit}
+              loading={submitting}
+              data-testid="start-run"
+            >
+              Start threat model
+            </Button>
+          </SpaceBetween>
+        }
+      >
+        <SpaceBetween size="l">
+          {isAppScoped && appError && <Alert type="error">{appError}</Alert>}
+
+          <Container header={<Header variant="h2">Project</Header>}>
+            <FormField
+              label="Project directory path"
+              errorText={projectPathError}
+              description={
+                isAppScoped
+                  ? 'Pre-filled from the application record. Edit if the folder has been renamed or moved — the change is saved back to the application.'
+                  : 'Enter the path or browse to the project directory to analyze.'
+              }
+            >
+              <DirectoryPicker
+                value={projectPath}
+                onChange={(val) => {
+                  setProjectPath(val);
+                  if (val.trim()) setProjectPathError('');
+                }}
+                placeholder="/path/to/project"
+              />
+            </FormField>
+          </Container>
+
+          <Container
+            header={
+              <Header
+                variant="h2"
+                description="Choose whether ThreatForest should generate threat statements from the repository or use an existing file."
+              >
+                Threat source
+              </Header>
+            }
+          >
+            <SpaceBetween size="m">
+              <RadioGroup
+                value={threatSource}
+                onChange={({ detail }) => {
+                  setThreatSource(detail.value);
+                  if (detail.value === 'auto') setThreatFilePathError('');
+                }}
+                items={[
+                  { value: 'auto', label: 'Auto-generate using AI' },
+                  { value: 'file', label: 'Provide existing threat statements file' },
+                ]}
+              />
+              {threatSource === 'file' && (
+                <FormField
+                  label="Threat file path"
+                  errorText={threatFilePathError}
+                  description="Enter the path to the threat statements file."
+                >
+                  <Input
+                    value={threatFilePath}
+                    onChange={({ detail }) => {
+                      setThreatFilePath(detail.value);
+                      if (detail.value.trim()) setThreatFilePathError('');
+                    }}
+                    placeholder="/path/to/threats.json"
+                  />
+                </FormField>
+              )}
+            </SpaceBetween>
+          </Container>
+
+          <Container
+            header={
+              <Header
+                variant="h2"
+                description="Select which knowledge bases to map attack steps against. All frameworks are selected by default."
+              >
+                Threat frameworks
+              </Header>
+            }
+          >
+            <FormField errorText={frameworkError}>
+              <SpaceBetween size="xs">
+                {frameworkKeys.map((key) => (
+                  <Checkbox
+                    key={key}
+                    checked={!!selectedFrameworks[key]}
+                    onChange={({ detail }) => {
+                      setSelectedFrameworks((prev) => ({ ...prev, [key]: detail.checked }));
+                      setFrameworkError('');
+                    }}
+                  >
+                    <Box variant="strong">{availableFrameworks[key].name}</Box>
+                    {' '}
+                    <Box variant="small" color="text-body-secondary" display="inline">
+                      — {availableFrameworks[key].description}
+                    </Box>
+                  </Checkbox>
+                ))}
+              </SpaceBetween>
+            </FormField>
+          </Container>
+
+          <Container header={<Header variant="h2">Run with</Header>}>
+            {configLoading ? (
+              <Box textAlign="center" padding="m">
+                <Spinner />
+              </Box>
+            ) : (
+              <ColumnLayout columns={2} variant="text-grid">
+                <div>
+                  <Box variant="awsui-key-label">Model provider</Box>
+                  <div>{config?.model_provider || '—'}</div>
+                </div>
+                <div>
+                  <Box variant="awsui-key-label">Model ID</Box>
+                  <div>{config?.model_id || '—'}</div>
+                </div>
+              </ColumnLayout>
+            )}
+          </Container>
+        </SpaceBetween>
+      </Form>
     </CloudscapeShell>
   );
 }

@@ -13,8 +13,8 @@ import CloudscapeShell from '../components/CloudscapeShell';
 import DirectoryPicker from '../components/DirectoryPicker';
 import BusinessContextForm, {
   DATA_SENSITIVITY_OPTIONS,
-  MAIN_CIA_RISK_OPTIONS,
   emptyBusinessContext,
+  normaliseCiaPriority,
   validateBusinessContext,
 } from '../components/BusinessContextForm';
 import { createApplication } from '../api-client';
@@ -212,8 +212,12 @@ export default function CreateApplicationPage() {
                 <div>{labelFor(businessContext.data_sensitivity, DATA_SENSITIVITY_OPTIONS)}</div>
               </div>
               <div>
-                <Box variant="awsui-key-label">Main CIA risk</Box>
-                <div>{labelFor(businessContext.main_cia_risk, MAIN_CIA_RISK_OPTIONS)}</div>
+                <Box variant="awsui-key-label">CIA priority</Box>
+                <ol style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {normaliseCiaPriority(businessContext.cia_priority).map((v) => (
+                    <li key={v} style={{ textTransform: 'capitalize' }}>{v}</li>
+                  ))}
+                </ol>
               </div>
               <div>
                 <Box variant="awsui-key-label">Regulatory frameworks</Box>

@@ -13,7 +13,7 @@ const SAMPLE_CTX = {
   description: 'A healthcare intake API.',
   regulatory_frameworks: ['SOC2', 'HIPAA'],
   data_sensitivity: 'phi',
-  main_cia_risk: 'confidentiality',
+  cia_priority: ['confidentiality', 'integrity', 'availability'],
 };
 
 describe('BusinessContextPanel', () => {
@@ -32,7 +32,10 @@ describe('BusinessContextPanel', () => {
     expect(screen.getAllByText('HIPAA').length).toBeGreaterThan(0);
     // Labels from the option lists (not raw literal values)
     expect(screen.getAllByText(/PHI — protected health information/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Confidentiality — leaks/).length).toBeGreaterThan(0);
+    // CIA priority renders as a numbered list of capitalised objective names.
+    expect(screen.getAllByText('confidentiality').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('integrity').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('availability').length).toBeGreaterThan(0);
   });
 
   it('renders em-dashes when fields are empty', () => {
@@ -43,12 +46,13 @@ describe('BusinessContextPanel', () => {
           description: '',
           regulatory_frameworks: [],
           data_sensitivity: '',
-          main_cia_risk: '',
+          // No cia_priority provided — the panel falls back to the canonical
+          // ordering rather than rendering an em-dash for it.
         }}
       />
     );
     const dashes = screen.getAllByText('—');
-    expect(dashes.length).toBeGreaterThanOrEqual(3);
+    expect(dashes.length).toBeGreaterThanOrEqual(2);
   });
 
   it('opens the edit modal when the Edit button is clicked', async () => {
@@ -113,7 +117,8 @@ describe('BusinessContextPanel', () => {
           description: '',
           regulatory_frameworks: [],
           data_sensitivity: '',
-          main_cia_risk: '',
+          // cia_priority deliberately malformed so validation fails
+          cia_priority: [],
         }}
       />
     );

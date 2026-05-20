@@ -10,6 +10,7 @@ from server.executor import create_orchestrator_executor
 from server.routes.applications import router as applications_router, set_registry
 from server.routes.config import router as config_router
 from server.routes.filesystem import router as filesystem_router
+from server.routes.imports import router as imports_router
 from server.routes.runs import router as runs_router, set_run_manager
 from server.run_manager import RunManager
 
@@ -28,6 +29,7 @@ app.add_middleware(
 app.include_router(applications_router, prefix="/api")
 app.include_router(config_router, prefix="/api")
 app.include_router(filesystem_router, prefix="/api")
+app.include_router(imports_router, prefix="/api")
 app.include_router(runs_router, prefix="/api")
 
 # WebSocket routes (no /api prefix) — the runs router also registers
@@ -62,9 +64,11 @@ executor = create_orchestrator_executor(repo_root)
 set_run_manager(RunManager(executor=executor))
 
 # Configure application registry — uses centralized .threatforest/runs/
-from server.registry import ApplicationRegistry
+from server.registry import ApplicationRegistry, get_runs_root
+from server.report_import import ensure_imports_dir
 
 set_registry(ApplicationRegistry())
+ensure_imports_dir(get_runs_root().parent / "imports")
 
 sample_apps_dir = repo_root / "sample-applications"
 if sample_apps_dir.is_dir():

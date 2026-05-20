@@ -10,8 +10,8 @@ import Alert from '@cloudscape-design/components/alert';
 import Badge from '@cloudscape-design/components/badge';
 import BusinessContextForm, {
   DATA_SENSITIVITY_OPTIONS,
-  MAIN_CIA_RISK_OPTIONS,
   emptyBusinessContext,
+  normaliseCiaPriority,
   validateBusinessContext,
 } from './BusinessContextForm';
 import { updateApplication } from '../api-client';
@@ -25,7 +25,14 @@ import { updateApplication } from '../api-client';
  * Kept visually identical in structure to the Review step of the create
  * wizard so users see the same layout wherever context is surfaced.
  */
-export default function BusinessContextPanel({ appId, businessContext, onUpdated }) {
+export default function BusinessContextPanel({
+  appId,
+  businessContext,
+  onUpdated,
+  // ``readOnly`` hides the Edit button — used for imported applications
+  // that have no v2 record on this server, so a PATCH would 404.
+  readOnly = false,
+}) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(() => businessContext || emptyBusinessContext());
   const [errors, setErrors] = useState({});
@@ -75,13 +82,15 @@ export default function BusinessContextPanel({ appId, businessContext, onUpdated
         <Header
           variant="h2"
           actions={
-            <Button
-              iconName="edit"
-              onClick={openEdit}
-              data-testid="edit-business-context"
-            >
-              Edit
-            </Button>
+            readOnly ? undefined : (
+              <Button
+                iconName="edit"
+                onClick={openEdit}
+                data-testid="edit-business-context"
+              >
+                Edit
+              </Button>
+            )
           }
         >
           Business context
@@ -113,8 +122,12 @@ export default function BusinessContextPanel({ appId, businessContext, onUpdated
             <div>{labelFor(ctx.data_sensitivity, DATA_SENSITIVITY_OPTIONS)}</div>
           </div>
           <div>
-            <Box variant="awsui-key-label">Main CIA risk</Box>
-            <div>{labelFor(ctx.main_cia_risk, MAIN_CIA_RISK_OPTIONS)}</div>
+            <Box variant="awsui-key-label">CIA priority</Box>
+            <ol style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {normaliseCiaPriority(ctx.cia_priority).map((v) => (
+                <li key={v} style={{ textTransform: 'capitalize' }}>{v}</li>
+              ))}
+            </ol>
           </div>
         </ColumnLayout>
       </SpaceBetween>

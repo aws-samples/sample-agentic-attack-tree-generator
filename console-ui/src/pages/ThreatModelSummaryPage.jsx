@@ -1132,6 +1132,8 @@ export default function ThreatModelSummaryPage() {
                 summaryData={data}
                 appId={appId}
                 versionId={versionId}
+                appName={appName}
+                versionLabel={versionLabel}
               />
             }
           >

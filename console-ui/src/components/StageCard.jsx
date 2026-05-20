@@ -13,20 +13,31 @@ const FIELD_HELP = {
   services: 'Discrete services, components, or modules that make up the system.',
   auth: 'How users and services authenticate (e.g. IAM roles, OAuth2, API keys).',
   compliance: 'Regulatory or contractual frameworks the system must meet (e.g. SOC2, HIPAA).',
-  mainCiaRisk: 'Primary CIA risk focus the owner declared when the application was created — weights which objective (confidentiality / integrity / availability) the threat set should emphasise.',
+  ciaPriority: 'Ranking of the CIA objectives the application owner declared when the application was created — the threat set is weighted ~50/30/20 across rank 1, 2, 3.',
 };
 
-// Human-readable labels for the main_cia_risk Literal values.
-const MAIN_CIA_RISK_LABELS = {
+const CIA_PRIORITY_LABELS = {
   confidentiality: 'Confidentiality',
   integrity: 'Integrity',
   availability: 'Availability',
-  unknown: 'Unknown',
 };
 
-function formatMainCiaRisk(value) {
-  if (!value) return '\u2014';
-  return MAIN_CIA_RISK_LABELS[value] || value;
+/**
+ * Render a CIA priority list either from the new ``cia_priority`` array or
+ * (for older runs that only emitted the legacy single value) by promoting
+ * ``main_cia_risk`` to rank 1 with the rest in canonical order.
+ */
+function formatCiaPriority(ctx) {
+  if (!ctx) return '\u2014';
+  const list = Array.isArray(ctx.cia_priority) ? ctx.cia_priority : null;
+  if (list && list.length === 3 && new Set(list).size === 3) {
+    return list.map((v, i) => `${i + 1}. ${CIA_PRIORITY_LABELS[v] || v}`).join('   ');
+  }
+  const legacy = ctx.main_cia_risk;
+  if (legacy && CIA_PRIORITY_LABELS[legacy]) {
+    return `1. ${CIA_PRIORITY_LABELS[legacy]} (legacy single value)`;
+  }
+  return '\u2014';
 }
 
 function InfoIcon({ text }) {
@@ -179,7 +190,7 @@ export default function StageCard({
             <div><FieldLabel text="Services" info={FIELD_HELP.services} /><BadgeList items={scannerReview.services} /></div>
             <div><FieldLabel text="Auth" info={FIELD_HELP.auth} /><BadgeList items={scannerReview.auth_mechanisms} /></div>
             <div><FieldLabel text="Compliance" info={FIELD_HELP.compliance} /><BadgeList items={scannerReview.compliance_requirements} /></div>
-            <div data-testid="scanner-review-main-cia-risk"><FieldLabel text="Main CIA risk" info={FIELD_HELP.mainCiaRisk} /><div>{formatMainCiaRisk(scannerReview.main_cia_risk)}</div></div>
+            <div data-testid="scanner-review-cia-priority"><FieldLabel text="CIA priority" info={FIELD_HELP.ciaPriority} /><div>{formatCiaPriority(scannerReview)}</div></div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px' }}>
             <Button variant="primary" onClick={onScannerReviewConfirm} data-testid="scanner-review-confirm">
@@ -290,7 +301,7 @@ export default function StageCard({
             <div><FieldLabel text="Services" info={FIELD_HELP.services} /><BadgeList items={confirmedContext.services} /></div>
             <div><FieldLabel text="Auth" info={FIELD_HELP.auth} /><BadgeList items={confirmedContext.auth_mechanisms} /></div>
             <div><FieldLabel text="Compliance" info={FIELD_HELP.compliance} /><BadgeList items={confirmedContext.compliance_requirements} /></div>
-            <div data-testid="confirmed-context-main-cia-risk"><FieldLabel text="Main CIA risk" info={FIELD_HELP.mainCiaRisk} /><div>{formatMainCiaRisk(confirmedContext.main_cia_risk)}</div></div>
+            <div data-testid="confirmed-context-cia-priority"><FieldLabel text="CIA priority" info={FIELD_HELP.ciaPriority} /><div>{formatCiaPriority(confirmedContext)}</div></div>
           </div>
         </div>
       )}
