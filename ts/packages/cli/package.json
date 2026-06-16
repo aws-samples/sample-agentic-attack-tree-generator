@@ -1,0 +1,29 @@
+{
+  "name": "@threatforest/cli",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "ThreatForest TS CLI — replaces the Python click 'threatforest' entry point. Launches the web console, runs the interactive wizard, and manages .threatforest/config.yaml.",
+  "main": "dist/main.js",
+  "bin": {
+    "threatforest": "dist/main.js"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit",
+    "start": "node --import tsx/esm src/main.ts"
+  },
+  "dependencies": {
+    "@threatforest/engine": "*",
+    "@threatforest/server": "*",
+    "@inquirer/prompts": "^7.2.0",
+    "commander": "^13.0.0",
+    "picocolors": "^1.1.1",
+    "yaml": "^2.8.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.21",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.0"
+  }
+}

@@ -59,8 +59,12 @@ export type OrchestratorExecutor = (
 
 const TERMINAL = new Set(['complete', 'stopped', 'failed']);
 
-/** A simple async queue: producers push, a consumer awaits next(). */
-class AsyncQueue<T> {
+/**
+ * A simple async queue: producers push, a consumer awaits next().
+ * Exported so the WS handler can name the type returned by
+ * `RunManager.getProgressQueue` (required for declaration emit under composite).
+ */
+export class AsyncQueue<T> {
   private buffer: T[] = [];
   private resolvers: ((v: T) => void)[] = [];
   push(item: T): void {
@@ -75,11 +79,31 @@ class AsyncQueue<T> {
   }
 }
 
+/**
+ * A one-shot awaitable an agent blocks on while waiting for the user's answer
+ * to an interviewer question. `submitInteractionResponse` resolves it.
+ */
+class PendingInteraction {
+  private resolver: ((v: string | null) => void) | null = null;
+  readonly promise: Promise<string | null>;
+  constructor() {
+    this.promise = new Promise((resolve) => {
+      this.resolver = resolve;
+    });
+  }
+  resolve(value: string | null): void {
+    this.resolver?.(value);
+    this.resolver = null;
+  }
+}
+
 export class RunManager {
   readonly activeRuns = new Map<string, RunState>();
   private readonly queues = new Map<string, AsyncQueue<ProgressEvent>>();
   private readonly controls = new Map<string, ScanControl>();
   private readonly history = new Map<string, ProgressEvent[]>();
+  /** Per-run pending interviewer prompt, awaiting a `submitInteractionResponse`. */
+  private readonly pending = new Map<string, PendingInteraction>();
 
   constructor(private readonly executor: OrchestratorExecutor | null = null) {}
 
@@ -113,8 +137,28 @@ export class RunManager {
       this.history.get(runId)?.push(e);
       this.queues.get(runId)?.push(e);
     };
+    // Interviewer HITL: when the agent needs input it calls this fn, which emits
+    // an `awaiting_input` event and blocks on a promise that the `/respond`
+    // endpoint resolves via `submitInteractionResponse`.
+    const interactionFn = async (reason: Record<string, unknown>): Promise<string | null> => {
+      const p = new PendingInteraction();
+      this.pending.set(runId, p);
+      onProgress({
+        type: 'awaiting_input',
+        stage: 'interviewer',
+        percentage: 0,
+        message: 'Awaiting user input',
+        details: reason,
+        server_ts: Date.now(),
+      });
+      try {
+        return await p.promise;
+      } finally {
+        this.pending.delete(runId);
+      }
+    };
     try {
-      const result = await this.executor!(config, onProgress, control, null);
+      const result = await this.executor!(config, onProgress, control, interactionFn);
       if (result.status === 'pause') {
         state.status = 'paused';
         state.paused_at = new Date().toISOString();
@@ -152,6 +196,29 @@ export class RunManager {
 
   getHistory(runId: string): ProgressEvent[] {
     return this.history.get(runId) ?? [];
+  }
+
+  /** The ScanControl for a run (exposes runDir), or undefined if unknown. */
+  getControl(runId: string): ScanControl | undefined {
+    return this.controls.get(runId);
+  }
+
+  /**
+   * Deliver a user's interviewer answer to the blocked agent thread.
+   * Throws KeyError-equivalent if the run has no pending interaction.
+   */
+  submitInteractionResponse(runId: string, text: string | null): void {
+    const p = this.pending.get(runId);
+    if (!p) throw new Error(`No pending interaction for run_id: ${runId}`);
+    p.resolve(text);
+  }
+
+  /**
+   * Drop the per-run progress queue once a WS client finishes draining a
+   * terminal run. History is retained so late reconnects can still replay.
+   */
+  cleanupRun(runId: string): void {
+    this.queues.delete(runId);
   }
 
   pauseRun(runId: string): void {

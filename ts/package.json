@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "description": "ThreatForest TypeScript migration workspace (engine, types, web).",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "web"
   ],
   "engines": {
     "node": ">=20"
