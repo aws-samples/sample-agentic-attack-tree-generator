@@ -1,0 +1,30 @@
+/**
+ * @threatforest/engine — the ThreatForest agent pipeline on the Strands TS SDK.
+ *
+ * Public surface for the server (WS-4) and CLI (WS-5): build/run the graph,
+ * plus the individual stages/agents/config for finer-grained orchestration.
+ */
+export { runGraph, buildGraph, type RunGraphOptions, type RunGraphResult } from './pipeline/graph.js';
+export { config, Config, FRAMEWORKS } from './config.js';
+export { createModel, activeProvider, type SupportedProvider } from './providers.js';
+export { MlServiceClient } from './ml-client.js';
+export {
+  LocalFilesystemWorkspace,
+  resolveStateDir,
+  resolveOutputDir,
+} from './workspace.js';
+export { initSession, setupLangfuseOtel, traceAttrs } from './tracing.js';
+
+// Stages
+export { runParallelPipeline } from './stages/parallel.js';
+export { runProbabilityStage } from './stages/probability-stage.js';
+export { runReportGenerator, verifyReportOutput } from './stages/report.js';
+export { runTtpEmbedding } from './stages/ttp.js';
+
+// Agents (factories + verifiers)
+export { createScannerAgent, runScanner } from './agents/scanner.js';
+export { createThreatAgent, runThreat } from './agents/threat.js';
+export { createTreeAgent, runTree } from './agents/tree.js';
+export { createMitigationAgent, verifyMitigationOutput } from './agents/mitigation.js';
+export { verifyScannerOutput, verifyThreatOutput } from './verifiers.js';
+export type { InteractionFn, InteractionResponse } from './agents/hitl.js';

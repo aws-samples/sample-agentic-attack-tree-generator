@@ -75,6 +75,16 @@ export class LocalFilesystemWorkspace {
   writeJson(key: string, obj: unknown): void {
     this.writeText(key, JSON.stringify(obj, null, 2));
   }
+
+  /** Delete a key if present. Mirrors Python `Workspace.delete` (no error if absent). */
+  delete(key: string): void {
+    const target = this.resolveKey(key);
+    try {
+      fs.rmSync(target, { force: true });
+    } catch {
+      /* swallow — matches the Python's best-effort delete */
+    }
+  }
 }
 
 /**
