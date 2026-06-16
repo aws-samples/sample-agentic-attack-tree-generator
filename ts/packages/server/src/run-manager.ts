@@ -1,0 +1,203 @@
+/**
+ * Run manager — TS port of `src/server/run_manager.py`.
+ *
+ * Manages pipeline run lifecycle and streams progress events to WebSocket
+ * clients. The Python version spawns OS threads (GIL-bound) and bridges via
+ * asyncio queues; in Node the engine's `runGraph` is already async, so a run is
+ * a background promise and progress events flow through a per-run async queue
+ * (an EventEmitter-backed buffer that WS handlers drain).
+ *
+ * Pause/stop are cooperative: a ScanControl flag the executor checks at stage
+ * boundaries. Resume rebuilds a RunConfig with `skip_nodes` for completed stages
+ * (the engine graph + per-threat skip-if-exists handle the actual resumption).
+ */
+import { randomUUID } from 'node:crypto';
+import {
+  type RunConfig,
+  type RunState,
+  RunStateSchema,
+} from '@threatforest/types';
+
+/** Progress event pushed to WS clients. Mirrors run_manager.ProgressEvent.to_dict(). */
+export interface ProgressEvent {
+  type: string;
+  stage: string;
+  percentage: number;
+  message: string;
+  details: Record<string, unknown>;
+  server_ts: number;
+}
+
+/** Cooperative pause/stop signal (port of server/scan_control.ScanControl). */
+export class ScanControl {
+  private _pause = false;
+  private _stop = false;
+  runDir: string | null = null;
+  requestPause(): void {
+    this._pause = true;
+  }
+  requestStop(): void {
+    this._stop = true;
+  }
+  get shouldInterrupt(): boolean {
+    return this._pause || this._stop;
+  }
+  get pauseRequested(): boolean {
+    return this._pause;
+  }
+  get stopRequested(): boolean {
+    return this._stop;
+  }
+}
+
+export type OrchestratorExecutor = (
+  config: RunConfig,
+  onProgress: (e: ProgressEvent) => void,
+  control: ScanControl,
+  interactionFn: ((reason: Record<string, unknown>) => Promise<string | null>) | null,
+) => Promise<{ status: string; output_dir?: string; app_id?: string; error?: string }>;
+
+const TERMINAL = new Set(['complete', 'stopped', 'failed']);
+
+/** A simple async queue: producers push, a consumer awaits next(). */
+class AsyncQueue<T> {
+  private buffer: T[] = [];
+  private resolvers: ((v: T) => void)[] = [];
+  push(item: T): void {
+    const r = this.resolvers.shift();
+    if (r) r(item);
+    else this.buffer.push(item);
+  }
+  next(): Promise<T> {
+    const item = this.buffer.shift();
+    if (item !== undefined) return Promise.resolve(item);
+    return new Promise((resolve) => this.resolvers.push(resolve));
+  }
+}
+
+export class RunManager {
+  readonly activeRuns = new Map<string, RunState>();
+  private readonly queues = new Map<string, AsyncQueue<ProgressEvent>>();
+  private readonly controls = new Map<string, ScanControl>();
+  private readonly history = new Map<string, ProgressEvent[]>();
+
+  constructor(private readonly executor: OrchestratorExecutor | null = null) {}
+
+  startRun(config: RunConfig): string {
+    if (!this.executor) {
+      throw new Error('No orchestrator executor configured. Provide one via new RunManager(executor).');
+    }
+    const runId = randomUUID().replace(/-/g, '');
+    const now = new Date().toISOString();
+    const state: RunState = RunStateSchema.parse({
+      run_id: runId,
+      status: 'pending',
+      config,
+      started_at: now,
+    });
+    this.activeRuns.set(runId, state);
+    this.queues.set(runId, new AsyncQueue<ProgressEvent>());
+    this.history.set(runId, []);
+    const control = new ScanControl();
+    this.controls.set(runId, control);
+
+    // Background execution (no thread needed — runGraph is async).
+    void this.execute(runId, config, control);
+    return runId;
+  }
+
+  private async execute(runId: string, config: RunConfig, control: ScanControl): Promise<void> {
+    const state = this.activeRuns.get(runId)!;
+    state.status = 'running';
+    const onProgress = (e: ProgressEvent): void => {
+      this.history.get(runId)?.push(e);
+      this.queues.get(runId)?.push(e);
+    };
+    try {
+      const result = await this.executor!(config, onProgress, control, null);
+      if (result.status === 'pause') {
+        state.status = 'paused';
+        state.paused_at = new Date().toISOString();
+      } else if (result.status === 'stop') {
+        state.status = 'stopped';
+        state.completed_at = new Date().toISOString();
+      } else {
+        state.status = result.status === 'complete' ? 'complete' : 'failed';
+        state.completed_at = new Date().toISOString();
+        state.output_dir = result.output_dir ?? null;
+        if (result.error) state.error = result.error;
+      }
+    } catch (err) {
+      state.status = 'failed';
+      state.completed_at = new Date().toISOString();
+      state.error = (err as Error).message;
+    } finally {
+      // Sentinel so WS consumers know the stream is done.
+      onProgress({
+        type: 'run_complete',
+        stage: state.status,
+        percentage: 100,
+        message: `Run ${state.status}`,
+        details: {},
+        server_ts: Date.now(),
+      });
+    }
+  }
+
+  getProgressQueue(runId: string): AsyncQueue<ProgressEvent> {
+    const q = this.queues.get(runId);
+    if (!q) throw new Error(`Unknown run_id: ${runId}`);
+    return q;
+  }
+
+  getHistory(runId: string): ProgressEvent[] {
+    return this.history.get(runId) ?? [];
+  }
+
+  pauseRun(runId: string): void {
+    const state = this.activeRuns.get(runId);
+    if (!state) throw new Error(`Unknown run_id: ${runId}`);
+    if (state.status !== 'pending' && state.status !== 'running') {
+      throw new Error(`Run ${runId} cannot be paused (status: ${state.status})`);
+    }
+    state.status = 'pausing';
+    this.controls.get(runId)?.requestPause();
+  }
+
+  stopRun(runId: string): void {
+    const state = this.activeRuns.get(runId);
+    if (!state) throw new Error(`Unknown run_id: ${runId}`);
+    if (state.status === 'paused') {
+      state.status = 'stopped';
+      state.completed_at = new Date().toISOString();
+      return;
+    }
+    if (!['pending', 'running', 'pausing'].includes(state.status)) {
+      throw new Error(`Run ${runId} cannot be stopped (status: ${state.status})`);
+    }
+    this.controls.get(runId)?.requestStop();
+  }
+
+  /**
+   * Resume a paused/stopped run by starting a fresh run that reuses the run dir
+   * and skips completed nodes. The engine's per-stage skip-if-exists handles the
+   * actual resumption; here we rebuild the config from the prior run's state.
+   */
+  resumeRun(runId: string): string {
+    const state = this.activeRuns.get(runId);
+    if (!state) throw new Error(`Unknown run_id: ${runId}`);
+    if (state.status !== 'paused' && state.status !== 'stopped') {
+      throw new Error(`Run ${runId} is not resumable (status: ${state.status})`);
+    }
+    const resumeConfig: RunConfig = {
+      ...state.config,
+      resume_run_dir: state.output_dir ?? state.config.resume_run_dir,
+    };
+    return this.startRun(resumeConfig);
+  }
+
+  isTerminal(runId: string): boolean {
+    const s = this.activeRuns.get(runId);
+    return !!s && TERMINAL.has(s.status);
+  }
+}

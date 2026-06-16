@@ -1,0 +1,29 @@
+{
+  "name": "@threatforest/server",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "ThreatForest TS server — Express + ws, preserving the frozen /api + /ws contract from src/server. Bridges HTTP to @threatforest/engine.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit",
+    "start": "node --import tsx/esm src/main.ts"
+  },
+  "dependencies": {
+    "@threatforest/engine": "*",
+    "@threatforest/types": "*",
+    "express": "^5.1.0",
+    "ws": "^8.18.0",
+    "yaml": "^2.8.3",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.19.21",
+    "@types/ws": "^8.5.13",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.0"
+  }
+}
