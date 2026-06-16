@@ -1,0 +1,46 @@
+{
+  "attack_trees": [
+    {
+      "id": "AT001",
+      "threat_id": "T001",
+      "root_goal": "Exfiltrate S3 data",
+      "steps": [
+        {
+          "id": "AT001-1",
+          "description": "attacker has network access",
+          "parent_id": "",
+          "category": "fact",
+          "is_leaf": false,
+          "probability": 1.0,
+          "reach_probability": 1.0
+        },
+        {
+          "id": "AT001-2",
+          "description": "exploit unvalidated key param",
+          "parent_id": "AT001-1",
+          "category": "action",
+          "is_leaf": false,
+          "skill_required": "low",
+          "access_required": "none",
+          "detectability": "low",
+          "exploit_maturity": "weaponised",
+          "probability": 0.9,
+          "reach_probability": 0.9
+        },
+        {
+          "id": "AT001-3",
+          "description": "read arbitrary S3 object",
+          "parent_id": "AT001-2",
+          "category": "action",
+          "is_leaf": true,
+          "skill_required": "low",
+          "access_required": "none",
+          "detectability": "med",
+          "exploit_maturity": "poc",
+          "probability": 0.6,
+          "reach_probability": 0.54
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "mitigations": [
+    {
+      "attack_step_id": "AT001-2",
+      "technique_id": "T1190",
+      "mitigation_text": "Validate the key parameter against an allowlist",
+      "implementation_guidance": "Use a strict regex + S3 prefix scoping",
+      "remediation_type": "quick_win",
+      "priority": 1,
+      "evidence": [
+        {
+          "source_type": "project_file",
+          "source_ref": "handler.py",
+          "excerpt": "event[...][key]",
+          "relevance": "unvalidated input"
+        }
+      ],
+      "also_applies_to": []
+    }
+  ]
+}

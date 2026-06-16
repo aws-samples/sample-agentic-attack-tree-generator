@@ -1,0 +1,18 @@
+{
+  "ttp_mappings": [
+    {
+      "attack_step_id": "AT001-2",
+      "technique_id": "T1190",
+      "technique_name": "Exploit Public-Facing Application",
+      "similarity_score": 0.82,
+      "framework": "attack"
+    },
+    {
+      "attack_step_id": "AT001-3",
+      "technique_id": "T1530",
+      "technique_name": "Data from Cloud Storage",
+      "similarity_score": 0.77,
+      "framework": "attack"
+    }
+  ]
+}

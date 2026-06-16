@@ -1,0 +1,138 @@
+{
+  "metadata": {
+    "generator": "ThreatForest",
+    "version": "2.0"
+  },
+  "project_info": {
+    "application_name": "fake-repo",
+    "technologies": [
+      "lambda",
+      "s3",
+      "apigateway"
+    ],
+    "deployment_environment": "aws",
+    "industry": "",
+    "summary": "AWS application using python, fastapi, lambda. Services: lambda, s3, apigateway.",
+    "short_summary": "fake-repo (AWS, python, fastapi, lambda) using lambda, s3, apigateway with 1 identified threat (1 high/critical)."
+  },
+  "status": "complete",
+  "threat_count": 1,
+  "high_severity_count": 1,
+  "extraction_summary": {
+    "total_threats": 1,
+    "high_severity_count": 1
+  },
+  "threats": [
+    {
+      "id": "T001",
+      "title": "Unauthorized S3 access",
+      "description": "Attacker reads private objects",
+      "priority": "high",
+      "affected_components": [
+        "s3",
+        "lambda"
+      ]
+    }
+  ],
+  "attack_trees": [
+    {
+      "threat_id": "T001",
+      "threat_category": "Unauthorized S3 access",
+      "threat_description": "Attacker reads private objects",
+      "threat_statement": "Attacker reads private objects",
+      "threat_action": "Unauthorized S3 access",
+      "threatSource": "",
+      "priority": "high",
+      "attack_steps": [
+        {
+          "node_id": "S0",
+          "label": "attacker has network access",
+          "description": "attacker has network access",
+          "category": "fact",
+          "probability": 1.0,
+          "reach_probability": 1.0,
+          "probability_rationale": ""
+        },
+        {
+          "node_id": "S1",
+          "label": "exploit unvalidated key param",
+          "description": "exploit unvalidated key param",
+          "category": "action",
+          "probability": 0.9,
+          "reach_probability": 0.9,
+          "probability_rationale": ""
+        },
+        {
+          "node_id": "S2",
+          "label": "read arbitrary S3 object",
+          "description": "read arbitrary S3 object",
+          "category": "action",
+          "probability": 0.6,
+          "reach_probability": 0.54,
+          "probability_rationale": ""
+        }
+      ],
+      "ttc_mappings": [
+        {
+          "attack_step": "exploit unvalidated key param",
+          "technique_id": "T1190",
+          "technique_name": "Exploit Public-Facing Application",
+          "confidence": 0.82,
+          "similarity": 0.82,
+          "reasoning": "Embedding similarity: 0.820"
+        },
+        {
+          "attack_step": "read arbitrary S3 object",
+          "technique_id": "T1530",
+          "technique_name": "Data from Cloud Storage",
+          "confidence": 0.77,
+          "similarity": 0.77,
+          "reasoning": "Embedding similarity: 0.770"
+        }
+      ],
+      "mitigations": [
+        {
+          "name": "Validate the key parameter against an allowlist",
+          "description": "Use a strict regex + S3 prefix scoping",
+          "attack_step": "S1",
+          "priority": 1,
+          "technique_id": "T1190",
+          "remediation_type": "quick_win",
+          "evidence": [
+            {
+              "source_type": "project_file",
+              "source_ref": "handler.py",
+              "excerpt": "event[...][key]",
+              "relevance": "unvalidated input"
+            }
+          ]
+        }
+      ],
+      "mapping_count": 2,
+      "root_goal": "Exfiltrate S3 data",
+      "mermaid_code": "graph TD\n    GOAL[\"GOAL: Exfiltrate S3 data\"]\n    S0[\"attacker has network access\"]\n    S1[\"exploit unvalidated key param\"]\n    S2[\"read arbitrary S3 object\"]\n    S0 --> S1\n    S1 --> S2\n    S2 --> GOAL\n    classDef goal fill:#ff6b6b,stroke:#c92a2a,color:#fff,stroke-width:2px\n    classDef attack fill:#ffd43b,stroke:#f08c00,stroke-width:2px\n    class GOAL goal\n    class S0,S1,S2 attack"
+    }
+  ],
+  "scanner_context": {
+    "cloud_provider": "aws",
+    "tech_stack": "python, fastapi, lambda",
+    "services": [
+      "lambda",
+      "s3",
+      "apigateway"
+    ],
+    "auth_mechanisms": [
+      "cognito"
+    ],
+    "files_analyzed": [
+      "handler.py",
+      "template.yaml"
+    ],
+    "file_guide": {
+      "handler.py": "api entry"
+    }
+  },
+  "mapping_summary": {
+    "total_mappings": 2
+  }
+}
