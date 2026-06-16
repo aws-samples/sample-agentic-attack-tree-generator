@@ -108,7 +108,7 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["threatforest*", "server*"]
+include = ["threatforest*", "server*", "ml_service*"]
 
 [tool.setuptools.package-data]
 threatforest = [
