@@ -1,0 +1,18 @@
+{
+  "name": "@threatforest/workspace",
+  "private": true,
+  "version": "0.0.0",
+  "description": "ThreatForest TypeScript migration workspace (engine, types, web).",
+  "workspaces": [
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "spike": "node --import tsx/esm packages/spike/src/run-all.ts",
+    "spike:interrupt": "node --import tsx/esm packages/spike/src/graph-interrupt.ts",
+    "spike:structured": "node --import tsx/esm packages/spike/src/structured-output.ts",
+    "typecheck": "tsc -b --pretty"
+  }
+}
