@@ -2,7 +2,7 @@
   "name": "@threatforest/workspace",
   "private": true,
   "version": "0.0.0",
-  "description": "ThreatForest TypeScript migration workspace (engine, types, web).",
+  "description": "ThreatForest TypeScript migration workspace (engine, server, cli, web).",
   "workspaces": [
     "packages/*",
     "web"
@@ -11,9 +11,21 @@
     "node": ">=20"
   },
   "scripts": {
+    "convert-model": "bash scripts/convert-model.sh",
+    "build:packages": "npm run build -w @threatforest/types && tsc -b packages/engine packages/server packages/cli",
+    "build:web": "npm run build -w @threatforest/web",
+    "build": "npm run build:packages && npm run build:web",
+    "dev:server": "node --import tsx/esm packages/server/src/main.ts",
+    "dev:web": "npm run dev -w @threatforest/web",
+    "dev": "concurrently -n server,web -c blue,green \"npm:dev:server\" \"npm:dev:web\"",
+    "start": "npm run build && npm run start -w @threatforest/server",
+    "typecheck": "tsc -b --pretty",
+    "test": "node --import tsx/esm --test \"packages/engine/src/**/*.test.ts\"",
     "spike": "node --import tsx/esm packages/spike/src/run-all.ts",
     "spike:interrupt": "node --import tsx/esm packages/spike/src/graph-interrupt.ts",
-    "spike:structured": "node --import tsx/esm packages/spike/src/structured-output.ts",
-    "typecheck": "tsc -b --pretty"
+    "spike:structured": "node --import tsx/esm packages/spike/src/structured-output.ts"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
   }
 }

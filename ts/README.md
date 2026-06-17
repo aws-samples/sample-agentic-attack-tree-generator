@@ -33,13 +33,23 @@ The Python ML service lives at `../src/ml_service` (`python -m ml_service`).
 ```
 Next.js UI ──HTTP /api  +  WS /ws──▶ TS server ──▶ engine graph (Strands TS SDK)
  (static export)                                         │
-                                                         ▼  HTTP (localhost)
-                                          Python ML service  (ATTACK-BERT + STIX)
+                                                         ▼  in-process
+                                       TTP matching: transformers.js + ATTACK-BERT
+                                       ONNX + STIX vector search  (pure TS)
 ```
 
-- **ML stays Python.** The embedding/MITRE-match layer (sentence-transformers,
-  ATTACK-BERT, STIX vector search) has no TS equivalent and runs as a warm
-  service; the TS TTP stage calls its `/match_steps` endpoint.
+- **ML runs in-process (pure TS), by default.** The TTP stage embeds attack
+  steps with `transformers.js` running a converted ATTACK-BERT ONNX model
+  (mpnet, 768-dim, mean pooling) and does STIX cosine search in TS — no Python
+  process. Numerically faithful to the Python pipeline: top-1 MITRE techniques
+  match exactly (T1530 / T1548 / T1566 verified), JS cosine 0.4860 == Python
+  0.48597. One-time setup: `npm run convert-model` (PyTorch→ONNX; output
+  gitignored under `ts/models/`), or host the ONNX on HuggingFace and set
+  `TF_ATTACK_BERT_HF`.
+- **Python ML service kept as a fallback.** `src/ml_service` still works; set
+  `TF_USE_PYTHON_ML=1` (or `TF_ML_URL` with no local model) to route TTP
+  matching through it instead of the in-process embedder. Backend selection
+  lives in `packages/engine/src/ml/index.ts`.
 - **Providers.** The Strands TS SDK is first-class for **Bedrock, Anthropic,
   OpenAI, and Gemini**. The legacy Python config also supported Ollama, LiteLLM,
   SageMaker, and LlamaAPI — those are **not** first-class in the TS build. Reach
@@ -48,30 +58,24 @@ Next.js UI ──HTTP /api  +  WS /ws──▶ TS server ──▶ engine graph 
 
 ## Running locally
 
-1. **Start the Python ML service** (loads ATTACK-BERT + STIX once):
-   ```bash
-   cd ..            # repo root
-   python -m ml_service          # serves http://127.0.0.1:8770
-   ```
-2. **Build the TS packages:**
-   ```bash
-   cd ts
-   npm install
-   npm run build -w @threatforest/types
-   npx tsc -b packages/engine packages/server
-   ```
-3. **Start the server** (serves /api + /ws on :8000):
-   ```bash
-   npm run start -w @threatforest/server
-   ```
-4. **Dev the UI** (proxies /api + /ws to :8000):
-   ```bash
-   cd web && npm run dev          # http://localhost:3000
-   ```
-   Or build the static export and let the server host it:
-   ```bash
-   cd web && npm run build        # -> web/out, served by the TS server
-   ```
+```bash
+cd ts
+npm install
+npm run convert-model        # one-time: ATTACK-BERT → ONNX into ts/models/ (needs the repo .venv)
+npm run dev                  # starts the TS server (:8000) + Next dev UI (:3000) together
+```
+
+`npm run dev` runs the whole stack in one command — server + UI, with TTP
+embedding in-process (no Python service to start). Open http://localhost:3000.
+
+Other commands:
+- `npm run build` — build all packages + the Next static export (`web/out`).
+- `npm run start` — build, then serve the exported UI + API from the TS server on :8000.
+- `npm test` — engine parity tests (probability, report, ML matcher gated on the model).
+
+Skipping `convert-model`: the embedder will try a remote HuggingFace load
+(`TF_ATTACK_BERT_HF`), or set `TF_USE_PYTHON_ML=1` and run `python -m ml_service`
+(repo root) to use the Python fallback.
 
 AWS auth note: if `AWS_BEARER_TOKEN_BEDROCK` is set but empty in your env, unset
 it — otherwise the AWS SDK picks bearer auth over SigV4 and Bedrock calls fail

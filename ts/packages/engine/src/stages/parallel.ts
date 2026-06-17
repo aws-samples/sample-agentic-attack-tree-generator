@@ -11,7 +11,7 @@
  */
 import { config } from '../config.js';
 import { createModel } from '../providers.js';
-import { MlServiceClient } from '../ml-client.js';
+import { matchSteps } from '../ml/index.js';
 import { LocalFilesystemWorkspace, resolveStateDir } from '../workspace.js';
 import { makeSandboxedFileRead, makeSandboxedFileWrite, makeStoreMitigations } from '../tools/sandboxed-file.js';
 import { TREE_SYSTEM_PROMPT } from '../agents/tree.prompt.js';
@@ -119,8 +119,7 @@ async function processSingleThreat(
 
     const ttpCandidates: Json[] = [];
     if (steps.length > 0) {
-      const ml = new MlServiceClient();
-      const results = await ml.matchSteps(steps, {
+      const results = await matchSteps(steps, {
         topK: 3,
         minSimilarity: config.ttcThreshold,
         frameworks,

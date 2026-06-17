@@ -3,3 +3,8 @@ dist/
 *.tsbuildinfo
 .next/
 out/
+models/
+
+# TS workspace scripts are source (root .gitignore ignores scripts/)
+!scripts/
+!scripts/**

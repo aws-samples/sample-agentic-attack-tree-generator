@@ -8,6 +8,9 @@ export { runGraph, buildGraph, type RunGraphOptions, type RunGraphResult } from 
 export { config, Config, FRAMEWORKS } from './config.js';
 export { createModel, activeProvider, type SupportedProvider } from './providers.js';
 export { MlServiceClient } from './ml-client.js';
+// TTP matching: in-process TS embedding (transformers.js + ATTACK-BERT ONNX) by
+// default, Python ML service as fallback. See ml/index.ts for backend selection.
+export { matchSteps, matchStepsInProcess, getEmbedding, localModelAvailable } from './ml/index.js';
 export {
   LocalFilesystemWorkspace,
   resolveStateDir,

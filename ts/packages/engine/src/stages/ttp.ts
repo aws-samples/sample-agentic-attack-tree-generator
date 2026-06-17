@@ -30,7 +30,7 @@
  */
 import * as path from 'node:path';
 import { config } from '../config.js';
-import { MlServiceClient } from '../ml-client.js';
+import { matchSteps } from '../ml/index.js';
 import { LocalFilesystemWorkspace, resolveStateDir } from '../workspace.js';
 
 const STATE_FILE = 'ttp_candidates.json';
@@ -99,9 +99,9 @@ export async function runTtpEmbedding(
     return pathOf(STATE_FILE);
   }
 
-  // Cross-process call to the warm ML service (replaces in-process TTCMatcher).
-  const client = new MlServiceClient();
-  const results = await client.matchSteps(steps, {
+  // Backend-agnostic match: in-process TS embedding by default, Python ML
+  // service as fallback (see ml/index.ts selection).
+  const results = await matchSteps(steps, {
     topK,
     minSimilarity: config.ttcThreshold,
   });
