@@ -103,8 +103,10 @@ export default function HomePage() {
         headerVariant="high-contrast"
         header={
           <Box padding={{ top: 'xl', bottom: 'xl' }}>
+            {/* Cloudscape Grid maps its children against gridDefinition, so each
+                direct child needs a stable key. */}
             <Grid gridDefinition={[{ colspan: 8 }, { colspan: 4 }]}>
-              <SpaceBetween size="l">
+              <SpaceBetween key="hero-text" size="l">
                 <Box color="text-status-inactive" fontSize="body-s">Security Tool</Box>
                 <Box fontSize="display-l" fontWeight="bold" color="inherit">
                   ThreatForest
@@ -118,7 +120,7 @@ export default function HomePage() {
                   mitigation strategies through a multi-stage AI pipeline.
                 </Box>
               </SpaceBetween>
-              <div />
+              <div key="hero-spacer" />
             </Grid>
           </Box>
         }
@@ -258,7 +260,7 @@ export default function HomePage() {
           >
             <ColumnLayout columns={3} variant="text-grid">
               {PIPELINE_STAGES.map((stage, index) => (
-                <SpaceBetween key={index} size="xs">
+                <SpaceBetween key={stage.title} size="xs">
                   <Box variant="awsui-key-label">{`Stage ${index + 1}`}</Box>
                   <Box variant="h3">{stage.title}</Box>
                   <Box color="text-body-secondary">{stage.description}</Box>

@@ -8,7 +8,7 @@
  * adopt this with minimal churn.
  */
 
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import TopNavigation from '@cloudscape-design/components/top-navigation';
 import AppLayout from '@cloudscape-design/components/app-layout';
@@ -51,6 +51,20 @@ export default function AppShell({
 }: AppShellProps) {
   const router = useRouter();
   const [navOpen, setNavOpen] = useState(false);
+
+  // Defer rendering the Cloudscape shell until after client mount. With
+  // `output: 'export'` these pages are prerendered to static HTML at build time;
+  // Cloudscape components that use Portals (Modal, Popover) emit a hidden
+  // `<span style="display:none">` placeholder whose markup can differ between
+  // the build-time render and the first client render, causing a React
+  // hydration mismatch. Rendering an empty body on the very first client paint
+  // (matching the static shell) and swapping in the real UI in an effect makes
+  // the initial client tree match the server, eliminating the mismatch.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) {
+    return <div suppressHydrationWarning />;
+  }
 
   const handleNavFollow: SideNavigationProps['onFollow'] = (e) => {
     e.preventDefault();
@@ -96,11 +110,18 @@ export default function AppShell({
           ) : undefined
         }
         content={children}
-        splitPanel={splitPanel ?? undefined}
-        splitPanelOpen={splitPanelOpen || false}
-        onSplitPanelToggle={onSplitPanelToggle}
-        splitPanelPreferences={splitPanelPreferences}
-        onSplitPanelPreferencesChange={onSplitPanelPreferencesChange}
+        // Only wire the split panel when one is actually provided — passing
+        // splitPanelOpen without a panel makes Cloudscape warn about a
+        // non-interactive component.
+        {...(splitPanel
+          ? {
+              splitPanel,
+              splitPanelOpen: splitPanelOpen ?? false,
+              onSplitPanelToggle,
+              splitPanelPreferences,
+              onSplitPanelPreferencesChange,
+            }
+          : {})}
         toolsHide
       />
     </>

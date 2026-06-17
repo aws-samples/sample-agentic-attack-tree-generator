@@ -143,13 +143,16 @@ export default function ImportReportButton({ onImported }: ImportReportButtonPro
         }
       >
         <SpaceBetween size="m">
-          <Box variant="p">
+          {/* Each direct child carries a stable key: SpaceBetween renders its
+              children as a list, and the conditional blocks below would
+              otherwise trigger React's missing-key warning. */}
+          <Box key="intro" variant="p">
             Choose a <code>.tfreport</code> bundle exported from another
             ThreatForest install. The application will appear in your list
             with an <strong>Imported</strong> badge.
           </Box>
 
-          <Box>
+          <Box key="file-input">
             <input
               ref={fileInputRef}
               type="file"
@@ -161,19 +164,19 @@ export default function ImportReportButton({ onImported }: ImportReportButtonPro
           </Box>
 
           {uploading && (
-            <Box>
+            <Box key="uploading">
               <Spinner /> Importing…
             </Box>
           )}
 
           {error && (
-            <Alert type="error" header="Import failed">
+            <Alert key="error" type="error" header="Import failed">
               {error}
             </Alert>
           )}
 
           {result && result.status === 'imported' && (
-            <Alert type="success" header="Imported">
+            <Alert key="result-imported" type="success" header="Imported">
               Application imported as <strong>{result.folder_name}</strong>
               {result.versions_added?.length
                 ? ` with ${result.versions_added.length} threat model${result.versions_added.length === 1 ? '' : 's'}.`
@@ -181,24 +184,24 @@ export default function ImportReportButton({ onImported }: ImportReportButtonPro
             </Alert>
           )}
           {result && result.status === 'merged' && (
-            <Alert type="success" header="Merged into existing app">
+            <Alert key="result-merged" type="success" header="Merged into existing app">
               Added {result.versions_added?.length ?? 0} new version
               {result.versions_added?.length === 1 ? '' : 's'} to{' '}
               <strong>{result.folder_name}</strong>.
             </Alert>
           )}
           {result && result.status === 'skipped' && (
-            <Alert type="info" header="Nothing new to import">
+            <Alert key="result-skipped" type="info" header="Nothing new to import">
               All versions in this bundle are already present.
             </Alert>
           )}
           {result && result.status === 'failed' && (
-            <Alert type="error" header="Could not import">
+            <Alert key="result-failed" type="error" header="Could not import">
               {result.error || 'Unknown error.'}
             </Alert>
           )}
 
-          <details>
+          <details key="drop-folder">
             <summary>
               <span style={{ fontSize: '0.9em' }}>
                 Or drop the file directly in the imports folder
@@ -206,14 +209,14 @@ export default function ImportReportButton({ onImported }: ImportReportButtonPro
             </summary>
             <Box padding={{ top: 's' }}>
               <SpaceBetween size="xs">
-                <Box variant="small" color="text-body-secondary">
+                <Box key="drop-blurb" variant="small" color="text-body-secondary">
                   Bundles dropped here are picked up the next time you load
                   the Applications page.
                 </Box>
                 {infoLoading ? (
-                  <Spinner />
+                  <Spinner key="info-loading" />
                 ) : info ? (
-                  <SpaceBetween direction="horizontal" size="xs">
+                  <SpaceBetween key="info-dir" direction="horizontal" size="xs">
                     <Box variant="code">{info.imports_dir}</Box>
                     <Button
                       iconName="copy"
@@ -222,12 +225,12 @@ export default function ImportReportButton({ onImported }: ImportReportButtonPro
                     />
                   </SpaceBetween>
                 ) : (
-                  <Box variant="small" color="text-status-inactive">
+                  <Box key="info-missing" variant="small" color="text-status-inactive">
                     Imports directory unavailable.
                   </Box>
                 )}
                 {info?.failed?.length ? (
-                  <Box>
+                  <Box key="info-failed">
                     <StatusIndicator type="warning">
                       {info.failed.length} bundle
                       {info.failed.length === 1 ? '' : 's'} failed previously —
