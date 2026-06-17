@@ -12,13 +12,12 @@
  * (useParams/useRouter/useSearchParams). CloudscapeShell → AppShell.
  */
 
-import { useState, useEffect, useMemo, type ReactNode } from 'react';
+import { useState, useEffect, useMemo, type ReactNode, type CSSProperties } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useRealParams } from '@/hooks/useRealParams';
 import Box from '@cloudscape-design/components/box';
 import Header from '@cloudscape-design/components/header';
 import Alert from '@cloudscape-design/components/alert';
-import Spinner from '@cloudscape-design/components/spinner';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import Container from '@cloudscape-design/components/container';
 import Badge, { type BadgeProps } from '@cloudscape-design/components/badge';
@@ -34,6 +33,7 @@ import FormField from '@cloudscape-design/components/form-field';
 import Grid from '@cloudscape-design/components/grid';
 import ColumnLayout from '@cloudscape-design/components/column-layout';
 import AppShell from '@/components/AppShell';
+import RiskDashboard from '@/components/RiskDashboard';
 import ExportButton from '@/components/ExportButton';
 import type { ThreatModelSummary } from '@/utils/export-service';
 import MitigationStatusEditor from '@/components/MitigationStatusEditor';
@@ -55,6 +55,7 @@ import {
   getMitigationOverrides,
 } from '@/api/client';
 import { buildTechniqueUrl } from '@/utils/technique-url';
+import { toSeverity } from '@/utils/risk-posture';
 import {
   MITIGATION_STATUSES,
   isTerminal as isTerminalStatus,
@@ -85,14 +86,17 @@ function priorityLabel(p: number | string | null | undefined): string {
 }
 
 function PriorityBadge({ priority }: { priority?: string | null }) {
-  const p = (priority || '').toLowerCase();
+  if (!priority || priority === '—') return <Badge color="grey">—</Badge>;
+  // Consistent severity palette with the Risk Dashboard: high=red, medium=amber,
+  // low=grey. (The old map used blue for medium and green for low, which read
+  // as "good/done" — misleading for a low-severity *threat*.)
+  const sev = toSeverity(priority);
   const colorMap: Record<string, BadgeProps['color']> = {
-    high: 'red',
-    critical: 'red',
-    medium: 'blue',
-    low: 'green',
+    high: 'severity-high',
+    medium: 'severity-medium',
+    low: 'severity-low',
   };
-  return <Badge color={colorMap[p] || 'grey'}>{priority || '—'}</Badge>;
+  return <Badge color={colorMap[sev]}>{priority.toUpperCase()}</Badge>;
 }
 
 /**
@@ -177,6 +181,60 @@ function friendlyModelName(id: string | null | undefined): string {
  * banner teaches how to use the tool, not how to interpret a specific run.
  */
 const ONBOARDING_DISMISS_KEY = 'tf-summary-onboarding-dismissed-v1';
+
+/**
+ * Content-shaped loading skeleton mirroring the real summary layout (risk hero
+ * + KPI row + tab strip) so the page doesn't jump when data arrives. Pure CSS
+ * shimmer; no extra deps.
+ */
+function SummarySkeleton() {
+  const block = (h: number, w: string = '100%', r = 12): CSSProperties => ({
+    height: h,
+    width: w,
+    borderRadius: r,
+    background:
+      'linear-gradient(90deg, #eef0f2 25%, #f6f7f8 37%, #eef0f2 63%)',
+    backgroundSize: '400% 100%',
+    animation: 'tfshimmer 1.4s ease infinite',
+  });
+  return (
+    <div aria-busy="true" aria-label="Loading threat model">
+      <style>{`@keyframes tfshimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}`}</style>
+      <SpaceBetween size="m">
+        <div style={block(36, '320px')} />
+        <Container>
+          <SpaceBetween size="l">
+            <Grid gridDefinition={[{ colspan: 3 }, { colspan: 4 }, { colspan: 5 }]}>
+              <div style={block(120)} />
+              <div style={block(120)} />
+              <div style={block(120)} />
+            </Grid>
+            <Grid gridDefinition={[{ colspan: 3 }, { colspan: 3 }, { colspan: 3 }, { colspan: 3 }]}>
+              <div style={block(78)} />
+              <div style={block(78)} />
+              <div style={block(78)} />
+              <div style={block(78)} />
+            </Grid>
+            <div style={block(20, '60%')} />
+          </SpaceBetween>
+        </Container>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <div style={block(28, '110px', 6)} />
+          <div style={block(28, '90px', 6)} />
+          <div style={block(28, '140px', 6)} />
+        </div>
+        <Container>
+          <SpaceBetween size="s">
+            <div style={block(18, '80%')} />
+            <div style={block(18, '92%')} />
+            <div style={block(18, '70%')} />
+            <div style={block(18, '86%')} />
+          </SpaceBetween>
+        </Container>
+      </SpaceBetween>
+    </div>
+  );
+}
 
 function OnboardingBanner() {
   const [dismissed, setDismissed] = useState<boolean>(() => {
@@ -272,31 +330,6 @@ interface SummaryData {
   [key: string]: unknown;
 }
 
-function SummaryBar({ data, totalMitigations }: { data?: SummaryData | null; totalMitigations: number }) {
-  const ext = data?.extraction_summary || {};
-  const map = data?.mapping_summary || {};
-  const stats: Array<{ label: string; value: number; color?: string }> = [
-    { label: 'Total Threats', value: ext.total_threats ?? 0 },
-    { label: 'High Severity', value: ext.high_severity_count ?? 0, color: '#d13212' },
-    { label: 'Attack Trees', value: (data?.attack_trees || []).length },
-    { label: 'TTP Mappings', value: map.total_mappings ?? 0 },
-    { label: 'Mitigations', value: totalMitigations },
-  ];
-  return (
-    <Container>
-      <ColumnLayout columns={stats.length} variant="text-grid">
-        {stats.map((s, i) => (
-          <Box key={i} textAlign="center">
-            <Box variant="awsui-key-label">{s.label}</Box>
-            <Box fontSize="display-l" fontWeight="bold" color={s.color ? 'text-status-error' : 'inherit'}>
-              {s.value}
-            </Box>
-          </Box>
-        ))}
-      </ColumnLayout>
-    </Container>
-  );
-}
 
 function MitigationsList({ mitigations }: { mitigations: AggregatedMitigation[] }) {
   if (!mitigations || mitigations.length === 0) {
@@ -750,8 +783,27 @@ function MitigationsTab({
           </Header>
         }
         empty={
-          <Box textAlign="center" color="text-status-inactive" padding="l">
-            No mitigations available
+          <Box textAlign="center" color="inherit" padding="l">
+            <SpaceBetween size="s">
+              <b>{isFiltered ? 'No mitigations match your filters' : 'No mitigations available'}</b>
+              {isFiltered ? (
+                <Button
+                  variant="link"
+                  onClick={() => {
+                    setSelectedThreat(null);
+                    setSelectedRemediation(null);
+                    setSelectedPriority(null);
+                    setSelectedStatus(null);
+                  }}
+                >
+                  Clear filters
+                </Button>
+              ) : (
+                <Box color="text-status-inactive">
+                  This threat model has no recommended controls yet.
+                </Box>
+              )}
+            </SpaceBetween>
           </Box>
         }
         variant="container"
@@ -1308,9 +1360,19 @@ export default function ThreatModelSummaryView() {
     >
       {error && <Alert type="error" header="Error loading threat model">{error}</Alert>}
       {loading ? (
-        <Box textAlign="center" padding="l">
-          <Spinner size="large" />
-        </Box>
+        <SummarySkeleton />
+      ) : !data && !error ? (
+        <Container>
+          <Box textAlign="center" padding="xxl" color="text-status-inactive">
+            <SpaceBetween size="s">
+              <Box variant="h3" color="inherit">No threat model data</Box>
+              <Box color="inherit">
+                This version has no readable threat-model output. It may still be
+                running, or the run did not complete.
+              </Box>
+            </SpaceBetween>
+          </Box>
+        </Container>
       ) : data ? (
         <SpaceBetween size="m">
           <Header
@@ -1332,7 +1394,19 @@ export default function ThreatModelSummaryView() {
             Threat Model Summary
           </Header>
           <OnboardingBanner />
-          <SummaryBar data={data} totalMitigations={globalMitigations.length} />
+          <RiskDashboard
+            threats={threats}
+            attackTrees={attackTrees}
+            ttpMappings={data?.mapping_summary?.total_mappings ?? 0}
+            totalMitigations={globalMitigations.length}
+            appId={appId}
+            versionId={versionId}
+          />
+          {/* Sticky so the tab bar stays reachable while scrolling long threat
+              / mitigation lists. zIndex keeps it above table content; the
+              app-layout header sits at the very top, so a small offset avoids
+              overlap without hiding the tabs behind it. */}
+          <div style={{ position: 'sticky', top: 0, zIndex: 400, background: '#f2f3f3', paddingTop: 4 }}>
           <Tabs
             activeTabId={activeTab}
             onChange={({ detail }) => {
@@ -1381,6 +1455,7 @@ export default function ThreatModelSummaryView() {
               },
             ]}
           />
+          </div>
           <RunMetaBar meta={data?.run_metadata} frameworkCatalog={frameworkCatalog} />
         </SpaceBetween>
       ) : null}
