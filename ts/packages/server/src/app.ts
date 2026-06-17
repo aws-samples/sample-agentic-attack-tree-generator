@@ -146,13 +146,15 @@ export function createApp(options: CreateAppOptions = {}): Express {
   return app;
 }
 
-/** Resolve the UI dir from the option or the conventional `console-ui` locations. */
+/** Resolve the built-UI dir. The Next.js app static-exports to `web/out`. */
 function resolveUiDir(explicit?: string): string | null {
   const candidates = [
     explicit,
     process.env.TF_UI_DIR,
-    join(process.cwd(), 'console-ui'),
-    join(process.cwd(), 'ts', 'web', 'dist'),
+    // Next.js `output: 'export'` emits here (run `next build` in ts/web).
+    join(process.cwd(), 'ts', 'web', 'out'),
+    join(process.cwd(), 'web', 'out'),
+    join(process.cwd(), 'out'),
   ].filter((c): c is string => Boolean(c));
   for (const dir of candidates) {
     if (existsSync(join(dir, 'index.html'))) return normalize(dir);
