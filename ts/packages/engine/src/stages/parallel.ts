@@ -60,6 +60,7 @@ async function processSingleThreat(
   repoPath: string,
   runDir: string | undefined,
   frameworks: string[] | null,
+  onStep?: () => void,
 ): Promise<ThreatResult> {
   try {
     const stateDir = resolveStateDir(repoPath, runDir);
@@ -106,6 +107,7 @@ async function processSingleThreat(
     }
 
     if (trees.length === 0) return { ...EMPTY_RESULT };
+    onStep?.(); // attack tree done for this threat
 
     // --- TTP embedding (no LLM, via the Python ML service) ---
     const steps: string[] = [];
@@ -161,6 +163,7 @@ async function processSingleThreat(
       }
     }
     ttpMappings = ttpMappings.filter((m) => !CLOUD_TTP_BLOCKLIST.has(m['technique_id'] as string));
+    onStep?.(); // TTP mapping done for this threat
 
     // --- Mitigation (skip if output already exists from a prior run) ---
     const mitOutKey = `${prefix}_mitigations.json`;
@@ -240,6 +243,7 @@ async function processSingleThreat(
       ws.delete(singleThreatsKey);
       ws.delete(mitMappingsKey);
     }
+    onStep?.(); // mitigations done for this threat
 
     return {
       attack_trees: trees,
@@ -355,10 +359,14 @@ function isEmptyResult(r: ThreatResult | null | undefined): boolean {
  * Fan out tree/ttp/mitigation across threats, merge results, write consolidated
  * state. Returns the mitigations.json path. Port of run_parallel_pipeline.
  */
+/** Optional per-threat progress signal, fired as each threat finishes. */
+export type ThreatProgressFn = (done: number, total: number) => void;
+
 export async function runParallelPipeline(
   repoPath: string,
   runDir?: string,
   frameworks: string[] | null = null,
+  onThreatProgress?: ThreatProgressFn | null,
 ): Promise<string> {
   const maxRetries = config.parallelMaxRetries;
   const stateDir = resolveStateDir(repoPath, runDir);
@@ -373,10 +381,26 @@ export async function runParallelPipeline(
     return join(stateDir, 'mitigations.json');
   }
 
-  const runThreats = async (): Promise<ThreatResult[]> =>
-    Promise.all(
-      threats.map((threat, idx) => processSingleThreat(threat, idx, repoPath, runDir, frameworks)),
+  // Report fractional progress for this — the longest — stage. The 12 threats
+  // run concurrently (Promise.all), so counting only completions would leave
+  // the bar flat then jump at the end. Instead count SUB-STEPS (tree → TTP →
+  // mitigation = 3 per threat) as they finish across all threats, giving a
+  // steady stream of ticks. The counter resets each invocation so a retry round
+  // (completed threads return instantly) doesn't overshoot.
+  const STEPS_PER_THREAT = 3;
+  const total = threats.length * STEPS_PER_THREAT;
+  const runThreats = async (): Promise<ThreatResult[]> => {
+    let done = 0;
+    const onStep = (): void => {
+      done += 1;
+      onThreatProgress?.(Math.min(done, total), total);
+    };
+    return Promise.all(
+      threats.map((threat, idx) =>
+        processSingleThreat(threat, idx, repoPath, runDir, frameworks, onStep),
+      ),
     );
+  };
 
   // Initial run — all threats.
   const resultsByIdx: (ThreatResult | null)[] = await runThreats();

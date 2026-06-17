@@ -31,6 +31,7 @@ import {
   AgentNode,
   BeforeNodeCallEvent,
   AfterNodeCallEvent,
+  NodeStreamUpdateEvent,
   type MultiAgentInput,
   type MultiAgentState,
   type NodeInputOptions,
@@ -120,9 +121,19 @@ class VerifierRetryNode extends Node {
 
 /** A node lifecycle tick, surfaced so callers can stream per-stage progress. */
 export interface NodeProgressEvent {
-  phase: 'start' | 'complete';
+  phase: 'start' | 'complete' | 'progress';
   /** The graph node id (e.g. "scanner", "parallel_pipeline"). */
   nodeId: string;
+  /**
+   * For `phase:'progress'` — an intra-stage fraction in [0,1] so the bar can
+   * creep WITHIN a long stage instead of only jumping at node boundaries. For
+   * agent nodes this is a soft, monotonic estimate (each LLM round-trip nudges
+   * it toward — but never reaching — 1); for the parallel stage it's the real
+   * fraction of threats completed.
+   */
+  fraction?: number;
+  /** For `phase:'progress'` — a short human label (e.g. "Threat 3/12"). */
+  detail?: string;
 }
 
 export interface RunGraphOptions {
@@ -148,9 +159,22 @@ export interface RunGraphResult {
  * retry loops; edges form a DAG. Returns a Strands Graph.
  */
 export async function buildGraph(repoPath: string, opts: RunGraphOptions = {}): Promise<Graph> {
-  const { runDir, frameworks = null, interactionFn = null } = opts;
+  const { runDir, frameworks = null, interactionFn = null, onNodeEvent = null } = opts;
   const stateDir = resolveStateDir(repoPath, runDir);
   const stateWs = new LocalFilesystemWorkspace(stateDir);
+
+  // Per-threat progress for the parallel stage (the longest). Reports the real
+  // fraction of threats finished so the bar advances "Threat 3/12" rather than
+  // sitting flat until the whole stage completes.
+  const parallelThreatProgress = onNodeEvent
+    ? (done: number, total: number): void =>
+        onNodeEvent({
+          phase: 'progress',
+          nodeId: 'parallel_pipeline',
+          fraction: total > 0 ? done / total : 0,
+          detail: `Analyzing threats (${done}/${total} steps)`,
+        })
+    : null;
 
   const scannerAgent = await createScannerAgent(repoPath, runDir);
   const threatAgent = await createThreatAgent(repoPath, runDir);
@@ -202,7 +226,7 @@ export async function buildGraph(repoPath: string, opts: RunGraphOptions = {}): 
   const threatNode = new AgentNode({ agent: threatAgent });
   const parallelNode = new FunctionNode(
     'parallel_pipeline',
-    () => runParallelPipeline(repoPath, runDir, frameworks),
+    () => runParallelPipeline(repoPath, runDir, frameworks, parallelThreatProgress),
     repoPath,
     runDir,
   );
@@ -276,6 +300,26 @@ export async function runGraph(repoPath: string, opts: RunGraphOptions = {}): Pr
     const emit = opts.onNodeEvent;
     graph.addHook(BeforeNodeCallEvent, (e) => emit({ phase: 'start', nodeId: e.nodeId }));
     graph.addHook(AfterNodeCallEvent, (e) => emit({ phase: 'complete', nodeId: e.nodeId }));
+
+    // Intra-stage motion for AgentNode stages (scanner, threat): each inner LLM
+    // round-trip (beforeModelCallEvent) and tool call (beforeToolCallEvent —
+    // the scanner spends most of its time reading files) nudges a per-node
+    // estimate toward — but never reaching — 100% via an asymptotic curve, so a
+    // long stage's bar visibly creeps instead of sitting at 0 until the node
+    // completes. FunctionNode stages (parallel_pipeline) emit their own real
+    // fractions via the per-threat callback wired in buildGraph.
+    const steps = new Map<string, number>();
+    graph.addHook(NodeStreamUpdateEvent, (e) => {
+      if (e.inner.source !== 'agent') return;
+      const innerType = e.inner.event.type;
+      if (innerType !== 'beforeModelCallEvent' && innerType !== 'beforeToolCallEvent') return;
+      const n = (steps.get(e.nodeId) ?? 0) + 1;
+      steps.set(e.nodeId, n);
+      // 1 - 0.85^n: gentle asymptote so ~15-20 steps climb steadily toward (but
+      // never reach) 100%, leaving the final jump for the node's complete tick.
+      const fraction = 1 - Math.pow(0.85, n);
+      emit({ phase: 'progress', nodeId: e.nodeId, fraction, detail: `Working (step ${n})` });
+    });
   }
 
   const result = await graph.invoke('Run the ThreatForest threat modeling pipeline.');

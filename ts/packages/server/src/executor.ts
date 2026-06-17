@@ -113,25 +113,30 @@ export function createOrchestratorExecutor(_opts: ExecutorOptions = {}): Orchest
 
     try {
       // The engine runGraph drives the whole graph. We surface a coarse
-      // "running" then the terminal result; fine-grained per-node streaming is
-      // wired in a follow-up by consuming graph.stream() (the engine exposes
-      // buildGraph for that). For now the lifecycle + terminal status are
-      // contract-faithful for the UI's run-progress page.
+      // Stream node lifecycle + intra-stage ticks as ProgressEvents so the WS
+      // progress page advances live (it previously only saw the single
+      // run_started event and looked stuck for the whole run). The page reads:
+      //   - stage_start/stage_complete: `percentage` = overall stage boundary %
+      //   - stage_progress: `percentage` = INTRA-stage fraction (0-100); the
+      //     page folds it into overall as (stageIdx + pct/100)/numStages.
       const result = await runGraph(projectPath, {
         runDir,
         frameworks: config.frameworks,
         interactionFn: null,
-        // Stream per-node lifecycle as stage_start/stage_complete ProgressEvents
-        // so the WS progress page advances live (previously it only ever saw the
-        // single run_started event and looked stuck for the whole run).
-        onNodeEvent: ({ phase, nodeId }) => {
+        onNodeEvent: ({ phase, nodeId, fraction, detail }) => {
           if (phase === 'start') {
             onProgress(
               progress('stage_start', nodeId, stagePct(nodeId), `Started: ${stageLabel(nodeId)}`),
             );
-          } else {
+          } else if (phase === 'complete') {
             onProgress(
               progress('stage_complete', nodeId, stagePct(nodeId), `Completed: ${stageLabel(nodeId)}`),
+            );
+          } else {
+            // Intra-stage tick: percentage is the 0-100 fraction WITHIN the stage.
+            const pct = Math.round(Math.min(1, Math.max(0, fraction ?? 0)) * 100);
+            onProgress(
+              progress('stage_progress', nodeId, pct, detail ?? stageLabel(nodeId)),
             );
           }
         },
