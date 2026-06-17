@@ -29,6 +29,8 @@ import { Graph, TextBlock } from '@strands-agents/sdk';
 import {
   Node,
   AgentNode,
+  BeforeNodeCallEvent,
+  AfterNodeCallEvent,
   type MultiAgentInput,
   type MultiAgentState,
   type NodeInputOptions,
@@ -116,10 +118,23 @@ class VerifierRetryNode extends Node {
   }
 }
 
+/** A node lifecycle tick, surfaced so callers can stream per-stage progress. */
+export interface NodeProgressEvent {
+  phase: 'start' | 'complete';
+  /** The graph node id (e.g. "scanner", "parallel_pipeline"). */
+  nodeId: string;
+}
+
 export interface RunGraphOptions {
   runDir?: string;
   frameworks?: string[] | null;
   interactionFn?: InteractionFn | null;
+  /**
+   * Optional callback invoked when a graph node starts and completes. The
+   * server executor maps these to per-stage ProgressEvents for the WS progress
+   * page; without it the page only ever sees the initial "started" event.
+   */
+  onNodeEvent?: ((e: NodeProgressEvent) => void) | null;
 }
 
 export interface RunGraphResult {
@@ -253,6 +268,15 @@ export async function runGraph(repoPath: string, opts: RunGraphOptions = {}): Pr
 
   const outputDir = resolveOutputDir(repoPath, opts.runDir);
   const graph = await buildGraph(repoPath, opts);
+
+  // Forward node start/complete ticks so the caller can stream per-stage
+  // progress. Hooks fire during `invoke()`; each carries the node id, which
+  // matches the executor's STAGES list 1:1.
+  if (opts.onNodeEvent) {
+    const emit = opts.onNodeEvent;
+    graph.addHook(BeforeNodeCallEvent, (e) => emit({ phase: 'start', nodeId: e.nodeId }));
+    graph.addHook(AfterNodeCallEvent, (e) => emit({ phase: 'complete', nodeId: e.nodeId }));
+  }
 
   const result = await graph.invoke('Run the ThreatForest threat modeling pipeline.');
 

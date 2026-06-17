@@ -4,7 +4,13 @@
  * Public surface for the server (WS-4) and CLI (WS-5): build/run the graph,
  * plus the individual stages/agents/config for finer-grained orchestration.
  */
-export { runGraph, buildGraph, type RunGraphOptions, type RunGraphResult } from './pipeline/graph.js';
+export {
+  runGraph,
+  buildGraph,
+  type RunGraphOptions,
+  type RunGraphResult,
+  type NodeProgressEvent,
+} from './pipeline/graph.js';
 export { config, Config, FRAMEWORKS } from './config.js';
 export { createModel, activeProvider, type SupportedProvider } from './providers.js';
 export { MlServiceClient } from './ml-client.js';

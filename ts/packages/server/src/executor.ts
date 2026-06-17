@@ -46,6 +46,26 @@ function stagePct(stage: string): number {
   return idx < 0 ? 0 : Math.round(((idx + 1) / STAGES.length) * 100);
 }
 
+/** Human-readable label for a graph node id, used in progress messages. */
+const STAGE_LABELS: Record<string, string> = {
+  scanner: 'Repository analysis',
+  scanner_verifier: 'Validating scanner output',
+  scanner_review: 'Scanner review',
+  interviewer: 'Context interview',
+  threat: 'Threat generation',
+  threat_verifier: 'Validating threats',
+  threat_review: 'Threat review',
+  parallel_pipeline: 'Attack trees, TTP mapping & mitigations',
+  parallel_verifier: 'Validating mitigations',
+  probability: 'Probability analysis',
+  report: 'Dashboard generation',
+  report_verifier: 'Validating report',
+};
+
+function stageLabel(nodeId: string): string {
+  return STAGE_LABELS[nodeId] ?? nodeId;
+}
+
 export interface ExecutorOptions {
   /** Root dir under which per-run directories are created (default .threatforest/runs). */
   runsRoot?: string;
@@ -101,6 +121,20 @@ export function createOrchestratorExecutor(_opts: ExecutorOptions = {}): Orchest
         runDir,
         frameworks: config.frameworks,
         interactionFn: null,
+        // Stream per-node lifecycle as stage_start/stage_complete ProgressEvents
+        // so the WS progress page advances live (previously it only ever saw the
+        // single run_started event and looked stuck for the whole run).
+        onNodeEvent: ({ phase, nodeId }) => {
+          if (phase === 'start') {
+            onProgress(
+              progress('stage_start', nodeId, stagePct(nodeId), `Started: ${stageLabel(nodeId)}`),
+            );
+          } else {
+            onProgress(
+              progress('stage_complete', nodeId, stagePct(nodeId), `Completed: ${stageLabel(nodeId)}`),
+            );
+          }
+        },
       });
 
       if (control.stopRequested) {

@@ -60,6 +60,21 @@ const stageIndexMap: Record<string, number> = {
   'Threat Review': 3,
   'Parallel Analysis': 4,
   'Dashboard Generation': 5,
+  // Engine graph node ids (the server streams stage_start/stage_complete keyed
+  // by these). Multiple sub-nodes (verifier/review) collapse onto their parent
+  // display stage so the 6-stage timeline reads cleanly.
+  scanner: 0,
+  scanner_verifier: 0,
+  scanner_review: 0,
+  interviewer: 1,
+  threat: 2,
+  threat_verifier: 2,
+  threat_review: 3,
+  parallel_pipeline: 4,
+  parallel_verifier: 4,
+  probability: 4,
+  report: 5,
+  report_verifier: 5,
   // Fallback internal names
   setup: 0,
   context_analysis: 0,
