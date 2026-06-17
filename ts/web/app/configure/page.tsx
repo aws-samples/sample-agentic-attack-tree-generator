@@ -51,6 +51,7 @@ const PROVIDER_MODELS: Record<string, ModelOption[]> = {
     { label: 'Claude Opus 4.5', value: 'global.anthropic.claude-opus-4-5-20251101-v1:0' },
     { label: 'Claude Opus 4.6', value: 'global.anthropic.claude-opus-4-6-v1' },
     { label: 'Claude Opus 4.7', value: 'global.anthropic.claude-opus-4-7' },
+    { label: 'Claude Opus 4.8', value: 'global.anthropic.claude-opus-4-8' },
   ],
   Anthropic: [
     { label: 'Claude 3 Sonnet', value: 'claude-3-sonnet-20240229' },
