@@ -169,11 +169,15 @@ export default function ImportReportButton({ onImported }: ImportReportButtonPro
             </Box>
           )}
 
-          {error && (
+          {/* Use a ternary, not `error && (...)`: `error` is a string, so
+              `'' && <Alert/>` evaluates to the empty string `''` — a stray text
+              child that React keeps in SpaceBetween's child list and flags with
+              the "unique key" warning. `? : null` renders nothing when empty. */}
+          {error ? (
             <Alert key="error" type="error" header="Import failed">
               {error}
             </Alert>
-          )}
+          ) : null}
 
           {result && result.status === 'imported' && (
             <Alert key="result-imported" type="success" header="Imported">
