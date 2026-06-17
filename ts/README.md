@@ -61,21 +61,25 @@ Next.js UI ──HTTP /api  +  WS /ws──▶ TS server ──▶ engine graph 
 ```bash
 cd ts
 npm install
-npm run convert-model        # one-time: ATTACK-BERT → ONNX into ts/models/ (needs the repo .venv)
-npm run dev                  # starts the TS server (:8000) + Next dev UI (:3000) together
+npm run dev                  # Python ML service (:8770) + TS server (:8000) + Next UI (:3000)
 ```
 
-`npm run dev` runs the whole stack in one command — server + UI, with TTP
-embedding in-process (no Python service to start). Open http://localhost:3000.
+`npm run dev` runs the whole stack in one command. Embeddings use the **Python
+ML service** by default (it's started for you via the repo `.venv`; override the
+interpreter with `TF_PYTHON=…`). Open http://localhost:3000.
+
+Variants:
+- `npm run dev:no-ml` — server + UI only (point `TF_ML_URL` at an ML service you
+  run separately, or opt into the in-process TS embedder, below).
+- **In-process TS embeddings (opt-in):** `npm run convert-model` once (ATTACK-BERT
+  → ONNX into `ts/models/`, needs the repo `.venv`), then run with
+  `TF_USE_PYTHON_ML=0` — no Python ML service needed. Proven at top-1 parity with
+  the Python matcher.
 
 Other commands:
 - `npm run build` — build all packages + the Next static export (`web/out`).
 - `npm run start` — build, then serve the exported UI + API from the TS server on :8000.
 - `npm test` — engine parity tests (probability, report, ML matcher gated on the model).
-
-Skipping `convert-model`: the embedder will try a remote HuggingFace load
-(`TF_ATTACK_BERT_HF`), or set `TF_USE_PYTHON_ML=1` and run `python -m ml_service`
-(repo root) to use the Python fallback.
 
 AWS auth note: if `AWS_BEARER_TOKEN_BEDROCK` is set but empty in your env, unset
 it — otherwise the AWS SDK picks bearer auth over SigV4 and Bedrock calls fail

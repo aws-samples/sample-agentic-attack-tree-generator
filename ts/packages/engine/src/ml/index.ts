@@ -17,7 +17,6 @@
  */
 import type { StepMatch } from '@threatforest/types';
 import { matchStepsInProcess } from './matcher.js';
-import { localModelAvailable } from './embedder.js';
 import { MlServiceClient } from '../ml-client.js';
 
 export interface MatchOptions {
@@ -27,12 +26,12 @@ export interface MatchOptions {
 }
 
 function usePythonService(): boolean {
-  if (process.env.TF_USE_PYTHON_ML === '1') return true;
+  // Default: use the Python ML service for embeddings. The in-process TS
+  // embedder (transformers.js + ATTACK-BERT ONNX) is proven at parity but kept
+  // opt-in for now — set TF_USE_PYTHON_ML=0 to switch to it (requires the
+  // converted model, see `npm run convert-model`).
   if (process.env.TF_USE_PYTHON_ML === '0') return false;
-  // Auto: prefer in-process TS when a local model exists; else fall back to the
-  // Python service only if its URL was explicitly configured.
-  if (localModelAvailable()) return false;
-  return Boolean(process.env.TF_ML_URL);
+  return true;
 }
 
 /**
