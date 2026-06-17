@@ -11,7 +11,8 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { useRealParams } from '@/hooks/useRealParams';
 import Header from '@cloudscape-design/components/header';
 import Button from '@cloudscape-design/components/button';
 import Box from '@cloudscape-design/components/box';
@@ -114,7 +115,7 @@ function isAbandonedVersion(version: VersionSummary | null | undefined): boolean
 }
 
 export default function AppOverviewView() {
-  const params = useParams<{ appId: string }>();
+  const params = useRealParams<{ appId: string }>('/applications/[appId]');
   const appId = params.appId;
   const router = useRouter();
 

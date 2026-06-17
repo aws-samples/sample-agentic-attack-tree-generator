@@ -14,7 +14,8 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { useRealParams } from '@/hooks/useRealParams';
 import dynamic from 'next/dynamic';
 import ColumnLayout from '@cloudscape-design/components/column-layout';
 import Box from '@cloudscape-design/components/box';
@@ -95,11 +96,11 @@ function ThreatDetailsBar({ tree }: { tree: ViewerAttackTree | null }) {
 }
 
 export default function VersionDetailView() {
-  const { appId, versionId, threatIndex } = useParams<{
+  const { appId, versionId, threatIndex } = useRealParams<{
     appId: string;
     versionId: string;
     threatIndex: string;
-  }>();
+  }>('/applications/[appId]/versions/[versionId]/threats/[threatIndex]');
   const router = useRouter();
   const selectedIdx = parseInt(threatIndex || '0', 10);
   const [data, setData] = useState<VersionData | null>(null);

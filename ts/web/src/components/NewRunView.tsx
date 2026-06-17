@@ -14,7 +14,8 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { useRealParams } from '@/hooks/useRealParams';
 import Form from '@cloudscape-design/components/form';
 import FormField from '@cloudscape-design/components/form-field';
 import Input from '@cloudscape-design/components/input';
@@ -38,8 +39,11 @@ type FrameworkCatalog = Record<string, { name: string; description: string }>;
 
 export default function NewRunView() {
   const router = useRouter();
-  const params = useParams<{ appId?: string }>();
-  const appId = params.appId;
+  // Mounted at both "/new-run" (no appId) and "/applications/[appId]/runs/new".
+  // useRealParams resolves appId from the live pathname under static export;
+  // on the unscoped route the segment is absent so appId is ''.
+  const params = useRealParams<{ appId: string }>('/applications/[appId]/runs/new');
+  const appId = params.appId || undefined;
   const isAppScoped = Boolean(appId);
 
   const [projectPath, setProjectPath] = useState('');

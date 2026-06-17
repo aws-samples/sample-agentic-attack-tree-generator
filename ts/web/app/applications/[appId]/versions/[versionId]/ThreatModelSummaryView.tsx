@@ -13,7 +13,8 @@
  */
 
 import { useState, useEffect, useMemo, type ReactNode } from 'react';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useRealParams } from '@/hooks/useRealParams';
 import Box from '@cloudscape-design/components/box';
 import Header from '@cloudscape-design/components/header';
 import Alert from '@cloudscape-design/components/alert';
@@ -1142,7 +1143,9 @@ function OverviewTab({
 
 // ─── Main Page ───
 export default function ThreatModelSummaryView() {
-  const { appId, versionId } = useParams<{ appId: string; versionId: string }>();
+  const { appId, versionId } = useRealParams<{ appId: string; versionId: string }>(
+    '/applications/[appId]/versions/[versionId]',
+  );
   const router = useRouter();
   const searchParams = useSearchParams();
   const [data, setData] = useState<SummaryData | null>(null);

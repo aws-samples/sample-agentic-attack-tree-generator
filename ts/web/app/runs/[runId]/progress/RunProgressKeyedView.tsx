@@ -15,7 +15,8 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { useRealParams } from '@/hooks/useRealParams';
 import ProgressBar from '@cloudscape-design/components/progress-bar';
 import StatusIndicator from '@cloudscape-design/components/status-indicator';
 import Alert from '@cloudscape-design/components/alert';
@@ -893,7 +894,7 @@ function RunProgressBody({ runId }: { runId: string }) {
 }
 
 export default function RunProgressKeyedView() {
-  const params = useParams<{ runId: string }>();
+  const params = useRealParams<{ runId: string }>('/runs/[runId]/progress');
   const runId = params.runId;
 
   if (!runId) {
