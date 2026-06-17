@@ -422,3 +422,17 @@ export function resolveProjectPathForApp(appId: string): string | null {
     return null;
   }
 }
+
+/**
+ * Resolve the on-disk run-directory folder name for an app. Runs are stored
+ * under `<runsRoot>/<run_dir_name>/<YYYYMMDD_HHMMSS>/`, and the API resolves
+ * versions by this folder name (see routes/applications.ts), so the executor
+ * must create run dirs under it. Returns null if the app isn't found.
+ */
+export function resolveRunDirNameForApp(appId: string): string | null {
+  try {
+    return getRepository().getApplication(appId).run_dir_name;
+  } catch {
+    return null;
+  }
+}

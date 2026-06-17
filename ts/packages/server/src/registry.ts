@@ -399,7 +399,10 @@ export class ApplicationRegistry {
     for (const name of readdirSync(this.runsRoot)) {
       const projectDir = join(this.runsRoot, name);
       if (!isDir(projectDir)) continue;
-      if (slugify(name) === appId) return projectDir;
+      // Match either an exact folder name (v2 apps create runs under a folder
+      // named exactly the app_id, e.g. "app_6a32...") or the legacy
+      // folder-derived scheme where app_id == slugify(folder).
+      if (name === appId || slugify(name) === appId) return projectDir;
     }
     return null;
   }

@@ -10,8 +10,8 @@
  * server in `main.ts` (see `attachProgressWebSocket`).
  */
 import express, { type Express, type Request, type Response, type NextFunction } from 'express';
-import { existsSync, readFileSync, statSync } from 'node:fs';
-import { join, normalize } from 'node:path';
+import { existsSync, readFileSync, statSync, readdirSync } from 'node:fs';
+import { join, normalize, relative, sep } from 'node:path';
 import { RunManager } from './run-manager.js';
 import { createOrchestratorExecutor } from './executor.js';
 import { runsRouter, setRunManager } from './routes/runs.js';
@@ -115,8 +115,31 @@ export function createApp(options: CreateAppOptions = {}): Express {
     const indexPath = join(uiDir, 'index.html');
     const indexHtml = isFile(indexPath) ? readFileSync(indexPath, 'utf-8') : null;
 
+    // Next.js `output: 'export'` pre-renders each dynamic route once, under a
+    // `__shell__` sentinel segment (e.g.
+    // out/applications/__shell__/versions/__shell__/index.html). Discover those
+    // shells so a real dynamic URL (…/app_123/versions/20260617_041530) can be
+    // served the matching route's HTML — which mounts the correct client route
+    // component that then reads the real params from the URL. Without this the
+    // server fell back to the HOME shell for every dynamic deep-link, so the
+    // client always booted at "/" instead of the requested page.
+    const dynamicShells = discoverShellRoutes(uiDir);
+
     app.get('/{*splat}', (req: Request, res: Response) => {
-      const fullPath = req.path.replace(/^\/+/, '');
+      // `req.path` is NOT percent-decoded by Express, but Next's exported assets
+      // for dynamic routes live under literal-bracket dirs on disk
+      // (app/applications/[appId]/versions/[versionId]/page-*.js) while the
+      // browser requests them URL-encoded (…/%5BappId%5D/…/%5BversionId%5D/…).
+      // Decode so the file lookup finds them; fall back to the raw path if the
+      // encoding is malformed. Path-traversal is still guarded by normalize() +
+      // the startsWith(uiDir) check below.
+      let decodedPath = req.path;
+      try {
+        decodedPath = decodeURIComponent(req.path);
+      } catch {
+        /* malformed %-encoding — keep the raw path */
+      }
+      const fullPath = decodedPath.replace(/^\/+/, '');
       // API/WS routes are handled above; never let them fall into the SPA.
       if (fullPath.startsWith('api/') || fullPath.startsWith('ws/')) {
         res.status(404).json({ detail: 'Not found' });
@@ -131,9 +154,23 @@ export function createApp(options: CreateAppOptions = {}): Express {
           res.send(readFileSync(candidate));
           return;
         }
+        // Per-route `<route>/index.html` (e.g. out/applications/index.html).
+        const routeIndex = normalize(join(uiDir, fullPath, 'index.html'));
+        if (routeIndex.startsWith(uiDir) && isFile(routeIndex)) {
+          res.setHeader('Content-Type', 'text/html; charset=utf-8');
+          res.send(readFileSync(routeIndex));
+          return;
+        }
+        // Match a dynamic route against the `__shell__` pre-renders.
+        const shellFile = matchShellRoute(dynamicShells, fullPath);
+        if (shellFile !== null) {
+          res.setHeader('Content-Type', 'text/html; charset=utf-8');
+          res.send(readFileSync(shellFile));
+          return;
+        }
       }
 
-      // Otherwise return index.html so the client router can boot.
+      // Last resort: the root shell so the client router can still boot.
       if (indexHtml !== null) {
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
         res.send(indexHtml);
@@ -144,6 +181,52 @@ export function createApp(options: CreateAppOptions = {}): Express {
   }
 
   return app;
+}
+
+/** A discovered dynamic-route shell: its segment pattern + the HTML file to serve. */
+interface ShellRoute {
+  /** Path segments; `null` marks a `__shell__` (dynamic) wildcard segment. */
+  segments: (string | null)[];
+  file: string;
+}
+
+/**
+ * Find every `…/__shell__/…/index.html` the Next export produced and turn each
+ * into a segment matcher. These back dynamic routes (`/applications/:id/...`)
+ * that have no real pre-rendered HTML.
+ */
+function discoverShellRoutes(uiDir: string): ShellRoute[] {
+  const out: ShellRoute[] = [];
+  const walk = (dir: string): void => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(full);
+      } else if (entry.name === 'index.html' && full.includes(`${sep}__shell__${sep}`)) {
+        const rel = relative(uiDir, dir); // e.g. applications/__shell__/versions/__shell__
+        const segments = rel.split(sep).map((s) => (s === '__shell__' ? null : s));
+        out.push({ segments, file: full });
+      }
+    }
+  };
+  try {
+    walk(uiDir);
+  } catch {
+    /* no UI dir — leave empty */
+  }
+  // Longer (more specific) patterns first so e.g. …/versions/:vid wins over …/:appId.
+  return out.sort((a, b) => b.segments.length - a.segments.length);
+}
+
+/** Match a request path against the discovered shell patterns; return its HTML file or null. */
+function matchShellRoute(shells: ShellRoute[], reqPath: string): string | null {
+  const reqSegs = reqPath.split('/').filter(Boolean);
+  for (const shell of shells) {
+    if (shell.segments.length !== reqSegs.length) continue;
+    const matches = shell.segments.every((seg, i) => seg === null || seg === reqSegs[i]);
+    if (matches) return shell.file;
+  }
+  return null;
 }
 
 /** Resolve the built-UI dir. The Next.js app static-exports to `web/out`. */

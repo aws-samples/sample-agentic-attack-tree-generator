@@ -12,7 +12,8 @@ import { join } from 'node:path';
 import { runGraph } from '@threatforest/engine';
 import type { RunConfig } from '@threatforest/types';
 import type { OrchestratorExecutor, ProgressEvent, ScanControl } from './run-manager.js';
-import { resolveProjectPathForApp } from './applications.js';
+import { resolveProjectPathForApp, resolveRunDirNameForApp } from './applications.js';
+import { createRunDirectory } from './registry.js';
 
 const STAGES = [
   'scanner',
@@ -54,9 +55,9 @@ export interface ExecutorOptions {
  * Build an OrchestratorExecutor closure for the RunManager. The returned fn runs
  * one pipeline invocation and returns the terminal status.
  */
-export function createOrchestratorExecutor(opts: ExecutorOptions = {}): OrchestratorExecutor {
-  const runsRoot = opts.runsRoot ?? join(process.cwd(), '.threatforest', 'runs');
-
+export function createOrchestratorExecutor(_opts: ExecutorOptions = {}): OrchestratorExecutor {
+  // Run-dir layout is owned by the registry's createRunDirectory (rooted at
+  // getRunsRoot()), so the executor no longer computes its own runsRoot.
   return async (
     config: RunConfig,
     onProgress: (e: ProgressEvent) => void,
@@ -68,10 +69,24 @@ export function createOrchestratorExecutor(opts: ExecutorOptions = {}): Orchestr
       ? resolveProjectPathForApp(config.app_id) ?? config.project_path
       : config.project_path;
 
-    const runDir =
-      config.resume_run_dir ??
-      join(runsRoot, sanitize(projectPath), new Date().toISOString().replace(/[:.]/g, '-'));
-    mkdirSync(runDir, { recursive: true });
+    // Create the run dir via the registry's canonical helper so the layout the
+    // version registry later scans matches what we write here:
+    //   <runsRoot>/<run_dir_name>/<YYYYMMDD_HHMMSS>/{state,output}
+    // The folder MUST be the app's `run_dir_name`, because the API resolves
+    // versions by that name (routes/applications.ts calls
+    // getVersions(app.run_dir_name)). The previous hand-rolled
+    // `sanitize(projectPath)/<ISO timestamp>` layout wrote to an unrecognized
+    // folder with a non-matching timestamp format, so completed runs never
+    // surfaced under GET /applications/:id/versions.
+    const folderName = config.app_id ? resolveRunDirNameForApp(config.app_id) : null;
+    let runDir: string;
+    if (config.resume_run_dir) {
+      runDir = config.resume_run_dir;
+      mkdirSync(join(runDir, 'state'), { recursive: true });
+      mkdirSync(join(runDir, 'output'), { recursive: true });
+    } else {
+      [runDir] = createRunDirectory(projectPath, folderName);
+    }
     control.runDir = runDir;
 
     onProgress(progress('run_started', 'scanner', 0, 'Pipeline started'));
@@ -116,8 +131,4 @@ export function createOrchestratorExecutor(opts: ExecutorOptions = {}): Orchestr
       return { status: 'failed', error: (err as Error).message };
     }
   };
-}
-
-function sanitize(p: string): string {
-  return p.replace(/[^a-zA-Z0-9_-]+/g, '_').replace(/^_+|_+$/g, '') || 'project';
 }
