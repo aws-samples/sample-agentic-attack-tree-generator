@@ -36,6 +36,24 @@ function bedrockAuthSanityHint(): void {
 }
 
 /**
+ * Whether a Bedrock model id deprecates the `temperature` parameter.
+ *
+ * Anthropic's Claude Opus 4.7 onward reject any request carrying `temperature`
+ * ("`temperature` is deprecated for this model"). Parse the `opus-4-<minor>`
+ * version out of the model id and treat minor ≥ 7 as deprecating it, so future
+ * minors (4.9, 4.10, …) are covered without a code change. Non-Opus families
+ * (Sonnet/Haiku) and Opus ≤ 4.6 still accept temperature.
+ */
+function modelDeprecatesTemperature(modelId: string): boolean {
+  // Capture the 1–2 digit minor, NOT followed by another digit, so a
+  // date-suffixed base id (…opus-4-20250514…, Opus 4.0) doesn't parse the date
+  // as the minor. Matches …opus-4-7, …opus-4-8, …opus-4-8-<date>, …opus-4-1-…
+  const m = /claude-opus-4-(\d{1,2})(?!\d)/.exec(modelId);
+  if (!m) return false;
+  return Number(m[1]) >= 7;
+}
+
+/**
  * Create the configured Strands model. Currently always returns a BedrockModel
  * unless a non-Bedrock provider block is the first one configured, in which case
  * the caller must have the matching peer dep installed and we lazy-load it.
@@ -52,9 +70,12 @@ export async function createModel(config: Config, opts: CreateModelOptions = {})
   if (config.bedrock?.model_id) {
     bedrockAuthSanityHint();
     const modelId = config.bedrock.model_id;
-    // Claude Opus 4.7 does not accept a temperature parameter (mirrors the
-    // Python provider's special-case); omit it for that model family.
-    const supportsTemperature = !modelId.includes('claude-opus-4-7');
+    // Claude Opus 4.7+ deprecate the `temperature` parameter — Bedrock rejects
+    // a request that carries it ("`temperature` is deprecated for this model"),
+    // which otherwise kills the scanner agent on the first call and fails the
+    // whole run in <1s. Omit temperature for Opus 4.7 and any later 4.x minor
+    // (4.8, 4.9, 4.10, …). Sonnet/Haiku and Opus ≤4.6 still accept it.
+    const supportsTemperature = !modelDeprecatesTemperature(modelId);
     return new BedrockModel({
       modelId,
       region: config.awsRegion,
