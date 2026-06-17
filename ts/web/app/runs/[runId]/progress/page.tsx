@@ -1,8 +1,8 @@
 // Route: "/runs/:runId/progress"  →  legacy RunProgressPage (wrapped keyed)
-import RunProgressKeyedView from './RunProgressKeyedView.js';
+import RunProgressKeyedView from './RunProgressKeyedView';
 
 export function generateStaticParams(): Array<{ runId: string }> {
-  return [];
+  return [{ runId: '__shell__' }];
 }
 
 export default function RunProgressRoute() {

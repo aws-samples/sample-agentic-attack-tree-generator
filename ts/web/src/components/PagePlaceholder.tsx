@@ -15,7 +15,7 @@ import Container from '@cloudscape-design/components/container';
 import Box from '@cloudscape-design/components/box';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import type { BreadcrumbGroupProps } from '@cloudscape-design/components/breadcrumb-group';
-import AppShell from './AppShell.js';
+import AppShell from './AppShell';
 
 export interface PagePlaceholderProps {
   /** Page title shown in the content header. */

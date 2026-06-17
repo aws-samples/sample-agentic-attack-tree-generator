@@ -29,7 +29,13 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // Dev-only proxy (the Vite-proxy equivalent). Returned only outside a
+  // production build so `next build`/`output: export` doesn't warn that
+  // rewrites are ignored in a static export — at runtime the UI and API are
+  // same-origin (the TS server hosts the exported assets), so no proxy is
+  // needed there.
   async rewrites() {
+    if (process.env.NODE_ENV === 'production') return [];
     return [
       { source: '/api/:path*', destination: `${API_TARGET}/api/:path*` },
       { source: '/ws/:path*', destination: `${API_TARGET}/ws/:path*` },
