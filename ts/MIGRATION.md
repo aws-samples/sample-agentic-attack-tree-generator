@@ -12,7 +12,8 @@ Status of the Python → TypeScript migration. The legacy Python pipeline under
 | `src/server/*` (FastAPI + routes + WS) | `ts/packages/server` (Express 5 + ws) | ✅ boots, frozen contract preserved |
 | `src/threatforest/cli.py` | `ts/packages/cli` (commander) | ✅ (some Python-only subcommands stubbed — see below) |
 | `console-ui/` (Vite React JS) | `ts/web` (Next.js 15, TS, static export) | ✅ builds + static-exports |
-| `src/threatforest/embedding`, `modules/graph`, STIX data | **kept Python** → `src/ml_service` (FastAPI) | ✅ extracted as a warm service |
+| `src/threatforest/embedding`, `modules/graph`, `TTCMatcher` | **ported to TS** → `ts/packages/engine/src/ml` (transformers.js + ATTACK-BERT ONNX) | ✅ default; top-1 parity with Python verified |
+| `src/ml_service` (FastAPI) | **kept as fallback** (`TF_USE_PYTHON_ML=1` / `TF_ML_URL`) | ✅ still works |
 
 ## Parity evidence (the acceptance gate)
 
@@ -28,6 +29,10 @@ stages — the contract the UI and downstream consumers depend on:
 - **ML service** — `src/ml_service/tests/test_parity.py`: `/match_steps` returns
   the same top-K technique IDs/scores/frameworks as the in-process `TTCMatcher`
   (verified across ATT&CK/ATLAS/AWS frameworks incl. the AWS-term boost).
+- **Pure-TS TTP** — `ts/packages/engine/src/ml/matcher.test.ts`: the in-process
+  transformers.js matcher returns the same top-1 MITRE techniques as the Python
+  `TTCMatcher` (T1530 / T1548 / T1566 on ATT&CK); JS embedding cosine == Python
+  to 4 dp. ATTACK-BERT converted PyTorch→ONNX once via `npm run convert-model`.
 - **WS-0 spikes** — `ts/packages/spike`: proved the TS SDK reproduces the HITL
   Graph interrupt→resume contract and Zod `structuredOutputSchema` on Bedrock.
 
@@ -60,10 +65,13 @@ for client routes — verified by smoke test.
 
 ## Cutover checklist
 
-1. Build: `npm install` in `ts/`; `npm run build -w @threatforest/types`;
-   `tsc -b packages/engine packages/server packages/cli`; `cd web && next build`.
-2. Run the Python ML service: `python -m ml_service`.
-3. Start the TS server (serves `ts/web/out` + `/api` + `/ws`).
-4. Validate against the parity tests + a real repo→report run.
+1. `cd ts && npm install`
+2. `npm run convert-model` (one-time ATTACK-BERT → ONNX; needs the repo `.venv`).
+   *Or* skip it and set `TF_USE_PYTHON_ML=1` + run `python -m ml_service` to use
+   the Python fallback.
+3. Dev: `npm run dev` (server :8000 + UI :3000, in-process TS embedding).
+   Prod: `npm run build` then `npm run start` (server serves `web/out` + `/api` + `/ws`).
+4. Validate against the parity tests (`npm test`, plus the model-gated ML test)
+   and a real repo→report run.
 5. Flip the package entry point / launcher to the TS CLI; retire the Python
-   pipeline once a full run is signed off. Keep `src/ml_service` (Python stays).
+   pipeline once a full run is signed off. `src/ml_service` remains as a fallback.
