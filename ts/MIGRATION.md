@@ -12,8 +12,8 @@ Status of the Python → TypeScript migration. The legacy Python pipeline under
 | `src/server/*` (FastAPI + routes + WS) | `ts/packages/server` (Express 5 + ws) | ✅ boots, frozen contract preserved |
 | `src/threatforest/cli.py` | `ts/packages/cli` (commander) | ✅ (some Python-only subcommands stubbed — see below) |
 | `console-ui/` (Vite React JS) | `ts/web` (Next.js 15, TS, static export) | ✅ builds + static-exports |
-| `src/threatforest/embedding`, `modules/graph`, `TTCMatcher` | **ported to TS** → `ts/packages/engine/src/ml` (transformers.js + ATTACK-BERT ONNX) | ✅ default; top-1 parity with Python verified |
-| `src/ml_service` (FastAPI) | **kept as fallback** (`TF_USE_PYTHON_ML=1` / `TF_ML_URL`) | ✅ still works |
+| `src/ml_service` (FastAPI) | **default backend for embeddings** (started by `npm run dev`) | ✅ |
+| `src/threatforest/embedding`, `modules/graph`, `TTCMatcher` | **also ported to TS** → `ts/packages/engine/src/ml` (transformers.js + ATTACK-BERT ONNX), **opt-in** via `TF_USE_PYTHON_ML=0` | ✅ top-1 parity with Python verified |
 
 ## Parity evidence (the acceptance gate)
 
