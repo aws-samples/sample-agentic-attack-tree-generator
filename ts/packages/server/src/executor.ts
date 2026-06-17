@@ -10,6 +10,7 @@
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { runGraph } from '@threatforest/engine';
+import type { SimpleInterrupt, InteractionResponse } from '@threatforest/engine';
 import type { RunConfig } from '@threatforest/types';
 import type { OrchestratorExecutor, ProgressEvent, ScanControl } from './run-manager.js';
 import { resolveProjectPathForApp, resolveRunDirNameForApp } from './applications.js';
@@ -82,6 +83,7 @@ export function createOrchestratorExecutor(_opts: ExecutorOptions = {}): Orchest
     config: RunConfig,
     onProgress: (e: ProgressEvent) => void,
     control: ScanControl,
+    interactionFn: ((reason: Record<string, unknown>) => Promise<string | null>) | null,
   ): Promise<{ status: string; output_dir?: string; app_id?: string; error?: string }> => {
     // Resolve project path: resume dir reuses the prior run dir; new runs resolve
     // the Application's project_path.
@@ -119,10 +121,31 @@ export function createOrchestratorExecutor(_opts: ExecutorOptions = {}): Orchest
       //   - stage_start/stage_complete: `percentage` = overall stage boundary %
       //   - stage_progress: `percentage` = INTRA-stage fraction (0-100); the
       //     page folds it into overall as (stageIdx + pct/100)/numStages.
+      // Bridge the run-manager's HITL callback (which emits `awaiting_input`
+      // and blocks on a promise the `/respond` route resolves with the user's
+      // text) into the engine's interrupt shape. The run-manager fn is keyed by
+      // the interrupt `reason` (which carries phase/questions/threats/scanner
+      // data the UI modal reads); we wrap the returned text — or `null` for a
+      // skip — back into the `InteractionResponse[]` the HITL nodes consume.
+      // Passing `null` here (the previous behavior) made every HITL node
+      // auto-skip, so the human "add context" gates never fired.
+      const engineInteractionFn = interactionFn
+        ? async (interrupts: SimpleInterrupt[]): Promise<InteractionResponse[] | null> => {
+            if (interrupts.length === 0) return null;
+            const responses: InteractionResponse[] = [];
+            for (const intr of interrupts) {
+              const text = await interactionFn(intr.reason);
+              if (text === null) return null; // user skipped/dismissed this round
+              responses.push({ interruptResponse: { interruptId: intr.id, response: text } });
+            }
+            return responses;
+          }
+        : null;
+
       const result = await runGraph(projectPath, {
         runDir,
         frameworks: config.frameworks,
-        interactionFn: null,
+        interactionFn: engineInteractionFn,
         onNodeEvent: ({ phase, nodeId, fraction, detail }) => {
           if (phase === 'start') {
             onProgress(

@@ -36,4 +36,4 @@ export { createThreatAgent, runThreat } from './agents/threat.js';
 export { createTreeAgent, runTree } from './agents/tree.js';
 export { createMitigationAgent, verifyMitigationOutput } from './agents/mitigation.js';
 export { verifyScannerOutput, verifyThreatOutput } from './verifiers.js';
-export type { InteractionFn, InteractionResponse } from './agents/hitl.js';
+export type { InteractionFn, InteractionResponse, SimpleInterrupt } from './agents/hitl.js';
