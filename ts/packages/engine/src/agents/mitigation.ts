@@ -294,6 +294,8 @@ export async function createMitigationAgent(repoPath: string, runDir?: string | 
   const model = await createModel(config, { temperature: 0 });
 
   return new Agent({
+    id: 'mitigation',
+    name: 'Mitigation',
     model,
     systemPrompt,
     tools,

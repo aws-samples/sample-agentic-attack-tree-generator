@@ -188,6 +188,8 @@ async function processSingleThreat(
       for (let attempt = 0; attempt < maxMitAttempts; attempt++) {
         ws.delete(mitOutKey);
         const mitAgent = new Agent({
+          id: 'mitigation',
+          name: 'Mitigation',
           model: await createModel(config, { temperature: 0 }),
           systemPrompt: mitPrompt,
           tools: [
@@ -202,11 +204,24 @@ async function processSingleThreat(
             ? ''
             : ' IMPORTANT: Your previous attempt was missing mitigations for some attack steps. ' +
               'Make sure every technique in the TTP mappings file has a mitigation.';
-        await mitAgent.invoke(
-          'Read the TTP mappings and scanner context. For each unique technique, synthesize an ' +
-            'actionable mitigation with evidence. Call store_mitigations with the complete list.' +
-            feedback,
-        );
+        try {
+          await mitAgent.invoke(
+            'Read the TTP mappings and scanner context. For each unique technique, synthesize an ' +
+              'actionable mitigation with evidence. Call store_mitigations with the complete list.' +
+              feedback,
+          );
+        } catch (err) {
+          // A mitigation-agent failure (e.g. the SDK throwing ModelError when the
+          // model's streamed store_mitigations tool-input JSON fails to parse)
+          // must NOT discard this threat's tree + TTP work. Log and retry; if the
+          // budget is exhausted the threat keeps its tree with empty mitigations.
+          // eslint-disable-next-line no-console
+          console.error(
+            `[parallel] mitigation agent failed for t${threatIdx} (attempt ${attempt + 1}/${maxMitAttempts}):`,
+            (err as Error).message,
+          );
+          continue;
+        }
 
         mitigations = ws.exists(mitOutKey)
           ? ((readJsonSafe(ws, mitOutKey)['mitigations'] as Json[]) ?? [])

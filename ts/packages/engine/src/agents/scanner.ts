@@ -184,6 +184,10 @@ export async function createScannerAgent(repoPath: string, runDir?: string): Pro
   const model: Model = await createModel(config, { temperature: 0 });
 
   return new Agent({
+    // Distinct id so AgentNode-wrapped agents don't collide on the default
+    // 'agent' id when assembled into the graph (Graph rejects duplicate node ids).
+    id: 'scanner',
+    name: 'Scanner',
     model,
     systemPrompt,
     tools,

@@ -42,14 +42,23 @@ function bedrockAuthSanityHint(): void {
  */
 export async function createModel(config: Config, opts: CreateModelOptions = {}): Promise<Model> {
   const temperature = opts.temperature ?? 0;
-  const maxTokens = opts.maxTokens ?? 4096;
+  // Default output-token budget. The legacy Python Bedrock provider allowed very
+  // large outputs (up to 65_536 for opus-4-7); a 4096 default was far too small
+  // and made the mitigation agent's large `store_mitigations` tool-call JSON hit
+  // "Model reached maximum token limit" mid-call. 32k is a safe headroom for the
+  // structured tool outputs in this pipeline without pinning the absolute max.
+  const maxTokens = opts.maxTokens ?? 32_768;
 
   if (config.bedrock?.model_id) {
     bedrockAuthSanityHint();
+    const modelId = config.bedrock.model_id;
+    // Claude Opus 4.7 does not accept a temperature parameter (mirrors the
+    // Python provider's special-case); omit it for that model family.
+    const supportsTemperature = !modelId.includes('claude-opus-4-7');
     return new BedrockModel({
-      modelId: config.bedrock.model_id,
+      modelId,
       region: config.awsRegion,
-      temperature,
+      ...(supportsTemperature ? { temperature } : {}),
       maxTokens,
     });
   }

@@ -45,6 +45,8 @@ export async function createTreeAgent(repoPath: string, runDir?: string): Promis
   const model: Model = await createModel(config, { temperature: 0 });
 
   return new Agent({
+    id: 'tree',
+    name: 'Tree',
     model,
     systemPrompt,
     tools,

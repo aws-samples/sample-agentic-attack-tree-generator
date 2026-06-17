@@ -39,6 +39,8 @@ export async function createThreatAgent(repoPath: string, runDir?: string): Prom
   const model: Model = await createModel(config, { temperature: 0 });
 
   return new Agent({
+    id: 'threat',
+    name: 'Threat',
     model,
     systemPrompt,
     tools,
