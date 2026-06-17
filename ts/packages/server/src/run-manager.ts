@@ -62,7 +62,10 @@ const TERMINAL = new Set(['complete', 'stopped', 'failed']);
 /**
  * A simple async queue: producers push, a consumer awaits next().
  * Exported so the WS handler can name the type returned by
- * `RunManager.getProgressQueue` (required for declaration emit under composite).
+ * `ProgressBroadcaster.subscribe` (required for declaration emit under composite).
+ *
+ * Each subscriber gets its OWN AsyncQueue, so events fan out to every connection
+ * instead of being stolen by whichever consumer calls next() first.
  */
 export class AsyncQueue<T> {
   private buffer: T[] = [];
@@ -76,6 +79,45 @@ export class AsyncQueue<T> {
     const item = this.buffer.shift();
     if (item !== undefined) return Promise.resolve(item);
     return new Promise((resolve) => this.resolvers.push(resolve));
+  }
+}
+
+/** A subscription returned by {@link ProgressBroadcaster.subscribe}. */
+export interface ProgressSubscription {
+  /** This subscriber's private queue — independent cursor, no event stealing. */
+  queue: AsyncQueue<ProgressEvent>;
+  /** Detach this subscriber (call on WS close). */
+  unsubscribe(): void;
+}
+
+/**
+ * Per-run progress fan-out. A single producer (`publish`) broadcasts each event
+ * to ALL subscribers' private queues, so multiple WS connections (or a browser
+ * tab + a reconnect mid-flight) each receive the full stream independently.
+ *
+ * Replaces the old single shared AsyncQueue, where a second consumer would steal
+ * events and any one disconnect could starve the others.
+ */
+export class ProgressBroadcaster {
+  private readonly subscribers = new Set<AsyncQueue<ProgressEvent>>();
+
+  publish(event: ProgressEvent): void {
+    for (const q of this.subscribers) q.push(event);
+  }
+
+  subscribe(): ProgressSubscription {
+    const queue = new AsyncQueue<ProgressEvent>();
+    this.subscribers.add(queue);
+    return {
+      queue,
+      unsubscribe: () => {
+        this.subscribers.delete(queue);
+      },
+    };
+  }
+
+  get subscriberCount(): number {
+    return this.subscribers.size;
   }
 }
 
@@ -99,7 +141,7 @@ class PendingInteraction {
 
 export class RunManager {
   readonly activeRuns = new Map<string, RunState>();
-  private readonly queues = new Map<string, AsyncQueue<ProgressEvent>>();
+  private readonly broadcasters = new Map<string, ProgressBroadcaster>();
   private readonly controls = new Map<string, ScanControl>();
   private readonly history = new Map<string, ProgressEvent[]>();
   /** Per-run pending interviewer prompt, awaiting a `submitInteractionResponse`. */
@@ -120,7 +162,7 @@ export class RunManager {
       started_at: now,
     });
     this.activeRuns.set(runId, state);
-    this.queues.set(runId, new AsyncQueue<ProgressEvent>());
+    this.broadcasters.set(runId, new ProgressBroadcaster());
     this.history.set(runId, []);
     const control = new ScanControl();
     this.controls.set(runId, control);
@@ -135,7 +177,7 @@ export class RunManager {
     state.status = 'running';
     const onProgress = (e: ProgressEvent): void => {
       this.history.get(runId)?.push(e);
-      this.queues.get(runId)?.push(e);
+      this.broadcasters.get(runId)?.publish(e);
     };
     // Interviewer HITL: when the agent needs input it calls this fn, which emits
     // an `awaiting_input` event and blocks on a promise that the `/respond`
@@ -188,10 +230,16 @@ export class RunManager {
     }
   }
 
-  getProgressQueue(runId: string): AsyncQueue<ProgressEvent> {
-    const q = this.queues.get(runId);
-    if (!q) throw new Error(`Unknown run_id: ${runId}`);
-    return q;
+  /**
+   * Subscribe a WS connection to a run's live progress. Each call returns an
+   * independent queue + unsubscribe, so concurrent connections (and reconnects)
+   * each receive the full event stream rather than competing for it.
+   * Throws if the run is unknown (caller falls back to history replay).
+   */
+  subscribeProgress(runId: string): ProgressSubscription {
+    const b = this.broadcasters.get(runId);
+    if (!b) throw new Error(`Unknown run_id: ${runId}`);
+    return b.subscribe();
   }
 
   getHistory(runId: string): ProgressEvent[] {
@@ -214,11 +262,17 @@ export class RunManager {
   }
 
   /**
-   * Drop the per-run progress queue once a WS client finishes draining a
-   * terminal run. History is retained so late reconnects can still replay.
+   * Drop the per-run broadcaster ONLY once the run is terminal. History is
+   * retained so late reconnects can still replay. Called by a WS connection on
+   * close — but must NOT tear down a still-running stream, or other live
+   * subscribers (or a reconnecting tab) would be starved. While running, a
+   * disconnecting client just unsubscribes its own queue; the broadcaster lives
+   * on until the run completes.
    */
   cleanupRun(runId: string): void {
-    this.queues.delete(runId);
+    if (this.isTerminal(runId)) {
+      this.broadcasters.delete(runId);
+    }
   }
 
   pauseRun(runId: string): void {

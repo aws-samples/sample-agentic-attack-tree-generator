@@ -74,11 +74,14 @@ export function attachProgressWebSocket(server: HttpServer): WebSocketServer {
 async function handleConnection(ws: WebSocket, runId: string): Promise<void> {
   const manager = getRunManager();
 
-  let queue: ReturnType<typeof manager.getProgressQueue> | null = null;
+  // Subscribe FIRST so any event published between the history snapshot and the
+  // live loop lands in this connection's private queue (no gap, no double-send
+  // issue beyond at-most-one duplicate the client already dedupes by stage).
+  let subscription: ReturnType<typeof manager.subscribeProgress> | null = null;
   try {
-    queue = manager.getProgressQueue(runId);
+    subscription = manager.subscribeProgress(runId);
   } catch {
-    // Queue cleaned up — the run may still have history (terminal run).
+    // Broadcaster gone — the run is terminal; replay history then close.
     const history = manager.getHistory(runId);
     if (history.length === 0) {
       ws.close(4004, `Unknown run_id: ${runId}`);
@@ -89,12 +92,16 @@ async function handleConnection(ws: WebSocket, runId: string): Promise<void> {
     return;
   }
 
-  // Replay event history for reconnecting clients.
+  const queue = subscription.queue;
+
+  // Replay event history for reconnecting clients (so a late viewer sees the
+  // stages already completed before it connected).
   const history = manager.getHistory(runId);
   for (const event of history) ws.send(JSON.stringify(event));
 
   // If already terminal, close cleanly with 1000 so the client doesn't reconnect.
   if (history.length > 0 && isTerminal(history[history.length - 1]!)) {
+    subscription.unsubscribe();
     ws.close(1000, 'Run is in terminal state');
     return;
   }
@@ -130,6 +137,10 @@ async function handleConnection(ws: WebSocket, runId: string): Promise<void> {
   } catch (err) {
     console.error(`WebSocket error for run ${runId}:`, (err as Error).message);
   } finally {
+    // Detach THIS connection's queue. Other live subscribers (and reconnects)
+    // keep streaming — the broadcaster is only dropped by cleanupRun once the
+    // run is terminal, so a closed tab mid-run no longer starves the rest.
+    subscription.unsubscribe();
     if (ws.readyState === WebSocket.OPEN) {
       ws.close(1000, 'Run is in terminal state');
     }
