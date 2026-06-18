@@ -287,6 +287,16 @@ export class RunManager {
     if (state.status !== 'pending' && state.status !== 'running') {
       throw new Error(`Run ${runId} cannot be paused (status: ${state.status})`);
     }
+    // A run blocked at a human-in-the-loop gate is suspended INSIDE a node and
+    // yields no stream events, so the cooperative interrupt is never polled —
+    // setting status='pausing' here would strand the run in 'pausing' until the
+    // user answers the gate. Reject with a clear message; the user should
+    // respond to (or skip) the open gate, then pause at the next boundary.
+    if (this.pending.has(runId)) {
+      throw new Error(
+        `Run ${runId} is waiting for your input at a review step; respond to or skip it before pausing.`,
+      );
+    }
     state.status = 'pausing';
     this.controls.get(runId)?.requestPause();
   }
@@ -301,6 +311,13 @@ export class RunManager {
     }
     if (!['pending', 'running', 'pausing'].includes(state.status)) {
       throw new Error(`Run ${runId} cannot be stopped (status: ${state.status})`);
+    }
+    // Same gate caveat as pauseRun: a run blocked awaiting input can't honor a
+    // cooperative stop until the gate is resolved. Reject clearly.
+    if (this.pending.has(runId)) {
+      throw new Error(
+        `Run ${runId} is waiting for your input at a review step; respond to or skip it before stopping.`,
+      );
     }
     this.controls.get(runId)?.requestStop();
   }

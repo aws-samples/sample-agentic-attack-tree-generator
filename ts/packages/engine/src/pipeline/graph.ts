@@ -347,6 +347,24 @@ export async function runGraph(repoPath: string, opts: RunGraphOptions = {}): Pr
   setupLangfuseOtel();
   initSession();
 
+  // Pre-flight: if the pipeline depends on the external Python ML service (the
+  // TTP-mapping backend), confirm it's reachable BEFORE running. Otherwise an
+  // outage makes every per-threat match throw and be swallowed into an empty
+  // result, producing a "complete" run with silently-missing attack paths —
+  // dangerous for a security tool. Fail fast with a clear, actionable message.
+  const { mlHealthCheck, mlServiceRequired } = await import('../ml/index.js');
+  if (mlServiceRequired() && !(await mlHealthCheck())) {
+    return {
+      status: 'failed',
+      output_dir: resolveOutputDir(repoPath, opts.runDir),
+      completed_nodes: [],
+      error:
+        'The Python ML service (TTP-mapping backend) is not reachable. Start it ' +
+        '(e.g. `python -m ml_service`) or set TF_USE_PYTHON_ML=0 to use the ' +
+        'in-process embedder, then retry. Aborting to avoid an incomplete threat model.',
+    };
+  }
+
   const outputDir = resolveOutputDir(repoPath, opts.runDir);
   const graph = await buildGraph(repoPath, opts);
 
@@ -423,10 +441,16 @@ export async function runGraph(repoPath: string, opts: RunGraphOptions = {}): Pr
     }
     result = next.value;
   } catch (err) {
-    // An external cancelSignal abort surfaces as a throw rather than a clean
-    // return — classify it as interrupted when an interrupt was actually
-    // requested; otherwise it's a genuine failure.
-    if (shouldInterrupt?.()) {
+    // An external cancelSignal abort surfaces as a throw. ONLY classify a true
+    // AbortError as interrupted — NOT any error that happens to coincide with a
+    // pause/stop flag being set. The pause flag (`shouldInterrupt`) latches once
+    // the user clicks, so a genuine node error (e.g. Bedrock auth failure) that
+    // throws while the flag is set must still be reported as a FAILURE, not
+    // mislabeled as a resumable pause with the real error swallowed. The
+    // boundary-break above already handles the normal (non-throwing) interrupt.
+    const isAbort =
+      err instanceof Error && (err.name === 'AbortError' || err.name === 'GraphCancelledError');
+    if (isAbort && shouldInterrupt?.()) {
       return { status: 'interrupted', output_dir: outputDir, completed_nodes: completed };
     }
     throw err;

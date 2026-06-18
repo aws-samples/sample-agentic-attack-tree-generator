@@ -204,14 +204,15 @@ export function createOrchestratorExecutor(_opts: ExecutorOptions = {}): Orchest
         return { status: 'pause', output_dir: runDir };
       }
 
-      // Successful completion: remove any stale pause_state.json so the run no
-      // longer appears in the paused-runs list (mirrors the Python cleanup).
-      if (result.status === 'success') {
-        try {
-          new LocalFilesystemWorkspace(runDir).delete(PAUSE_STATE_KEY);
-        } catch {
-          /* best-effort: no-op if absent */
-        }
+      // Terminal (success OR failure): remove any stale pause_state.json so the
+      // run no longer appears in the paused-runs list. This matters on a
+      // resume-then-fail: the run reuses the prior paused run's dir, which still
+      // holds the ORIGINAL pause_state.json — without this delete a failed
+      // resumed run would reappear as "resumable" with stale completed_nodes.
+      try {
+        new LocalFilesystemWorkspace(runDir).delete(PAUSE_STATE_KEY);
+      } catch {
+        /* best-effort: no-op if absent */
       }
 
       onProgress(
@@ -229,6 +230,14 @@ export function createOrchestratorExecutor(_opts: ExecutorOptions = {}): Orchest
         ...(result.error ? { error: result.error } : {}),
       };
     } catch (err) {
+      // A thrown failure is terminal — clear any stale pause_state.json (e.g.
+      // from a prior pause whose resumed run is the one that just threw) so the
+      // failed run doesn't linger as "resumable".
+      try {
+        new LocalFilesystemWorkspace(runDir).delete(PAUSE_STATE_KEY);
+      } catch {
+        /* best-effort */
+      }
       onProgress(progress('run_failed', 'error', 0, `Pipeline error: ${(err as Error).message}`));
       return { status: 'failed', error: (err as Error).message };
     }

@@ -170,6 +170,10 @@ function RunProgressBody({ runId }: { runId: string }) {
   const [lowConfidence, setLowConfidence] = useState(false);
   // "running" | "paused" | "stopped" | "complete" | "failed"
   const [scanStatus, setScanStatus] = useState<ScanStatus>('running');
+  // True when GET /runs/:id 404s — the run isn't in the server's in-memory
+  // store (e.g. after a server restart). Used to show a recoverable message
+  // pointing at /paused-runs instead of dead 'running' controls.
+  const [runNotFound, setRunNotFound] = useState(false);
   // True while a pause/stop/resume HTTP request is in-flight
   const [controlPending, setControlPending] = useState(false);
   // Interviewer state
@@ -697,13 +701,22 @@ function RunProgressBody({ runId }: { runId: string }) {
     };
   }, [runId, handleMessage, appendActivity]);
 
-  // Fetch the run's owning application so breadcrumbs can reflect context.
+  // Fetch the run's owning application so breadcrumbs can reflect context, and
+  // seed scanStatus from the run's ACTUAL status. Without this, scanStatus
+  // defaults to 'running' and a run that is already paused/stopped/complete
+  // (e.g. when re-opening the page) shows the wrong controls until/unless a WS
+  // event corrects it — and after a server restart no WS event ever arrives.
   useEffect(() => {
     if (!runId) return;
     let cancelled = false;
     getRun(runId)
       .then((data) => {
         if (cancelled) return;
+        setRunNotFound(false);
+        const status = data?.status;
+        if (status && status !== 'pending') {
+          setScanStatus(status as ScanStatus);
+        }
         const id = data?.config?.app_id || '';
         if (id) {
           setRunAppId(id);
@@ -713,7 +726,12 @@ function RunProgressBody({ runId }: { runId: string }) {
         }
         return undefined;
       })
-      .catch(() => {});
+      .catch(() => {
+        // GET /runs/:id 404s when the run is gone from the server's in-memory
+        // store (typically after a restart). Flag it so the UI offers recovery
+        // via /paused-runs rather than showing dead 'running' controls.
+        if (!cancelled) setRunNotFound(true);
+      });
     return () => {
       cancelled = true;
     };
@@ -732,6 +750,10 @@ function RunProgressBody({ runId }: { runId: string }) {
         { text: 'Progress', href: `/runs/${runId}/progress` },
       ];
 
+  // A human-in-the-loop gate is open — Pause/Stop can't take effect until it's
+  // answered, so the controls are hidden while any review panel is showing.
+  const gateOpen = showInterviewer || showScannerReview || showThreatReview;
+
   return (
     <AppShell activePage="/applications" breadcrumbs={progressBreadcrumbs}>
       <SpaceBetween size="l">
@@ -740,21 +762,27 @@ function RunProgressBody({ runId }: { runId: string }) {
           description={`Run ID: ${runId}`}
           actions={
             <SpaceBetween direction="horizontal" size="xs">
-              {scanStatus === 'running' && (
+              {/* While a human-in-the-loop gate is open the run is suspended
+                  inside a node and can't honor a cooperative pause/stop until
+                  the gate is answered — so hide Pause/Stop and let the user
+                  respond to (or skip) the gate first. */}
+              {!runNotFound && scanStatus === 'running' && !gateOpen && (
                 <Button onClick={handlePause} loading={controlPending} disabled={controlPending}>
                   Pause
                 </Button>
               )}
-              {(scanStatus === 'paused' || scanStatus === 'pausing') && (
+              {!runNotFound && (scanStatus === 'paused' || scanStatus === 'pausing') && (
                 <Button variant="primary" onClick={handleResume} loading={controlPending} disabled={controlPending}>
                   Resume
                 </Button>
               )}
-              {(scanStatus === 'running' || scanStatus === 'paused' || scanStatus === 'pausing') && (
-                <Button onClick={handleStop} disabled={controlPending}>
-                  Stop
-                </Button>
-              )}
+              {!runNotFound &&
+                (scanStatus === 'running' || scanStatus === 'paused' || scanStatus === 'pausing') &&
+                !gateOpen && (
+                  <Button onClick={handleStop} disabled={controlPending}>
+                    Stop
+                  </Button>
+                )}
               <StatusIndicator type={connected ? 'success' : 'stopped'}>
                 {connected ? 'Connected' : 'Disconnected'}
               </StatusIndicator>
@@ -763,6 +791,36 @@ function RunProgressBody({ runId }: { runId: string }) {
         >
           Run Progress
         </Header>
+
+        {/* Run no longer in the server's live store (e.g. after a restart). The
+            live controls/stream can't recover it; a paused run is still on disk
+            and resumable from the Paused runs page. */}
+        {runNotFound && (
+          <Alert type="info" header="This run is no longer active in the server">
+            Live progress isn&rsquo;t available for this run — it may have finished, or the server
+            was restarted. If it was paused, you can resume it from the{' '}
+            <Link
+              href="/paused-runs"
+              onFollow={(e) => {
+                e.preventDefault();
+                router.push('/paused-runs');
+              }}
+            >
+              Paused runs
+            </Link>{' '}
+            page. Completed results are under{' '}
+            <Link
+              href="/applications"
+              onFollow={(e) => {
+                e.preventDefault();
+                router.push('/applications');
+              }}
+            >
+              Applications
+            </Link>
+            .
+          </Alert>
+        )}
 
         {/* Low confidence warning */}
         {lowConfidence && pipelineComplete && (

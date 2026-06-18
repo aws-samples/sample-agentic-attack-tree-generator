@@ -251,7 +251,16 @@ async function processSingleThreat(
       ttp_mappings: ttpMappings,
       mitigations,
     };
-  } catch {
+  } catch (err) {
+    // One threat failing must not kill the whole run, but the failure must not
+    // be silent either — log it so an ML-service outage or other mid-run error
+    // (after the pre-flight health check passed) is visible rather than
+    // silently dropping this threat's attack paths from a "complete" report.
+    // eslint-disable-next-line no-console
+    console.error(
+      `[parallel] threat t${threatIdx} failed, dropping its results:`,
+      (err as Error)?.message ?? err,
+    );
     return { ...EMPTY_RESULT };
   }
 }

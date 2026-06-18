@@ -45,6 +45,24 @@ export async function matchSteps(steps: string[], opts: MatchOptions = {}): Prom
   return matchStepsInProcess(steps, opts);
 }
 
+/** Whether the run relies on the external Python ML service (vs the in-process embedder). */
+export function mlServiceRequired(): boolean {
+  return usePythonService();
+}
+
+/**
+ * Pre-flight: confirm the Python ML service is reachable when it's the active
+ * backend. Returns true if not required (in-process embedder) or if healthy.
+ * Lets the pipeline fail fast with a clear message instead of silently
+ * producing an incomplete threat model when the service is down — every
+ * per-threat TTP match would otherwise throw and be swallowed into an empty
+ * result, yielding a "complete" run with missing attack paths.
+ */
+export async function mlHealthCheck(): Promise<boolean> {
+  if (!usePythonService()) return true;
+  return new MlServiceClient().health();
+}
+
 export { matchStepsInProcess } from './matcher.js';
 export { getEmbedding, getBatchEmbeddings, localModelAvailable } from './embedder.js';
 export { getOrBuildGraph, VectorSearch } from './graph.js';
