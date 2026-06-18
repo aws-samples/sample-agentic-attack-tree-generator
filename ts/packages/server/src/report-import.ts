@@ -384,6 +384,15 @@ function sortKeysDeep(value: unknown): unknown {
 // Minimal ZIP reader — central-directory walk, STORE + DEFLATE only.
 // ---------------------------------------------------------------------------
 
+// Decompression-bomb guards. A `.tfreport` is foreign, attacker-controllable
+// input (the import route exists to ingest bundles from another install), and
+// the upload-size limit only bounds the COMPRESSED blob — DEFLATE amplifies
+// ~1000x, so without an output cap a small bundle can inflate to many GB and
+// OOM the process. Bound each entry's inflated size AND the running total
+// across all entries (readZip holds them all in memory at once).
+const MAX_ENTRY_BYTES = 64 * 1024 * 1024; // 64 MB per file — well above any real state file
+const MAX_TOTAL_UNCOMPRESSED_BYTES = 256 * 1024 * 1024; // 256 MB across the whole bundle
+
 function readZip(buf: Buffer): Map<string, Buffer> {
   const eocd = findEocd(buf);
   if (eocd < 0) throw new Error('Not a zip archive (no end-of-central-directory record).');
@@ -392,6 +401,7 @@ function readZip(buf: Buffer): Map<string, Buffer> {
   let ptr = buf.readUInt32LE(eocd + 16); // central directory offset
 
   const out = new Map<string, Buffer>();
+  let totalUncompressed = 0;
   for (let i = 0; i < total; i += 1) {
     if (buf.readUInt32LE(ptr) !== 0x02014b50) {
       throw new Error('Corrupt central directory header.');
@@ -406,6 +416,12 @@ function readZip(buf: Buffer): Map<string, Buffer> {
 
     if (!name.endsWith('/')) {
       const data = extractLocal(buf, localOffset, method, compSize);
+      totalUncompressed += data.length;
+      if (totalUncompressed > MAX_TOTAL_UNCOMPRESSED_BYTES) {
+        throw new Error(
+          `Bundle decompresses to more than ${Math.floor(MAX_TOTAL_UNCOMPRESSED_BYTES / (1024 * 1024))} MB (possible zip bomb).`,
+        );
+      }
       out.set(name, data);
     }
 
@@ -422,8 +438,20 @@ function extractLocal(buf: Buffer, localOffset: number, method: number, compSize
   const extraLen = buf.readUInt16LE(localOffset + 28);
   const dataStart = localOffset + 30 + nameLen + extraLen;
   const compressed = buf.subarray(dataStart, dataStart + compSize);
-  if (method === 0) return Buffer.from(compressed);
-  if (method === 8) return inflateRawSync(compressed);
+  if (method === 0) {
+    // STORE: the "uncompressed" size IS the entry size, so cap it directly.
+    if (compressed.length > MAX_ENTRY_BYTES) {
+      throw new Error(`Zip entry exceeds the ${Math.floor(MAX_ENTRY_BYTES / (1024 * 1024))} MB per-file limit.`);
+    }
+    return Buffer.from(compressed);
+  }
+  if (method === 8) {
+    // DEFLATE: hard-cap the inflated output. Node throws RangeError
+    // (ERR_BUFFER_TOO_LARGE) if the stream would exceed maxOutputLength,
+    // which importBundle's try/catch turns into a clean per-bundle failure
+    // instead of an OOM.
+    return inflateRawSync(compressed, { maxOutputLength: MAX_ENTRY_BYTES });
+  }
   throw new Error(`Unsupported zip compression method: ${method}`);
 }
 

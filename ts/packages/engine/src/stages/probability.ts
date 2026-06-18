@@ -160,9 +160,17 @@ export function computeReach(steps: StepLike[]): Record<string, number> {
     if (s.id) byId.set(s.id, s);
   }
   const memo: Record<string, number> = {};
+  // memo is only written AFTER the recursive parent lookup returns, so it can't
+  // by itself break a cycle. Attack trees come from an LLM, where a cyclic or
+  // self-referential parent_id is a realistic hallucination; without this guard
+  // such a cycle recurses unbounded and throws RangeError, crashing the whole
+  // probability stage. Track the in-progress chain and treat a back-edge as a
+  // root (reach 1.0) so a malformed tree degrades gracefully instead of dying.
+  const visiting = new Set<string>();
 
   function reach(sid: string): number {
     if (sid in memo) return memo[sid]!;
+    if (visiting.has(sid)) return 1.0; // cycle — break it at the back-edge
     const step = byId.get(sid);
     if (step === undefined) return 1.0;
     const pid = step.parent_id ?? '';
@@ -170,7 +178,9 @@ export function computeReach(steps: StepLike[]): Record<string, number> {
       memo[sid] = 1.0;
       return 1.0;
     }
+    visiting.add(sid);
     const parentReach = byId.has(pid) ? reach(pid) : 1.0;
+    visiting.delete(sid);
     memo[sid] = clamp01(Number(step.probability ?? 0.0) * parentReach);
     return memo[sid]!;
   }

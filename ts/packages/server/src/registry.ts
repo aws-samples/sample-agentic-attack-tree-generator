@@ -365,6 +365,10 @@ export class ApplicationRegistry {
       if (latest === null) return null;
       vid = latest;
     }
+    // A non-"latest" versionId comes straight from the URL path; reject anything
+    // that isn't a literal timestamp folder name so a `%2F`-encoded `../` can't
+    // escape the project dir (mirrors the guard in deleteVersion).
+    if (!TIMESTAMP_RE.test(vid)) return null;
 
     const dataFile = join(projectDir, vid, 'output', METADATA_FILE);
     return isFile(dataFile) ? dataFile : null;
@@ -385,6 +389,10 @@ export class ApplicationRegistry {
       if (latest === null) return null;
       vid = latest;
     }
+    // Same path-traversal guard as getVersionDataPath: this run dir feeds the
+    // mitigation-overrides writeFileSync, so an unvalidated `vid` would allow an
+    // arbitrary-location file write.
+    if (!TIMESTAMP_RE.test(vid)) return null;
     const runDir = join(projectDir, vid);
     return isDir(runDir) ? runDir : null;
   }

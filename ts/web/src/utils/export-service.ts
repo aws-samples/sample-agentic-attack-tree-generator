@@ -69,11 +69,19 @@ type TaggedTtpMapping = {
 };
 
 /**
- * Escape a CSV field value per RFC 4180.
+ * Escape a CSV field value per RFC 4180, and neutralize spreadsheet formula
+ * injection (CWE-1236). Threat/mitigation text is LLM-extracted from
+ * user-controllable repo content, so a value beginning with = + - @ (or a
+ * leading tab/CR) would be evaluated as a formula when the exported .csv is
+ * opened in Excel/Sheets. Prefix any such field with a single quote so the
+ * spreadsheet treats it as literal text.
  */
 function escapeCsvField(value: unknown): string {
   if (value == null) return '';
-  const str = String(value);
+  let str = String(value);
+  if (/^[=+\-@\t\r]/.test(str)) {
+    str = "'" + str;
+  }
   if (str.includes('"') || str.includes(',') || str.includes('\n') || str.includes('\r')) {
     return '"' + str.replace(/"/g, '""') + '"';
   }
