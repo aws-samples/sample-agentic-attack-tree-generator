@@ -9,11 +9,12 @@
  */
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { runGraph } from '@threatforest/engine';
+import { runGraph, LocalFilesystemWorkspace } from '@threatforest/engine';
 import type { SimpleInterrupt, InteractionResponse } from '@threatforest/engine';
 import type { RunConfig } from '@threatforest/types';
 import type { OrchestratorExecutor, ProgressEvent, ScanControl } from './run-manager.js';
 import { resolveProjectPathForApp, resolveRunDirNameForApp } from './applications.js';
+import { PAUSE_STATE_KEY } from './registry.js';
 import { createRunDirectory } from './registry.js';
 
 const STAGES = [
@@ -146,6 +147,12 @@ export function createOrchestratorExecutor(_opts: ExecutorOptions = {}): Orchest
         runDir,
         frameworks: config.frameworks,
         interactionFn: engineInteractionFn,
+        // Cooperative pause/stop: the engine polls this at each node boundary and
+        // stops cleanly when a pause/stop is requested, leaving completed-node
+        // output on disk for resume.
+        shouldInterrupt: () => control.shouldInterrupt,
+        // Resume: skip nodes whose output already exists from the paused run.
+        skipNodes: config.skip_nodes ?? [],
         onNodeEvent: ({ phase, nodeId, fraction, detail }) => {
           if (phase === 'start') {
             onProgress(
@@ -165,13 +172,46 @@ export function createOrchestratorExecutor(_opts: ExecutorOptions = {}): Orchest
         },
       });
 
-      if (control.stopRequested) {
-        onProgress(progress('run_stopped', 'stopped', stagePct('report'), 'Run stopped'));
-        return { status: 'stop', output_dir: runDir };
-      }
-      if (control.pauseRequested) {
+      // Interrupted: the engine stopped at a node boundary because pause/stop was
+      // requested. Persist pause_state.json to the RUN DIR ROOT (where
+      // registry.discoverPausedRuns looks) so the run shows up as resumable and
+      // a resume can skip the completed nodes. `output_dir` MUST be the run dir
+      // root (not runDir/output) so resumeRun reuses the correct tree.
+      if (result.status === 'interrupted') {
+        const intent = control.stopRequested ? 'stop' : 'pause';
+        try {
+          new LocalFilesystemWorkspace(runDir).writeJson(PAUSE_STATE_KEY, {
+            intent,
+            paused_at: new Date().toISOString(),
+            completed_nodes: result.completed_nodes,
+            config: {
+              project_path: config.project_path,
+              threat_source: config.threat_source,
+              threat_file_path: config.threat_file_path ?? null,
+              app_id: config.app_id ?? null,
+            },
+          });
+        } catch (e) {
+          // Persisting pause state is best-effort; surface but don't crash.
+          // eslint-disable-next-line no-console
+          console.error('[executor] failed to write pause_state.json:', (e as Error).message);
+        }
+        if (intent === 'stop') {
+          onProgress(progress('run_stopped', 'stopped', stagePct('report'), 'Run stopped'));
+          return { status: 'stop', output_dir: runDir };
+        }
         onProgress(progress('run_paused', 'paused', stagePct('report'), 'Run paused'));
         return { status: 'pause', output_dir: runDir };
+      }
+
+      // Successful completion: remove any stale pause_state.json so the run no
+      // longer appears in the paused-runs list (mirrors the Python cleanup).
+      if (result.status === 'success') {
+        try {
+          new LocalFilesystemWorkspace(runDir).delete(PAUSE_STATE_KEY);
+        } catch {
+          /* best-effort: no-op if absent */
+        }
       }
 
       onProgress(

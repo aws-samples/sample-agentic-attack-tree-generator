@@ -17,6 +17,7 @@ import {
   type RunState,
   RunStateSchema,
 } from '@threatforest/types';
+import { ApplicationRegistry } from './registry.js';
 
 /** Progress event pushed to WS clients. Mirrors run_manager.ProgressEvent.to_dict(). */
 export interface ProgressEvent {
@@ -204,9 +205,14 @@ export class RunManager {
       if (result.status === 'pause') {
         state.status = 'paused';
         state.paused_at = new Date().toISOString();
+        // The executor returns the run-dir ROOT here (where pause_state.json
+        // lives); resumeRun reuses it. Without this, output_dir stayed null and
+        // the progress-page Resume had no run dir to resume from.
+        state.output_dir = result.output_dir ?? null;
       } else if (result.status === 'stop') {
         state.status = 'stopped';
         state.completed_at = new Date().toISOString();
+        state.output_dir = result.output_dir ?? null;
       } else {
         state.status = result.status === 'complete' ? 'complete' : 'failed';
         state.completed_at = new Date().toISOString();
@@ -301,8 +307,13 @@ export class RunManager {
 
   /**
    * Resume a paused/stopped run by starting a fresh run that reuses the run dir
-   * and skips completed nodes. The engine's per-stage skip-if-exists handles the
-   * actual resumption; here we rebuild the config from the prior run's state.
+   * and skips the nodes that already completed. For a paused/stopped run,
+   * `state.output_dir` is the run-dir ROOT (the executor returns runDir, not
+   * runDir/output, on interrupt), which is where `pause_state.json` lives. We
+   * read it from disk (the durable source of truth that survives a process
+   * restart) to recover `completed_nodes` → `skip_nodes`, so the resumed run
+   * replaces those stages with no-op skip nodes and continues from the first
+   * not-yet-completed node.
    */
   resumeRun(runId: string): string {
     const state = this.activeRuns.get(runId);
@@ -310,9 +321,15 @@ export class RunManager {
     if (state.status !== 'paused' && state.status !== 'stopped') {
       throw new Error(`Run ${runId} is not resumable (status: ${state.status})`);
     }
+    const runDir = state.output_dir ?? state.config.resume_run_dir;
+    if (!runDir) {
+      throw new Error(`Run ${runId} has no run directory to resume from`);
+    }
+    const pause = new ApplicationRegistry().readPauseState(runDir);
     const resumeConfig: RunConfig = {
       ...state.config,
-      resume_run_dir: state.output_dir ?? state.config.resume_run_dir,
+      resume_run_dir: runDir,
+      skip_nodes: pause?.completed_nodes ?? state.config.skip_nodes ?? [],
     };
     return this.startRun(resumeConfig);
   }

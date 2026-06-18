@@ -86,6 +86,27 @@ class FunctionNode extends Node {
 }
 
 /**
+ * A no-op node used on resume to skip a stage whose output already exists on
+ * disk from a prior (paused) run. It returns instantly without re-running the
+ * real agent/function. Downstream conditional edges still read the persisted
+ * `state/` files, so the pipeline continues correctly from the skipped point.
+ * Mirrors the Python `_make_skip_node`.
+ */
+class SkipNode extends Node {
+  override readonly type = 'skipNode';
+  constructor(id: string) {
+    super(id, {});
+  }
+  override async *handle(
+    _input: MultiAgentInput,
+    _state: MultiAgentState,
+    _options?: NodeInputOptions,
+  ): AsyncGenerator<MultiAgentStreamEvent, NodeResultUpdate, undefined> {
+    return textResult(`[skipped] ${this.id} — output already on disk`);
+  }
+}
+
+/**
  * A verifier node that OWNS the retry loop (the AND-safe remodel of the Python
  * verifier→agent retry edge). It re-runs `rerun()` until `check()` passes or the
  * retry budget is exhausted, then emits forward unconditionally. The downstream
@@ -146,11 +167,38 @@ export interface RunGraphOptions {
    * page; without it the page only ever sees the initial "started" event.
    */
   onNodeEvent?: ((e: NodeProgressEvent) => void) | null;
+  /**
+   * Polled at each node boundary (after every completed node). When it returns
+   * true the run stops cleanly at that boundary, leaving all completed-node
+   * output on disk so the run can be resumed. This is the cooperative
+   * pause/stop mechanism (mirrors the Python executor's `should_interrupt`
+   * check at each `multiagent_node_stop`). Without it the graph runs to
+   * completion and pause/stop have no mid-run effect.
+   */
+  shouldInterrupt?: (() => boolean) | null;
+  /**
+   * Best-effort cancellation forwarded to the SDK (and any cancellation-aware
+   * node). Boundary-break via `shouldInterrupt` is the primary mechanism; this
+   * lets future signal-aware nodes bail mid-execution.
+   */
+  cancelSignal?: AbortSignal;
+  /**
+   * Node ids whose output already exists on disk from a prior (paused) run.
+   * Each is replaced with a no-op skip node so a resumed run reuses the
+   * persisted `state/` output instead of re-running the stage. Edges and their
+   * conditional handlers are unchanged — they read verifier results from disk.
+   */
+  skipNodes?: string[] | null;
 }
 
 export interface RunGraphResult {
-  status: 'success' | 'failed';
+  status: 'success' | 'failed' | 'interrupted';
   output_dir: string;
+  /**
+   * Graph node ids that completed during this run. On an interrupted run this
+   * is persisted to `pause_state.json` so a resume can skip them.
+   */
+  completed_nodes: string[];
   error?: string;
 }
 
@@ -160,6 +208,7 @@ export interface RunGraphResult {
  */
 export async function buildGraph(repoPath: string, opts: RunGraphOptions = {}): Promise<Graph> {
   const { runDir, frameworks = null, interactionFn = null, onNodeEvent = null } = opts;
+  const skipSet = new Set(opts.skipNodes ?? []);
   const stateDir = resolveStateDir(repoPath, runDir);
   const stateWs = new LocalFilesystemWorkspace(stateDir);
 
@@ -243,7 +292,7 @@ export async function buildGraph(repoPath: string, opts: RunGraphOptions = {}): 
 
   // AgentNode ids default to the wrapped agent's id; FunctionNode/VerifierRetryNode
   // ids are explicit. Edges reference nodes by `.id`.
-  const nodes = [
+  const realNodes = [
     scanner,
     scannerVerifier,
     scannerReview,
@@ -257,6 +306,14 @@ export async function buildGraph(repoPath: string, opts: RunGraphOptions = {}): 
     report,
     reportVerifier,
   ];
+
+  // On resume, replace any node whose id is in `skipNodes` with a no-op SkipNode
+  // (its output already exists in `state/` from the paused run). Edges and the
+  // conditional handlers below are unchanged — they read verifier results from
+  // disk, so the pipeline resumes correctly from the first not-yet-completed
+  // node. A skipped verifier is NOT re-run (its persisted result still gates the
+  // downstream conditional edge).
+  const nodes = realNodes.map((n) => (skipSet.has(n.id) ? new SkipNode(n.id) : n));
 
   const realGraph = new Graph({
     id: 'threatforest',
@@ -293,8 +350,19 @@ export async function runGraph(repoPath: string, opts: RunGraphOptions = {}): Pr
   const outputDir = resolveOutputDir(repoPath, opts.runDir);
   const graph = await buildGraph(repoPath, opts);
 
+  // Track which nodes completed, so an interrupted run can persist them and a
+  // resume can skip them. Recorded on AfterNodeCallEvent (the node-completed
+  // boundary — mirrors the Python executor appending on `multiagent_node_stop`).
+  // A node interrupted mid-execution never fires AfterNodeCallEvent, so it is
+  // correctly NOT in `completed` and will re-run on resume. Skipped nodes (from
+  // a prior resume) DO complete instantly and are re-recorded — harmless.
+  const completed: string[] = [];
+  graph.addHook(AfterNodeCallEvent, (e) => {
+    if (!completed.includes(e.nodeId)) completed.push(e.nodeId);
+  });
+
   // Forward node start/complete ticks so the caller can stream per-stage
-  // progress. Hooks fire during `invoke()`; each carries the node id, which
+  // progress. Hooks fire during `stream()`; each carries the node id, which
   // matches the executor's STAGES list 1:1.
   if (opts.onNodeEvent) {
     const emit = opts.onNodeEvent;
@@ -322,7 +390,47 @@ export async function runGraph(repoPath: string, opts: RunGraphOptions = {}): Pr
     });
   }
 
-  const result = await graph.invoke('Run the ThreatForest threat modeling pipeline.');
+  // Consume the graph as a stream so we can stop cleanly at a node boundary when
+  // a pause/stop is requested (the Python executor's `should_interrupt` check at
+  // each `multiagent_node_stop`). `invoke()` would run the whole graph to
+  // completion with no mid-run exit. Completed-node state lives on disk in
+  // `state/`, so breaking here leaves a resumable run.
+  const shouldInterrupt = opts.shouldInterrupt ?? null;
+  const streamOpts = opts.cancelSignal ? { cancelSignal: opts.cancelSignal } : undefined;
+  const gen = graph.stream('Run the ThreatForest threat modeling pipeline.', streamOpts);
+
+  let result: Awaited<ReturnType<typeof graph.invoke>>;
+  try {
+    let next = await gen.next();
+    while (!next.done) {
+      // Boundary check: after each yielded event, bail if an interrupt was
+      // requested. The just-completed nodes are already on disk; the in-flight
+      // node (if any) did not fire AfterNodeCallEvent so it re-runs on resume.
+      if (shouldInterrupt?.()) {
+        // Stop consuming and return immediately. We do NOT `await gen.return()`:
+        // the SDK generator may be suspended at an `await` inside a long node
+        // (e.g. a Bedrock call), and awaiting `.return()` blocks until that
+        // settles — which wedged the run for minutes. Fire-and-forget the
+        // cleanup instead; the abandoned node finishes in the background and is
+        // GC'd, while completed-node output (already on disk) is what resume
+        // uses. (The Python executor likewise just breaks the stream loop.)
+        void Promise.resolve(
+          gen.return(undefined as unknown as Awaited<ReturnType<typeof graph.invoke>>),
+        ).catch(() => {});
+        return { status: 'interrupted', output_dir: outputDir, completed_nodes: completed };
+      }
+      next = await gen.next();
+    }
+    result = next.value;
+  } catch (err) {
+    // An external cancelSignal abort surfaces as a throw rather than a clean
+    // return — classify it as interrupted when an interrupt was actually
+    // requested; otherwise it's a genuine failure.
+    if (shouldInterrupt?.()) {
+      return { status: 'interrupted', output_dir: outputDir, completed_nodes: completed };
+    }
+    throw err;
+  }
 
   const failed: string[] = [];
   for (const nr of result.results) {
@@ -334,6 +442,7 @@ export async function runGraph(repoPath: string, opts: RunGraphOptions = {}): Pr
   return {
     status: result.status === 'COMPLETED' ? 'success' : 'failed',
     output_dir: outputDir,
+    completed_nodes: completed,
     ...(failed.length ? { error: failed.join('; ') } : {}),
   };
 }

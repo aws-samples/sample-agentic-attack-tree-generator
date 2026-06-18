@@ -553,7 +553,13 @@ export class ApplicationRegistry {
       const metaFile = join(projectDir, 'metadata.json');
       if (!isFile(metaFile)) continue;
 
-      const latest = resolveLatestVersion(projectDir);
+      // Use the CHRONOLOGICALLY-latest run dir, not resolveLatestVersion():
+      // the latter prefers the newest *completed* version (one with
+      // output/threatforest_data.json) for display, but a paused run is by
+      // definition incomplete and is the most recent activity. If a completed
+      // run exists alongside, resolveLatestVersion would return the completed
+      // one and we'd never see the paused dir's pause_state.json.
+      const latest = listVersionDirNames(projectDir).sort().reverse()[0] ?? null;
       if (latest === null) continue;
 
       const workspace = _workspace(join(projectDir, latest));
@@ -614,6 +620,37 @@ export class ApplicationRegistry {
     if (!workspace.exists(PAUSE_STATE_KEY)) return false;
     workspace.delete(PAUSE_STATE_KEY);
     return true;
+  }
+
+  /**
+   * Read `pause_state.json` directly from a run-dir ROOT (not an app id). Used by
+   * the RunManager's resume path to recover `completed_nodes` (→ skip_nodes) and
+   * the persisted config. This disk source survives a process restart, where the
+   * in-memory RunState would be gone. Returns null if no valid pause state.
+   */
+  readPauseState(runDir: string): {
+    intent: string;
+    completed_nodes: string[];
+    config: Record<string, unknown>;
+  } | null {
+    const workspace = _workspace(runDir);
+    if (!workspace.exists(PAUSE_STATE_KEY)) return null;
+    try {
+      const data = workspace.readJson<Record<string, unknown>>(PAUSE_STATE_KEY);
+      if (typeof data !== 'object' || data === null) return null;
+      return {
+        intent: typeof data.intent === 'string' ? data.intent : 'pause',
+        completed_nodes: Array.isArray(data.completed_nodes)
+          ? (data.completed_nodes as string[])
+          : [],
+        config:
+          typeof data.config === 'object' && data.config !== null
+            ? (data.config as Record<string, unknown>)
+            : {},
+      };
+    } catch {
+      return null;
+    }
   }
 }
 
