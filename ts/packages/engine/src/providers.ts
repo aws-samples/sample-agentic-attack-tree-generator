@@ -86,17 +86,36 @@ export async function createModel(config: Config, opts: CreateModelOptions = {})
 
   if (config.anthropic?.model_id) {
     const { AnthropicModel } = await import('@strands-agents/sdk/models/anthropic');
-    return new AnthropicModel({ modelId: config.anthropic.model_id, maxTokens }) as unknown as Model;
+    const modelId = config.anthropic.model_id;
+    // The whole pipeline depends on temperature=0 for deterministic, reproducible
+    // threat models; omitting it here let the SDK default (~1.0) through, silently
+    // breaking determinism + Python parity for the Anthropic provider. Claude
+    // Opus 4.7+ deprecate `temperature` over the Anthropic API too (same model
+    // behaviour as Bedrock), so reuse the same guard.
+    const supportsTemperature = !modelDeprecatesTemperature(modelId);
+    return new AnthropicModel({
+      modelId,
+      maxTokens,
+      ...(supportsTemperature ? { temperature } : {}),
+    }) as unknown as Model;
   }
 
   if (config.openai?.model_id) {
     const { OpenAIModel } = await import('@strands-agents/sdk/models/openai');
-    return new OpenAIModel({ modelId: config.openai.model_id }) as unknown as Model;
+    return new OpenAIModel({
+      modelId: config.openai.model_id,
+      maxTokens,
+      temperature,
+    }) as unknown as Model;
   }
 
   if (config.gemini?.model_id) {
     const { GoogleModel } = await import('@strands-agents/sdk/models/google');
-    return new GoogleModel({ modelId: config.gemini.model_id }) as unknown as Model;
+    // Gemini takes generation params via `params`, not a top-level field.
+    return new GoogleModel({
+      modelId: config.gemini.model_id,
+      params: { temperature },
+    }) as unknown as Model;
   }
 
   throw new Error(

@@ -140,6 +140,15 @@ class PendingInteraction {
   }
 }
 
+/**
+ * How many terminal (complete/stopped/failed) runs to retain in full — RunState
+ * + ProgressEvent history + ScanControl — for `GET /runs[/:id]` queries and late
+ * WS history replay. Older terminal runs beyond this cap are evicted oldest-first
+ * so a long-lived server's memory can't grow without bound across many runs.
+ * Non-terminal (running/paused/pending) runs are NEVER evicted.
+ */
+const MAX_RETAINED_TERMINAL_RUNS = 200;
+
 export class RunManager {
   readonly activeRuns = new Map<string, RunState>();
   private readonly broadcasters = new Map<string, ProgressBroadcaster>();
@@ -147,6 +156,8 @@ export class RunManager {
   private readonly history = new Map<string, ProgressEvent[]>();
   /** Per-run pending interviewer prompt, awaiting a `submitInteractionResponse`. */
   private readonly pending = new Map<string, PendingInteraction>();
+  /** Insertion-ordered list of run ids, for FIFO eviction of old terminal runs. */
+  private readonly runOrder: string[] = [];
 
   constructor(private readonly executor: OrchestratorExecutor | null = null) {}
 
@@ -165,6 +176,7 @@ export class RunManager {
     this.activeRuns.set(runId, state);
     this.broadcasters.set(runId, new ProgressBroadcaster());
     this.history.set(runId, []);
+    this.runOrder.push(runId);
     const control = new ScanControl();
     this.controls.set(runId, control);
 
@@ -233,7 +245,50 @@ export class RunManager {
         details: {},
         server_ts: Date.now(),
       });
+      // Drop the broadcaster now that the run is terminal. cleanupRun is
+      // otherwise only reached when a WS connection closes, so a run nobody
+      // ever subscribed to would leak its broadcaster forever. Safe for live
+      // subscribers: the run_complete sentinel was just published to their
+      // queues above, and each holds its own queue reference — deleting the
+      // map entry only routes NEW reconnects to the history-replay path.
+      this.cleanupRun(runId);
+      // Bound total retained run state so a long-lived server can't grow
+      // without limit across many completed runs.
+      this.evictOldTerminalRuns();
     }
+  }
+
+  /**
+   * Evict the oldest TERMINAL runs once retained terminal runs exceed
+   * {@link MAX_RETAINED_TERMINAL_RUNS}, freeing their RunState, history,
+   * control, and broadcaster. Running/paused/pending runs are skipped (never
+   * evicted) and a run with live WS subscribers keeps its broadcaster. Recent
+   * runs stay queryable; only old, finished ones are reaped.
+   */
+  private evictOldTerminalRuns(): void {
+    let terminalCount = 0;
+    for (const id of this.runOrder) {
+      if (this.isTerminal(id)) terminalCount += 1;
+    }
+    let toEvict = terminalCount - MAX_RETAINED_TERMINAL_RUNS;
+    if (toEvict <= 0) return;
+
+    // runOrder is insertion-ordered, so walking front-to-back evicts oldest first.
+    const kept: string[] = [];
+    for (const id of this.runOrder) {
+      if (toEvict > 0 && this.isTerminal(id)) {
+        this.activeRuns.delete(id);
+        this.history.delete(id);
+        this.controls.delete(id);
+        this.broadcasters.delete(id);
+        this.pending.delete(id);
+        toEvict -= 1;
+      } else {
+        kept.push(id);
+      }
+    }
+    this.runOrder.length = 0;
+    this.runOrder.push(...kept);
   }
 
   /**
