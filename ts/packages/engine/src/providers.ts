@@ -9,8 +9,11 @@
  * reached by pointing the OpenAI block at their OpenAI-compatible endpoint.
  *
  * Bedrock auth note (from the WS-0 spike): an empty/stale AWS_BEARER_TOKEN_BEDROCK
- * in the env makes the AWS SDK pick bearer auth and fail signing. We surface a
- * clear hint rather than letting the cryptic signer error surface at first call.
+ * in the env makes the AWS SDK pick bearer auth and fail signing ("request could
+ * not be signed with `token`"). An EMPTY value is never a usable credential, so
+ * we proactively delete it from the process env before constructing the Bedrock
+ * client, forcing SigV4. A non-empty value is left untouched (it may be a real
+ * bearer token the user intends to use).
  */
 import { BedrockModel, type Model } from '@strands-agents/sdk';
 import type { Config } from './config.js';
@@ -24,13 +27,19 @@ export interface CreateModelOptions {
 
 function bedrockAuthSanityHint(): void {
   const bearer = process.env.AWS_BEARER_TOKEN_BEDROCK;
-  const hasSigv4 = !!process.env.AWS_ACCESS_KEY_ID || !!process.env.AWS_PROFILE;
-  if (bearer !== undefined && bearer.trim() === '' && hasSigv4) {
-    // The SDK would otherwise pick (empty) bearer auth over valid SigV4 creds.
+  // An empty (set-but-blank) bearer var is the common footgun: a launcher or
+  // shell rc exports `AWS_BEARER_TOKEN_BEDROCK=` and the AWS SDK then prefers
+  // (empty) bearer auth over valid SigV4 role/SSO creds, so EVERY Bedrock call
+  // fails to sign. An empty string can't authenticate anything, so deleting it
+  // is always safe and lets SigV4 resolve normally. Do this unconditionally for
+  // the empty case (don't gate on detecting SigV4 creds — role/SSO setups don't
+  // always expose AWS_ACCESS_KEY_ID/AWS_PROFILE in the env).
+  if (bearer !== undefined && bearer.trim() === '') {
+    delete process.env.AWS_BEARER_TOKEN_BEDROCK;
     // eslint-disable-next-line no-console
     console.warn(
-      '[providers] AWS_BEARER_TOKEN_BEDROCK is set but empty while SigV4 creds exist — ' +
-        'unset it to force SigV4 (otherwise Bedrock signing fails with a "token is not defined" error).',
+      '[providers] AWS_BEARER_TOKEN_BEDROCK was set but empty — removed it so Bedrock ' +
+        'uses SigV4 (an empty value can never authenticate and otherwise breaks signing).',
     );
   }
 }

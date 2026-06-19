@@ -13,10 +13,30 @@ import {
 } from '@threatforest/types';
 
 export interface MlClientOptions {
-  /** Base URL of the ML service. Defaults to TF_ML_URL or http://127.0.0.1:8770. */
+  /** Base URL of the ML service. Defaults to TF_ML_URL, else 127.0.0.1:TF_ML_PORT, else :8770. */
   baseUrl?: string;
   /** Per-request timeout (ms). Embedding a batch is fast once warm; default 120s. */
   timeoutMs?: number;
+}
+
+/**
+ * Resolve the ML service base URL from env. Precedence:
+ *   1. an explicit `baseUrl` option,
+ *   2. `TF_ML_URL` (full URL override),
+ *   3. `http://127.0.0.1:${TF_ML_PORT}` — so the client tracks the SAME
+ *      `TF_ML_PORT` the service binds (src/ml_service/__main__.py). Previously
+ *      the client ignored TF_ML_PORT and only honored TF_ML_URL, so launching
+ *      the service on a non-default port (e.g. to dodge a squatter on :8770)
+ *      left the client pointed at :8770 — the pre-flight health check then hit
+ *      the wrong/foreign process and aborted every run.
+ *   4. `http://127.0.0.1:8770` default.
+ */
+function resolveMlBaseUrl(explicit?: string): string {
+  if (explicit) return explicit;
+  if (process.env.TF_ML_URL) return process.env.TF_ML_URL;
+  const port = process.env.TF_ML_PORT;
+  if (port && /^\d+$/.test(port)) return `http://127.0.0.1:${port}`;
+  return 'http://127.0.0.1:8770';
 }
 
 export class MlServiceClient {
@@ -24,10 +44,7 @@ export class MlServiceClient {
   private readonly timeoutMs: number;
 
   constructor(opts: MlClientOptions = {}) {
-    this.baseUrl = (opts.baseUrl ?? process.env.TF_ML_URL ?? 'http://127.0.0.1:8770').replace(
-      /\/$/,
-      '',
-    );
+    this.baseUrl = resolveMlBaseUrl(opts.baseUrl).replace(/\/$/, '');
     this.timeoutMs = opts.timeoutMs ?? 120_000;
   }
 
