@@ -46,6 +46,9 @@ A FastAPI server with a React SPA served at `http://localhost:8000`. It handles:
 - **Application Registry**: discovers projects in your home directory and `sample-applications/`
 - **Run Management**: spawns analysis runs in background threads, streams progress over WebSocket
 - **Configuration UI**: edit provider settings and Langfuse credentials from the browser
+- **Report Bundles**: `report_bundle.py` packages a run into a portable `.tfreport` zip; `report_import.py` + `routes/imports.py` ingest bundles dropped into `.threatforest/imports/` or uploaded by the user, registering a read-only Application + Version
+- **Mitigation Overrides**: per-run `mitigation_overrides.json` sidecar persists status (Already implemented / In progress / Accepted risk / Not relevant / Won't do) plus a required comment; the `/data` endpoint stitches overrides into each mitigation
+- **Run Metadata**: per-run `run_metadata.json` sidecar captures model id, frameworks, ATT&CK version, and timestamps for the summary page
 
 ### Strands Graph
 The v2 pipeline, defined in `agents/graph.py`. Each node is a Strands agent or function wrapped as a `GraphNode`. Verifier nodes run after each stage — if verification fails, the graph retries that stage automatically.

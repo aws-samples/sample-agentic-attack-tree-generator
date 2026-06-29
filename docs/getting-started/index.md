@@ -109,10 +109,11 @@ your-project/
 
     Opens the web console at `http://localhost:8000` automatically. From there:
 
-    1. Go to **Applications** and select your project
-    2. Click **New Run** to start an analysis
-    3. Watch real-time progress on the **Run** page
-    4. View results in the interactive dashboard when complete
+    1. On the **Home** page, click **Add application**
+    2. Fill in the wizard — application name, project path, and business context (regulatory frameworks, data sensitivity, CIA priority ranking). The business context steers threat generation, so it's worth filling in.
+    3. From the application overview, click **New run** to start an analysis
+    4. Watch real-time progress on the **Run** page
+    5. View results in the threat model summary and version detail pages when complete
 
 === "Terminal (TUI)"
 

@@ -22,15 +22,6 @@ from pathlib import Path
 
 from server.models import ApplicationSummary, BusinessContext, VersionSummary
 
-PAUSE_STATE_KEY = "pause_state.json"
-
-
-def _workspace(run_dir: Path) -> "LocalFilesystemWorkspace":
-    # Local import to avoid a circular via `threatforest.__init__ -> cli -> registry`.
-    from threatforest.workspace import LocalFilesystemWorkspace
-
-    return LocalFilesystemWorkspace(run_dir)
-
 
 def slugify(name: str) -> str:
     """Convert a project directory name into a URL-safe slug."""
@@ -537,15 +528,12 @@ class ApplicationRegistry:
             if latest is None:
                 continue
 
-            workspace = _workspace(project_dir / latest)
-            if not workspace.exists(PAUSE_STATE_KEY):
+            pause_file = project_dir / latest / "pause_state.json"
+            if not pause_file.is_file():
                 continue
 
-            try:
-                pause_data = workspace.read_json(PAUSE_STATE_KEY)
-            except (json.JSONDecodeError, OSError):
-                continue
-            if not isinstance(pause_data, dict) or pause_data.get("intent") != "pause":
+            pause_data = self._read_json(pause_file)
+            if pause_data is None or pause_data.get("intent") != "pause":
                 continue
 
             meta = self._read_json(meta_file) or {}
@@ -582,7 +570,11 @@ class ApplicationRegistry:
         if latest is None:
             return False
 
-        return _workspace(project_dir / latest).delete(PAUSE_STATE_KEY)
+        pause_file = project_dir / latest / "pause_state.json"
+        if pause_file.is_file():
+            pause_file.unlink()
+            return True
+        return False
 
     @staticmethod
     def _read_json(path: Path) -> dict | None:

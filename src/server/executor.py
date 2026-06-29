@@ -23,14 +23,12 @@ from server.applications import (
 )
 from server.models import Application, RunConfig
 from server.run_manager import OrchestratorExecutor, ProgressEvent
-from threatforest.workspace import LocalFilesystemWorkspace
 
 if TYPE_CHECKING:
     from server.scan_control import ScanControl
 
 
-PAUSE_STATE_KEY = "pause_state.json"
-RUN_METADATA_KEY = "run_metadata.json"
+RUN_METADATA_FILE = "run_metadata.json"
 
 
 def _attack_version_label() -> str:
@@ -66,16 +64,18 @@ def _write_run_metadata_start(run_dir: Path, config: "RunConfig") -> None:
         "completed_at": None,
         "duration_seconds": None,
     }
-    LocalFilesystemWorkspace(run_dir).write_json(RUN_METADATA_KEY, payload)
+    (run_dir / RUN_METADATA_FILE).write_text(
+        _json_module.dumps(payload, indent=2), encoding="utf-8"
+    )
 
 
 def _write_run_metadata_complete(run_dir: Path) -> None:
     """Stamp completed_at + duration_seconds onto the run metadata file."""
-    ws = LocalFilesystemWorkspace(run_dir)
-    if not ws.exists(RUN_METADATA_KEY):
+    meta_path = run_dir / RUN_METADATA_FILE
+    if not meta_path.exists():
         return
     try:
-        meta = ws.read_json(RUN_METADATA_KEY)
+        meta = _json_module.loads(meta_path.read_text(encoding="utf-8"))
     except Exception:
         return
     completed = datetime.now(tz=timezone.utc)
@@ -87,7 +87,9 @@ def _write_run_metadata_complete(run_dir: Path) -> None:
             meta["duration_seconds"] = round((completed - started).total_seconds(), 1)
         except ValueError:
             pass
-    ws.write_json(RUN_METADATA_KEY, meta)
+    meta_path.write_text(
+        _json_module.dumps(meta, indent=2), encoding="utf-8"
+    )
 
 
 def _save_pause_state(
@@ -113,7 +115,9 @@ def _save_pause_state(
             "app_id": config.app_id,
         },
     }
-    LocalFilesystemWorkspace(run_dir).write_json(PAUSE_STATE_KEY, pause_data)
+    (run_dir / "pause_state.json").write_text(
+        _json_module.dumps(pause_data, indent=2), encoding="utf-8"
+    )
 
 
 _otel_initialized = False
@@ -819,7 +823,9 @@ def create_orchestrator_executor(workspace_dir: Path) -> OrchestratorExecutor:
 
         # Clean up pause_state.json on successful completion so the run
         # no longer appears in the "paused runs" list.
-        LocalFilesystemWorkspace(run_dir).delete(PAUSE_STATE_KEY)
+        pause_file = run_dir / "pause_state.json"
+        if pause_file.is_file():
+            pause_file.unlink()
 
         # Stamp completion timestamp + duration onto run_metadata.json
         _write_run_metadata_complete(run_dir)
