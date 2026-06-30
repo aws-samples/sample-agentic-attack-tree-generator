@@ -85,6 +85,74 @@ AWS auth note: if `AWS_BEARER_TOKEN_BEDROCK` is set but empty in your env, unset
 it — otherwise the AWS SDK picks bearer auth over SigV4 and Bedrock calls fail
 to sign.
 
+## MCP Server — use ThreatForest as an agent tool
+
+The `@threatforest/mcp-server` package exposes ThreatForest as 4 MCP tools that
+any AI agent (Claude Code, Cursor, Kiro, or any MCP client) can call.
+
+### Setup
+
+```bash
+cd ts
+npm install
+npm run build:packages       # builds all packages including mcp-server
+npm run convert-model        # one-time: ATTACK-BERT PyTorch → ONNX (needs .venv)
+```
+
+### Add to Claude Code
+
+Add to `~/.claude.json` (global) or `.claude/mcp.json` (project-local):
+
+```json
+{
+  "mcpServers": {
+    "threatforest": {
+      "command": "node",
+      "args": [
+        "/absolute/path/to/ts/packages/mcp-server/dist/main.js",
+        "/absolute/path/to/repo-root"
+      ],
+      "env": {
+        "TF_USE_PYTHON_ML": "0"
+      }
+    }
+  }
+}
+```
+
+The second arg points to the repo root (where `.threatforest/config.yaml` lives).
+
+### Tools
+
+| Tool | Description |
+|------|-------------|
+| `threatforest_scan` | Start a threat model scan against a project path (returns `run_id` immediately) |
+| `threatforest_get_run` | Poll status, progress %, current stage, and summary when complete |
+| `threatforest_list_runs` | List all active and recently completed scans |
+| `threatforest_get_findings` | Retrieve full structured attack trees, MITRE TTP mappings, and mitigations |
+
+### Strands agent integration
+
+For direct use inside a Strands agent (no MCP needed):
+
+```typescript
+import { makeScanTool, makeGetRunTool, makeGetFindingsTool } from '@threatforest/mcp-server/strands';
+
+const agent = new Agent({
+  tools: [makeScanTool(), makeGetRunTool(), makeGetFindingsTool()],
+});
+```
+
+### Example prompts
+
+- "Scan /path/to/my/project for security threats"
+- "What threats were found in run abc123?"
+- "List my recent scans"
+
+Scans run 5-30 minutes depending on project size. The agent starts a scan,
+polls progress, then retrieves structured findings (attack trees with MITRE
+ATT&CK technique mappings and mitigation recommendations).
+
 ## Tests / parity
 
 ```bash
