@@ -679,6 +679,7 @@ export default function AppOverviewView() {
             </Button>
           </SpaceBetween>
         </ExpandableSection>
+      </SpaceBetween>
 
         {/* Rename modal */}
         <Modal
@@ -791,7 +792,7 @@ export default function AppOverviewView() {
           }
         >
           <SpaceBetween size="s">
-            {deleteError && <Alert type="error">{deleteError}</Alert>}
+            {deleteError ? <Alert type="error">{deleteError}</Alert> : null}
             <Box variant="p">
               Are you sure you want to delete <strong>{appName}</strong>? This removes the
               application record but keeps run artefacts on disk.
@@ -887,7 +888,6 @@ export default function AppOverviewView() {
             </Box>
           </SpaceBetween>
         </Modal>
-      </SpaceBetween>
     </AppShell>
   );
 }
