@@ -1,0 +1,8 @@
+Resources:
+  ApiFn:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.12
+      Handler: handler.handler
+      Policies:
+        - AmazonS3FullAccess   # over-permissive

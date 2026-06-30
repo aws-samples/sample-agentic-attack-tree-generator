@@ -11,6 +11,7 @@ from threatforest.config import config
 from threatforest.tools.sandboxed_file import make_sandboxed_file_read, make_sandboxed_file_write
 from threatforest.agents.scanner.agent import STATE_DIR, resolve_state_dir
 from threatforest.agents.tracing_session import trace_attrs
+from threatforest.workspace import LocalFilesystemWorkspace
 
 STATE_FILE = "ttp_mappings.json"
 
@@ -21,8 +22,7 @@ def _load_prompt() -> str:
 
 def _make_alternatives_tool(repo_path: str, run_dir: str | None = None):
     """Tool that lets the reviewer drill into top-K candidates for a specific step."""
-    state_dir = resolve_state_dir(repo_path, run_dir)
-    candidates_file = state_dir / "ttp_candidates.json"
+    workspace = LocalFilesystemWorkspace(resolve_state_dir(repo_path, run_dir))
 
     @tool
     def get_ttp_alternatives(attack_step_id: str) -> str:
@@ -31,7 +31,7 @@ def _make_alternatives_tool(repo_path: str, run_dir: str | None = None):
         Args:
             attack_step_id: The ID of the attack step to get alternatives for.
         """
-        data = json.loads(candidates_file.read_text())
+        data = workspace.read_json("ttp_candidates.json")
         for c in data.get("ttp_candidates", []):
             if c["attack_step_id"] == attack_step_id:
                 return json.dumps(c["top_k"], indent=2)

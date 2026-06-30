@@ -1,0 +1,32 @@
+{
+  "name": "@threatforest/mcp-server",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "MCP server + Strands tool wrappers exposing ThreatForest as an agent tool",
+  "main": "dist/index.js",
+  "bin": {
+    "threatforest-mcp": "dist/main.js"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./strands": "./dist/strands.js"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit",
+    "start": "node --import tsx/esm src/main.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@strands-agents/sdk": "^1.6.0",
+    "@threatforest/engine": "*",
+    "@threatforest/types": "*",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.21",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.0"
+  }
+}

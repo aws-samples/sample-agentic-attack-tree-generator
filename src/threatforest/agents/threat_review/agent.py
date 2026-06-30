@@ -33,6 +33,7 @@ from threatforest.agents.threat_review.enricher import (
     build_review_summary,
     diff_threats,
 )
+from threatforest.workspace import LocalFilesystemWorkspace, Workspace
 
 
 QUESTIONS = [
@@ -51,14 +52,13 @@ class SimpleInterrupt:
     reason: dict = field(default_factory=dict)
 
 
-def _threats_payload(state_dir: Path) -> list[dict]:
+def _threats_payload(workspace: Workspace) -> list[dict]:
     """Read the current threats list (safe if missing/malformed)."""
-    path = state_dir / "threats.json"
-    if not path.exists():
+    if not workspace.exists("threats.json"):
         return []
     try:
-        data = json.loads(path.read_text())
-    except json.JSONDecodeError:
+        data = workspace.read_json("threats.json")
+    except (json.JSONDecodeError, OSError):
         return []
     return data.get("threats", []) or []
 
@@ -86,6 +86,7 @@ class ThreatReviewNode(MultiAgentBase):
         node_id: str = "threat_review",
     ):
         self.state_dir = state_dir
+        self.workspace: Workspace = LocalFilesystemWorkspace(state_dir)
         self.repo_path = repo_path
         self.run_dir = run_dir
         self.interaction_fn = interaction_fn
@@ -95,17 +96,17 @@ class ThreatReviewNode(MultiAgentBase):
         state_file = self.state_dir / "threats.json"
         scanner_state_file = self.state_dir / "scanner_context.json"
 
-        if self.interaction_fn is None or not state_file.exists():
+        if self.interaction_fn is None or not self.workspace.exists("threats.json"):
             return self._make_result("Threat review skipped (no interaction_fn).")
 
         rounds = 0
         feedbacks: list[str] = []
-        initial_threats = copy.deepcopy(_threats_payload(self.state_dir))
+        initial_threats = copy.deepcopy(_threats_payload(self.workspace))
         any_action_taken = False
 
         while True:
             rounds += 1
-            current = _threats_payload(self.state_dir)
+            current = _threats_payload(self.workspace)
             payload = {
                 "phase": "threat_review",
                 "message": (
@@ -157,7 +158,7 @@ class ThreatReviewNode(MultiAgentBase):
             # Loop continues — next iteration fetches fresh threats.
 
         # Build and persist the summary
-        final_threats = _threats_payload(self.state_dir)
+        final_threats = _threats_payload(self.workspace)
         diff = diff_threats(initial_threats, final_threats)
         review_summary = build_review_summary(
             rounds=rounds,

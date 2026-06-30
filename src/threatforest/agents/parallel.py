@@ -11,6 +11,7 @@ from typing import Any, Callable, Optional
 
 from threatforest.agents.scanner.agent import STATE_DIR, resolve_state_dir
 from threatforest.agents.tracing_session import trace_attrs
+from threatforest.workspace import LocalFilesystemWorkspace, Workspace
 
 import threading
 
@@ -79,13 +80,17 @@ async def _run_ttp_review(
             "similarity_score": top1.get("similarity_score", 0),
         })
 
-    summary_file = state_dir / f"{prefix}_ttp_top1.json"
-    summary_file.write_text(json.dumps({"ttp_top1": summary}, indent=2))
+    workspace = LocalFilesystemWorkspace(state_dir)
+    summary_key = f"{prefix}_ttp_top1.json"
+    workspace.write_json(summary_key, {"ttp_top1": summary})
+    summary_file = state_dir / summary_key
 
-    candidates_file = state_dir / f"{prefix}_ttp_candidates.json"
-    candidates_file.write_text(json.dumps({"ttp_candidates": ttp_candidates}, indent=2))
+    candidates_key = f"{prefix}_ttp_candidates.json"
+    workspace.write_json(candidates_key, {"ttp_candidates": ttp_candidates})
+    candidates_file = state_dir / candidates_key
 
-    mappings_file = state_dir / f"{prefix}_ttp_mappings.json"
+    mappings_key = f"{prefix}_ttp_mappings.json"
+    mappings_file = state_dir / mappings_key
 
     @tool
     def get_ttp_alternatives(attack_step_id: str) -> str:
@@ -94,7 +99,7 @@ async def _run_ttp_review(
         Args:
             attack_step_id: The ID of the attack step.
         """
-        data = json.loads(candidates_file.read_text())
+        data = workspace.read_json(candidates_key)
         for c in data.get("ttp_candidates", []):
             if c["attack_step_id"] == attack_step_id:
                 return json.dumps(c["top_k"], indent=2)
@@ -128,9 +133,9 @@ async def _run_ttp_review(
     )
 
     ttp_mappings = []
-    if mappings_file.exists():
+    if workspace.exists(mappings_key):
         try:
-            raw = mappings_file.read_text().replace(",\n]", "\n]").replace(",]", "]")
+            raw = workspace.read_text(mappings_key).replace(",\n]", "\n]").replace(",]", "]")
             ttp_mappings = json.loads(raw).get("ttp_mappings", [])
         except (json.JSONDecodeError, OSError):
             pass
@@ -185,6 +190,7 @@ async def _process_single_threat_inner(
         return scan_control is not None and scan_control.should_interrupt
 
     state_dir = resolve_state_dir(repo_path, run_dir)
+    workspace = LocalFilesystemWorkspace(state_dir)
     prefix = f"t{threat_idx}"
 
     from threatforest.tools.sandboxed_file import make_sandboxed_file_read, make_sandboxed_file_write, make_store_mitigations
@@ -194,15 +200,17 @@ async def _process_single_threat_inner(
     from threatforest.config import config
 
     scanner_file = str(state_dir / "scanner_context.json")
-    single_threats_file = state_dir / f"{prefix}_threats.json"
-    tree_out = state_dir / f"{prefix}_attack_trees.json"
+    single_threats_key = f"{prefix}_threats.json"
+    single_threats_file = state_dir / single_threats_key
+    tree_out_key = f"{prefix}_attack_trees.json"
+    tree_out = state_dir / tree_out_key
     tree_out_str = str(tree_out)
 
     # --- Tree generation (skip if output already exists from a prior run) ---
     trees = []
-    if tree_out.exists():
+    if workspace.exists(tree_out_key):
         try:
-            trees = json.loads(tree_out.read_text()).get("attack_trees", [])
+            trees = workspace.read_json(tree_out_key).get("attack_trees", [])
         except (json.JSONDecodeError, OSError):
             trees = []
 
@@ -212,7 +220,7 @@ async def _process_single_threat_inner(
 
         _update_progress(total_threats, threat_idx, "🌳 Building attack tree")
 
-        single_threats_file.write_text(json.dumps({"threats": [threat]}))
+        workspace.write_json(single_threats_key, {"threats": [threat]})
         threats_file = str(single_threats_file)
 
         tree_prompt = (Path(__file__).parent / "tree" / "prompt.md").read_text()
@@ -248,9 +256,9 @@ async def _process_single_threat_inner(
             agent, "Read the threat and scanner context. Generate an attack tree. Write to the output file."
         )
 
-        if tree_out.exists():
+        if workspace.exists(tree_out_key):
             try:
-                trees = json.loads(tree_out.read_text()).get("attack_trees", [])
+                trees = workspace.read_json(tree_out_key).get("attack_trees", [])
             except (json.JSONDecodeError, OSError):
                 pass
 
@@ -315,12 +323,13 @@ async def _process_single_threat_inner(
         return _empty_result
 
     # --- Mitigation (skip if output already exists from a prior run) ---
-    mit_out = state_dir / f"{prefix}_mitigations.json"
+    mit_out_key = f"{prefix}_mitigations.json"
+    mit_out = state_dir / mit_out_key
     mitigations = []
 
-    if mit_out.exists():
+    if workspace.exists(mit_out_key):
         try:
-            raw = mit_out.read_text().replace(",\n]", "\n]").replace(",]", "]")
+            raw = workspace.read_text(mit_out_key).replace(",\n]", "\n]").replace(",]", "]")
             mitigations = json.loads(raw).get("mitigations", [])
         except (json.JSONDecodeError, OSError):
             mitigations = []
@@ -330,8 +339,9 @@ async def _process_single_threat_inner(
             return _empty_result
 
         _update_progress(total_threats, threat_idx, "🛡️ Defining relevant mitigations")
-        mit_mappings_file = state_dir / f"{prefix}_mitigations_input.json"
-        mit_mappings_file.write_text(json.dumps({"ttp_mappings": ttp_mappings}, indent=2))
+        mit_mappings_key = f"{prefix}_mitigations_input.json"
+        mit_mappings_file = state_dir / mit_mappings_key
+        workspace.write_json(mit_mappings_key, {"ttp_mappings": ttp_mappings})
 
         mit_prompt = (Path(__file__).parent / "mitigation" / "prompt.md").read_text()
         mit_prompt += (
@@ -354,8 +364,7 @@ async def _process_single_threat_inner(
             if _interrupted():
                 break
 
-            if mit_out.exists():
-                mit_out.unlink()
+            workspace.delete(mit_out_key)
 
             mit_hooks = []
             if scan_control is not None:
@@ -382,9 +391,9 @@ async def _process_single_threat_inner(
             )
 
             mitigations = []
-            if mit_out.exists():
+            if workspace.exists(mit_out_key):
                 try:
-                    raw = mit_out.read_text().replace(",\n]", "\n]").replace(",]", "]")
+                    raw = workspace.read_text(mit_out_key).replace(",\n]", "\n]").replace(",]", "]")
                     mitigations = json.loads(raw).get("mitigations", [])
                 except (json.JSONDecodeError, OSError):
                     pass
@@ -400,10 +409,10 @@ async def _process_single_threat_inner(
             if not missing or not mitigations:
                 break
 
-        # Clean up transient input file only (keep output files for resume)
-        for f in [single_threats_file, mit_mappings_file]:
+        # Clean up transient input files only (keep output files for resume)
+        for key in [single_threats_key, mit_mappings_key]:
             try:
-                f.unlink(missing_ok=True)
+                workspace.delete(key)
             except OSError:
                 pass
 
@@ -540,11 +549,10 @@ def run_parallel_pipeline(repo_path: str, run_dir: str | None = None, frameworks
     max_retries = _cfg.parallel_max_retries
 
     state_dir = resolve_state_dir(repo_path, run_dir)
-    threats_file = state_dir / "threats.json"
-    scanner_file = state_dir / "scanner_context.json"
+    workspace = LocalFilesystemWorkspace(state_dir)
 
-    threats_data = json.loads(threats_file.read_text())
-    scanner_context = json.loads(scanner_file.read_text())
+    threats_data = workspace.read_json("threats.json")
+    scanner_context = workspace.read_json("scanner_context.json")
     threats = threats_data.get("threats", [])
 
     # Reset progress
@@ -552,7 +560,7 @@ def run_parallel_pipeline(repo_path: str, run_dir: str | None = None, frameworks
 
     if not threats:
         for name in ("attack_trees.json", "ttp_candidates.json", "ttp_mappings.json", "mitigations.json"):
-            (state_dir / name).write_text(json.dumps({name.replace(".json", ""): []}))
+            workspace.write_json(name, {name.replace(".json", ""): []})
         return str(state_dir / "mitigations.json")
 
     def _is_empty_result(r: Any) -> bool:
@@ -657,8 +665,8 @@ def run_parallel_pipeline(repo_path: str, run_dir: str | None = None, frameworks
     # Consolidate duplicate mitigations (same technique across different threats)
     all_mitigations = _consolidate_mitigations(all_mitigations, all_mappings)
 
-    (state_dir / "attack_trees.json").write_text(json.dumps({"attack_trees": all_trees}, indent=2))
-    (state_dir / "ttp_candidates.json").write_text(json.dumps({"ttp_candidates": all_candidates}, indent=2))
+    workspace.write_json("attack_trees.json", {"attack_trees": all_trees})
+    workspace.write_json("ttp_candidates.json", {"ttp_candidates": all_candidates})
 
     summary = []
     for c in all_candidates:
@@ -669,10 +677,10 @@ def run_parallel_pipeline(repo_path: str, run_dir: str | None = None, frameworks
             "technique_name": top1.get("technique_name", ""),
             "similarity_score": top1.get("similarity_score", 0),
         })
-    (state_dir / "ttp_top1_summary.json").write_text(json.dumps({"ttp_top1": summary}, indent=2))
+    workspace.write_json("ttp_top1_summary.json", {"ttp_top1": summary})
 
-    (state_dir / "ttp_mappings.json").write_text(json.dumps({"ttp_mappings": all_mappings}, indent=2))
-    (state_dir / "mitigations.json").write_text(json.dumps({"mitigations": all_mitigations}, indent=2))
+    workspace.write_json("ttp_mappings.json", {"ttp_mappings": all_mappings})
+    workspace.write_json("mitigations.json", {"mitigations": all_mitigations})
 
     # Clean up per-threat output files only when the pipeline completed
     # without interruption.  If the scan was paused/stopped, keep them so
@@ -681,9 +689,8 @@ def run_parallel_pipeline(repo_path: str, run_dir: str | None = None, frameworks
     if not interrupted:
         for i in range(len(threats)):
             for suffix in ("attack_trees", "mitigations", "threats", "mitigations_input"):
-                f = state_dir / f"t{i}_{suffix}.json"
                 try:
-                    f.unlink(missing_ok=True)
+                    workspace.delete(f"t{i}_{suffix}.json")
                 except OSError:
                     pass
 

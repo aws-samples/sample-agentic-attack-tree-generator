@@ -15,6 +15,7 @@ from strands.types.content import ContentBlock
 
 from threatforest.agents.scanner.agent import STATE_DIR, resolve_state_dir
 from threatforest.agents.report.agent import _resolve_output_dir
+from threatforest.workspace import LocalFilesystemWorkspace
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -67,12 +68,11 @@ def _make_agent_result(text: str) -> AgentResult:
 # ---------------------------------------------------------------------------
 
 def _is_aws_project(repo_path: str, run_dir: str | None = None) -> bool:
-    state_dir = resolve_state_dir(repo_path, run_dir)
-    ctx_file = state_dir / "scanner_context.json"
-    if not ctx_file.exists():
+    workspace = LocalFilesystemWorkspace(resolve_state_dir(repo_path, run_dir))
+    if not workspace.exists("scanner_context.json"):
         return False
     try:
-        return json.loads(ctx_file.read_text()).get("cloud_provider", "").lower() == "aws"
+        return workspace.read_json("scanner_context.json").get("cloud_provider", "").lower() == "aws"
     except (json.JSONDecodeError, OSError):
         return False
 
@@ -357,6 +357,8 @@ async def run_graph(repo_path: str, run_dir: str | None = None, frameworks: list
     # Resolve dirs for reading state/output in _node_summary
     _state_dir = resolve_state_dir(repo_path, run_dir)
     _output_dir = _resolve_output_dir(repo_path, run_dir)
+    _state_ws = LocalFilesystemWorkspace(_state_dir)
+    _output_ws = LocalFilesystemWorkspace(_output_dir)
 
     NODE_LABELS = {
         "scanner": "🔍 Scanner Agent",
@@ -375,10 +377,10 @@ async def run_graph(repo_path: str, run_dir: str | None = None, frameworks: list
 
     def _node_summary(nid: str) -> list[str]:
         """Read state files to produce summary lines for a completed node."""
-        sd = _state_dir
+        ws = _state_ws
         try:
             if nid == "scanner":
-                d = json.loads((sd / "scanner_context.json").read_text())
+                d = ws.read_json("scanner_context.json")
                 lines = [
                     f"Cloud: {d.get('cloud_provider', '?').upper()}",
                     f"Stack: {d.get('tech_stack', '')[:80]}",
@@ -388,17 +390,16 @@ async def run_graph(repo_path: str, run_dir: str | None = None, frameworks: list
                 ]
                 return lines
             elif nid == "scanner_verifier":
-                f = sd / "scanner_context.json"
-                if f.exists():
+                if ws.exists("scanner_context.json"):
                     from threatforest.agents.scanner.verifier import verify_scanner_output
-                    ok, msg = verify_scanner_output(str(f))
+                    ok, msg = verify_scanner_output(str(_state_dir / "scanner_context.json"))
                     return [f"{'PASS' if ok else 'FAIL'}: {msg}"]
             elif nid == "scanner_review":
-                d = json.loads((sd / "scanner_context.json").read_text())
+                d = ws.read_json("scanner_context.json")
                 reviewed = "yes" if d.get("scanner_review_applied") else "no edits"
                 return [f"Review: {reviewed}"]
             elif nid == "interviewer":
-                d = json.loads((sd / "scanner_context.json").read_text())
+                d = ws.read_json("scanner_context.json")
                 confidence = d.get("interviewer_confidence", "skipped")
                 summary = d.get("interviewer_summary", "")
                 lines = [f"Confidence: {confidence}"]
@@ -406,7 +407,7 @@ async def run_graph(repo_path: str, run_dir: str | None = None, frameworks: list
                     lines.append(summary[:80])
                 return lines
             elif nid == "threat":
-                d = json.loads((sd / "threats.json").read_text())
+                d = ws.read_json("threats.json")
                 threats = d.get("threats", [])
                 lines = [f"{len(threats)} threats identified"]
                 for t in threats[:5]:
@@ -417,22 +418,21 @@ async def run_graph(repo_path: str, run_dir: str | None = None, frameworks: list
                     lines.append(f"  … and {len(threats) - 5} more")
                 return lines
             elif nid == "threat_verifier":
-                f = sd / "threats.json"
-                if f.exists():
+                if ws.exists("threats.json"):
                     from threatforest.agents.threat.verifier import verify_threat_output
-                    ok, msg = verify_threat_output(str(f))
+                    ok, msg = verify_threat_output(str(_state_dir / "threats.json"))
                     return [f"{'PASS' if ok else 'FAIL'}: {msg}"]
             elif nid == "threat_review":
                 try:
-                    d = json.loads((sd / "threats.json").read_text())
+                    d = ws.read_json("threats.json")
                     n = len(d.get("threats", []))
                     return [f"Threat review complete · {n} threats after review"]
                 except (FileNotFoundError, json.JSONDecodeError):
                     return ["Threat review complete"]
             elif nid == "parallel_pipeline":
-                trees = json.loads((sd / "attack_trees.json").read_text()).get("attack_trees", [])
-                mappings = json.loads((sd / "ttp_mappings.json").read_text()).get("ttp_mappings", [])
-                mits_raw = (sd / "mitigations.json").read_text().replace(",\n]", "\n]").replace(",]", "]")
+                trees = ws.read_json("attack_trees.json").get("attack_trees", [])
+                mappings = ws.read_json("ttp_mappings.json").get("ttp_mappings", [])
+                mits_raw = ws.read_text("mitigations.json").replace(",\n]", "\n]").replace(",]", "]")
                 mits = json.loads(mits_raw).get("mitigations", [])
                 total_steps = sum(len(t.get("steps", [])) for t in trees)
                 techniques = {m.get("technique_id") for m in mappings if m.get("technique_id")}
@@ -453,9 +453,8 @@ async def run_graph(repo_path: str, run_dir: str | None = None, frameworks: list
                 ok, msg = verify_mitigation_output(repo_path, run_dir=run_dir)
                 return [f"{'PASS' if ok else 'FAIL'}: {msg}"]
             elif nid == "report":
-                f = _output_dir / "threat_model_report.md"
-                if f.exists():
-                    content = f.read_text()
+                if _output_ws.exists("threat_model_report.md"):
+                    content = _output_ws.read_text("threat_model_report.md")
                     sections = [l for l in content.splitlines() if l.startswith("## ")]
                     return [f"Report written · {len(content.splitlines())} lines · {len(sections)} sections"]
             elif nid == "report_verifier":

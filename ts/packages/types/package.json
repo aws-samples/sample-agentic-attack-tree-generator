@@ -1,0 +1,25 @@
+{
+  "name": "@threatforest/types",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Shared Zod schemas + inferred TypeScript types for ThreatForest (engine, server, UI). Source of truth, mirroring the legacy Python Pydantic/dataclass models.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}

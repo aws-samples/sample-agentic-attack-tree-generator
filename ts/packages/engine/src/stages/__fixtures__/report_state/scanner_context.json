@@ -1,0 +1,19 @@
+{
+  "cloud_provider": "aws",
+  "tech_stack": "python, fastapi, lambda",
+  "services": [
+    "lambda",
+    "s3",
+    "apigateway"
+  ],
+  "auth_mechanisms": [
+    "cognito"
+  ],
+  "files_analyzed": [
+    "handler.py",
+    "template.yaml"
+  ],
+  "file_guide": {
+    "handler.py": "api entry"
+  }
+}

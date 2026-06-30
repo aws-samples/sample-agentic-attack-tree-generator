@@ -1,0 +1,123 @@
+{
+  "input": {
+    "trees": [
+      {
+        "id": "tree1",
+        "threat_id": "t1",
+        "root_goal": "compromise",
+        "steps": [
+          {
+            "id": "f1",
+            "parent_id": "",
+            "category": "fact",
+            "description": "attacker on network"
+          },
+          {
+            "id": "s1",
+            "parent_id": "f1",
+            "description": "exploit public web app",
+            "skill_required": "low",
+            "access_required": "none",
+            "detectability": "low",
+            "exploit_maturity": "weaponised",
+            "feasibility_note": ""
+          },
+          {
+            "id": "s2",
+            "parent_id": "s1",
+            "description": "java deserialization gadget chain",
+            "skill_required": "high",
+            "access_required": "authenticated",
+            "detectability": "high",
+            "exploit_maturity": "theoretical",
+            "feasibility_note": "requires uncommon config"
+          },
+          {
+            "id": "s3",
+            "parent_id": "s1",
+            "description": "assume over-permissive IAM role",
+            "skill_required": "med",
+            "access_required": "privileged",
+            "detectability": "med",
+            "exploit_maturity": "poc",
+            "feasibility_note": ""
+          }
+        ]
+      }
+    ],
+    "ttp_by_step": {
+      "s1": {
+        "similarity_score": 0.82
+      },
+      "s3": {
+        "similarity_score": 0.55
+      }
+    },
+    "mitigations_by_step": {
+      "s1": {
+        "priority": 1
+      },
+      "s3": {
+        "priority": 3
+      }
+    },
+    "tech_stack": "python, fastapi, aws"
+  },
+  "expected_trees": [
+    {
+      "id": "tree1",
+      "threat_id": "t1",
+      "root_goal": "compromise",
+      "steps": [
+        {
+          "id": "f1",
+          "parent_id": "",
+          "category": "fact",
+          "description": "attacker on network",
+          "probability": 1.0,
+          "probability_rationale": "fact node (attacker precondition)",
+          "reach_probability": 1.0
+        },
+        {
+          "id": "s1",
+          "parent_id": "f1",
+          "description": "exploit public web app",
+          "skill_required": "low",
+          "access_required": "none",
+          "detectability": "low",
+          "exploit_maturity": "weaponised",
+          "feasibility_note": "",
+          "probability": 0.9346,
+          "probability_rationale": "prior: skill_required=low (+1.0); access_required=none (+0.8); detectability=low (+0.6); exploit_maturity=weaponised (+1.0) \u2192 posterior: ttp_similarity=0.82 (+0.96), mitigation_priority=1 (-1.20)",
+          "reach_probability": 0.9346
+        },
+        {
+          "id": "s2",
+          "parent_id": "s1",
+          "description": "java deserialization gadget chain",
+          "skill_required": "high",
+          "access_required": "authenticated",
+          "detectability": "high",
+          "exploit_maturity": "theoretical",
+          "feasibility_note": "requires uncommon config",
+          "probability": 0.0041,
+          "probability_rationale": "prior: skill_required=high (-0.8); detectability=high (-0.6); exploit_maturity=theoretical (-1.2) \u2192 posterior: feasibility_note (-0.90), tech_stack_mismatch (-1.50)",
+          "reach_probability": 0.0038
+        },
+        {
+          "id": "s3",
+          "parent_id": "s1",
+          "description": "assume over-permissive IAM role",
+          "skill_required": "med",
+          "access_required": "privileged",
+          "detectability": "med",
+          "exploit_maturity": "poc",
+          "feasibility_note": "",
+          "probability": 0.1611,
+          "probability_rationale": "prior: access_required=privileged (-1.0) \u2192 posterior: ttp_similarity=0.55 (+0.15), mitigation_priority=3 (-0.30)",
+          "reach_probability": 0.1506
+        }
+      ]
+    }
+  ]
+}

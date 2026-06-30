@@ -5,21 +5,20 @@ Non-AWS projects skip this entirely.
 """
 
 import json
-from pathlib import Path
 
 from threatforest.agents.scanner.agent import STATE_DIR, resolve_state_dir
+from threatforest.workspace import LocalFilesystemWorkspace
 
 STATE_FILE = "control_candidates.json"
 
 
 def _is_aws_project(repo_path: str, run_dir: str | None = None) -> bool:
     """Check scanner context for AWS cloud provider."""
-    state_dir = resolve_state_dir(repo_path, run_dir)
-    ctx_file = state_dir / "scanner_context.json"
-    if not ctx_file.exists():
+    workspace = LocalFilesystemWorkspace(resolve_state_dir(repo_path, run_dir))
+    if not workspace.exists("scanner_context.json"):
         return False
     try:
-        data = json.loads(ctx_file.read_text())
+        data = workspace.read_json("scanner_context.json")
         return data.get("cloud_provider", "").lower() == "aws"
     except (json.JSONDecodeError, OSError):
         return False
@@ -31,14 +30,14 @@ def run_control_embedding(repo_path: str, top_k: int = 5, run_dir: str | None = 
     Skipped for non-AWS projects (architecture: conditional edge).
     """
     state_dir = resolve_state_dir(repo_path, run_dir)
+    workspace = LocalFilesystemWorkspace(state_dir)
     out_file = state_dir / STATE_FILE
 
     if not _is_aws_project(repo_path, run_dir=run_dir):
         return None
 
     # Load attack steps from trees
-    trees_file = state_dir / "attack_trees.json"
-    trees_data = json.loads(trees_file.read_text())
+    trees_data = workspace.read_json("attack_trees.json")
 
     steps = []
     for tree in trees_data.get("attack_trees", []):
@@ -46,7 +45,7 @@ def run_control_embedding(repo_path: str, top_k: int = 5, run_dir: str | None = 
             steps.append({"id": step.get("id", ""), "description": step.get("description", "")})
 
     if not steps:
-        out_file.write_text(json.dumps({"control_candidates": []}))
+        workspace.write_json(STATE_FILE, {"control_candidates": []})
         return str(out_file)
 
     # TODO: Replace with actual AWS Control Catalog embedding search
@@ -59,5 +58,5 @@ def run_control_embedding(repo_path: str, top_k: int = 5, run_dir: str | None = 
             "top_k": [],  # populated when catalog embeddings exist
         })
 
-    out_file.write_text(json.dumps({"control_candidates": candidates}, indent=2))
+    workspace.write_json(STATE_FILE, {"control_candidates": candidates})
     return str(out_file)

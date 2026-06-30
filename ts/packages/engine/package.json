@@ -1,0 +1,32 @@
+{
+  "name": "@threatforest/engine",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "ThreatForest agent pipeline on the Strands TS SDK — scanner→threat→tree→ttp→mitigation→probability→report, with HITL nodes. Calls the Python ML service (WS-1) for TTP matching.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx/esm --test \"src/**/*.test.ts\""
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^3.8.1",
+    "@strands-agents/sdk": "^1.6.0",
+    "@threatforest/types": "*",
+    "yaml": "^2.8.3",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.21",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.0"
+  }
+}

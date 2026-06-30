@@ -1,0 +1,16 @@
+{
+  "name": "@threatforest/spike",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "WS-0 de-risk spikes for the Strands TypeScript SDK (Graph interrupt/resume, structured output).",
+  "dependencies": {
+    "@strands-agents/sdk": "^1.6.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.21",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.0"
+  }
+}

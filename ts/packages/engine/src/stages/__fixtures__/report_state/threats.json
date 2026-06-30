@@ -1,0 +1,14 @@
+{
+  "threats": [
+    {
+      "id": "T001",
+      "title": "Unauthorized S3 access",
+      "description": "Attacker reads private objects",
+      "priority": "high",
+      "affected_components": [
+        "s3",
+        "lambda"
+      ]
+    }
+  ]
+}

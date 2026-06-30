@@ -1,0 +1,29 @@
+# -*-perl-*-
+
+package.ThreatForest-internal = {
+    interfaces = (1.0);
+
+    # This package is managed via uv, not Brazil. See pyproject.toml for the
+    # real dependency graph. This Config only exists to make the package
+    # recognizable to Brazil/cr so dry-run and CRUX analyzers can run.
+    build-system = brazilpython;
+    build-tools = {
+        1.0 = {
+            BrazilPython = 3.0;
+        };
+    };
+
+    dependencies = {
+        1.0 = {
+        };
+    };
+
+    test-dependencies = {
+        1.0 = {
+        };
+    };
+
+    targets = {
+        python = { type = python; };
+    };
+};

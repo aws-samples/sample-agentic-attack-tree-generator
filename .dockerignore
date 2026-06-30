@@ -1,0 +1,43 @@
+.git
+.gitignore
+.github
+.venv
+venv
+threatforest-env
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/.pytest_cache
+**/.mypy_cache
+
+# Engine output / state
+.threatforest
+.kiro
+.claude
+.understand-anything
+tf-output
+output
+archive_docs
+paper
+sample-applications
+docs
+site
+.mkdocs_cache
+
+# Dev-only node modules
+console-ui/node_modules
+console-ui/dist
+console-ui/.vite
+**/node_modules
+
+# Docs + assets
+*.md
+!README.md
+demo.gif
+demo-videos
+aws-credentials.json
+.env
+
+# Docker meta
+Dockerfile
+.dockerignore
