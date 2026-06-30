@@ -149,14 +149,25 @@ export function getFindingsTool(input: GetFindingsInput): Record<string, unknown
   }
 
   const dataPath = join(record.output_dir, 'threatforest_data.json');
-  if (!existsSync(dataPath)) {
-    return { error: `Output file not found at ${dataPath}` };
+  if (existsSync(dataPath)) {
+    try {
+      return JSON.parse(readFileSync(dataPath, 'utf-8'));
+    } catch (err) {
+      return { error: `Failed to read findings: ${(err as Error).message}` };
+    }
   }
 
-  try {
-    const data = JSON.parse(readFileSync(dataPath, 'utf-8'));
-    return data;
-  } catch (err) {
-    return { error: `Failed to read findings: ${(err as Error).message}` };
+  // Fallback: if the report stage didn't produce the bundle, assemble from state files.
+  const stateDir = record.output_dir.replace(/\/output$/, '/state');
+  const partial: Record<string, unknown> = { partial: true, output_dir: record.output_dir };
+  for (const name of ['scanner_context', 'threats', 'attack_trees', 'ttp_mappings', 'mitigations']) {
+    const p = join(stateDir, `${name}.json`);
+    if (existsSync(p)) {
+      try { partial[name] = JSON.parse(readFileSync(p, 'utf-8')); } catch { /* skip */ }
+    }
   }
+  if (Object.keys(partial).length <= 2) {
+    return { error: `No findings produced. Output dir: ${record.output_dir}` };
+  }
+  return partial;
 }
