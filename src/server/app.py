@@ -120,13 +120,28 @@ if console_ui_dir is not None:
             from fastapi import HTTPException
             raise HTTPException(status_code=404, detail="Not found")
 
-        # Serve a real static file if it exists
+        # Serve a real static file if it exists.  Resolve the candidate path
+        # and ensure it is contained within console_ui_dir to prevent path
+        # traversal (e.g. ../../etc/passwd) and symlink escapes.
         candidate = console_ui_dir / full_path
-        if full_path and candidate.is_file():
-            # Guess content type for common static assets
-            import mimetypes
-            content_type, _ = mimetypes.guess_type(str(candidate))
-            return _FileResponse(str(candidate), media_type=content_type)
+        if full_path:
+            try:
+                resolved_root = console_ui_dir.resolve(strict=True)
+                resolved_candidate = candidate.resolve(strict=True)
+            except (OSError, RuntimeError):
+                resolved_candidate = None
+            else:
+                if (
+                    resolved_candidate != resolved_root
+                    and resolved_root not in resolved_candidate.parents
+                ):
+                    resolved_candidate = None
+
+            if resolved_candidate is not None and resolved_candidate.is_file():
+                # Guess content type for common static assets
+                import mimetypes
+                content_type, _ = mimetypes.guess_type(str(resolved_candidate))
+                return _FileResponse(str(resolved_candidate), media_type=content_type)
 
         # Otherwise return index.html for client-side routing
         if _index_html_content:
