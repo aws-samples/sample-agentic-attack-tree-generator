@@ -1,4 +1,4 @@
-import { tool, type JSONValue } from '@strands-agents/sdk';
+import { tool } from '@strands-agents/sdk';
 import { z } from 'zod';
 import { scanTool, getRunTool, listRunsTool, getFindingsTool } from './tools.js';
 
@@ -26,9 +26,8 @@ export function makeScanTool() {
       'Start a ThreatForest threat model scan against a project directory. Returns a run_id ' +
       'immediately (scan runs 5-30 min in background). Poll with threatforest_get_run.',
     inputSchema: ScanInput,
-    callback: async (input: z.infer<typeof ScanInput>): Promise<JSONValue> => {
-      const result = await scanTool(input);
-      return result as unknown as JSONValue;
+    callback: async (input: z.infer<typeof ScanInput>) => {
+      return scanTool(input);
     },
   });
 }
@@ -40,8 +39,8 @@ export function makeGetRunTool() {
       'Check the status and progress of a ThreatForest scan. Returns progress percentage, ' +
       'current stage, and a summary of findings when complete.',
     inputSchema: GetRunInput,
-    callback: (input: z.infer<typeof GetRunInput>): JSONValue => {
-      return getRunTool(input) as unknown as JSONValue;
+    callback: (input: z.infer<typeof GetRunInput>) => {
+      return getRunTool(input);
     },
   });
 }
@@ -51,8 +50,8 @@ export function makeListRunsTool() {
     name: 'threatforest_list_runs',
     description: 'List all active and recently completed ThreatForest threat model scans.',
     inputSchema: z.object({}),
-    callback: (): JSONValue => {
-      return listRunsTool() as unknown as JSONValue;
+    callback: () => {
+      return listRunsTool();
     },
   });
 }
@@ -64,8 +63,8 @@ export function makeGetFindingsTool() {
       'Retrieve the full structured findings from a completed ThreatForest scan: attack trees, ' +
       'MITRE TTP mappings, attack step probabilities, and mitigation recommendations.',
     inputSchema: GetFindingsInput,
-    callback: (input: z.infer<typeof GetFindingsInput>): JSONValue => {
-      return getFindingsTool(input) as unknown as JSONValue;
+    callback: (input: z.infer<typeof GetFindingsInput>) => {
+      return getFindingsTool(input);
     },
   });
 }
