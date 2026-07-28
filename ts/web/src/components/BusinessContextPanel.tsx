@@ -187,16 +187,15 @@ export default function BusinessContextPanel({
         }
       >
         <SpaceBetween size="l">
-          {submitError && (
+          {submitError ? (
             <Alert type="error" dismissible onDismiss={() => setSubmitError('')}>
               {submitError}
             </Alert>
-          )}
+          ) : null}
           <BusinessContextForm
             value={draft}
             onChange={(next) => {
               setDraft(next);
-              // Clear field errors as the user fills them in.
               setErrors((prev) => {
                 const cleared = { ...prev };
                 for (const key of Object.keys(cleared) as Array<keyof BusinessContextDraft>) {

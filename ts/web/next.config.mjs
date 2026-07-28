@@ -20,7 +20,7 @@ const API_TARGET = process.env.THREATFOREST_API_TARGET || 'http://localhost:8000
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  output: process.env.NODE_ENV === 'production' ? 'export' : undefined,
   reactStrictMode: true,
   // Static export emits per-route folders (trailingSlash makes /foo -> /foo/index.html),
   // which is friendlier to plain static file servers.
