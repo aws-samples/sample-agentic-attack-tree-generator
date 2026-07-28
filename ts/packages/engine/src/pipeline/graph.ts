@@ -339,6 +339,41 @@ export async function buildGraph(repoPath: string, opts: RunGraphOptions = {}): 
 }
 
 /**
+ * Render a failed node's error for the run summary, including its cause chain.
+ *
+ * Reporting only `error.message` hid the actual reason for whole classes of
+ * failure, because the SDK's outermost message is often a generic wrapper while
+ * the diagnosis sits in `.cause`. The motivating case: an HTTP/2 inactivity
+ * timeout surfaced purely as "scanner: Stream ended without completing a
+ * message" — no mention of a timeout anywhere — which cost a long debugging
+ * session to trace back to the transport. `unable to parse tool input JSON` (a
+ * swallowed SyntaxError) is wrapped the same way.
+ *
+ * Depth-capped, and each link is de-duplicated against the text already shown so
+ * a wrapper that merely restates its cause does not double up.
+ *
+ * Exported for tests: the value of this function IS its output string, so it is
+ * worth asserting on directly.
+ */
+export function describeNodeError(error: unknown): string {
+  if (!(error instanceof Error)) return 'failed';
+  const parts: string[] = [];
+  let current: unknown = error;
+  for (let depth = 0; current instanceof Error && depth < 4; depth++) {
+    const message = current.message.trim();
+    // Prefix the name when it carries real signal (TimeoutError, ValidationException)
+    // rather than the SDK's generic ModelError/Error.
+    const named =
+      current.name && !/^(Error|ModelError)$/.test(current.name)
+        ? `${current.name}: ${message}`
+        : message;
+    if (message && !parts.some((p) => p.includes(message))) parts.push(named);
+    current = (current as { cause?: unknown }).cause;
+  }
+  return parts.length > 0 ? parts.join(' <- caused by: ') : 'failed';
+}
+
+/**
  * Run the full ThreatForest graph and return a status summary. Port of run_graph
  * (without the rich TUI — the server/CLI render progress from the event stream).
  */
@@ -459,7 +494,7 @@ export async function runGraph(repoPath: string, opts: RunGraphOptions = {}): Pr
   const failed: string[] = [];
   for (const nr of result.results) {
     if (nr.status === 'FAILED') {
-      failed.push(`${nr.nodeId}: ${nr.error?.message ?? 'failed'}`);
+      failed.push(`${nr.nodeId}: ${describeNodeError(nr.error)}`);
     }
   }
 
