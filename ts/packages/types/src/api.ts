@@ -175,6 +175,48 @@ export type RunState = z.infer<typeof RunStateSchema>;
 export const ProvidersResponseSchema = z.object({ providers: z.array(z.string()) });
 export type ProvidersResponse = z.infer<typeof ProvidersResponseSchema>;
 
+// --- Bedrock model discovery ------------------------------------------------
+// `GET /config/bedrock/models` enumerates invocable Bedrock models live, so the
+// Configure page's dropdown does not have to hardcode (and drift from) the
+// catalogue. See routes/bedrock-models.ts for why two AWS APIs are merged.
+
+/** Lifecycle status as reported by Bedrock's `modelLifecycle.status`. */
+export const BedrockModelLifecycle = z.enum(['ACTIVE', 'LEGACY', 'UNKNOWN']);
+export type BedrockModelLifecycleT = z.infer<typeof BedrockModelLifecycle>;
+
+export const BedrockModelSchema = z.object({
+  /** The id to put in config `bedrock.model_id` and pass to `BedrockModel`. */
+  id: z.string(),
+  /** Human label for the dropdown, e.g. "Claude Opus 4.8 (global)". */
+  label: z.string(),
+  /** Provider name, e.g. "Anthropic". "Unknown" when AWS omits it. */
+  provider: z.string(),
+  /** ACTIVE / LEGACY — LEGACY models still work but have an EOL date. */
+  lifecycle: BedrockModelLifecycle.default('UNKNOWN'),
+  /** ISO end-of-life timestamp when AWS supplies one. */
+  end_of_life: z.string().nullable().default(null),
+  /** True for cross-region inference profiles (`global.*` / `us.*` ids). */
+  is_inference_profile: z.boolean().default(false),
+  /** True when the pipeline's prompts/params are tuned for this family. */
+  recommended: z.boolean().default(false),
+});
+export type BedrockModel = z.infer<typeof BedrockModelSchema>;
+
+export const BedrockModelsResponseSchema = z.object({
+  models: z.array(BedrockModelSchema),
+  /**
+   * `live` when the list came from the Bedrock APIs, `fallback` when the call
+   * failed (no credentials / missing IAM / offline) and the static list was
+   * used instead. The UI surfaces this so an operator is never silently shown
+   * a stale catalogue.
+   */
+  source: z.enum(['live', 'fallback']),
+  /** Populated when `source === 'fallback'`, explaining what went wrong. */
+  warning: z.string().nullable().default(null),
+  region: z.string(),
+});
+export type BedrockModelsResponse = z.infer<typeof BedrockModelsResponseSchema>;
+
 export const ConfigTestRequestSchema = z.object({
   provider: z.string(),
   model_id: z.string(),

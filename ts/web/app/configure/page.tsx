@@ -4,8 +4,16 @@
  * Route "/configure" — TS/Next port of console-ui's pages/ConfigurePage.jsx.
  *
  * Model-provider / AWS credential settings plus the Langfuse tracing panel.
- * The PROVIDER_MODELS table and the config-verified localStorage signature are
- * ported verbatim from the legacy page.
+ *
+ * Bedrock model ids are discovered LIVE from `GET /api/config/bedrock/models`
+ * rather than hardcoded — the old static table had already drifted (Opus 5,
+ * Sonnet 5 and Fable 5 were invocable but unlisted). PROVIDER_MODELS below
+ * remains only for the providers that have no discovery endpoint (Anthropic
+ * direct, OpenAI, Gemini) and as the Bedrock fallback if discovery fails.
+ *
+ * The Bedrock field is an Autosuggest, not a Select: with ~113 ids you want to
+ * type-to-filter, and free text must stay possible so a brand-new model id can
+ * be entered before any catalogue lists it.
  */
 
 import { useState, useEffect } from 'react';
@@ -13,6 +21,7 @@ import ContentLayout from '@cloudscape-design/components/content-layout';
 import Form from '@cloudscape-design/components/form';
 import FormField from '@cloudscape-design/components/form-field';
 import Input from '@cloudscape-design/components/input';
+import Autosuggest, { type AutosuggestProps } from '@cloudscape-design/components/autosuggest';
 import Select, { type SelectProps } from '@cloudscape-design/components/select';
 import Button from '@cloudscape-design/components/button';
 import Flashbar, { type FlashbarProps } from '@cloudscape-design/components/flashbar';
@@ -29,12 +38,14 @@ import AppShell from '@/components/AppShell';
 import {
   getConfig,
   getProviders,
+  getBedrockModels,
   testConnection,
   saveConfig,
   getLangfuseConfig,
   saveLangfuseConfig,
   testLangfuseConnection,
 } from '@/api/client';
+import type { BedrockModel } from '@threatforest/types';
 
 interface ModelOption {
   label: string;
@@ -80,6 +91,12 @@ export default function ConfigurePage() {
   const [modelId, setModelId] = useState('');
   const [modelIdOption, setModelIdOption] = useState<SelectProps.Option | null>(null);
   const [providerOptions, setProviderOptions] = useState<SelectProps.Option[]>([]);
+  // Live-discovered Bedrock catalogue.
+  const [bedrockModels, setBedrockModels] = useState<BedrockModel[]>([]);
+  const [bedrockSource, setBedrockSource] = useState<'live' | 'fallback' | null>(null);
+  const [bedrockWarning, setBedrockWarning] = useState<string | null>(null);
+  const [loadingModels, setLoadingModels] = useState(false);
+  const [showAllProviders, setShowAllProviders] = useState(false);
   const [flashItems, setFlashItems] = useState<FlashbarProps.MessageDefinition[]>([]);
   const [testingConnection, setTestingConnection] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -159,6 +176,45 @@ export default function ConfigurePage() {
       cancelled = true;
     };
   }, []);
+
+  // Discover the Bedrock catalogue whenever Bedrock is the selected provider.
+  // Re-runs on region change because the catalogue is region-specific — a model
+  // listed in us-west-2 may not exist in eu-central-1.
+  const isBedrock = modelProvider?.value === 'AWS Bedrock';
+  useEffect(() => {
+    if (!isBedrock) return;
+    let cancelled = false;
+
+    async function loadModels() {
+      setLoadingModels(true);
+      try {
+        const data = await getBedrockModels(awsRegion ? { region: awsRegion } : {});
+        if (cancelled) return;
+        setBedrockModels(data.models);
+        setBedrockSource(data.source);
+        setBedrockWarning(data.warning);
+      } catch (err) {
+        // The endpoint degrades to a fallback list rather than failing, so
+        // reaching here means the server itself is unreachable. Surface it in
+        // the field's own status area instead of a page-level error, and leave
+        // the input usable as free text.
+        if (!cancelled) {
+          setBedrockModels([]);
+          setBedrockSource('fallback');
+          setBedrockWarning(
+            `Could not load the model list (${(err as Error).message}). You can still type a model id.`,
+          );
+        }
+      } finally {
+        if (!cancelled) setLoadingModels(false);
+      }
+    }
+
+    loadModels();
+    return () => {
+      cancelled = true;
+    };
+  }, [isBedrock, awsRegion]);
 
   const buildTestConfig = () => ({
     provider: modelProvider?.value || '',
@@ -298,6 +354,70 @@ export default function ConfigurePage() {
 
   const providerModels = modelProvider ? PROVIDER_MODELS[modelProvider.value ?? ''] || [] : [];
 
+  // Bedrock options, grouped so the models this pipeline is tuned for surface
+  // first. Non-recommended providers (Qwen, Mistral, DeepSeek, ...) are hidden
+  // behind a toggle rather than dropped: they are invocable, but the agent
+  // prompts and the temperature handling in the engine are Claude-shaped, so
+  // they tend to yield weaker threat models.
+  const bedrockOptions: AutosuggestProps.Options = (() => {
+    const visible = showAllProviders ? bedrockModels : bedrockModels.filter((m) => m.recommended);
+    const describe = (m: BedrockModel): string => {
+      const bits: string[] = [m.provider];
+      if (m.is_inference_profile) bits.push('cross-region');
+      if (m.lifecycle === 'LEGACY') {
+        const when = m.end_of_life ? ` — EOL ${m.end_of_life.slice(0, 10)}` : '';
+        bits.push(`LEGACY${when}`);
+      }
+      return bits.join(' · ');
+    };
+    // Group by "recommended" so a long list stays scannable while typing.
+    if (showAllProviders) {
+      const rec = visible.filter((m) => m.recommended);
+      const other = visible.filter((m) => !m.recommended);
+      const groups: AutosuggestProps.OptionGroup[] = [];
+      if (rec.length > 0) {
+        groups.push({
+          label: 'Recommended (Anthropic / Amazon)',
+          options: rec.map((m) => ({ value: m.id, description: describe(m) })),
+        });
+      }
+      if (other.length > 0) {
+        groups.push({
+          label: 'Other providers',
+          options: other.map((m) => ({ value: m.id, description: describe(m) })),
+        });
+      }
+      return groups;
+    }
+    return visible.map((m) => ({ value: m.id, description: describe(m) }));
+  })();
+
+  // Warn when the chosen id is on its way out — the whole point of reading
+  // lifecycle from the API instead of hardcoding a list.
+  const selectedBedrockModel = bedrockModels.find((m) => m.id === modelId) ?? null;
+  const bedrockFieldStatus = ((): { type: 'error' | 'warning' | 'info'; text: string } | null => {
+    if (!isBedrock) return null;
+    if (loadingModels) return { type: 'info', text: 'Loading models from Bedrock…' };
+    if (bedrockWarning) return { type: 'warning', text: bedrockWarning };
+    if (selectedBedrockModel?.lifecycle === 'LEGACY') {
+      const when = selectedBedrockModel.end_of_life
+        ? ` It reaches end of life on ${selectedBedrockModel.end_of_life.slice(0, 10)}.`
+        : '';
+      return {
+        type: 'warning',
+        text: `${selectedBedrockModel.id} is marked LEGACY by Bedrock.${when}`,
+      };
+    }
+    if (bedrockSource === 'live') {
+      const shown = showAllProviders ? bedrockModels.length : bedrockOptions.length;
+      return {
+        type: 'info',
+        text: `${shown} of ${bedrockModels.length} models available in ${awsRegion || 'the default region'}.`,
+      };
+    }
+    return null;
+  })();
+
   return (
     <AppShell
       activePage="/configure"
@@ -358,8 +478,58 @@ export default function ConfigurePage() {
                         placeholder="Select a provider"
                       />
                     </FormField>
-                    <FormField label="Model ID">
-                      {modelProvider && providerModels.length > 0 ? (
+                    <FormField
+                      label="Model ID"
+                      description={
+                        isBedrock
+                          ? 'Type to search the live Bedrock catalogue, or enter any model id directly.'
+                          : undefined
+                      }
+                      {...(bedrockFieldStatus?.type === 'warning'
+                        ? { warningText: bedrockFieldStatus.text }
+                        : {})}
+                      {...(bedrockFieldStatus?.type === 'info'
+                        ? { constraintText: bedrockFieldStatus.text }
+                        : {})}
+                      secondaryControl={
+                        isBedrock ? (
+                          <Button
+                            iconName="refresh"
+                            loading={loadingModels}
+                            ariaLabel="Refresh the Bedrock model list"
+                            onClick={() => {
+                              setLoadingModels(true);
+                              getBedrockModels({
+                                ...(awsRegion ? { region: awsRegion } : {}),
+                                refresh: true,
+                              })
+                                .then((data) => {
+                                  setBedrockModels(data.models);
+                                  setBedrockSource(data.source);
+                                  setBedrockWarning(data.warning);
+                                })
+                                .catch((err: Error) => setBedrockWarning(err.message))
+                                .finally(() => setLoadingModels(false));
+                            }}
+                          />
+                        ) : undefined
+                      }
+                    >
+                      {isBedrock ? (
+                        // Autosuggest (not Select): free text stays valid, so a
+                        // model id newer than the catalogue can still be entered.
+                        <Autosuggest
+                          value={modelId}
+                          onChange={({ detail }) => setModelId(detail.value)}
+                          options={bedrockOptions}
+                          enteredTextLabel={(value) => `Use "${value}"`}
+                          placeholder="Search or type a Bedrock model id"
+                          loadingText="Loading models…"
+                          statusType={loadingModels ? 'loading' : 'finished'}
+                          empty="No matching models — the id can still be typed in full."
+                          filteringType="auto"
+                        />
+                      ) : modelProvider && providerModels.length > 0 ? (
                         <Select
                           selectedOption={modelIdOption}
                           onChange={({ detail }) => {
@@ -381,6 +551,15 @@ export default function ConfigurePage() {
                       )}
                     </FormField>
                   </ColumnLayout>
+                  {isBedrock && (
+                    <Toggle
+                      checked={showAllProviders}
+                      onChange={({ detail }) => setShowAllProviders(detail.checked)}
+                    >
+                      Include non-Anthropic providers (Qwen, Mistral, DeepSeek, …) — invocable, but
+                      the pipeline&apos;s prompts are tuned for Claude
+                    </Toggle>
+                  )}
                   <ColumnLayout columns={2}>
                     <FormField label="AWS Profile">
                       <Input

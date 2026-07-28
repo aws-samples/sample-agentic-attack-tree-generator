@@ -23,6 +23,7 @@ import type {
   MitigationOverride,
   MitigationStatusT,
   ProvidersResponse,
+  BedrockModelsResponse,
   ResumeResponse,
   RunConfig,
   RunResponse,
@@ -334,6 +335,24 @@ export async function getProviders(): Promise<ProvidersResponse> {
 /** GET /api/config/frameworks → { frameworks: { key: { name, description } } } */
 export async function getFrameworks(): Promise<FrameworksResponse> {
   return request<FrameworksResponse>('/api/config/frameworks');
+}
+
+/**
+ * GET /api/config/bedrock/models → the live Bedrock catalogue.
+ *
+ * Never rejects for an expected failure (no credentials, missing IAM, offline):
+ * the server answers with `source: 'fallback'` plus a warning instead, so the
+ * Configure page always has something to show.
+ */
+export async function getBedrockModels(opts: {
+  region?: string;
+  refresh?: boolean;
+} = {}): Promise<BedrockModelsResponse> {
+  const params = new URLSearchParams();
+  if (opts.region) params.set('region', opts.region);
+  if (opts.refresh) params.set('refresh', 'true');
+  const qs = params.toString();
+  return request<BedrockModelsResponse>(`/api/config/bedrock/models${qs ? `?${qs}` : ''}`);
 }
 
 /** POST /api/config/test → { success, message } */

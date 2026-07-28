@@ -16,6 +16,7 @@ import { RunManager } from './run-manager.js';
 import { createOrchestratorExecutor } from './executor.js';
 import { runsRouter, setRunManager } from './routes/runs.js';
 import { applicationsRouter } from './routes/applications.js';
+import { bedrockModelsRouter } from './routes/bedrock-models.js';
 import { configRouter } from './routes/config.js';
 import { filesystemRouter } from './routes/filesystem.js';
 import { importsRouter } from './routes/imports.js';
@@ -96,6 +97,7 @@ export function createApp(options: CreateAppOptions = {}): Express {
   // API routers — mounted under /api.
   app.use('/api', applicationsRouter);
   app.use('/api', configRouter);
+  app.use('/api', bedrockModelsRouter);
   app.use('/api', filesystemRouter);
   app.use('/api', importsRouter);
   app.use('/api', runsRouter);
