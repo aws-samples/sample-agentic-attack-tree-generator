@@ -33,23 +33,26 @@ The Python ML service lives at `../src/ml_service` (`python -m ml_service`).
 ```
 Next.js UI ──HTTP /api  +  WS /ws──▶ TS server ──▶ engine graph (Strands TS SDK)
  (static export)                                         │
-                                                         ▼  in-process
-                                       TTP matching: transformers.js + ATTACK-BERT
-                                       ONNX + STIX vector search  (pure TS)
+                                                         ▼  HTTP :8770
+                                       TTP matching: Python ML service
+                                       (embeddings + STIX vector search)
 ```
 
-- **ML runs in-process (pure TS), by default.** The TTP stage embeds attack
-  steps with `transformers.js` running a converted ATTACK-BERT ONNX model
-  (mpnet, 768-dim, mean pooling) and does STIX cosine search in TS — no Python
-  process. Numerically faithful to the Python pipeline: top-1 MITRE techniques
-  match exactly (T1530 / T1548 / T1566 verified), JS cosine 0.4860 == Python
-  0.48597. One-time setup: `npm run convert-model` (PyTorch→ONNX; output
-  gitignored under `ts/models/`), or host the ONNX on HuggingFace and set
-  `TF_ATTACK_BERT_HF`.
-- **Python ML service kept as a fallback.** `src/ml_service` still works; set
-  `TF_USE_PYTHON_ML=1` (or `TF_ML_URL` with no local model) to route TTP
-  matching through it instead of the in-process embedder. Backend selection
-  lives in `packages/engine/src/ml/index.ts`.
+- **The pipeline is TypeScript.** Agents, orchestration, server, CLI and UI are
+  all TS; there is no second implementation and no switch between them.
+- **Embeddings / TTP matching run in the Python ML service** (`src/ml_service`,
+  `python -m ml_service`, binds `127.0.0.1:8770`). This is the *only* backend.
+  It is Python because it is the implementation that honours `embeddings.model`,
+  so alternative embedders — e.g. ThreatBERT, which outperforms ATTACK-BERT on
+  TTP mapping — can be configured and used. Override the endpoint with
+  `TF_ML_URL` or `TF_ML_PORT`.
+- **The service is mandatory.** `runGraph` pre-flights it and refuses to start
+  when it is unreachable, rather than emitting a "complete" threat model with
+  silently missing attack paths (every per-threat match would otherwise throw and
+  be swallowed into an empty result). A transformers.js in-process embedder was
+  tried and removed: it ignored `embeddings.model` and could only load an
+  ATTACK-BERT ONNX conversion, so configuring any other model silently produced
+  wrong TTP mappings.
 - **Providers.** The Strands TS SDK is first-class for **Bedrock, Anthropic,
   OpenAI, and Gemini**. The legacy Python config also supported Ollama, LiteLLM,
   SageMaker, and LlamaAPI — those are **not** first-class in the TS build. Reach
@@ -64,17 +67,13 @@ npm install
 npm run dev                  # Python ML service (:8770) + TS server (:8000) + Next UI (:3000)
 ```
 
-`npm run dev` runs the whole stack in one command. Embeddings use the **Python
-ML service** by default (it's started for you via the repo `.venv`; override the
-interpreter with `TF_PYTHON=…`). Open http://localhost:3000.
+`npm run dev` runs the whole stack in one command, including the **Python ML
+service** (started for you via the repo `.venv`; override the interpreter with
+`TF_PYTHON=…`). Open http://localhost:3000.
 
-Variants:
-- `npm run dev:no-ml` — server + UI only (point `TF_ML_URL` at an ML service you
-  run separately, or opt into the in-process TS embedder, below).
-- **In-process TS embeddings (opt-in):** `npm run convert-model` once (ATTACK-BERT
-  → ONNX into `ts/models/`, needs the repo `.venv`), then run with
-  `TF_USE_PYTHON_ML=0` — no Python ML service needed. Proven at top-1 parity with
-  the Python matcher.
+The ML service is required — if you run the server on its own
+(`npm run dev:server`), point `TF_ML_URL` at a service you started separately, or
+runs will refuse to start.
 
 Other commands:
 - `npm run build` — build all packages + the Next static export (`web/out`).

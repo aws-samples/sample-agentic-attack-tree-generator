@@ -11,15 +11,13 @@
     "node": ">=20"
   },
   "scripts": {
-    "convert-model": "bash scripts/convert-model.sh",
-    "build:packages": "npm run build -w @threatforest/types && tsc -b packages/engine packages/server packages/cli",
+    "build:packages": "npm run build -w @threatforest/types && tsc -b packages/engine packages/server packages/cli packages/mcp-server",
     "build:web": "npm run build -w @threatforest/web",
     "build": "npm run build:packages && npm run build:web",
     "dev:ml": "cd .. && ${TF_PYTHON:-.venv/bin/python} -m ml_service",
     "dev:server": "node --import tsx/esm packages/server/src/main.ts",
     "dev:web": "npm run dev -w @threatforest/web",
     "dev": "concurrently -n ml,server,web -c magenta,blue,green \"npm:dev:ml\" \"npm:dev:server\" \"npm:dev:web\"",
-    "dev:no-ml": "concurrently -n server,web -c blue,green \"npm:dev:server\" \"npm:dev:web\"",
     "start": "npm run build && npm run start -w @threatforest/server",
     "typecheck": "tsc -b --pretty",
     "test": "node --import tsx/esm --test \"packages/engine/src/**/*.test.ts\"",

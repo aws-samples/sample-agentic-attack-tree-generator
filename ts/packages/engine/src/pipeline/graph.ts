@@ -387,46 +387,17 @@ export async function runGraph(repoPath: string, opts: RunGraphOptions = {}): Pr
   // outage makes every per-threat match throw and be swallowed into an empty
   // result, producing a "complete" run with silently-missing attack paths —
   // dangerous for a security tool. Fail fast with a clear, actionable message.
-  const { mlHealthCheck, mlServiceRequired } = await import('../ml/index.js');
-  if (mlServiceRequired() && !(await mlHealthCheck())) {
+  const { mlHealthCheck } = await import('../ml/index.js');
+  if (!(await mlHealthCheck())) {
     return {
       status: 'failed',
       output_dir: resolveOutputDir(repoPath, opts.runDir),
       completed_nodes: [],
       error:
-        'The Python ML service (TTP-mapping backend) is not reachable. Start it ' +
-        '(e.g. `python -m ml_service`) or set TF_USE_PYTHON_ML=0 to use the ' +
-        'in-process embedder, then retry. Aborting to avoid an incomplete threat model.',
+        'The Python ML service (TTP-mapping backend) is not reachable. Start it with ' +
+        '`python -m ml_service` (it binds 127.0.0.1:8770; override with TF_ML_URL or ' +
+        'TF_ML_PORT), then retry. Aborting to avoid an incomplete threat model.',
     };
-  }
-
-  // Pre-flight (in-process embedder path): the TS embedder only loads an
-  // ATTACK-BERT ONNX conversion and ignores `embeddings.model`. If config asks
-  // for a different model, refuse HERE rather than letting it run — a per-threat
-  // throw would be caught in stages/parallel.ts and degrade into a "complete"
-  // run with silently-empty TTP mappings, and continuing would either match
-  // queries against another model's corpus (wrong techniques, no artifact) or
-  // overwrite that corpus with wrong-model vectors. Same rationale as the
-  // ML-service gate above: fail loudly at the boundary.
-  if (!mlServiceRequired()) {
-    const { embedderSupportsModel, actualEmbeddingModel } = await import('../ml/embedder.js');
-    const { config } = await import('../config.js');
-    const configured = config.embeddingsModel;
-    if (!embedderSupportsModel(configured)) {
-      return {
-        status: 'failed',
-        output_dir: resolveOutputDir(repoPath, opts.runDir),
-        completed_nodes: [],
-        error:
-          `Embeddings model mismatch: config requests embeddings.model="${configured}", but ` +
-          `the in-process TS embedder loads "${actualEmbeddingModel() ?? '(none found)'}". ` +
-          'Refusing to run, because the mismatch would silently produce wrong TTP mappings. ' +
-          'Either set embeddings.model to the ATTACK-BERT conversion the TS embedder supports, ' +
-          'or unset TF_USE_PYTHON_ML to use the Python ML backend, which honours the ' +
-          'configured model. (transformers.js needs an onnx/model.onnx — a PyTorch ' +
-          'model.safetensors alone is not loadable.)',
-      };
-    }
   }
 
   const outputDir = resolveOutputDir(repoPath, opts.runDir);
