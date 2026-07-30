@@ -96,8 +96,19 @@ any AI agent (Claude Code, Cursor, Kiro, or any MCP client) can call.
 cd ts
 npm install
 npm run build:packages       # builds all packages including mcp-server
-npm run convert-model        # one-time: ATTACK-BERT PyTorch → ONNX (needs .venv)
 ```
+
+Embeddings run through the **Python ML service**, which is the supported backend
+(it honours `embeddings.model`, so alternative embedders such as ThreatBERT work).
+Start it before using the MCP server:
+
+```bash
+python -m ml_service            # binds 127.0.0.1:8770
+```
+
+The engine pre-flights this service and refuses to start a run when it is
+unreachable, rather than producing a "complete" threat model with silently
+missing attack paths.
 
 ### Add to Claude Code
 
@@ -111,16 +122,14 @@ Add to `~/.claude.json` (global) or `.claude/mcp.json` (project-local):
       "args": [
         "/absolute/path/to/ts/packages/mcp-server/dist/main.js",
         "/absolute/path/to/repo-root"
-      ],
-      "env": {
-        "TF_USE_PYTHON_ML": "0"
-      }
+      ]
     }
   }
 }
 ```
 
 The second arg points to the repo root (where `.threatforest/config.yaml` lives).
+No `env` block is needed — the engine defaults to the Python ML service.
 
 ### Tools
 

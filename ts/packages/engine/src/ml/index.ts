@@ -1,19 +1,23 @@
 /**
  * Unified TTP-matching entry point.
  *
- * Selects between in-process TS embedding (transformers.js + converted
- * ATTACK-BERT ONNX) and the Python ML service (WS-1, kept as a fallback), so the
- * pipeline stages don't care which backend runs. Selection:
+ * Selects between the Python ML service (src/ml_service) and the in-process TS
+ * embedder (transformers.js + a converted ATTACK-BERT ONNX), so the pipeline
+ * stages don't care which backend runs. Selection is a single switch:
  *
- *   1. TF_USE_PYTHON_ML=1            → force the Python service (MlServiceClient).
- *   2. TF_ML_URL set (and not =1 off) → use the Python service if a local model
- *                                       isn't available.
- *   3. local converted model present → in-process TS (default, no service needed).
- *   4. otherwise                     → in-process TS, which will try a remote HF
- *                                       load and otherwise instruct the user to
- *                                       run `npm run convert-model`.
+ *   TF_USE_PYTHON_ML=0  → in-process TS embedder.
+ *   anything else/unset → the Python ML service  (THE DEFAULT).
  *
- * The default (no env) is pure-TS in-process, so `npm run dev` needs no Python.
+ * The Python service is the supported backend and is deliberately kept: it is
+ * the only one that honours `embeddings.model`, so alternative embedders (e.g.
+ * ThreatBERT) work there. The TS embedder ignores that setting and only ever
+ * loads an ATTACK-BERT conversion — configuring any other model while it is
+ * active is refused up front (see ml/embedder.ts embedderSupportsModel and the
+ * pre-flight in pipeline/graph.ts) because the mismatch would otherwise produce
+ * wrong TTP mappings silently.
+ *
+ * Consequence: `npm run dev` and the MCP server DO need `python -m ml_service`
+ * running unless TF_USE_PYTHON_ML=0 is set explicitly.
  */
 import type { StepMatch } from '@threatforest/types';
 import { matchStepsInProcess } from './matcher.js';
