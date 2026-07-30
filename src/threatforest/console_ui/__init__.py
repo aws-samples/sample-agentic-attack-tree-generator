@@ -1,1 +1,0 @@
-"""Bundled console UI static files."""
