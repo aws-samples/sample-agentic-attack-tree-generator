@@ -400,6 +400,35 @@ export async function runGraph(repoPath: string, opts: RunGraphOptions = {}): Pr
     };
   }
 
+  // Pre-flight (in-process embedder path): the TS embedder only loads an
+  // ATTACK-BERT ONNX conversion and ignores `embeddings.model`. If config asks
+  // for a different model, refuse HERE rather than letting it run — a per-threat
+  // throw would be caught in stages/parallel.ts and degrade into a "complete"
+  // run with silently-empty TTP mappings, and continuing would either match
+  // queries against another model's corpus (wrong techniques, no artifact) or
+  // overwrite that corpus with wrong-model vectors. Same rationale as the
+  // ML-service gate above: fail loudly at the boundary.
+  if (!mlServiceRequired()) {
+    const { embedderSupportsModel, actualEmbeddingModel } = await import('../ml/embedder.js');
+    const { config } = await import('../config.js');
+    const configured = config.embeddingsModel;
+    if (!embedderSupportsModel(configured)) {
+      return {
+        status: 'failed',
+        output_dir: resolveOutputDir(repoPath, opts.runDir),
+        completed_nodes: [],
+        error:
+          `Embeddings model mismatch: config requests embeddings.model="${configured}", but ` +
+          `the in-process TS embedder loads "${actualEmbeddingModel() ?? '(none found)'}". ` +
+          'Refusing to run, because the mismatch would silently produce wrong TTP mappings. ' +
+          'Either set embeddings.model to the ATTACK-BERT conversion the TS embedder supports, ' +
+          'or unset TF_USE_PYTHON_ML to use the Python ML backend, which honours the ' +
+          'configured model. (transformers.js needs an onnx/model.onnx — a PyTorch ' +
+          'model.safetensors alone is not loadable.)',
+      };
+    }
+  }
+
   const outputDir = resolveOutputDir(repoPath, opts.runDir);
   const graph = await buildGraph(repoPath, opts);
 

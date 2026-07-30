@@ -10,7 +10,12 @@
  */
 import { readFileSync, writeFileSync, existsSync, statSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
-import { getBatchEmbeddings, DEFAULT_MODEL_NAME, EMBEDDING_DIM } from './embedder.js';
+import {
+  getBatchEmbeddings,
+  actualEmbeddingModel,
+  DEFAULT_MODEL_NAME,
+  EMBEDDING_DIM,
+} from './embedder.js';
 
 export interface TechniqueNode {
   id: string;
@@ -123,11 +128,40 @@ export async function buildFromStix(
 
   return {
     techniques: nodes,
-    embedding_model: DEFAULT_MODEL_NAME,
+    // Stamp the model the embedder ACTUALLY loaded, not a hardcoded constant —
+    // otherwise a cache can be labelled with a model that did not produce its
+    // vectors. Falls back to the constant when nothing is resolvable.
+    embedding_model: actualEmbeddingModel() ?? DEFAULT_MODEL_NAME,
     embedding_dim: EMBEDDING_DIM,
     created_at: new Date(0).toISOString(), // stamped by caller if needed; deterministic default
     stix_version: stixVersion(bundle),
   };
+}
+
+/**
+ * Thrown when a graph cache on disk was built by a different embedding model
+ * than the one now loaded, so rebuilding it in place would overwrite that
+ * model's vectors. A typed error (not a message prefix) so callers can branch
+ * on it reliably.
+ */
+export class GraphModelMismatchError extends Error {
+  readonly graphPath: string;
+  readonly existingModel: string;
+  readonly actualModel: string;
+  constructor(graphPath: string, existingModel: string, actualModel: string) {
+    super(
+      `Refusing to overwrite the graph cache at ${graphPath}: it was built with ` +
+        `embedding model "${existingModel}", but the in-process TS embedder loads ` +
+        `"${actualModel}". Rebuilding would replace those vectors in place and ` +
+        `silently change TTP-matching results. Set embeddings.model to a model the ` +
+        `TS embedder can load, or run the Python ML backend (unset TF_USE_PYTHON_ML), ` +
+        `which honours the configured model.`,
+    );
+    this.name = 'GraphModelMismatchError';
+    this.graphPath = graphPath;
+    this.existingModel = existingModel;
+    this.actualModel = actualModel;
+  }
 }
 
 /** Load/save the JSON graph cache. Port of GraphStore. */
@@ -162,8 +196,28 @@ export async function getOrBuildGraph(opts: {
   forceRebuild?: boolean;
 }): Promise<MitreGraph> {
   const { graphPath, stixBundlePath, sourceName, killChainName, forceRebuild } = opts;
-  if (!forceRebuild && !isStale(graphPath, stixBundlePath, DEFAULT_MODEL_NAME)) {
+  const actualModel = actualEmbeddingModel() ?? DEFAULT_MODEL_NAME;
+  if (!forceRebuild && !isStale(graphPath, stixBundlePath, actualModel)) {
     return loadGraph(graphPath);
+  }
+  // Defence in depth: never overwrite a cache that was built by a DIFFERENT
+  // embedding model. The cache filename is derived from the CONFIGURED model
+  // (matcher.ts) while this embedder only loads ATTACK-BERT, so without this
+  // guard a rebuild would write ATTACK-BERT vectors over (say) a ThreatBERT
+  // cache, under the ThreatBERT filename — silently corrupting an artifact that
+  // is also read by the Python/eval path. `forceRebuild` is the explicit opt-in
+  // for regenerating a differently-stamped cache on purpose.
+  if (!forceRebuild && existsSync(graphPath)) {
+    let existingModel: string | null = null;
+    try {
+      existingModel = loadGraph(graphPath).embedding_model ?? null;
+    } catch {
+      // Unparseable cache: fall through to rebuild (nothing valid to protect).
+      existingModel = null;
+    }
+    if (existingModel !== null && existingModel !== actualModel) {
+      throw new GraphModelMismatchError(graphPath, existingModel, actualModel);
+    }
   }
   const graph = await buildFromStix(stixBundlePath, sourceName, killChainName);
   saveGraph(graphPath, graph);
