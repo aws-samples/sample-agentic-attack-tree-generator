@@ -218,3 +218,7 @@ paper-threatbert/
 models/
 eval/
 THREATBERT_USAGE.md
+
+# Local demo runbook: contains absolute paths with a developer username and
+# references to internal-only auth tooling (mwinit/Midway). Never publish.
+DEMO.md
