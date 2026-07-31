@@ -145,6 +145,10 @@ interface RunEvent {
     threat_id?: string;
     app_id?: string;
     low_confidence?: boolean;
+    /** Terminal outcome on the `run_complete` sentinel: complete | failed | stopped. */
+    status?: string;
+    /** Failure reason, present on `error` and on a failed `run_complete`. */
+    error?: string;
   };
 }
 
@@ -637,6 +641,42 @@ function RunProgressBody({ runId }: { runId: string }) {
           break;
         }
 
+        // Terminal sentinel, emitted for EVERY terminal state. Previously this
+        // had no case at all, so a failed run fell through to `default` and the
+        // page changed nothing — it just looked stuck at the stage that died.
+        // `details.status` carries the real outcome, so a client that only sees
+        // this frame (history replay after a reconnect, where the separate
+        // `error` event may already have scrolled past) still reports failure.
+        case 'run_complete': {
+          const outcome = details?.status || '';
+          if (outcome === 'failed') {
+            const errMsg =
+              details?.error || errorMessage || 'The run failed without reporting a reason.';
+            setErrorMessage(errMsg);
+            setScanStatus('failed');
+            setShowInterviewer(false);
+            setShowThreatReview(false);
+            // Mark whichever stage was still in flight as failed, so the
+            // pipeline view doesn't leave a spinner running forever.
+            setStages((prev) =>
+              prev.map((s) =>
+                s.status === 'in-progress'
+                  ? { ...s, status: 'failed' as StageStatus, statusText: errMsg, errorMessage: errMsg }
+                  : s,
+              ),
+            );
+            appendActivity(`Run failed: ${errMsg}`, 'error');
+          } else if (outcome === 'stopped') {
+            setScanStatus('stopped');
+            setShowInterviewer(false);
+            setShowThreatReview(false);
+          }
+          break;
+        }
+
+        // The executor emits this when the pipeline itself fails. It had no case
+        // either, so it was silently dropped; treat it exactly like `error`.
+        case 'run_failed':
         case 'error': {
           const errMsg = message || 'An unknown error occurred.';
           setErrorMessage(errMsg);
