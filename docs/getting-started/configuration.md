@@ -14,7 +14,7 @@ The primary way to configure ThreatForest is through the **Configure** page in t
 For CLI-based setup:
 
 ```bash
-threatforest config init
+npx threatforest config init
 ```
 
 This creates `.threatforest/config.yaml` with sensible defaults and opens a wizard to set your provider credentials.
@@ -25,17 +25,17 @@ This creates `.threatforest/config.yaml` with sensible defaults and opens a wiza
 
 | Command | Description |
 |---|---|
-| `threatforest config init` | Create config file (first-time setup) |
-| `threatforest config show` | Print current configuration |
-| `threatforest config edit` | Edit config interactively |
-| `threatforest config set <key> <value>` | Set a single value |
-| `threatforest config path` | Show path to active config file |
+| `npx threatforest config init` | Create config file (first-time setup) |
+| `npx threatforest config show` | Print current configuration |
+| `npx threatforest config edit` | Edit config interactively |
+| `npx threatforest config set <key> <value>` | Set a single value |
+| `npx threatforest config path` | Show path to active config file |
 
 **Example:**
 
 ```bash
-threatforest config set bedrock.model_id us.anthropic.claude-sonnet-4-5-v1:0
-threatforest config set bedrock.region_name us-east-1
+npx threatforest config set bedrock.model_id us.anthropic.claude-sonnet-4-5-v1:0
+npx threatforest config set bedrock.region_name us-east-1
 ```
 
 ---
@@ -144,10 +144,10 @@ Langfuse provides observability — traces, SME review queues, and dataset expor
 
 ```bash
 # Interactive setup
-threatforest config langfuse
+npx threatforest config langfuse
 
 # Or set directly
-threatforest config langfuse --enable --public-key pk-lf-... --secret-key sk-lf-... --test
+npx threatforest config langfuse --enable --public-key pk-lf-... --secret-key sk-lf-... --test
 ```
 
 See [Evaluation & Optimization](../user-guide/evaluation-with-langfuse.md) for the full workflow.

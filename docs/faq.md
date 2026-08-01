@@ -103,7 +103,7 @@ Yes! ThreatForest supports multiple providers:
 - **OpenAI** - Direct API access
 - **Google Gemini** - Direct API access
 
-Configure via `threatforest config init` or the **Configure** page in the web console. See [Configuration](getting-started/configuration.md).
+Configure via `npx threatforest config init` or the **Configure** page in the web console. See [Configuration](getting-started/configuration.md).
 
 ---
 
@@ -212,12 +212,18 @@ This helps you understand attacks in standardized terminology and plan defenses 
 ### Error: 'externally-managed-environment'
 
 !!! question "Problem"
-    Python prevents system-wide pip installs
+    Python refuses a system-wide `pip install` when setting up the ML service dependencies.
 
-**Solution:** Use pipx instead:
+**Solution:** Install into a virtual environment rather than system Python. `uv` does this for you:
 
 ```bash
-pipx install -e .
+uv sync
+```
+
+Or explicitly:
+
+```bash
+python3 -m venv .venv && .venv/bin/pip install .
 ```
 
 ### Error: 'Bedrock access failed'
@@ -339,7 +345,7 @@ aws bedrock list-foundation-models --region us-east-1
 ```bash
 # Delete state directory and restart
 rm -rf project/.threatforest/state/
-threatforest run --project-path ./project
+npx threatforest run --project-path ./project
 ```
 
 ### Manual Recovery: Partial Results
@@ -354,7 +360,7 @@ threatforest run --project-path ./project
 ls project/.threatforest/state/
 
 # Restart the run
-threatforest run --project-path ./project
+npx threatforest run --project-path ./project
 ```
 
 ### Can I customize the output format?
