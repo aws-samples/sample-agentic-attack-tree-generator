@@ -9,8 +9,11 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Status](https://img.shields.io/badge/status-beta-orange.svg)](https://github.com/aws-samples/sample-agentic-attack-tree-generator)
+[![arXiv](https://img.shields.io/badge/arXiv-2607.27528-b31b1b.svg)](https://arxiv.org/abs/2607.27528)
 
-[Documentation](https://aws-samples.github.io/sample-agentic-attack-tree-generator/) • [Getting Started](https://aws-samples.github.io/sample-agentic-attack-tree-generator/getting-started/) • [Contributing](CONTRIBUTING.md)
+[Documentation](https://aws-samples.github.io/sample-agentic-attack-tree-generator/) • [Getting Started](https://aws-samples.github.io/sample-agentic-attack-tree-generator/getting-started/) • [Paper](https://arxiv.org/abs/2607.27528) • [Contributing](CONTRIBUTING.md)
+
+📄 **Read the paper:** [*ThreatForest: Multi-Agent Attack Tree Generation with Pluggable TTP Framework Mapping*](https://arxiv.org/abs/2607.27528) (arXiv:2607.27528)
 
 </div>
 
@@ -43,11 +46,23 @@ Built for **security teams, architects, and DevSecOps engineers** who want to br
 ## Quick Start
 
 ```bash
-# Clone and run with uv (recommended)
 git clone https://github.com/aws-samples/sample-agentic-attack-tree-generator.git
 cd sample-agentic-attack-tree-generator
-uv run threatforest
+
+# 1. Embeddings / MITRE TTP matching run in a small Python service
+uv sync
+uv run python -m ml_service          # binds 127.0.0.1:8770 — leave running
+
+# 2. The pipeline, API, CLI and UI are TypeScript
+cd ts
+npm install
+npm run dev                          # ML service + API (:8000) + UI (:3000)
 ```
+
+Then open <http://localhost:3000>.
+
+> The Python ML service is required — the engine pre-flights it and refuses to start a run when it is
+> unreachable, rather than producing a threat model with silently missing attack paths.
 
 See the [Getting Started guide](https://aws-samples.github.io/sample-agentic-attack-tree-generator/getting-started/) for full installation options and configuration.
 
@@ -81,6 +96,23 @@ From a repository path to a fully mapped attack tree in a single run. For a deep
     <img alt="Star history chart for aws-samples/sample-agentic-attack-tree-generator" src="https://api.star-history.com/svg?repos=aws-samples/sample-agentic-attack-tree-generator&type=Date">
   </picture>
 </a>
+
+## Citation
+
+ThreatForest is described in [*ThreatForest: Multi-Agent Attack Tree Generation with Pluggable TTP
+Framework Mapping*](https://arxiv.org/abs/2607.27528). If you use it in your research, please cite:
+
+```bibtex
+@misc{leo2026threatforest,
+  title         = {ThreatForest: Multi-Agent Attack Tree Generation with Pluggable TTP Framework Mapping},
+  author        = {Leo, Cristian and Dykyi, Anton and Cortegaca, Danny and Begimher, Daniel and Jha, Prakash},
+  year          = {2026},
+  eprint        = {2607.27528},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CR},
+  url           = {https://arxiv.org/abs/2607.27528}
+}
+```
 
 ## License
 

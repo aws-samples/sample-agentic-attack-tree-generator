@@ -98,6 +98,7 @@ import { z } from 'zod';
 
 import { config } from '../config.js';
 import { createModel } from '../providers.js';
+import { makeRetryStrategy } from '../retry.js';
 import { makeSandboxedFileRead } from '../tools/sandboxed-file.js';
 import { traceAttrs } from '../tracing.js';
 import { LocalFilesystemWorkspace, resolveStateDir } from '../workspace.js';
@@ -581,6 +582,7 @@ export function createInterviewerAgent(
       systemPrompt,
       tools: [makeSandboxedFileRead([repoPath, stateDir]), askUser, finalizeInterview],
       printer: false,
+      retryStrategy: makeRetryStrategy(),
       traceAttributes: traceAttrs('interviewer'),
     });
   })();

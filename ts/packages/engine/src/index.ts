@@ -13,10 +13,14 @@ export {
 } from './pipeline/graph.js';
 export { config, Config, FRAMEWORKS } from './config.js';
 export { createModel, activeProvider, type SupportedProvider } from './providers.js';
+// Retry policy for transient Bedrock failures. Every Agent in the pipeline is
+// constructed with `retryStrategy: makeRetryStrategy()`; see retry.ts for why the
+// SDK's default is not sufficient on its own.
+export { makeRetryStrategy, TransientBedrockRetryStrategy } from './retry.js';
 export { MlServiceClient } from './ml-client.js';
-// TTP matching: in-process TS embedding (transformers.js + ATTACK-BERT ONNX) by
-// default, Python ML service as fallback. See ml/index.ts for backend selection.
-export { matchSteps, matchStepsInProcess, getEmbedding, localModelAvailable } from './ml/index.js';
+// TTP matching runs in the Python ML service (`python -m ml_service`) — the only
+// backend, because it is the one that honours `embeddings.model`. See ml/index.ts.
+export { matchSteps, mlHealthCheck } from './ml/index.js';
 export {
   LocalFilesystemWorkspace,
   resolveStateDir,

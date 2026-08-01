@@ -15,8 +15,13 @@
  * client, forcing SigV4. A non-empty value is left untouched (it may be a real
  * bearer token the user intends to use).
  */
-import { BedrockModel, type Model } from '@strands-agents/sdk';
+import { type Model } from '@strands-agents/sdk';
 import type { Config } from './config.js';
+import {
+  TemperatureFallbackBedrockModel,
+  hasObservedTemperatureDeprecation,
+  modelDeprecatesTemperature,
+} from './temperature.js';
 
 export type SupportedProvider = 'bedrock' | 'anthropic' | 'openai' | 'gemini';
 
@@ -24,6 +29,28 @@ export interface CreateModelOptions {
   temperature?: number;
   maxTokens?: number;
 }
+
+/**
+ * Per-request inactivity budget for Bedrock streaming calls, in ms.
+ *
+ * The SDK defaults this to 120s. Bedrock runs over HTTP/2, where the AWS
+ * transport turns `requestTimeout` into `clientHttp2Stream.setTimeout` — an
+ * INACTIVITY timer, i.e. the gap allowed between streamed chunks, not a cap on
+ * total call duration.
+ *
+ * That default is too tight for this pipeline. The agents send large system
+ * prompts and ask for long structured outputs, and a strong reasoning model can
+ * legitimately go quiet for minutes before its first content chunk while it
+ * thinks. Measured on the scanner agent with claude-opus-5: one call streamed
+ * happily for 286s (max gap 1.4s) while another emitted 5 chunks and then went
+ * silent past 120s. The transport `close()`d that stream, so it ended with no
+ * `messageStop` and the SDK raised the maddeningly generic "Stream ended without
+ * completing a message" — with the underlying TimeoutError swallowed.
+ *
+ * 15 minutes of *silence* is far beyond any healthy call (the observed worst gap
+ * was ~1.4s) while still bounding a genuinely hung connection.
+ */
+const BEDROCK_STREAM_INACTIVITY_TIMEOUT_MS = 900_000;
 
 function bedrockAuthSanityHint(): void {
   const bearer = process.env.AWS_BEARER_TOKEN_BEDROCK;
@@ -45,21 +72,15 @@ function bedrockAuthSanityHint(): void {
 }
 
 /**
- * Whether a Bedrock model id deprecates the `temperature` parameter.
+ * Whether to send `temperature` for a model id.
  *
- * Anthropic's Claude Opus 4.7 onward reject any request carrying `temperature`
- * ("`temperature` is deprecated for this model"). Parse the `opus-4-<minor>`
- * version out of the model id and treat minor ≥ 7 as deprecating it, so future
- * minors (4.9, 4.10, …) are covered without a code change. Non-Opus families
- * (Sonnet/Haiku) and Opus ≤ 4.6 still accept temperature.
+ * Combines the known-families predicate with any incompatibility already
+ * observed at runtime in this process, so once one agent discovers a model
+ * rejects temperature, every later agent omits it on the first call. See
+ * temperature.ts for why this is a fast path rather than the source of truth.
  */
-function modelDeprecatesTemperature(modelId: string): boolean {
-  // Capture the 1–2 digit minor, NOT followed by another digit, so a
-  // date-suffixed base id (…opus-4-20250514…, Opus 4.0) doesn't parse the date
-  // as the minor. Matches …opus-4-7, …opus-4-8, …opus-4-8-<date>, …opus-4-1-…
-  const m = /claude-opus-4-(\d{1,2})(?!\d)/.exec(modelId);
-  if (!m) return false;
-  return Number(m[1]) >= 7;
+function shouldSendTemperature(modelId: string): boolean {
+  return !modelDeprecatesTemperature(modelId) && !hasObservedTemperatureDeprecation(modelId);
 }
 
 /**
@@ -79,17 +100,22 @@ export async function createModel(config: Config, opts: CreateModelOptions = {})
   if (config.bedrock?.model_id) {
     bedrockAuthSanityHint();
     const modelId = config.bedrock.model_id;
-    // Claude Opus 4.7+ deprecate the `temperature` parameter — Bedrock rejects
-    // a request that carries it ("`temperature` is deprecated for this model"),
-    // which otherwise kills the scanner agent on the first call and fails the
-    // whole run in <1s. Omit temperature for Opus 4.7 and any later 4.x minor
-    // (4.8, 4.9, 4.10, …). Sonnet/Haiku and Opus ≤4.6 still accept it.
-    const supportsTemperature = !modelDeprecatesTemperature(modelId);
-    return new BedrockModel({
+    // Newer Claude models reject a request carrying `temperature`, which kills
+    // the scanner agent on its first call and fails the whole run in <1s. The
+    // predicate skips it for families we know about; the model subclass catches
+    // the rejection and retries without it for any model we did not predict, so
+    // a future release cannot reintroduce the instant-failure bug. See
+    // temperature.ts.
+    return new TemperatureFallbackBedrockModel({
       modelId,
       region: config.awsRegion,
-      ...(supportsTemperature ? { temperature } : {}),
+      ...(shouldSendTemperature(modelId) ? { temperature } : {}),
       maxTokens,
+      clientConfig: {
+        // Raise the inter-chunk inactivity budget above the SDK's 120s default,
+        // which silently truncates long-thinking streams. See the constant.
+        requestHandler: { requestTimeout: BEDROCK_STREAM_INACTIVITY_TIMEOUT_MS },
+      },
     });
   }
 
@@ -98,10 +124,13 @@ export async function createModel(config: Config, opts: CreateModelOptions = {})
     const modelId = config.anthropic.model_id;
     // The whole pipeline depends on temperature=0 for deterministic, reproducible
     // threat models; omitting it here let the SDK default (~1.0) through, silently
-    // breaking determinism + Python parity for the Anthropic provider. Claude
-    // Opus 4.7+ deprecate `temperature` over the Anthropic API too (same model
-    // behaviour as Bedrock), so reuse the same guard.
-    const supportsTemperature = !modelDeprecatesTemperature(modelId);
+    // breaking determinism + Python parity for the Anthropic provider. The newer
+    // Claude models deprecate `temperature` over the Anthropic API too (same
+    // model behaviour as Bedrock), so reuse the same predicate. NOTE: only the
+    // Bedrock path has the retry-without-temperature safety net; here an
+    // unpredicted model still fails, since AnthropicModel is a lazily-imported
+    // peer dep this package does not subclass.
+    const supportsTemperature = shouldSendTemperature(modelId);
     return new AnthropicModel({
       modelId,
       maxTokens,

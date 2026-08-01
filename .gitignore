@@ -207,3 +207,18 @@ sample-applications/
 CLAUDE.md
 .claude/
 .understand-anything/
+paper-threatbert/
+
+# ThreatBERT training artefacts. Multi-GB model weights and optimizer state must
+# never enter git: `models/` alone is ~4.5GB (each training checkpoint carries a
+# 1.1GB optimizer.pt plus a duplicate 568MB copy of the weights), and a blob that
+# size cannot be cleanly removed from history once pushed. These live on the GPU
+# box / S3 instead — see THREATBERT_USAGE.md, which is also ignored because it
+# records instance ids, an account number and an SSH key name.
+models/
+eval/
+THREATBERT_USAGE.md
+
+# Local demo runbook: contains absolute paths with a developer username and
+# references to internal-only auth tooling (mwinit/Midway). Never publish.
+DEMO.md

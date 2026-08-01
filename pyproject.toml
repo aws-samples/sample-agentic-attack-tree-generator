@@ -44,41 +44,25 @@ classifiers = [
     "Topic :: System :: Monitoring",
 ]
 
+# Only what the ML service (src/ml_service + its threatforest.* import closure)
+# actually imports. The legacy pipeline's deps went with it: strands-agents and
+# its 8 provider extras, strands-agents-tools, langfuse, click, questionary,
+# boto3/botocore, aioboto3/aiobotocore/aiofiles, and stix2 (which had zero
+# imports repo-wide even before the removal — STIX bundles are parsed with json).
+# torch + transformers are kept explicit: they arrive via sentence-transformers
+# and pinning them keeps the embedding runtime reproducible.
 dependencies = [
-    "aioboto3>=15.5.0",
-    "aiobotocore>=2.25.0",
-    "aiofiles>=25.1.0",
-    "boto3>=1.40.0",
-    "botocore>=1.40.0",
-    "click>=8.3.0",
     "fastapi>=0.115.0",
-    "httpx>=0.28.0",
-    "mkdocs>=1.5.0",
-    "mkdocs-material>=9.0.0",
-    "numpy>=2.3.0",
+    "uvicorn[standard]>=0.34.0",
     "pydantic>=2.12.0",
-    "pymdown-extensions>=10.0",
-    "python-dotenv>=1.2.0",
-    "pyyaml>=6.0.3",
-    "questionary>=2.1.0",
-    "rich>=14.2.0",
-    "scikit-learn>=1.7.0",
     "sentence-transformers>=5.1.0",
-    "stix2>=3.0.1",
-    "strands-agents>=1.15.0",
-    "strands-agents[anthropic]",
-    "strands-agents[gemini]",
-    "strands-agents[litellm]",
-    "strands-agents[llamaapi]",
-    "strands-agents[ollama]",
-    "strands-agents[openai]",
-    "strands-agents[otel]",
-    "strands-agents[sagemaker]",
-    "strands-agents-tools>0.2.0",
     "torch>=2.9.0",
     "transformers>=4.57.0",
-    "uvicorn[standard]>=0.34.0",
-    "langfuse>=4.0.0,<5.0.0",
+    "numpy>=2.3.0",
+    "scikit-learn>=1.7.0",
+    "pyyaml>=6.0.3",
+    "python-dotenv>=1.2.0",
+    "rich>=14.2.0",
 ]
 
 [project.optional-dependencies]
@@ -86,11 +70,17 @@ dev = [
     "pytest>=7.0.0",
     "pytest-asyncio>=0.21.0",
     "pytest-cov>=4.0.0",
-    "hypothesis>=6.0.0",
+    # fastapi.testclient (src/ml_service/tests/test_parity.py) needs httpx.
+    "httpx>=0.28.0",
     "black>=23.0.0",
     "isort>=5.12.0",
     "flake8>=6.0.0",
     "mypy>=1.0.0",
+]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.0.0",
+    "pymdown-extensions>=10.0",
 ]
 
 [project.urls]
@@ -101,29 +91,22 @@ Issues = "https://github.com/aws-samples/sample-agentic-attack-tree-generator/is
 Changelog = "https://github.com/aws-samples/sample-agentic-attack-tree-generator/releases"
 
 [project.scripts]
-threatforest = "threatforest.cli:main"
+# The pipeline entry point is the TypeScript CLI (`ts/packages/cli`). The only
+# Python that ships is the embeddings/TTP-matching service.
+threatforest-ml = "ml_service.__main__:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["threatforest*", "server*", "ml_service*"]
+include = ["threatforest*", "ml_service*"]
 
 [tool.setuptools.package-data]
+# Only the STIX bundles remain — the ML service resolves them relative to the
+# package (see threatforest/config.py), so they must be packaged.
 threatforest = [
-    "*.yaml",
-    "prompts/*.md",
-    "agents/**/*.md",
     "data/**/*.json",
-    "modules/visualization/templates/*",
-    "console_ui/**/*.html",
-    "console_ui/**/*.js",
-    "console_ui/**/*.css",
-    "console_ui/**/*.png",
-    "console_ui/**/*.svg",
-    "console_ui/**/*.ico",
-    "console_ui/assets/**/*",
 ]
 
 [tool.black]
@@ -155,7 +138,7 @@ skip_gitignore = true
 [tool.pytest.ini_options]
 minversion = "7.0"
 addopts = "-ra -q --strict-markers"
-testpaths = ["tests"]
+testpaths = ["src/ml_service/tests"]
 pythonpath = ["src"]
 
 [tool.mypy]
@@ -167,7 +150,7 @@ ignore_missing_imports = true
 
 [tool.coverage.run]
 source = ["src"]
-omit = ["tests/*", "*/venv/*"]
+omit = ["src/ml_service/tests/*", "*/venv/*"]
 
 [tool.coverage.report]
 exclude_lines = [

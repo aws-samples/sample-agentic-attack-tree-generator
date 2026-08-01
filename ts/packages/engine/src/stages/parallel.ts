@@ -11,6 +11,7 @@
  */
 import { config } from '../config.js';
 import { createModel } from '../providers.js';
+import { makeRetryStrategy } from '../retry.js';
 import { matchSteps } from '../ml/index.js';
 import { LocalFilesystemWorkspace, resolveStateDir } from '../workspace.js';
 import { makeSandboxedFileRead, makeSandboxedFileWrite, makeStoreMitigations } from '../tools/sandboxed-file.js';
@@ -95,6 +96,9 @@ async function processSingleThreat(
           makeSandboxedFileWrite([treeOut]),
         ],
         printer: false,
+        // Fresh instance per agent: strategies hold per-turn state and the SDK
+        // rejects one that is already attached elsewhere.
+        retryStrategy: makeRetryStrategy(),
         traceAttributes: traceAttrs(`tree-T${String(threatIdx).padStart(3, '0')}`),
       });
       await treeAgent.invoke(
@@ -200,6 +204,9 @@ async function processSingleThreat(
             makeStoreMitigations(mitOut),
           ],
           printer: false,
+          // Fresh instance per attempt, for the same reason as the tree agent
+          // above. Model-level retry nests inside this maxMitAttempts loop.
+          retryStrategy: makeRetryStrategy(),
           traceAttributes: traceAttrs(`mitigation-T${String(threatIdx).padStart(3, '0')}`),
         });
         const feedback =

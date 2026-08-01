@@ -12,6 +12,7 @@ import { Agent, type Model } from '@strands-agents/sdk';
 import { join } from 'node:path';
 import { config } from '../config.js';
 import { createModel } from '../providers.js';
+import { makeRetryStrategy } from '../retry.js';
 import { makeSandboxedFileRead, makeSandboxedFileWrite } from '../tools/sandboxed-file.js';
 import { makeStructuralAnalyzer } from '../tools/structural-analyzer.js';
 import { traceAttrs } from '../tracing.js';
@@ -45,6 +46,7 @@ export async function createThreatAgent(repoPath: string, runDir?: string): Prom
     systemPrompt,
     tools,
     printer: false,
+    retryStrategy: makeRetryStrategy(),
     traceAttributes: traceAttrs('threat'),
   });
 }

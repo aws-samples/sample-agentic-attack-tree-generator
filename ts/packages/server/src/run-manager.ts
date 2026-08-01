@@ -236,13 +236,31 @@ export class RunManager {
       state.completed_at = new Date().toISOString();
       state.error = (err as Error).message;
     } finally {
-      // Sentinel so WS consumers know the stream is done.
+      // A failed run MUST report why. Emit a dedicated `error` event carrying
+      // the message BEFORE the terminal sentinel: the sentinel is typed
+      // `run_complete` for every terminal state and carries no error, so on its
+      // own a failure is indistinguishable from success and the UI shows
+      // nothing — the run just appears to hang at whatever stage it died on.
+      // (A credential-chain failure, for instance, kills the scanner in ~2s.)
+      if (state.status === 'failed' && state.error) {
+        onProgress({
+          type: 'error',
+          stage: state.paused_at_stage ?? 'run',
+          percentage: 0,
+          message: state.error,
+          details: { run_id: runId, error: state.error },
+          server_ts: Date.now(),
+        });
+      }
+      // Sentinel so WS consumers know the stream is done. `details` carries the
+      // real outcome so a client that only sees this frame (e.g. history replay
+      // after a reconnect) can still distinguish failure from success.
       onProgress({
         type: 'run_complete',
         stage: state.status,
         percentage: 100,
         message: `Run ${state.status}`,
-        details: {},
+        details: { status: state.status, ...(state.error ? { error: state.error } : {}) },
         server_ts: Date.now(),
       });
       // Drop the broadcaster now that the run is terminal. cleanupRun is

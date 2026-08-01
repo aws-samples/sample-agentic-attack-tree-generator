@@ -1,4 +1,4 @@
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { runGraph, type RunGraphResult, type NodeProgressEvent } from '@threatforest/engine';
@@ -17,6 +17,53 @@ interface RunRecord {
 }
 
 const runs = new Map<string, RunRecord>();
+
+/**
+ * Seed the in-memory runs map from existing completed runs on disk.
+ * Scans `.threatforest/runs/<app>/<YYYYMMDD_HHMMSS>/output/` for
+ * `threatforest_data.json` and registers each as a completed run.
+ */
+export function seedExistingRuns(): void {
+  const runsRoot = join(process.cwd(), '.threatforest', 'runs');
+  if (!existsSync(runsRoot)) return;
+
+  const TIMESTAMP_RE = /^\d{8}_\d{6}$/;
+
+  for (const appDir of readdirSync(runsRoot)) {
+    const appPath = join(runsRoot, appDir);
+    if (!statSync(appPath).isDirectory()) continue;
+
+    for (const versionDir of readdirSync(appPath)) {
+      if (!TIMESTAMP_RE.test(versionDir)) continue;
+      const versionPath = join(appPath, versionDir);
+      if (!statSync(versionPath).isDirectory()) continue;
+
+      const outputDir = join(versionPath, 'output');
+      const dataPath = join(outputDir, 'threatforest_data.json');
+      if (!existsSync(dataPath)) continue;
+
+      const runId = `${appDir}_${versionDir}`;
+      if (runs.has(runId)) continue;
+
+      const ts = versionDir.replace(
+        /^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})$/,
+        '$1-$2-$3T$4:$5:$6Z',
+      );
+
+      runs.set(runId, {
+        run_id: runId,
+        status: 'complete',
+        project_path: appPath,
+        started_at: ts,
+        completed_at: ts,
+        output_dir: outputDir,
+        error: null,
+        current_stage: null,
+        progress_pct: 100,
+      });
+    }
+  }
+}
 
 export async function scanTool(input: ScanInput): Promise<Record<string, unknown>> {
   const runId = randomUUID().replace(/-/g, '');
@@ -149,14 +196,25 @@ export function getFindingsTool(input: GetFindingsInput): Record<string, unknown
   }
 
   const dataPath = join(record.output_dir, 'threatforest_data.json');
-  if (!existsSync(dataPath)) {
-    return { error: `Output file not found at ${dataPath}` };
+  if (existsSync(dataPath)) {
+    try {
+      return JSON.parse(readFileSync(dataPath, 'utf-8'));
+    } catch (err) {
+      return { error: `Failed to read findings: ${(err as Error).message}` };
+    }
   }
 
-  try {
-    const data = JSON.parse(readFileSync(dataPath, 'utf-8'));
-    return data;
-  } catch (err) {
-    return { error: `Failed to read findings: ${(err as Error).message}` };
+  // Fallback: if the report stage didn't produce the bundle, assemble from state files.
+  const stateDir = record.output_dir.replace(/\/output$/, '/state');
+  const partial: Record<string, unknown> = { partial: true, output_dir: record.output_dir };
+  for (const name of ['scanner_context', 'threats', 'attack_trees', 'ttp_mappings', 'mitigations']) {
+    const p = join(stateDir, `${name}.json`);
+    if (existsSync(p)) {
+      try { partial[name] = JSON.parse(readFileSync(p, 'utf-8')); } catch { /* skip */ }
+    }
   }
+  if (Object.keys(partial).length <= 2) {
+    return { error: `No findings produced. Output dir: ${record.output_dir}` };
+  }
+  return partial;
 }

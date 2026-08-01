@@ -7,7 +7,7 @@ ThreatForest has two interfaces: a **web console** (default) and a **terminal wi
 ## Web Console (Default)
 
 ```bash
-threatforest
+npx threatforest
 ```
 
 Opens `http://localhost:8000` in your browser automatically.
@@ -15,9 +15,15 @@ Opens `http://localhost:8000` in your browser automatically.
 **Options:**
 
 ```bash
-threatforest --port 8001          # use a different port
-threatforest --host 0.0.0.0       # bind to all interfaces
+npx threatforest --port 8001          # use a different port
+npx threatforest --host 0.0.0.0       # bind to all interfaces — see warning below
 ```
+
+!!! danger "`--host 0.0.0.0` exposes an unauthenticated API"
+    ThreatForest binds `127.0.0.1` by default and has **no authentication**. Binding all interfaces
+    lets anyone who can reach the host read every threat model and business context, and start runs
+    that read arbitrary paths on your filesystem using your model credentials. Only use `0.0.0.0`
+    when you have put your own authentication in front of it.
 
 ### Pages
 
@@ -66,7 +72,7 @@ Set your LLM provider credentials and Langfuse tracing without touching the conf
 ## Terminal Mode
 
 ```bash
-threatforest --tui
+npx threatforest --tui
 ```
 
 An interactive wizard in the terminal. Useful for headless environments or scripted workflows.

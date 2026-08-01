@@ -22,6 +22,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, statSync } from 'node
 import { join, extname } from 'node:path';
 import { config } from '../config.js';
 import { createModel } from '../providers.js';
+import { makeRetryStrategy } from '../retry.js';
 import { makeSandboxedFileRead, makeSandboxedFileWrite } from '../tools/sandboxed-file.js';
 import { makeStructuralAnalyzer } from '../tools/structural-analyzer.js';
 import { traceAttrs } from '../tracing.js';
@@ -192,6 +193,7 @@ export async function createScannerAgent(repoPath: string, runDir?: string): Pro
     systemPrompt,
     tools,
     printer: false,
+    retryStrategy: makeRetryStrategy(),
     traceAttributes: traceAttrs('scanner'),
   });
 }

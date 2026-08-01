@@ -679,9 +679,11 @@ export default function AppOverviewView() {
             </Button>
           </SpaceBetween>
         </ExpandableSection>
+      </SpaceBetween>
 
         {/* Rename modal */}
         <Modal
+          key="rename-modal"
           visible={renaming}
           onDismiss={() => setRenaming(false)}
           header="Rename application"
@@ -722,6 +724,7 @@ export default function AppOverviewView() {
 
         {/* Project path modal */}
         <Modal
+          key="path-modal"
           visible={editingPath}
           onDismiss={() => !pathSubmitting && setEditingPath(false)}
           header="Edit project repository"
@@ -765,6 +768,7 @@ export default function AppOverviewView() {
 
         {/* Delete modal */}
         <Modal
+          key="delete-modal"
           visible={deleting}
           onDismiss={() => !deleteSubmitting && setDeleting(false)}
           header="Delete application"
@@ -791,7 +795,7 @@ export default function AppOverviewView() {
           }
         >
           <SpaceBetween size="s">
-            {deleteError && <Alert type="error">{deleteError}</Alert>}
+            {deleteError ? <Alert type="error">{deleteError}</Alert> : null}
             <Box variant="p">
               Are you sure you want to delete <strong>{appName}</strong>? This removes the
               application record but keeps run artefacts on disk.
@@ -801,6 +805,7 @@ export default function AppOverviewView() {
 
         {/* Delete-version modal */}
         <Modal
+          key="delete-version-modal"
           visible={versionDeleteTarget !== null}
           onDismiss={() => !versionDeleteSubmitting && setVersionDeleteTarget(null)}
           header="Delete threat model"
@@ -839,6 +844,7 @@ export default function AppOverviewView() {
 
         {/* ThreatForest Report export modal */}
         <Modal
+          key="report-export-modal"
           visible={reportPrompt !== null}
           onDismiss={() => !reportSubmitting && setReportPrompt(null)}
           header="Export ThreatForest Report"
@@ -887,7 +893,6 @@ export default function AppOverviewView() {
             </Box>
           </SpaceBetween>
         </Modal>
-      </SpaceBetween>
     </AppShell>
   );
 }

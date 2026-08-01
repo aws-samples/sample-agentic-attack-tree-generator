@@ -13,6 +13,7 @@ import { Agent, type Model } from '@strands-agents/sdk';
 import { join } from 'node:path';
 import { config } from '../config.js';
 import { createModel } from '../providers.js';
+import { makeRetryStrategy } from '../retry.js';
 import { makeSandboxedFileRead, makeSandboxedFileWrite } from '../tools/sandboxed-file.js';
 import { makeStructuralAnalyzer } from '../tools/structural-analyzer.js';
 import { traceAttrs } from '../tracing.js';
@@ -51,6 +52,7 @@ export async function createTreeAgent(repoPath: string, runDir?: string): Promis
     systemPrompt,
     tools,
     printer: false,
+    retryStrategy: makeRetryStrategy(),
     traceAttributes: traceAttrs('tree'),
   });
 }

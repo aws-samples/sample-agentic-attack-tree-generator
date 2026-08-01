@@ -6,7 +6,8 @@ ThreatForest integrates with [Langfuse](https://langfuse.com) for tracing, SME r
 
 ## Prerequisites
 
-- ThreatForest installed (`pipx install .` or `pip install .`)
+- ThreatForest installed — see [Getting Started](../getting-started/index.md#step-1-install-threatforest)
+  (`uv sync` for the Python ML service, then `npm install` in `ts/`). Run the commands below from `ts/`.
 - A Langfuse account with API keys (self-hosted or [cloud](https://cloud.langfuse.com))
 - `strands-agents[otel]` installed (included in ThreatForest dependencies)
 - Sample applications or your own project to evaluate
@@ -18,7 +19,7 @@ ThreatForest integrates with [Langfuse](https://langfuse.com) for tracing, SME r
 ### Interactive Setup (CLI)
 
 ```bash
-threatforest config langfuse
+npx threatforest config langfuse
 ```
 
 The wizard prompts for your public key, secret key, and host URL. On successful connection, score definitions are automatically registered with Langfuse.
@@ -26,7 +27,7 @@ The wizard prompts for your public key, secret key, and host URL. On successful 
 ### Direct Setup
 
 ```bash
-threatforest config langfuse \
+npx threatforest config langfuse \
   --enable \
   --public-key pk-lf-xxxx \
   --secret-key sk-lf-xxxx \
@@ -48,7 +49,7 @@ Navigate to the **Configure** page in the ThreatForest web console. The **Langfu
 ### Disable Tracing
 
 ```bash
-threatforest config langfuse --disable
+npx threatforest config langfuse --disable
 ```
 
 When disabled, ThreatForest runs normally without any tracing overhead.
@@ -60,7 +61,7 @@ When disabled, ThreatForest runs normally without any tracing overhead.
 Score definitions are automatically registered when you configure Langfuse (via CLI, wizard, or `--test`). You can also register them manually:
 
 ```bash
-threatforest config langfuse --register-scores
+npx threatforest config langfuse --register-scores
 ```
 
 ThreatForest defines **16 evaluation dimensions** across four capabilities:
@@ -118,7 +119,7 @@ TTP mapping uses a specialized scale replacing "Unacceptable" with "No Mapping".
 To sync with existing configs already in Langfuse:
 
 ```bash
-threatforest config langfuse --sync-scores
+npx threatforest config langfuse --sync-scores
 ```
 
 ---
@@ -156,22 +157,22 @@ These traces are designed for annotation queues — filter by the `annotation` t
 
 ```bash
 # S3 Multi-Tenant SaaS (S3, Access Points, Object Lambda, KMS)
-threatforest run --project-path sample-applications/s3
+npx threatforest run --project-path sample-applications/s3
 
 # Healthcare Analytics (HIPAA, AWS, S3, Lambda, DynamoDB)
-threatforest run --project-path sample-applications/hcls-example
+npx threatforest run --project-path sample-applications/hcls-example
 
 # IoT Device Management (MQTT, Edge Computing, OTA)
-threatforest run --project-path sample-applications/iot-device-management
+npx threatforest run --project-path sample-applications/iot-device-management
 
 # Connected Vehicle Platform (V2X, Telematics, OBD-II)
-threatforest run --project-path sample-applications/vehicle-platform
+npx threatforest run --project-path sample-applications/vehicle-platform
 ```
 
 ### Using Your Own Project
 
 ```bash
-threatforest run --project-path /path/to/your/project
+npx threatforest run --project-path /path/to/your/project
 ```
 
 After each run, traces appear in your Langfuse dashboard under the session ID.
@@ -219,19 +220,19 @@ Export scored traces to Langfuse Datasets for evaluation analysis or prompt opti
 
 ```bash
 # Reviewed threat statement traces
-threatforest export traces \
+npx threatforest export traces \
   --trace-type threat_statement \
   --status reviewed \
   --dataset-name threat-statements-v1
 
 # Reviewed attack tree traces
-threatforest export traces \
+npx threatforest export traces \
   --trace-type attack_tree \
   --status reviewed \
   --dataset-name attack-trees-v1
 
 # Reviewed TTP matching traces
-threatforest export traces \
+npx threatforest export traces \
   --trace-type ttp_matching \
   --status reviewed \
   --dataset-name ttp-matching-v1
@@ -256,19 +257,19 @@ threatforest export traces \
 
 ```bash
 # 1. Configure Langfuse (auto-registers score configs)
-threatforest config langfuse --test
+npx threatforest config langfuse --test
 
 # 2. Run sample applications
 for domain in s3 hcls-example iot-device-management vehicle-platform; do
-  threatforest run --project-path sample-applications/$domain
+  npx threatforest run --project-path sample-applications/$domain
 done
 
 # 3. (Manual) SME review in Langfuse annotation queues
 
 # 4. Export reviewed traces to datasets
-threatforest export traces --trace-type threat_statement --status reviewed -d baseline-threats-v1
-threatforest export traces --trace-type attack_tree --status reviewed -d baseline-attack-trees-v1
-threatforest export traces --trace-type ttp_matching --status reviewed -d baseline-ttp-v1
+npx threatforest export traces --trace-type threat_statement --status reviewed -d baseline-threats-v1
+npx threatforest export traces --trace-type attack_tree --status reviewed -d baseline-attack-trees-v1
+npx threatforest export traces --trace-type ttp_matching --status reviewed -d baseline-ttp-v1
 ```
 
 ---

@@ -25,7 +25,7 @@
  *   the resolved real path is used for the actual file/dir access.
  */
 import { existsSync, statSync, readFileSync } from 'node:fs';
-import { tool, type JSONValue } from '@strands-agents/sdk';
+import { tool } from '@strands-agents/sdk';
 import { z } from 'zod';
 import { _validatePath } from './sandboxed-file.js';
 
@@ -150,14 +150,11 @@ export function makeStructuralAnalyzer(repoPath: string) {
       'Explore repository structure and read files — read-only, scoped to target repo. ' +
       'command "view" reads a file/directory, "find_line" searches for text.',
     inputSchema: InputSchema,
-    callback: (input: z.infer<typeof InputSchema>): JSONValue => {
+    callback: (input: z.infer<typeof InputSchema>) => {
       const { command, path, search_text, view_range } = input;
       // Sandbox + resolve against the target repo (raises on out-of-bounds access).
       const resolved = _validatePath(path, [repoPath]);
-      const result = readOnlyEditor(command, resolved, search_text || null, view_range ?? null);
-      // EditorResult is a fixed-shape struct; cast to the SDK's JSON value type
-      // (the shape is JSON-serializable — string status + array of {text} blocks).
-      return result as unknown as JSONValue;
+      return readOnlyEditor(command, resolved, search_text || null, view_range ?? null);
     },
   });
 }

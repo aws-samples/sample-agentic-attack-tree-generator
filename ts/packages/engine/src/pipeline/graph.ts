@@ -339,6 +339,41 @@ export async function buildGraph(repoPath: string, opts: RunGraphOptions = {}): 
 }
 
 /**
+ * Render a failed node's error for the run summary, including its cause chain.
+ *
+ * Reporting only `error.message` hid the actual reason for whole classes of
+ * failure, because the SDK's outermost message is often a generic wrapper while
+ * the diagnosis sits in `.cause`. The motivating case: an HTTP/2 inactivity
+ * timeout surfaced purely as "scanner: Stream ended without completing a
+ * message" — no mention of a timeout anywhere — which cost a long debugging
+ * session to trace back to the transport. `unable to parse tool input JSON` (a
+ * swallowed SyntaxError) is wrapped the same way.
+ *
+ * Depth-capped, and each link is de-duplicated against the text already shown so
+ * a wrapper that merely restates its cause does not double up.
+ *
+ * Exported for tests: the value of this function IS its output string, so it is
+ * worth asserting on directly.
+ */
+export function describeNodeError(error: unknown): string {
+  if (!(error instanceof Error)) return 'failed';
+  const parts: string[] = [];
+  let current: unknown = error;
+  for (let depth = 0; current instanceof Error && depth < 4; depth++) {
+    const message = current.message.trim();
+    // Prefix the name when it carries real signal (TimeoutError, ValidationException)
+    // rather than the SDK's generic ModelError/Error.
+    const named =
+      current.name && !/^(Error|ModelError)$/.test(current.name)
+        ? `${current.name}: ${message}`
+        : message;
+    if (message && !parts.some((p) => p.includes(message))) parts.push(named);
+    current = (current as { cause?: unknown }).cause;
+  }
+  return parts.length > 0 ? parts.join(' <- caused by: ') : 'failed';
+}
+
+/**
  * Run the full ThreatForest graph and return a status summary. Port of run_graph
  * (without the rich TUI — the server/CLI render progress from the event stream).
  */
@@ -352,16 +387,16 @@ export async function runGraph(repoPath: string, opts: RunGraphOptions = {}): Pr
   // outage makes every per-threat match throw and be swallowed into an empty
   // result, producing a "complete" run with silently-missing attack paths —
   // dangerous for a security tool. Fail fast with a clear, actionable message.
-  const { mlHealthCheck, mlServiceRequired } = await import('../ml/index.js');
-  if (mlServiceRequired() && !(await mlHealthCheck())) {
+  const { mlHealthCheck } = await import('../ml/index.js');
+  if (!(await mlHealthCheck())) {
     return {
       status: 'failed',
       output_dir: resolveOutputDir(repoPath, opts.runDir),
       completed_nodes: [],
       error:
-        'The Python ML service (TTP-mapping backend) is not reachable. Start it ' +
-        '(e.g. `python -m ml_service`) or set TF_USE_PYTHON_ML=0 to use the ' +
-        'in-process embedder, then retry. Aborting to avoid an incomplete threat model.',
+        'The Python ML service (TTP-mapping backend) is not reachable. Start it with ' +
+        '`python -m ml_service` (it binds 127.0.0.1:8770; override with TF_ML_URL or ' +
+        'TF_ML_PORT), then retry. Aborting to avoid an incomplete threat model.',
     };
   }
 
@@ -459,7 +494,7 @@ export async function runGraph(repoPath: string, opts: RunGraphOptions = {}): Pr
   const failed: string[] = [];
   for (const nr of result.results) {
     if (nr.status === 'FAILED') {
-      failed.push(`${nr.nodeId}: ${nr.error?.message ?? 'failed'}`);
+      failed.push(`${nr.nodeId}: ${describeNodeError(nr.error)}`);
     }
   }
 

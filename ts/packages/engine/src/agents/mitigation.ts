@@ -26,6 +26,7 @@ import { z } from 'zod';
 
 import { config } from '../config.js';
 import { createModel } from '../providers.js';
+import { makeRetryStrategy } from '../retry.js';
 import { LocalFilesystemWorkspace, resolveStateDir } from '../workspace.js';
 import { MITIGATION_SYSTEM_PROMPT } from './mitigation.prompt.js';
 
@@ -300,6 +301,7 @@ export async function createMitigationAgent(repoPath: string, runDir?: string | 
     systemPrompt,
     tools,
     printer: false,
+    retryStrategy: makeRetryStrategy(),
     traceAttributes: traceAttrs('mitigation'),
   });
 }
