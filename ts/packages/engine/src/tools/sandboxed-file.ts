@@ -23,6 +23,7 @@ import { dirname, isAbsolute, resolve as pathResolve, basename, extname, relativ
 import { tool, type JSONValue } from '@strands-agents/sdk';
 import { z } from 'zod';
 import { RemediationType } from '@threatforest/types';
+import type { EvidenceResolver } from '../quality/evidence.js';
 
 const DOCUMENT_EXTENSIONS = new Set(['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.csv']);
 const MAX_FILE_SIZE = 200_000; // ~200KB / ~50K tokens — prevent giant files from flooding the context
@@ -216,7 +217,10 @@ const WriteInputSchema = z.object({
 });
 
 /** Create a file_write tool restricted to specific paths. */
-export function makeSandboxedFileWrite(allowedWritePaths: string[]) {
+export function makeSandboxedFileWrite(
+  allowedWritePaths: string[],
+  transformContent?: (content: string) => string,
+) {
   return tool({
     name: 'sandboxed_file_write',
     description: 'Write file content — restricted to allowed paths for this agent.',
@@ -225,7 +229,12 @@ export function makeSandboxedFileWrite(allowedWritePaths: string[]) {
       const { path, content, mode } = input;
       const resolved = validatePath(path, allowedWritePaths);
       mkdirSync(dirname(resolved), { recursive: true });
-      if (mode === 'append') {
+      if (transformContent !== undefined) {
+        const combined = mode === 'append' && existsSync(resolved)
+          ? readFileSync(resolved, 'utf8') + content
+          : content;
+        writeFileSync(resolved, transformContent(combined));
+      } else if (mode === 'append') {
         appendFileSync(resolved, content);
       } else {
         writeFileSync(resolved, content);
@@ -271,7 +280,7 @@ const StoreMitigationsInputSchema = z.object({
 });
 
 /** Create a store_mitigations tool that validates and writes mitigations. */
-export function makeStoreMitigations(outputPath: string) {
+export function makeStoreMitigations(outputPath: string, resolveEvidence?: EvidenceResolver) {
   return tool({
     name: 'store_mitigations',
     description:
@@ -282,7 +291,17 @@ export function makeStoreMitigations(outputPath: string) {
       mkdirSync(dirname(outputPath), { recursive: true });
       // Strands validates via Zod then passes plain objects, mirroring Python's
       // pydantic-validate-then-model_dump path; persist as {"mitigations":[...]}.
-      const data = { mitigations };
+      const data = { mitigations: mitigations.map((mitigation) => ({
+        ...mitigation,
+        evidence: mitigation.evidence.map((entry) => {
+          if (resolveEvidence === undefined) return entry;
+          const verified = resolveEvidence(entry);
+          if (verified === null) {
+            throw new Error(`Unverifiable evidence for ${mitigation.attack_step_id}: cite a current source file with an exact excerpt`);
+          }
+          return { ...entry, ...verified };
+        }),
+      })) };
       writeFileSync(outputPath, JSON.stringify(data, null, 2));
       return `Stored ${mitigations.length} mitigations to ${outputPath}`;
     },

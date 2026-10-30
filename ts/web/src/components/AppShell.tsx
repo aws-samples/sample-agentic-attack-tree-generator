@@ -17,6 +17,7 @@ import BreadcrumbGroup from '@cloudscape-design/components/breadcrumb-group';
 import type { AppLayoutProps } from '@cloudscape-design/components/app-layout';
 import type { SideNavigationProps } from '@cloudscape-design/components/side-navigation';
 import type { BreadcrumbGroupProps } from '@cloudscape-design/components/breadcrumb-group';
+import { beginLogout } from '@/auth/session';
 
 const NAV_ITEMS: ReadonlyArray<SideNavigationProps.Item> = [
   { type: 'link', text: 'Home', href: '/' },
@@ -91,7 +92,13 @@ export default function AppShell({
             router.push('/');
           },
         }}
-        utilities={[]}
+        utilities={[
+          {
+            type: 'button',
+            text: 'Sign out',
+            onClick: beginLogout,
+          },
+        ]}
       />
       <AppLayout
         headerVariant={headerVariant || 'default'}

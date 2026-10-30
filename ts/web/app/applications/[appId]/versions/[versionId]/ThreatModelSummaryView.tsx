@@ -1,5 +1,7 @@
 'use client';
 
+import { runDisplayName } from '@threatforest/types';
+
 /**
  * ThreatModelSummaryView — TS/Next port of console-ui's ThreatModelSummaryPage.jsx.
  *
@@ -61,6 +63,7 @@ import {
   isTerminal as isTerminalStatus,
 } from '@/utils/mitigation-status';
 import type { MitigationOverride } from '@threatforest/types';
+import { authenticatedFetch } from '@/api/authenticated-fetch';
 
 const PRIORITY_COLORS: Record<string, BadgeProps['color']> = {
   '1': 'red',
@@ -1224,7 +1227,7 @@ export default function ThreatModelSummaryView() {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch(
+        const response = await authenticatedFetch(
           `/api/applications/${encodeURIComponent(appId)}/versions/${encodeURIComponent(versionId)}/data`,
         );
         if (!response.ok) throw new Error(`Failed to load (HTTP ${response.status})`);
@@ -1311,10 +1314,10 @@ export default function ThreatModelSummaryView() {
       .then(({ versions = [] }) => {
         if (cancelled) return;
         const match = versions.find((v) => v.id === versionId);
-        setVersionLabel(match?.display_name || versionId);
+        setVersionLabel(match?.display_name || runDisplayName(null, match?.run_date ?? ''));
       })
       .catch(() => {
-        if (!cancelled) setVersionLabel(versionId);
+        if (!cancelled) setVersionLabel('Threat model');
       });
     return () => {
       cancelled = true;
@@ -1394,6 +1397,11 @@ export default function ThreatModelSummaryView() {
             Threat Model Summary
           </Header>
           <OnboardingBanner />
+          <Alert type="info" header="Assessment basis">
+            Likelihood scores are heuristic estimates. Evidence checks verify source excerpts,
+            not whether an attack has occurred. Recommended mitigations need implementation
+            and validation before they establish protection.
+          </Alert>
           <RiskDashboard
             threats={threats}
             attackTrees={attackTrees}

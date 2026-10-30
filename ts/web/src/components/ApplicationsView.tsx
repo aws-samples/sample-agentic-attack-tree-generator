@@ -42,6 +42,7 @@ import {
   deleteApplicationRecord,
   deleteApplication,
 } from '@/api/client';
+import { authenticatedFetch } from '@/api/authenticated-fetch';
 import {
   exportCustomPdf,
   exportCustomCsvBundle,
@@ -72,7 +73,7 @@ function AppExportButton({ appId, appName }: AppExportButtonProps) {
     setOpen(true);
     setBusy(true);
     try {
-      const response = await fetch(
+      const response = await authenticatedFetch(
         `/api/applications/${encodeURIComponent(appId)}/versions/latest/data`,
       );
       if (!response.ok) {
@@ -347,7 +348,7 @@ export default function ApplicationsView({
                       {run.status === 'pending' ? 'Starting' : 'Running'}
                     </StatusIndicator>
                     <Box variant="span" color="text-body-secondary">
-                      {run.config?.project_path?.split('/').pop() || run.run_id}
+                      {run.display_name || run.config?.project_path?.split('/').pop() || 'Threat model'}
                     </Box>
                     <Link
                       onFollow={(e) => {

@@ -28,8 +28,20 @@ import type {
   RunConfig,
   RunResponse,
   RunState,
+  RunLogsResponse,
   VersionSummary,
 } from '@threatforest/types';
+import { authenticatedFetch } from './authenticated-fetch';
+import { withMutationIdempotency } from './idempotency';
+import {
+  uploadApplicationFile as uploadMultipartFile,
+  type MultipartUploadOptions,
+  type MultipartUploadResult,
+} from './multipart-upload';
+import {
+  uploadThreatforestReport,
+  type TfReportImportResult,
+} from './report-import-upload';
 
 // ---------------------------------------------------------------------------
 // Error type
@@ -57,8 +69,12 @@ export class ApiError extends Error {
  * response is not OK. The error message prefers the server's `detail` /
  * `message` field when the body is JSON.
  */
-async function request<T>(url: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(url, options);
+async function request<T>(
+  url: string,
+  options?: RequestInit,
+): Promise<T> {
+  const prepared = withMutationIdempotency(options);
+  const response = await authenticatedFetch(url, prepared);
   if (!response.ok) {
     let message = `Request failed with status ${response.status}`;
     try {
@@ -87,15 +103,18 @@ export interface ApplicationVersionsResponse {
 
 export interface ImportsInfoResponse {
   imports_dir: string;
-  processed: string[];
-  failed: string[];
+  hosted?: boolean;
+  processed: Array<string | { name: string; size: number }>;
+  failed: Array<string | { name: string; size: number }>;
 }
 
 export interface TfReportUploadResult {
   result: {
     status: string;
-    folder_name: string;
-    versions_added: number;
+    folder_name: string | null;
+    versions_added: string[];
+    versions_skipped?: string[];
+    error?: string | null;
     [key: string]: unknown;
   };
 }
@@ -145,6 +164,13 @@ export interface RunRespondResponse {
   ok: boolean;
 }
 
+export interface HostedRunConfig extends RunConfig {
+  source_artifact_ids?: string[];
+  threat_artifact_id?: string | null;
+}
+
+export type ApplicationUploadOptions = Omit<MultipartUploadOptions, 'request'>;
+
 // ---------------------------------------------------------------------------
 // REST API functions
 // ---------------------------------------------------------------------------
@@ -165,27 +191,13 @@ export async function getImportsInfo(): Promise<ImportsInfoResponse> {
  * POST /api/imports/tfreport — multipart upload of a .tfreport bundle.
  * Returns `{ result: { status, folder_name, versions_added, ... } }`.
  *
- * We intentionally bypass `request()` here because multipart uploads need the
- * browser to set the Content-Type with the auto-generated boundary.
+ * No Content-Type is supplied so the browser can add the multipart boundary.
  */
-export async function uploadTfReport(file: File | Blob): Promise<TfReportUploadResult> {
-  const form = new FormData();
-  form.append('file', file);
-  const response = await fetch('/api/imports/tfreport', {
-    method: 'POST',
-    body: form,
+export async function uploadTfReport(file: File): Promise<TfReportUploadResult> {
+  const result: TfReportImportResult = await uploadThreatforestReport(file, {
+    request,
   });
-  if (!response.ok) {
-    let detail = '';
-    try {
-      const body = (await response.json()) as { detail?: string };
-      detail = body?.detail || '';
-    } catch {
-      // Ignore non-JSON error bodies.
-    }
-    throw new Error(detail || `Upload failed (HTTP ${response.status}).`);
-  }
-  return (await response.json()) as TfReportUploadResult;
+  return { result };
 }
 
 /** GET /api/applications/{appId}/versions → { versions: Version[] } */
@@ -194,6 +206,21 @@ export async function getApplicationVersions(
 ): Promise<ApplicationVersionsResponse> {
   return request<ApplicationVersionsResponse>(
     `/api/applications/${encodeURIComponent(appId)}/versions`,
+  );
+}
+
+export async function getRunLogs(
+  runId: string,
+  options: { since?: string; until?: string; nextToken?: string; signal?: AbortSignal } = {},
+): Promise<RunLogsResponse> {
+  const params = new URLSearchParams();
+  if (options.since) params.set('since', options.since);
+  if (options.until) params.set('until', options.until);
+  if (options.nextToken) params.set('next_token', options.nextToken);
+  const query = params.toString();
+  return request<RunLogsResponse>(
+    `/api/runs/${encodeURIComponent(runId)}/logs${query ? `?${query}` : ''}`,
+    { signal: options.signal },
   );
 }
 
@@ -241,6 +268,11 @@ export async function getApplication(appId: string): Promise<Application> {
   return request<Application>(
     `/api/applications/by-id/${encodeURIComponent(appId)}`,
   );
+}
+
+export interface SourceSelection { artifact_id: string; filename: string; created_at: string }
+export async function getApplicationSources(appId: string): Promise<{ sources: SourceSelection[] }> {
+  return request(`/api/applications/${encodeURIComponent(appId)}/sources`);
 }
 
 /** PATCH /api/applications/by-id/{appId} → Application */
@@ -428,7 +460,7 @@ export async function getActiveRuns(): Promise<ActiveRunsResponse> {
 }
 
 /** POST /api/runs → { run_id } */
-export async function createRun(params: RunConfig): Promise<RunResponse> {
+export async function createRun(params: HostedRunConfig): Promise<RunResponse> {
   return request<RunResponse>('/api/runs', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -436,9 +468,47 @@ export async function createRun(params: RunConfig): Promise<RunResponse> {
   });
 }
 
+/**
+ * Upload one browser-selected artifact through the hosted multipart contract.
+ * The raw S3 PUT intentionally bypasses `request()` because it must contain
+ * only the headers covered by the presigned request.
+ */
+export async function uploadApplicationArtifact(
+  appId: string,
+  file: File,
+  options: ApplicationUploadOptions = {},
+): Promise<MultipartUploadResult> {
+  return uploadMultipartFile(appId, file, {
+    ...options,
+    request,
+  });
+}
+
 /** GET /api/runs/{runId} → RunState */
 export async function getRun(runId: string): Promise<RunState> {
   return request<RunState>(`/api/runs/${encodeURIComponent(runId)}`);
+}
+
+export interface PendingRunInteraction {
+  interaction_id: string;
+  run_id: string;
+  kind:
+    | 'scanner_review'
+    | 'interviewer'
+    | 'threat_review'
+    | 'mapping_review'
+    | 'mitigation_review';
+  revision: number;
+  reason: Record<string, unknown>;
+  status: string;
+}
+
+export async function getPendingRunInteractions(
+  runId: string,
+): Promise<{ interactions: PendingRunInteraction[] }> {
+  return request<{ interactions: PendingRunInteraction[] }>(
+    `/api/runs/${encodeURIComponent(runId)}/interactions`,
+  );
 }
 
 /** POST /api/runs/{runId}/pause → { status } */
@@ -519,6 +589,11 @@ export interface RunWebSocketOptions {
   baseDelay?: number;
 }
 
+interface ReplayTicketResponse {
+  ticket: string;
+  expires_at: string;
+}
+
 /** Controller returned by {@link connectRunWebSocket}. */
 export interface RunWebSocketController {
   /** Cleanly close the WebSocket and cancel any pending reconnect. */
@@ -543,20 +618,71 @@ export function connectRunWebSocket(
   let ws: WebSocket | null = null;
   let intentionalClose = false;
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  let afterSequence = -1;
+  let connectionGeneration = 0;
 
-  function connect(): void {
+  async function replayTicket(): Promise<string | null> {
+    try {
+      const response = await request<ReplayTicketResponse>(
+        `/api/runs/${encodeURIComponent(runId)}/replay-ticket`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ after_sequence: afterSequence }),
+        },
+      );
+      return response.ticket;
+    } catch (error) {
+      // The local server does not expose hosted replay tickets.
+      if (error instanceof ApiError && error.status === 404) return null;
+      throw error;
+    }
+  }
+
+  async function connect(): Promise<void> {
+    const generation = ++connectionGeneration;
+    let ticket: string | null;
+    try {
+      ticket = await replayTicket();
+    } catch {
+      if (!intentionalClose) {
+        handlers.onError?.(new Event('error'));
+      }
+      return;
+    }
+    if (intentionalClose || generation !== connectionGeneration) return;
+
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const url = `${protocol}//${window.location.host}/ws/runs/${encodeURIComponent(runId)}`;
+    const query = new URLSearchParams();
+    if (ticket) query.set('ticket', ticket);
+    if (afterSequence >= 0) query.set('after_sequence', String(afterSequence));
+    const suffix = query.size > 0 ? `?${query.toString()}` : '';
+    const url = `${protocol}//${window.location.host}/ws/runs/${encodeURIComponent(runId)}${suffix}`;
     ws = new WebSocket(url);
 
     ws.addEventListener('open', (e) => {
       retries = 0; // Reset backoff on successful connection
+      ws?.send(
+        JSON.stringify({
+          action: 'replay',
+          after_sequence: afterSequence,
+        }),
+      );
       handlers.onOpen?.(e);
     });
 
-    if (handlers.onMessage) {
-      ws.addEventListener('message', handlers.onMessage);
-    }
+    ws.addEventListener('message', (event) => {
+      try {
+        const payload = JSON.parse(String(event.data)) as { sequence?: unknown };
+        if (typeof payload.sequence === 'number') {
+          if (payload.sequence <= afterSequence) return;
+          afterSequence = payload.sequence;
+        }
+      } catch {
+        // Preserve compatibility with legacy non-JSON frames.
+      }
+      handlers.onMessage?.(event);
+    });
     if (handlers.onError) {
       ws.addEventListener('error', handlers.onError);
     }
@@ -573,7 +699,9 @@ export function connectRunWebSocket(
       if (retries < maxRetries) {
         const delay = Math.min(baseDelay * Math.pow(2, retries), 30000);
         retries++;
-        reconnectTimer = setTimeout(connect, delay);
+        reconnectTimer = setTimeout(() => {
+          void connect();
+        }, delay);
       } else {
         // Exhausted retries — notify caller.
         handlers.onClose?.(e);
@@ -581,13 +709,14 @@ export function connectRunWebSocket(
     });
   }
 
-  connect();
+  void connect();
 
   // Return a controller instead of the raw WebSocket so callers always go
   // through `close()`, which prevents reconnect loops.
   return {
     close() {
       intentionalClose = true;
+      connectionGeneration += 1;
       if (reconnectTimer) {
         clearTimeout(reconnectTimer);
         reconnectTimer = null;

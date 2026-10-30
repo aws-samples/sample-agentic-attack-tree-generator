@@ -88,6 +88,9 @@ test('recognises the Bedrock temperature rejection, including nested in a cause'
   assert.equal(isTemperatureRejection(raw), true);
   // The SDK re-wraps provider errors, so the text is usually one level down.
   assert.equal(isTemperatureRejection(new Error('model error', { cause: raw })), true);
+  assert.equal(isTemperatureRejection(new Error(
+    "This model doesn't support the temperature field. Remove temperature and try again.",
+  )), true);
 });
 
 test('does not mistake unrelated errors for a temperature rejection', () => {
@@ -107,6 +110,7 @@ test('does not mistake unrelated errors for a temperature rejection', () => {
 function stubModel(
   model: TemperatureFallbackBedrockModel,
   failWhile: (attempt: number) => boolean,
+  rejection = 'The model returned the following errors: `temperature` is deprecated for this model.',
 ): { sentTemperatures: (number | undefined)[] } {
   const sentTemperatures: (number | undefined)[] = [];
   let attempt = 0;
@@ -115,9 +119,7 @@ function stubModel(
       attempt += 1;
       sentTemperatures.push(command.input?.inferenceConfig?.temperature);
       if (failWhile(attempt)) {
-        throw new Error(
-          'The model returned the following errors: `temperature` is deprecated for this model.',
-        );
+        throw new Error(rejection);
       }
       return {
         stream: (async function* () {
@@ -172,6 +174,19 @@ test('does not retry when the rejection persists', async () => {
 
   // Exactly one retry — no unbounded loop.
   assert.equal(sentTemperatures.length, 2);
+});
+
+test('recovers from the deployed GPT-5.6 unsupported-temperature response', async () => {
+  const model = new TemperatureFallbackBedrockModel({
+    modelId: 'global.openai.gpt-5.6-luna',
+    region: 'eu-west-2',
+    temperature: 0,
+  });
+  const { sentTemperatures } = stubModel(model, n => n === 1,
+    "This model doesn't support the temperature field. Remove temperature and try again.");
+  for await (const _ of model.stream(HELLO)) void _;
+  assert.deepEqual(sentTemperatures, [0, undefined]);
+  assert.equal(hasObservedTemperatureDeprecation('global.openai.gpt-5.6-luna'), true);
 });
 
 test('does not retry when temperature was never sent', async () => {

@@ -9,9 +9,14 @@
  *   - domain      pipeline data models (threat, attack tree, ttp, mitigation, project, state)
  *   - ml-service  the WS-1 Python ML service wire contract (/embed, /match_steps)
  *   - api         the server HTTP/WS contract (applications, runs, config, overrides, progress)
+ *   - ttp-frameworks canonical mapper framework IDs and user-facing metadata
  *   - ui-graph    render-facing attack-tree shapes consumed by the dashboard
  */
 export * from './domain.js';
+export * from './hosted.js';
 export * from './ml-service.js';
 export * from './api.js';
+export * from './ttp-frameworks.js';
 export * from './ui-graph.js';
+export * from './run-log-content.js';
+export * from './run-name.js';

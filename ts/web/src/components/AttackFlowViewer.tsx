@@ -41,6 +41,7 @@ import {
   type AttackTreeNodeData,
 } from '@/utils/react-flow-adapter';
 import type { ReportAttackTree } from '@/utils/mitigation-aggregator';
+import { authenticatedFetch } from '@/api/authenticated-fetch';
 
 // Register the new Attack Flow-styled node type
 const nodeTypes = { attackTreeNode: ActionNode };
@@ -204,7 +205,7 @@ export default function AttackFlowViewer({
       const fieldsToSave = { ...pendingNodeEditsRef.current };
       pendingNodeEditsRef.current = {};
       console.log('[AttackFlowViewer] Saving node edit:', { currentThreatId, currentNodeId, fieldsToSave });
-      fetch('/api/test/node', {
+      authenticatedFetch('/api/test/node', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -241,7 +242,7 @@ export default function AttackFlowViewer({
       const fieldsToSave = { ...pendingFlowEditsRef.current };
       pendingFlowEditsRef.current = {};
       console.log('[AttackFlowViewer] Saving flow edit:', { currentThreatId, fieldsToSave });
-      fetch('/api/test/flow', {
+      authenticatedFetch('/api/test/flow', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

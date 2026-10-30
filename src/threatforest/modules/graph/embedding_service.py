@@ -5,6 +5,7 @@ import logging
 import os
 import sys
 import warnings
+from functools import lru_cache
 from typing import List, Optional
 
 # Fallback: Ensure HF Hub telemetry is disabled to prevent background thread timeouts.
@@ -14,6 +15,14 @@ os.environ.setdefault("HF_HUB_DISABLE_IMPLICIT_TOKEN", "1")
 
 from sentence_transformers import SentenceTransformer
 from ..utils.logger import ThreatForestLogger
+
+
+@lru_cache(maxsize=4)
+def get_embedding_service(model_name: str) -> "EmbeddingService":
+    """Reuse a model across matcher thresholds/framework selections."""
+    service = EmbeddingService(model_name)
+    service._load_model()
+    return service
 
 
 @contextlib.contextmanager

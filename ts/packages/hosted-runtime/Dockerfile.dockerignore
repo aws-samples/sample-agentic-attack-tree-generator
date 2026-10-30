@@ -1,0 +1,9 @@
+.git
+**/node_modules
+**/dist
+ts/web
+ts/packages/cli
+ts/packages/infra
+ts/packages/mcp-server
+ts/packages/server
+ts/packages/spike

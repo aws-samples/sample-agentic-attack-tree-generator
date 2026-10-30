@@ -1,0 +1,445 @@
+[
+  {
+    "name": "list_applications",
+    "description": "List ThreatForest applications owned by a user.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "owner_id": {
+          "type": "string",
+          "description": "Cognito subject that owns the applications."
+        }
+      },
+      "required": ["owner_id"]
+    }
+  },
+  {
+    "name": "get_application",
+    "description": "Get one ThreatForest application owned by a user.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "owner_id": {
+          "type": "string",
+          "description": "Cognito subject that owns the application."
+        },
+        "application_id": {
+          "type": "string",
+          "description": "Opaque ThreatForest application identifier."
+        }
+      },
+      "required": ["owner_id", "application_id"]
+    }
+  },
+  {
+    "name": "create_application",
+    "description": "Create a ThreatForest application.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "owner_id": {
+          "type": "string",
+          "description": "Cognito subject that will own the application."
+        },
+        "idempotency_key": {
+          "type": "string",
+          "description": "Caller-generated key that makes retries safe."
+        },
+        "name": {
+          "type": "string",
+          "description": "Application name."
+        },
+        "project_path": {
+          "type": "string",
+          "description": "Logical project path retained for UI compatibility."
+        },
+        "business_context": {
+          "type": "object",
+          "description": "Business and data-protection context for threat modeling.",
+          "properties": {
+            "description": {
+              "type": "string",
+              "description": "What the application does and its security context."
+            },
+            "regulatory_frameworks": {
+              "type": "array",
+              "description": "Applicable regulatory or compliance frameworks.",
+              "items": {
+                "type": "string"
+              }
+            },
+            "data_sensitivity": {
+              "type": "string",
+              "description": "ThreatForest data-sensitivity classification."
+            },
+            "cia_priority": {
+              "type": "array",
+              "description": "Confidentiality, integrity, and availability in priority order.",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "description",
+            "regulatory_frameworks",
+            "data_sensitivity",
+            "cia_priority"
+          ]
+        }
+      },
+      "required": [
+        "owner_id",
+        "idempotency_key",
+        "name",
+        "project_path",
+        "business_context"
+      ]
+    }
+  },
+  {
+    "name": "update_application",
+    "description": "Update an existing ThreatForest application.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "owner_id": {
+          "type": "string",
+          "description": "Cognito subject that owns the application."
+        },
+        "idempotency_key": {
+          "type": "string",
+          "description": "Caller-generated key that makes retries safe."
+        },
+        "application_id": {
+          "type": "string",
+          "description": "Opaque ThreatForest application identifier."
+        },
+        "name": {
+          "type": "string",
+          "description": "Replacement application name."
+        },
+        "project_path": {
+          "type": "string",
+          "description": "Replacement logical project path."
+        },
+        "business_context": {
+          "type": "object",
+          "description": "Replacement business and data-protection context.",
+          "properties": {
+            "description": {
+              "type": "string"
+            },
+            "regulatory_frameworks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "data_sensitivity": {
+              "type": "string"
+            },
+            "cia_priority": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "description",
+            "regulatory_frameworks",
+            "data_sensitivity",
+            "cia_priority"
+          ]
+        }
+      },
+      "required": ["owner_id", "idempotency_key", "application_id"]
+    }
+  },
+  {
+    "name": "delete_application",
+    "description": "Delete a ThreatForest application.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "owner_id": {
+          "type": "string",
+          "description": "Cognito subject that owns the application."
+        },
+        "idempotency_key": {
+          "type": "string",
+          "description": "Caller-generated key that makes retries safe."
+        },
+        "application_id": {
+          "type": "string",
+          "description": "Opaque ThreatForest application identifier."
+        }
+      },
+      "required": ["owner_id", "idempotency_key", "application_id"]
+    }
+  },
+  {
+    "name": "list_runs",
+    "description": "List ThreatForest runs owned by a user, optionally filtered by status.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "owner_id": {
+          "type": "string",
+          "description": "Cognito subject that owns the runs."
+        },
+        "statuses": {
+          "type": "array",
+          "description": "Optional run statuses to include.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["owner_id"]
+    }
+  },
+  {
+    "name": "get_run",
+    "description": "Get one ThreatForest run owned by a user.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "owner_id": {
+          "type": "string",
+          "description": "Cognito subject that owns the run."
+        },
+        "run_id": {
+          "type": "string",
+          "description": "Opaque ThreatForest run identifier."
+        }
+      },
+      "required": ["owner_id", "run_id"]
+    }
+  },
+  {
+    "name": "start_run",
+    "description": "Start a ThreatForest threat-modeling run.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "owner_id": {
+          "type": "string",
+          "description": "Cognito subject that owns the application."
+        },
+        "idempotency_key": {
+          "type": "string",
+          "description": "Caller-generated key that makes retries safe."
+        },
+        "app_id": {
+          "type": "string",
+          "description": "Opaque ThreatForest application identifier."
+        },
+        "source_artifact_ids": {
+          "type": "array",
+          "description": "Ready source artifacts to analyze; omit to use all ready sources.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "threat_artifact_id": {
+          "type": "string",
+          "description": "Optional ready artifact containing an authoritative threat input."
+        },
+        "project_path": {
+          "type": "string",
+          "description": "Logical project path retained for UI compatibility."
+        },
+        "threat_source": {
+          "type": "string",
+          "description": "Threat source mode: auto or file."
+        },
+        "threat_file_path": {
+          "type": "string",
+          "description": "Logical threat-file path when threat_source is file."
+        },
+        "frameworks": {
+          "type": "array",
+          "description": "TTP framework identifiers; omit to use saved application settings.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "resume_run_dir": {
+          "type": "string",
+          "description": "Legacy UI resume path; use resume_run for hosted resumptions."
+        },
+        "skip_nodes": {
+          "type": "array",
+          "description": "Pipeline node identifiers to skip.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["owner_id", "idempotency_key", "app_id"]
+    }
+  },
+  {
+    "name": "pause_run",
+    "description": "Request that an active ThreatForest run pause.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "owner_id": {
+          "type": "string",
+          "description": "Cognito subject that owns the run."
+        },
+        "idempotency_key": {
+          "type": "string",
+          "description": "Caller-generated key that makes retries safe."
+        },
+        "run_id": {
+          "type": "string",
+          "description": "Opaque ThreatForest run identifier."
+        }
+      },
+      "required": ["owner_id", "idempotency_key", "run_id"]
+    }
+  },
+  {
+    "name": "stop_run",
+    "description": "Request that an active ThreatForest run stop.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "owner_id": {
+          "type": "string",
+          "description": "Cognito subject that owns the run."
+        },
+        "idempotency_key": {
+          "type": "string",
+          "description": "Caller-generated key that makes retries safe."
+        },
+        "run_id": {
+          "type": "string",
+          "description": "Opaque ThreatForest run identifier."
+        }
+      },
+      "required": ["owner_id", "idempotency_key", "run_id"]
+    }
+  },
+  {
+    "name": "resume_run",
+    "description": "Resume a stopped or failed ThreatForest run in place.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "owner_id": {
+          "type": "string",
+          "description": "Cognito subject that owns the run."
+        },
+        "idempotency_key": {
+          "type": "string",
+          "description": "Caller-generated key that makes retries safe."
+        },
+        "run_id": {
+          "type": "string",
+          "description": "Opaque ThreatForest run identifier."
+        }
+      },
+      "required": ["owner_id", "idempotency_key", "run_id"]
+    }
+  },
+  {
+    "name": "list_pending_interactions",
+    "description": "List pending human-in-the-loop interactions for a ThreatForest run.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "owner_id": {
+          "type": "string",
+          "description": "Cognito subject that owns the run."
+        },
+        "run_id": {
+          "type": "string",
+          "description": "Opaque ThreatForest run identifier."
+        }
+      },
+      "required": ["owner_id", "run_id"]
+    }
+  },
+  {
+    "name": "respond_to_interaction",
+    "description": "Submit a human response to a pending ThreatForest interaction.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "owner_id": {
+          "type": "string",
+          "description": "Cognito subject that owns the run."
+        },
+        "idempotency_key": {
+          "type": "string",
+          "description": "Caller-generated key that makes retries safe."
+        },
+        "run_id": {
+          "type": "string",
+          "description": "Opaque ThreatForest run identifier."
+        },
+        "interaction_id": {
+          "type": "string",
+          "description": "Opaque HITL interaction identifier."
+        },
+        "revision": {
+          "type": "integer",
+          "description": "Pending interaction revision."
+        },
+        "text": {
+          "type": "string",
+          "description": "Human response text."
+        }
+      },
+      "required": [
+        "owner_id",
+        "idempotency_key",
+        "run_id",
+        "interaction_id",
+        "revision",
+        "text"
+      ]
+    }
+  },
+  {
+    "name": "skip_interaction",
+    "description": "Explicitly skip a pending ThreatForest human interaction.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "owner_id": {
+          "type": "string",
+          "description": "Cognito subject that owns the run."
+        },
+        "idempotency_key": {
+          "type": "string",
+          "description": "Caller-generated key that makes retries safe."
+        },
+        "run_id": {
+          "type": "string",
+          "description": "Opaque ThreatForest run identifier."
+        },
+        "interaction_id": {
+          "type": "string",
+          "description": "Opaque HITL interaction identifier."
+        },
+        "revision": {
+          "type": "integer",
+          "description": "Pending interaction revision."
+        }
+      },
+      "required": [
+        "owner_id",
+        "idempotency_key",
+        "run_id",
+        "interaction_id",
+        "revision"
+      ]
+    }
+  }
+]

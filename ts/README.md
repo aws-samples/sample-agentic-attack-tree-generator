@@ -1,12 +1,13 @@
 # ThreatForest — TypeScript stack
 
-This directory holds the TypeScript rewrite of ThreatForest: the Strands agent
-pipeline, the API server, the CLI, and the Next.js dashboard. The Python ML /
-MITRE layer is kept and runs as a small standalone service the TS pipeline calls.
+This workspace contains the shared TypeScript engine, hosted AgentCore services,
+local server and CLI, and Next.js dashboard. Python supplies the embedding and
+framework-matching service; there is no legacy Python agent pipeline.
 
-> Status: migration in progress (see `MIGRATION.md` for the workstream log and
-> the parity gates). The legacy Python pipeline under `../src` remains runnable
-> until cutover is signed off.
+> Hosted execution: [runtime guide](packages/hosted-runtime/README.md).
+> Execution logs: [observability guide](../docs/agentcore-in-app-observability-plan.md).
+> Deploy into your AWS account: [deployment guide](../docs/deploy-to-aws.md).
+> Entry point: `scripts/deploy/deploy.sh`; no account-specific source edits are needed.
 
 ## Layout
 
@@ -22,7 +23,13 @@ ts/
     server/    @threatforest/server  — Express 5 + ws; the frozen /api + /ws contract
     cli/       @threatforest/cli      — the `threatforest` command (web console, run
                                         wizard, config)
-  web/         @threatforest/web      — Next.js 15 app-router dashboard (static export)
+    control-plane/                  — fenced runs, leases, events, settings, checkpoints
+    hosted-api/                     — authenticated HTTP, uploads, HITL, WebSocket replay
+    hosted-runtime/                 — AgentCore background execution and publication
+    ingestion/                      — source normalization, Office extraction, OCR
+    infra/                          — CDK stacks
+    deployed-tests/                 — explicitly enabled AWS acceptance tests
+  web/         @threatforest/web      — Next.js app-router dashboard (static export)
   test-fixtures/                      — deterministic sample app for parity tests
 ```
 
@@ -43,8 +50,7 @@ Next.js UI ──HTTP /api  +  WS /ws──▶ TS server ──▶ engine graph 
 - **Embeddings / TTP matching run in the Python ML service** (`src/ml_service`,
   `python -m ml_service`, binds `127.0.0.1:8770`). This is the *only* backend.
   It is Python because it is the implementation that honours `embeddings.model`,
-  so alternative embedders — e.g. ThreatBERT, which outperforms ATTACK-BERT on
-  TTP mapping — can be configured and used. Override the endpoint with
+  so alternative embedding models can be configured and evaluated. Override the endpoint with
   `TF_ML_URL` or `TF_ML_PORT`.
 - **The service is mandatory.** `runGraph` pre-flights it and refuses to start
   when it is unreachable, rather than emitting a "complete" threat model with
@@ -78,7 +84,11 @@ runs will refuse to start.
 Other commands:
 - `npm run build` — build all packages + the Next static export (`web/out`).
 - `npm run start` — build, then serve the exported UI + API from the TS server on :8000.
-- `npm test` — engine parity tests (probability, report, ML matcher gated on the model).
+- `TF_RUN_DEPLOYED_TESTS=0 TF_RUN_AGENT_HITL_TEST=0 TF_DEPLOYMENT_ENV_FILE=/dev/null npm test` — all local workspace tests, including the server.
+- `npm run typecheck` — type-check every workspace.
+- `cd web && npx playwright test` — local browser tests; live sample tests skip unless explicitly enabled.
+- `THREATFOREST_SAMPLE_CORPUS=/path/to/corpus npm run test:sample-corpus -w @threatforest/ingestion` — optional separately provisioned document corpus.
+- `npm run infer:ttp -w @threatforest/engine -- labels-and-model.json evaluation.json` — generate predictions through the current mapper, then score supplied labels. See the current improvement record for the label contract and limitations.
 
 AWS auth note: if `AWS_BEARER_TOKEN_BEDROCK` is set but empty in your env, unset
 it — otherwise the AWS SDK picks bearer auth over SigV4 and Bedrock calls fail

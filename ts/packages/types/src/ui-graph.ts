@@ -35,14 +35,47 @@ export type AttackEdge = z.infer<typeof AttackEdgeSchema>;
 /** Enriched, UI-facing TTP mapping (confidence allows the AWS boost up to 1.5). */
 export const UiTTPMappingSchema = z.object({
   attack_step: z.string(),
+  attack_step_id: z.string().default(''),
+  node_id: z.string().default(''),
   technique_id: z.string(),
   technique_name: z.string(),
   confidence: z.number().min(0).max(1.5),
   tactics: z.array(z.string()).default([]),
   technique_url: z.string().nullable().default(null),
   mitigations: z.array(z.record(z.string(), z.unknown())).nullable().default(null),
-});
+}).passthrough();
 export type UiTTPMapping = z.infer<typeof UiTTPMappingSchema>;
+
+export const UiMitigationSchema = z
+  .object({
+    name: z.string().default(''),
+    mitigation_text: z.string().default(''),
+    description: z.string().default(''),
+    implementation_guidance: z.string().default(''),
+    attack_step: z.string().default(''),
+    attack_step_id: z.string().default(''),
+    priority: z.union([z.number(), z.string()]).nullable().default(null),
+    technique_id: z.string().default(''),
+    remediation_type: z.string().default(''),
+    evidence: z.array(z.unknown()).default([]),
+  })
+  .passthrough();
+export type UiMitigation = z.infer<typeof UiMitigationSchema>;
+
+export const UiAttackStepSchema = z
+  .object({
+    node_id: z.string(),
+    label: z.string().default(''),
+    description: z.string().default(''),
+    category: z.string().default(''),
+    probability: z.number().nullable().default(null),
+    reach_probability: z.number().nullable().default(null),
+    probability_rationale: z.string().default(''),
+    ttp_mappings: z.array(UiTTPMappingSchema).default([]),
+    mitigations: z.array(UiMitigationSchema).default([]),
+  })
+  .passthrough();
+export type UiAttackStep = z.infer<typeof UiAttackStepSchema>;
 
 export const UiAttackTreeSchema = z.object({
   threat_id: z.string(),
@@ -52,8 +85,10 @@ export const UiAttackTreeSchema = z.object({
   nodes: z.array(AttackNodeSchema).nullable().default(null),
   edges: z.array(AttackEdgeSchema).nullable().default(null),
   ttc_mappings: z.array(UiTTPMappingSchema).default([]),
+  attack_steps: z.array(UiAttackStepSchema).default([]),
+  mitigations: z.array(UiMitigationSchema).default([]),
   mapping_count: z.number().int().nullable().default(null),
-});
+}).passthrough();
 export type UiAttackTree = z.infer<typeof UiAttackTreeSchema>;
 
 /**

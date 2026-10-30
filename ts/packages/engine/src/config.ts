@@ -47,7 +47,133 @@ export interface ProviderBlock {
   [k: string]: unknown;
 }
 
-export class Config {
+export type ModelParameterValue = string | number | boolean;
+
+/**
+ * The configuration surface consumed by one engine run.
+ *
+ * `Config` implements this interface with lazy filesystem-backed getters. Hosted
+ * callers instead use `RunEngineConfig`, which is immutable and never reads the
+ * process-global ThreatForest config file.
+ */
+export interface EngineConfigSource {
+  /** Original durable selection when this is a per-run configuration. */
+  readonly provider?: string;
+  readonly modelId?: string;
+  readonly modelParameters?: Readonly<Record<string, ModelParameterValue>>;
+  readonly embeddingsModel: string;
+  readonly ttcThreshold: number;
+  readonly parallelMaxRetries: number;
+  readonly parallelConcurrency?: number;
+  readonly bedrock: Readonly<ProviderBlock>;
+  readonly anthropic: Readonly<ProviderBlock>;
+  readonly openai: Readonly<ProviderBlock>;
+  readonly gemini: Readonly<ProviderBlock>;
+  readonly awsRegion: string;
+}
+
+export interface RunEngineConfigInput {
+  provider: string;
+  modelId: string;
+  modelParameters?: Readonly<Record<string, ModelParameterValue>>;
+  embeddingsModel: string;
+  /** Durable per-run region; local callers fall back to AWS_REGION. */
+  awsRegion?: string;
+  ttcThreshold?: number;
+  parallelMaxRetries?: number;
+  parallelConcurrency?: number;
+}
+
+type ProviderKey = 'bedrock' | 'anthropic' | 'openai' | 'gemini';
+
+function providerKey(value: string): ProviderKey {
+  switch (value.trim().toLowerCase()) {
+    case 'aws bedrock':
+    case 'bedrock':
+      return 'bedrock';
+    case 'anthropic':
+      return 'anthropic';
+    case 'openai':
+      return 'openai';
+    case 'google gemini':
+    case 'gemini':
+      return 'gemini';
+    default:
+      throw new Error(
+        `Unsupported model provider ${JSON.stringify(value)}. ` +
+          'Supported providers: AWS Bedrock, Anthropic, OpenAI, Google Gemini.',
+      );
+  }
+}
+
+function finiteNumber(value: number, name: string): number {
+  if (!Number.isFinite(value)) {
+    throw new Error(`${name} must be a finite number`);
+  }
+  return value;
+}
+
+/**
+ * Immutable configuration for one graph invocation. No state is shared between
+ * instances, so concurrent hosted runs cannot overwrite each other's provider,
+ * model, model parameters, or embedding model.
+ */
+export class RunEngineConfig implements EngineConfigSource {
+  readonly embeddingsModel: string;
+  readonly ttcThreshold: number;
+  readonly parallelMaxRetries: number;
+  readonly parallelConcurrency: number;
+  readonly bedrock: Readonly<ProviderBlock>;
+  readonly anthropic: Readonly<ProviderBlock>;
+  readonly openai: Readonly<ProviderBlock>;
+  readonly gemini: Readonly<ProviderBlock>;
+  readonly awsRegion: string;
+  readonly provider: string;
+  readonly modelId: string;
+  readonly modelParameters: Readonly<Record<string, ModelParameterValue>>;
+
+  constructor(input: RunEngineConfigInput) {
+    const modelId = input.modelId.trim();
+    const embeddingsModel = input.embeddingsModel.trim();
+    if (modelId.length === 0) throw new Error('modelId must not be empty');
+    if (embeddingsModel.length === 0) throw new Error('embeddingsModel must not be empty');
+
+    this.provider = input.provider.trim();
+    const selectedProvider = providerKey(this.provider);
+    this.modelId = modelId;
+    this.embeddingsModel = embeddingsModel;
+    this.ttcThreshold = finiteNumber(input.ttcThreshold ?? 0.3, 'ttcThreshold');
+    this.parallelMaxRetries = Math.trunc(
+      finiteNumber(input.parallelMaxRetries ?? 1, 'parallelMaxRetries'),
+    );
+    if (this.parallelMaxRetries < 0) {
+      throw new Error('parallelMaxRetries must be greater than or equal to zero');
+    }
+    this.parallelConcurrency = input.parallelConcurrency ?? 3;
+    if (!Number.isInteger(this.parallelConcurrency) || this.parallelConcurrency < 1 || this.parallelConcurrency > 16) {
+      throw new Error('parallelConcurrency must be an integer from 1 to 16');
+    }
+    this.awsRegion = input.awsRegion?.trim() || process.env.AWS_REGION || 'us-east-1';
+    this.modelParameters = Object.freeze({ ...(input.modelParameters ?? {}) });
+
+    const selected = Object.freeze({
+      ...this.modelParameters,
+      model_id: this.modelId,
+    });
+    const empty = Object.freeze({}) as Readonly<ProviderBlock>;
+    this.bedrock = selectedProvider === 'bedrock' ? selected : empty;
+    this.anthropic = selectedProvider === 'anthropic' ? selected : empty;
+    this.openai = selectedProvider === 'openai' ? selected : empty;
+    this.gemini = selectedProvider === 'gemini' ? selected : empty;
+    Object.freeze(this);
+  }
+}
+
+export function createRunEngineConfig(input: RunEngineConfigInput): RunEngineConfig {
+  return new RunEngineConfig(input);
+}
+
+export class Config implements EngineConfigSource {
   private data: Record<string, unknown> | null = null;
   private path: string | null = null;
 
@@ -106,6 +232,9 @@ export class Config {
 
   get parallelMaxRetries(): number {
     return Math.trunc(this.get('parallel.max_retries', 1));
+  }
+  get parallelConcurrency(): number {
+    return this.get('parallel.concurrency', 3);
   }
 
   // Provider blocks (only the SDK-native four are wired in providers.ts).

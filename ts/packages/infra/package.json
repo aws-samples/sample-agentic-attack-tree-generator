@@ -1,0 +1,23 @@
+{
+  "name": "@threatforest/infra",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "AWS CDK infrastructure for the hosted ThreatForest deployment.",
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit",
+    "test": "TF_ENVIRONMENT=test TF_REGION=eu-west-2 node --import tsx/esm --test \"test/**/*.test.ts\"",
+    "synth": "cdk synth --app \"node --import tsx/esm src/app.ts\""
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.265.0",
+    "constructs": "^10.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.21",
+    "aws-cdk": "^2.1024.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.0"
+  }
+}

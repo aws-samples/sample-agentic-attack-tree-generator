@@ -15,11 +15,18 @@
   "scripts": {
     "build": "tsc -b",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx/esm --test \"src/**/*.test.ts\""
+    "test": "node --import tsx/esm --test \"src/**/*.test.ts\"",
+    "test:ttp-quality": "node --import tsx/esm --test src/evaluation/ttp-quality.test.ts",
+    "evaluate:ttp": "node --import tsx/esm src/evaluation/ttp-quality-cli.ts",
+    "infer:ttp": "node --import tsx/esm src/evaluation/infer-ttp.ts"
   },
   "dependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "@anthropic-ai/sdk": "^0.109.1",
+    "@google/genai": "^2.6.0",
     "@strands-agents/sdk": "^1.9.0",
     "@threatforest/types": "*",
+    "openai": "^6.45.0",
     "yaml": "^2.8.3",
     "zod": "^4.1.12"
   },

@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import ButtonDropdown, {
   type ButtonDropdownProps,
 } from '@cloudscape-design/components/button-dropdown';
-import type { VersionSummary } from '@threatforest/types';
+import { runDisplayName, type VersionSummary } from '@threatforest/types';
 import {
   exportCustomPdf,
   exportCustomCsvBundle,
@@ -12,6 +12,7 @@ import {
   type ThreatModelSummary,
 } from '@/utils/export-service';
 import { buildExportFilename } from '@/utils/export-filename';
+import { authenticatedFetch } from '@/api/authenticated-fetch';
 import CustomiseExportModal, {
   type CustomiseExportConfirm,
 } from './CustomiseExportModal';
@@ -62,7 +63,7 @@ export default function VersionRowExportMenu({
   async function loadData(): Promise<ThreatModelSummary> {
     if (cacheRef.current) return cacheRef.current;
     const url = `/api/applications/${encodeURIComponent(appId)}/versions/${encodeURIComponent(version.id)}/data`;
-    const response = await fetch(url);
+    const response = await authenticatedFetch(url);
     if (!response.ok) {
       throw new Error(`Failed to load version data (HTTP ${response.status})`);
     }
@@ -122,7 +123,7 @@ export default function VersionRowExportMenu({
           appId,
           versionId: version.id,
           appName,
-          versionLabel: version.display_name || version.id,
+          versionLabel: version.display_name || runDisplayName(appName, version.run_date),
           scope: null,
           extension,
         });

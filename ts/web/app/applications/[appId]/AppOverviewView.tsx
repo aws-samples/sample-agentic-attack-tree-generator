@@ -1,11 +1,13 @@
 'use client';
 
+import { runDisplayName } from '@threatforest/types';
+
 /**
  * AppOverviewView — TS/Next port of console-ui's pages/AppOverviewPage.jsx.
  *
  * The v2 landing page for an application: header + rename, business-context
- * panel, project-path edit, latest threat model card, version history table,
- * report export, and a danger-zone delete. Rendered by the dynamic-segment
+ * panel, managed source summary, latest threat model card, version history
+ * table, report export, and a danger-zone delete. Rendered by the dynamic-segment
  * server wrapper (`page.tsx`, generateStaticParams: []); reads `appId` via
  * `useParams()`.
  */
@@ -33,7 +35,6 @@ import Toggle from '@cloudscape-design/components/toggle';
 import type { Application, BusinessContext, VersionSummary } from '@threatforest/types';
 import AppShell from '@/components/AppShell';
 import BusinessContextPanel from '@/components/BusinessContextPanel';
-import DirectoryPicker from '@/components/DirectoryPicker';
 import VersionRowExportMenu from '@/components/VersionRowExportMenu';
 import { downloadThreatforestReport } from '@/utils/export-service';
 import {
@@ -55,7 +56,6 @@ interface AppOverviewState {
   id: string;
   name?: string;
   description?: string | null;
-  project_path?: string;
   business_context?: BusinessContext | null;
   imported?: boolean;
   imported_from?: string | null;
@@ -129,12 +129,6 @@ export default function AppOverviewView() {
   const [renameDraft, setRenameDraft] = useState('');
   const [renameError, setRenameError] = useState('');
   const [renameSubmitting, setRenameSubmitting] = useState(false);
-
-  // Project path modal — only available while the app has zero runs on disk.
-  const [editingPath, setEditingPath] = useState(false);
-  const [pathDraft, setPathDraft] = useState('');
-  const [pathError, setPathError] = useState('');
-  const [pathSubmitting, setPathSubmitting] = useState(false);
 
   // Delete modal
   const [deleting, setDeleting] = useState(false);
@@ -267,35 +261,6 @@ export default function AppOverviewView() {
     }
   };
 
-  const openPathEdit = () => {
-    setPathDraft(app?.project_path || '');
-    setPathError('');
-    setEditingPath(true);
-  };
-
-  const handlePathSave = async () => {
-    const projectPath = pathDraft.trim();
-    if (!projectPath) {
-      setPathError('Project path cannot be empty.');
-      return;
-    }
-    if (projectPath === app?.project_path) {
-      setEditingPath(false);
-      return;
-    }
-    setPathSubmitting(true);
-    setPathError('');
-    try {
-      const updated = await updateApplication(appId, { projectPath });
-      setApp(updated as AppOverviewState);
-      setEditingPath(false);
-    } catch (err) {
-      setPathError((err as Error).message || 'Failed to update project path.');
-    } finally {
-      setPathSubmitting(false);
-    }
-  };
-
   const handleDelete = async () => {
     setDeleteSubmitting(true);
     setDeleteError('');
@@ -349,7 +314,7 @@ export default function AppOverviewView() {
   const appName = app?.name || appId;
 
   // Imported applications are read-only — the recipient has no source code,
-  // so re-running, editing the project path, or editing the business context
+  // so re-running or editing the business context
   // makes no sense. We hide those affordances instead of letting users click
   // them and hit a backend error. The flag is set by the apps-list endpoint
   // when the folder's metadata.json carries an ``imported_from_app_id``.
@@ -383,7 +348,7 @@ export default function AppOverviewView() {
         const isLatest = item.id === latestVersion?.id;
         const live = isLiveVersion(item);
         const abandoned = isAbandonedVersion(item);
-        const label = item.display_name || item.id;
+        const label = item.display_name || runDisplayName(app?.name, item.run_date);
         const displayLabel = isLatest ? `${label} (latest)` : label;
         if (abandoned) {
           // Non-clickable: there is nothing to render for an abandoned run.
@@ -436,6 +401,19 @@ export default function AppOverviewView() {
         const abandoned = isAbandonedVersion(item);
         return (
           <SpaceBetween direction="horizontal" size="xs">
+            {item.run_id && (
+              <Button
+                variant="inline-link"
+                onClick={() =>
+                  router.push(
+                    `/applications/${appId}/versions/${item.id}/logs`,
+                  )
+                }
+                data-testid={`version-logs-${item.id}`}
+              >
+                Logs
+              </Button>
+            )}
             <VersionRowExportMenu
               appId={appId}
               appName={app?.name}
@@ -549,28 +527,19 @@ export default function AppOverviewView() {
             header={
               <Header
                 variant="h2"
-                description="Edit the path whenever the repository is moved or renamed. Existing threat models stay attached to this application regardless of where the code lives now. Tip: point this only at the same codebase — a path belonging to a different application will produce misleading future threat models."
-                actions={
-                  <Button
-                    iconName="edit"
-                    onClick={openPathEdit}
-                    ariaLabel="Edit project repository"
-                    data-testid="edit-project-path"
-                  />
-                }
+                description="Project evidence is stored in the managed encrypted application workspace. Add updated files when starting a new threat model."
               >
-                Project repository
+                Project source
               </Header>
             }
           >
-            <Box variant="awsui-key-label">Path</Box>
-            <Box data-testid="project-path-value">{app.project_path}</Box>
+            <StatusIndicator type="success">Managed source workspace ready</StatusIndicator>
           </Container>
         )}
 
         <Container header={<Header variant="h2">Latest threat model</Header>}>
           {latestVersion ? (
-            <ColumnLayout columns={3} variant="text-grid">
+            <ColumnLayout columns={4} variant="text-grid">
               <div>
                 <Box variant="awsui-key-label">Threat model</Box>
                 {isAbandonedVersion(latestVersion) ? (
@@ -606,6 +575,23 @@ export default function AppOverviewView() {
               <div>
                 <Box variant="awsui-key-label">Status</Box>
                 <div>{renderStatus(latestVersion.status)}</div>
+              </div>
+              <div>
+                <Box variant="awsui-key-label">Execution</Box>
+                {latestVersion.run_id ? (
+                  <Link
+                    onFollow={(event) => {
+                      event.preventDefault();
+                      router.push(
+                        `/applications/${appId}/versions/${latestVersion.id}/logs`,
+                      );
+                    }}
+                  >
+                    Logs
+                  </Link>
+                ) : (
+                  <Box color="text-status-inactive">Unavailable</Box>
+                )}
               </div>
             </ColumnLayout>
           ) : (
@@ -718,50 +704,6 @@ export default function AppOverviewView() {
               }}
               autoFocus
               data-testid="rename-input"
-            />
-          </FormField>
-        </Modal>
-
-        {/* Project path modal */}
-        <Modal
-          key="path-modal"
-          visible={editingPath}
-          onDismiss={() => !pathSubmitting && setEditingPath(false)}
-          header="Edit project repository"
-          footer={
-            <Box float="right">
-              <SpaceBetween direction="horizontal" size="xs">
-                <Button
-                  variant="link"
-                  onClick={() => setEditingPath(false)}
-                  disabled={pathSubmitting}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={handlePathSave}
-                  loading={pathSubmitting}
-                  data-testid="save-project-path"
-                >
-                  Save
-                </Button>
-              </SpaceBetween>
-            </Box>
-          }
-        >
-          <FormField
-            label="Project repository path"
-            description="Absolute path to the repository ThreatForest scans for this application. Use this when the repo has been moved or renamed — don't point it at a different application's codebase, or future threat models will drift from past runs."
-            errorText={pathError}
-          >
-            <DirectoryPicker
-              value={pathDraft}
-              onChange={(v) => {
-                setPathDraft(v);
-                if (v.trim()) setPathError('');
-              }}
-              inputTestId="project-path-input"
             />
           </FormField>
         </Modal>

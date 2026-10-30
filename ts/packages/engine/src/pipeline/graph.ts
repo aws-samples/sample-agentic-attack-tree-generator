@@ -32,6 +32,7 @@ import {
   BeforeNodeCallEvent,
   AfterNodeCallEvent,
   NodeStreamUpdateEvent,
+  Status,
   type MultiAgentInput,
   type MultiAgentState,
   type NodeInputOptions,
@@ -41,10 +42,17 @@ import {
 
 import { LocalFilesystemWorkspace, resolveStateDir, resolveOutputDir } from '../workspace.js';
 import { createScannerAgent } from '../agents/scanner.js';
-import { createThreatAgent } from '../agents/threat.js';
+import { seedBusinessContext } from '../business-context.js';
+import type { BusinessContext } from '@threatforest/types';
+import {
+  buildThreatInvocationPrompt,
+  createThreatAgent,
+  resolveAuthoritativeThreatInputPaths,
+} from '../agents/threat.js';
 import { verifyScannerOutput, verifyThreatOutput } from '../verifiers.js';
 import { verifyMitigationOutput } from '../agents/mitigation.js';
 import { runParallelPipeline } from '../stages/parallel.js';
+import { verifyTtpCoverage } from '../stages/ttp.js';
 import { runProbabilityStage } from '../stages/probability-stage.js';
 import { runReportGenerator, verifyReportOutput } from '../stages/report.js';
 import {
@@ -54,6 +62,7 @@ import {
   createInterviewerAgent,
   type InteractionFn,
 } from '../agents/hitl.js';
+import { config, type EngineConfigSource } from '../config.js';
 
 const MAX_RETRIES = 2;
 
@@ -106,6 +115,18 @@ class SkipNode extends Node {
   }
 }
 
+/** Construct an agent only when its stage actually executes. */
+class LazyNode extends Node {
+  override readonly type = 'lazyNode';
+  constructor(id: string, private readonly create: () => Promise<Node> | Node) {
+    super(id, {});
+  }
+  override async *handle(input: MultiAgentInput, state: MultiAgentState, options?: NodeInputOptions):
+    AsyncGenerator<MultiAgentStreamEvent, NodeResultUpdate, undefined> {
+    return yield* (await this.create()).handle(input, state, options);
+  }
+}
+
 /**
  * A verifier node that OWNS the retry loop (the AND-safe remodel of the Python
  * verifier→agent retry edge). It re-runs `rerun()` until `check()` passes or the
@@ -119,7 +140,7 @@ class VerifierRetryNode extends Node {
   constructor(
     id: string,
     private readonly check: () => [boolean, string],
-    private readonly rerun: () => Promise<void>,
+    private readonly rerun: (feedback: string) => Promise<void>,
     private readonly maxRetries = MAX_RETRIES,
   ) {
     super(id, {});
@@ -133,7 +154,7 @@ class VerifierRetryNode extends Node {
     let attempts = 0;
     while (!ok && attempts < this.maxRetries) {
       attempts += 1;
-      await this.rerun();
+      await this.rerun(msg);
       [ok, msg] = this.check();
     }
     return textResult(`${ok ? 'PASS' : 'FAIL'}: ${msg}${attempts ? ` (after ${attempts} retr${attempts === 1 ? 'y' : 'ies'})` : ''}`);
@@ -159,8 +180,27 @@ export interface NodeProgressEvent {
 
 export interface RunGraphOptions {
   runDir?: string;
+  businessContext?: BusinessContext;
   frameworks?: string[] | null;
+  /**
+   * Immutable configuration scoped to this graph invocation. Hosted callers
+   * must provide it from the durable RunSettingsSnapshot. Local callers may
+   * omit it to retain the existing `.threatforest/config.yaml` behavior.
+   */
+  engineConfig?: EngineConfigSource;
   interactionFn?: InteractionFn | null;
+  /**
+   * Files containing the complete user-supplied threat set. Each path must be
+   * inside repoPath (the local repository or hosted materialized workspace).
+   * When present, the threat stage normalizes only these threats and does not
+   * generate additional threats.
+   */
+  authoritativeThreatInputPaths?: string[] | null;
+  /**
+   * Prior same-user, same-application Memory records. These are advisory
+   * scanner context; current uploaded evidence remains authoritative.
+   */
+  historicalContext?: readonly string[] | null;
   /**
    * Optional callback invoked when a graph node starts and completes. The
    * server executor maps these to per-stage ProgressEvents for the WS progress
@@ -182,6 +222,12 @@ export interface RunGraphOptions {
    * lets future signal-aware nodes bail mid-execution.
    */
   cancelSignal?: AbortSignal;
+  /**
+   * Rethrow the original error from the first failed node instead of returning
+   * a summarized failed result. Durable orchestrators use this to preserve
+   * typed control-flow errors after the SDK captures them in a NodeResult.
+   */
+  throwOnNodeFailure?: boolean;
   /**
    * Node ids whose output already exists on disk from a prior (paused) run.
    * Each is replaced with a no-op skip node so a resumed run reuses the
@@ -208,9 +254,16 @@ export interface RunGraphResult {
  */
 export async function buildGraph(repoPath: string, opts: RunGraphOptions = {}): Promise<Graph> {
   const { runDir, frameworks = null, interactionFn = null, onNodeEvent = null } = opts;
+  const engineConfig = opts.engineConfig ?? config;
   const skipSet = new Set(opts.skipNodes ?? []);
   const stateDir = resolveStateDir(repoPath, runDir);
   const stateWs = new LocalFilesystemWorkspace(stateDir);
+  seedBusinessContext(stateDir, opts.businessContext);
+  const authoritativeThreatInputPaths = resolveAuthoritativeThreatInputPaths(
+    repoPath,
+    opts.authoritativeThreatInputPaths,
+  );
+  const authoritativeThreats = authoritativeThreatInputPaths.length > 0;
 
   // Per-threat progress for the parallel stage (the longest). Reports the real
   // fraction of threats finished so the bar advances "Threat 3/12" rather than
@@ -225,37 +278,50 @@ export async function buildGraph(repoPath: string, opts: RunGraphOptions = {}): 
         })
     : null;
 
-  const scannerAgent = await createScannerAgent(repoPath, runDir);
-  const threatAgent = await createThreatAgent(repoPath, runDir);
-  const interviewer = createInterviewerAgent(repoPath, runDir);
+  let scannerPromise: ReturnType<typeof createScannerAgent> | undefined;
+  const getScanner = () => scannerPromise ??= createScannerAgent(
+    repoPath,
+    runDir,
+    engineConfig,
+    opts.historicalContext ?? [],
+  );
+  let threatPromise: ReturnType<typeof createThreatAgent> | undefined;
+  const getThreat = () => threatPromise ??= createThreatAgent(repoPath, runDir, {
+    authoritativeThreatInputPaths,
+    engineConfig,
+  });
 
   // --- LLM agent nodes ---
-  const scanner = new AgentNode({ agent: scannerAgent });
+  const scanner = new LazyNode('scanner', async () => new AgentNode({ agent: await getScanner() }));
 
   // --- Verifier nodes that own retries (AND-safe; no agent-targeted cycles) ---
   const scannerVerifier = new VerifierRetryNode(
     'scanner_verifier',
     () => verifyScannerOutput(stateWs),
-    async () => {
-      await scannerAgent.invoke(
-        'Analyze this repository and write the project context to the state file.',
+    async (feedback) => {
+      await (await getScanner()).invoke(
+        `Analyze this repository and write the project context to the state file. Repair: ${feedback}`,
+        { cancelSignal: opts.cancelSignal, limits: { turns: 32, totalTokens: 250_000 } },
       );
     },
   );
   const threatVerifier = new VerifierRetryNode(
     'threat_verifier',
-    () => verifyThreatOutput(stateWs),
-    async () => {
-      await threatAgent.invoke(
-        'Read the scanner context and generate threats. Write them to the state file.',
-      );
+    () => verifyThreatOutput(stateWs, { authoritative: authoritativeThreats }),
+    async (feedback) => {
+      await (await getThreat()).invoke(`${buildThreatInvocationPrompt(authoritativeThreatInputPaths)} Repair: ${feedback}`,
+        { cancelSignal: opts.cancelSignal, limits: { turns: 32, totalTokens: 250_000 } });
     },
   );
+  const verifyParallelOutput = (): [boolean, string] => {
+    const ttp = verifyTtpCoverage(repoPath, runDir);
+    return ttp[0] ? verifyMitigationOutput(repoPath, runDir) : ttp;
+  };
   const parallelVerifier = new VerifierRetryNode(
     'parallel_verifier',
-    () => verifyMitigationOutput(repoPath, runDir),
+    verifyParallelOutput,
     async () => {
-      await runParallelPipeline(repoPath, runDir, frameworks);
+      await runParallelPipeline(repoPath, runDir, frameworks, null, engineConfig, opts.cancelSignal);
     },
   );
   const reportVerifier = new VerifierRetryNode(
@@ -268,14 +334,31 @@ export async function buildGraph(repoPath: string, opts: RunGraphOptions = {}): 
 
   // --- HITL nodes (pause via interactionFn) ---
   const scannerReview = new ScannerReviewNode(stateDir, interactionFn, 'scanner_review');
-  const interviewerNode = new InterviewerNode(interviewer, interactionFn, 'interviewer');
-  const threatReview = new ThreatReviewNode(stateDir, repoPath, runDir, interactionFn, 'threat_review');
+  const interviewerNode = new LazyNode('interviewer', () =>
+    new InterviewerNode(createInterviewerAgent(repoPath, runDir, engineConfig), interactionFn, 'interviewer'));
+  const threatReview = new ThreatReviewNode(
+    stateDir,
+    repoPath,
+    runDir,
+    interactionFn,
+    'threat_review',
+    authoritativeThreatInputPaths,
+    engineConfig,
+  );
 
   // --- Function nodes ---
-  const threatNode = new AgentNode({ agent: threatAgent });
+  const threatNode = new LazyNode('threat', async () => new AgentNode({ agent: await getThreat() }));
   const parallelNode = new FunctionNode(
     'parallel_pipeline',
-    () => runParallelPipeline(repoPath, runDir, frameworks, parallelThreatProgress),
+    () =>
+      runParallelPipeline(
+        repoPath,
+        runDir,
+        frameworks,
+        parallelThreatProgress,
+        engineConfig,
+        opts.cancelSignal,
+      ),
     repoPath,
     runDir,
   );
@@ -287,8 +370,9 @@ export async function buildGraph(repoPath: string, opts: RunGraphOptions = {}): 
   // path, mirroring Python). Since each verifier node already exhausted its
   // retry budget, this gate is the final pass/fail.
   const scannerOk = () => verifyScannerOutput(stateWs)[0];
-  const threatOk = () => verifyThreatOutput(stateWs)[0];
-  const parallelOk = () => verifyMitigationOutput(repoPath, runDir)[0];
+  const threatOk = () =>
+    verifyThreatOutput(stateWs, { authoritative: authoritativeThreats })[0];
+  const parallelOk = () => verifyParallelOutput()[0];
 
   // AgentNode ids default to the wrapped agent's id; FunctionNode/VerifierRetryNode
   // ids are explicit. Edges reference nodes by `.id`.
@@ -373,6 +457,15 @@ export function describeNodeError(error: unknown): string {
   return parts.length > 0 ? parts.join(' <- caused by: ') : 'failed';
 }
 
+export function isGraphCancellationError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    (error.name === 'AbortError' ||
+      error.name === 'GraphCancelledError' ||
+      error.message.endsWith(' | graph cancelled by external signal'))
+  );
+}
+
 /**
  * Run the full ThreatForest graph and return a status summary. Port of run_graph
  * (without the rich TUI — the server/CLI render progress from the event stream).
@@ -381,6 +474,11 @@ export async function runGraph(repoPath: string, opts: RunGraphOptions = {}): Pr
   const { setupLangfuseOtel, initSession } = await import('../tracing.js');
   setupLangfuseOtel();
   initSession();
+
+  // Validate supplied paths before health checks or model construction so a
+  // bad path fails deterministically rather than being hidden by an unrelated
+  // external-service outage.
+  resolveAuthoritativeThreatInputPaths(repoPath, opts.authoritativeThreatInputPaths);
 
   // Pre-flight: if the pipeline depends on the external Python ML service (the
   // TTP-mapping backend), confirm it's reachable BEFORE running. Otherwise an
@@ -403,15 +501,17 @@ export async function runGraph(repoPath: string, opts: RunGraphOptions = {}): Pr
   const outputDir = resolveOutputDir(repoPath, opts.runDir);
   const graph = await buildGraph(repoPath, opts);
 
-  // Track which nodes completed, so an interrupted run can persist them and a
-  // resume can skip them. Recorded on AfterNodeCallEvent (the node-completed
-  // boundary — mirrors the Python executor appending on `multiagent_node_stop`).
-  // A node interrupted mid-execution never fires AfterNodeCallEvent, so it is
-  // correctly NOT in `completed` and will re-run on resume. Skipped nodes (from
-  // a prior resume) DO complete instantly and are re-recorded — harmless.
+  // AfterNodeCallEvent also fires for failed nodes. Check the node state so a
+  // captured exception is never persisted as resumable completion.
   const completed: string[] = [];
   graph.addHook(AfterNodeCallEvent, (e) => {
-    if (!completed.includes(e.nodeId)) completed.push(e.nodeId);
+    const nodeState = e.state.node(e.nodeId);
+    if (
+      nodeState?.status === Status.COMPLETED &&
+      !completed.includes(e.nodeId)
+    ) {
+      completed.push(e.nodeId);
+    }
   });
 
   // Forward node start/complete ticks so the caller can stream per-stage
@@ -420,7 +520,11 @@ export async function runGraph(repoPath: string, opts: RunGraphOptions = {}): Pr
   if (opts.onNodeEvent) {
     const emit = opts.onNodeEvent;
     graph.addHook(BeforeNodeCallEvent, (e) => emit({ phase: 'start', nodeId: e.nodeId }));
-    graph.addHook(AfterNodeCallEvent, (e) => emit({ phase: 'complete', nodeId: e.nodeId }));
+    graph.addHook(AfterNodeCallEvent, (e) => {
+      if (e.state.node(e.nodeId)?.status === Status.COMPLETED) {
+        emit({ phase: 'complete', nodeId: e.nodeId });
+      }
+    });
 
     // Intra-stage motion for AgentNode stages (scanner, threat): each inner LLM
     // round-trip (beforeModelCallEvent) and tool call (beforeToolCallEvent —
@@ -458,7 +562,8 @@ export async function runGraph(repoPath: string, opts: RunGraphOptions = {}): Pr
     while (!next.done) {
       // Boundary check: after each yielded event, bail if an interrupt was
       // requested. The just-completed nodes are already on disk; the in-flight
-      // node (if any) did not fire AfterNodeCallEvent so it re-runs on resume.
+      // node (if any) did not finish with completed state, so it re-runs on
+      // resume.
       if (shouldInterrupt?.()) {
         // Stop consuming and return immediately. We do NOT `await gen.return()`:
         // the SDK generator may be suspended at an `await` inside a long node
@@ -483,20 +588,28 @@ export async function runGraph(repoPath: string, opts: RunGraphOptions = {}): Pr
     // throws while the flag is set must still be reported as a FAILURE, not
     // mislabeled as a resumable pause with the real error swallowed. The
     // boundary-break above already handles the normal (non-throwing) interrupt.
-    const isAbort =
-      err instanceof Error && (err.name === 'AbortError' || err.name === 'GraphCancelledError');
-    if (isAbort && shouldInterrupt?.()) {
+    if (
+      isGraphCancellationError(err) &&
+      (opts.cancelSignal?.aborted === true || shouldInterrupt?.() === true)
+    ) {
       return { status: 'interrupted', output_dir: outputDir, completed_nodes: completed };
     }
     throw err;
   }
 
-  const failed: string[] = [];
-  for (const nr of result.results) {
-    if (nr.status === 'FAILED') {
-      failed.push(`${nr.nodeId}: ${describeNodeError(nr.error)}`);
-    }
+  const failedResults = result.results.filter(
+    (nodeResult) => nodeResult.status === Status.FAILED,
+  );
+  if (opts.throwOnNodeFailure && failedResults.length > 0) {
+    throw (
+      failedResults[0]!.error ??
+      new Error(`graph node ${failedResults[0]!.nodeId} failed`)
+    );
   }
+  const failed = failedResults.map(
+    (nodeResult) =>
+      `${nodeResult.nodeId}: ${describeNodeError(nodeResult.error)}`,
+  );
 
   return {
     status: result.status === 'COMPLETED' ? 'success' : 'failed',

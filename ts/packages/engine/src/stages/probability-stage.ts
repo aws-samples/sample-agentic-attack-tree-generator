@@ -34,16 +34,21 @@ export async function runProbabilityStage(repoPath: string, runDir?: string): Pr
   if (trees.length === 0) return 'probability: no trees to process';
 
   const ttpBlob = loadJson(ws, 'ttp_mappings.json');
-  const mitBlob = loadJson(ws, 'mitigations.json');
   const scannerBlob = loadJson(ws, 'scanner_context.json');
 
   const ttpByStep = indexByStep((ttpBlob['ttp_mappings'] as Json[]) ?? [], 'attack_step_id');
-  const mitigationsByStep = indexByStep((mitBlob['mitigations'] as Json[]) ?? [], 'attack_step_id');
   const techStack = (scannerBlob['tech_stack'] as string) ?? '';
 
-  computeProbabilities(trees, ttpByStep, mitigationsByStep, techStack);
+  computeProbabilities(trees, ttpByStep, {}, techStack);
 
   treeBlob['attack_trees'] = trees;
+  treeBlob['risk_assessment'] = {
+    method: 'heuristic_v2',
+    empirically_calibrated: false,
+    implemented_control_effects_assessed: false,
+    post_remediation_probability: null,
+    recommendation_priority_changes_current_risk: false,
+  };
   ws.writeJson('attack_trees.json', treeBlob);
 
   const totalSteps = trees.reduce((n, t) => n + ((t.steps as unknown[])?.length ?? 0), 0);

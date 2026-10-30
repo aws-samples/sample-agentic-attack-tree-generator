@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@threatforest/control-plane": ["../control-plane/src/index.ts"],
+      "@threatforest/ingestion": ["../ingestion/src/index.ts"],
+      "@threatforest/hosted-runtime/report-archive": [
+        "../hosted-runtime/src/report-archive.ts"
+      ],
+      "@threatforest/types": ["../types/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts"]
+}

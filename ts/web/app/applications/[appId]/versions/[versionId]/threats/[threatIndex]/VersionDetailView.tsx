@@ -1,5 +1,7 @@
 'use client';
 
+import { runDisplayName } from '@threatforest/types';
+
 /**
  * VersionDetailView — TS/Next port of console-ui's VersionDetailPage.jsx.
  *
@@ -32,6 +34,7 @@ import ExportButton from '@/components/ExportButton';
 import { getApplication, getApplicationVersions } from '@/api/client';
 import type { ReportAttackTree } from '@/utils/mitigation-aggregator';
 import type { FocusRequest } from '@/components/AttackFlowViewer';
+import { authenticatedFetch } from '@/api/authenticated-fetch';
 
 // AttackFlowViewer renders @xyflow/react (and reads document/fullscreen), so it
 // is browser-only. ssr:false keeps it out of the static-export server pass.
@@ -136,7 +139,7 @@ export default function VersionDetailView() {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch(
+        const response = await authenticatedFetch(
           `/api/applications/${encodeURIComponent(appId)}/versions/${encodeURIComponent(versionId)}/data`,
         );
         if (!response.ok) throw new Error(`Failed to load (HTTP ${response.status})`);
@@ -190,10 +193,10 @@ export default function VersionDetailView() {
       .then(({ versions = [] }) => {
         if (cancelled) return;
         const match = versions.find((v) => v.id === versionId);
-        setVersionLabel(match?.display_name || versionId);
+        setVersionLabel(match?.display_name || runDisplayName(null, match?.run_date ?? ''));
       })
       .catch(() => {
-        if (!cancelled) setVersionLabel(versionId);
+        if (!cancelled) setVersionLabel('Threat model');
       });
     return () => {
       cancelled = true;

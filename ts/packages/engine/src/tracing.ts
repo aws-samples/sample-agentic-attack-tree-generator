@@ -26,6 +26,7 @@
  */
 import { randomUUID } from 'node:crypto';
 import type { AttributeValue } from '@opentelemetry/api';
+import { executionTraceAttributes } from './execution-observability.js';
 
 let _sessionId: string | null = null;
 let _otelInitialized = false;
@@ -54,11 +55,12 @@ export function getSessionId(): string | null {
  */
 export function traceAttrs(agentName: string): Record<string, AttributeValue> {
   if (!_sessionId) {
-    return {};
+    return executionTraceAttributes() as Record<string, AttributeValue>;
   }
   return {
     'session.id': _sessionId,
     'langfuse.tags': ['threatforest', agentName],
+    ...executionTraceAttributes(),
   };
 }
 

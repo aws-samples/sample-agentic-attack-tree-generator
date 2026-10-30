@@ -7,7 +7,7 @@
  *
  * Why the service rather than an in-process TS embedder: it is the only
  * implementation that honours `embeddings.model`, so alternative embedders (e.g.
- * ThreatBERT, which outperforms ATTACK-BERT on TTP mapping) can be configured
+ * ThreatBERT) can be configured
  * and used. A transformers.js embedder was tried and is kept out deliberately —
  * it ignored that setting and could only load an ATTACK-BERT ONNX conversion, so
  * configuring any other model silently produced wrong TTP mappings.
@@ -24,6 +24,8 @@ export interface MatchOptions {
   topK?: number;
   minSimilarity?: number | null;
   frameworks?: string[] | null;
+  /** Per-run embedding model; the service URL remains environment-owned. */
+  embeddingsModel?: string;
 }
 
 /** Match attack-step descriptions to MITRE techniques via the Python ML service. */
@@ -41,4 +43,3 @@ export async function matchSteps(steps: string[], opts: MatchOptions = {}): Prom
 export async function mlHealthCheck(): Promise<boolean> {
   return new MlServiceClient().health();
 }
-

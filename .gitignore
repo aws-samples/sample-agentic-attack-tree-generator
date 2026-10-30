@@ -201,6 +201,15 @@ console-ui/dist/
 sample-applications/iam-identity-center-team/
 sample-applications/sample-scientific-meeting-transcription/
 
+# Generated hosted deployment and browser-test output
+ts/packages/infra/cdk.out/
+ts/cdk.out/
+**/cdk.context.json
+ts/web/test-results/
+ts/web/playwright-report/
+exports/
+*.working.md
+
 # Kept locally only
 paper/
 sample-applications/

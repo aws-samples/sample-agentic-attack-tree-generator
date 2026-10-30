@@ -4,24 +4,27 @@
  * Route "/applications/new" — TS/Next port of console-ui's
  * pages/CreateApplicationPage.jsx.
  *
- * A 3-step wizard (identity → business context → review) that POSTs a new v2
- * application record and navigates to its overview on success.
+ * A 4-step wizard (identity → source → business context → review) that creates
+ * the hosted application, uploads its initial evidence, and then navigates to
+ * the application overview.
  */
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Wizard, { type WizardProps } from '@cloudscape-design/components/wizard';
 import Container from '@cloudscape-design/components/container';
 import Header from '@cloudscape-design/components/header';
 import FormField from '@cloudscape-design/components/form-field';
 import Input from '@cloudscape-design/components/input';
+import FileUpload from '@cloudscape-design/components/file-upload';
+import Button from '@cloudscape-design/components/button';
+import ProgressBar from '@cloudscape-design/components/progress-bar';
 import Alert from '@cloudscape-design/components/alert';
 import Box from '@cloudscape-design/components/box';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import ColumnLayout from '@cloudscape-design/components/column-layout';
 import type { BusinessContext } from '@threatforest/types';
 import AppShell from '@/components/AppShell';
-import DirectoryPicker from '@/components/DirectoryPicker';
 import BusinessContextForm, {
   DATA_SENSITIVITY_OPTIONS,
   emptyBusinessContext,
@@ -29,7 +32,15 @@ import BusinessContextForm, {
   validateBusinessContext,
   type BusinessContextDraft,
 } from '@/components/BusinessContextForm';
-import { createApplication } from '@/api/client';
+import {
+  createApplication,
+  uploadApplicationArtifact,
+} from '@/api/client';
+import {
+  archiveDirectoryFiles,
+  directoryFileKey,
+  type DirectoryFile,
+} from '@/utils/directory-archive';
 
 export default function CreateApplicationPage() {
   const router = useRouter();
@@ -38,11 +49,23 @@ export default function CreateApplicationPage() {
 
   // Step 1 — identity
   const [name, setName] = useState('');
-  const [projectPath, setProjectPath] = useState('');
   const [nameError, setNameError] = useState('');
-  const [pathError, setPathError] = useState('');
 
-  // Step 2 — business context
+  // Step 2 — project source
+  const [sourceFiles, setSourceFiles] = useState<File[]>([]);
+  const [directoryFiles, setDirectoryFiles] = useState<DirectoryFile[]>([]);
+  const [sourceError, setSourceError] = useState('');
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStatus, setUploadStatus] = useState('');
+  const directoryInputRef = useRef<HTMLInputElement | null>(null);
+  const uploadedArtifactsRef = useRef(new WeakMap<File, string>());
+  const directoryArchiveRef = useRef<{
+    inputs: readonly DirectoryFile[];
+    archive: File;
+  } | null>(null);
+  const createdApplicationIdRef = useRef<string | null>(null);
+
+  // Step 3 — business context
   const [businessContext, setBusinessContext] = useState<BusinessContextDraft>(
     emptyBusinessContext(),
   );
@@ -68,15 +91,24 @@ export default function CreateApplicationPage() {
       } else {
         setNameError('');
       }
-      if (!projectPath.trim()) {
-        setPathError('Project path is required.');
-        ok = false;
-      } else {
-        setPathError('');
-      }
       return ok;
     }
     if (stepIndex === 1) {
+      let ok = true;
+      if (sourceFiles.length === 0 && directoryFiles.length === 0) {
+        setSourceError('Select at least one project file or directory.');
+        ok = false;
+      } else if (sourceFiles.some((file) => file.size === 0)) {
+        setSourceError(
+          'Empty individual files cannot be uploaded. Select their directory instead.',
+        );
+        ok = false;
+      } else {
+        setSourceError('');
+      }
+      return ok;
+    }
+    if (stepIndex === 2) {
       const errors = validateBusinessContext(businessContext);
       setContextErrors(errors);
       return Object.keys(errors).length === 0;
@@ -90,10 +122,22 @@ export default function CreateApplicationPage() {
     setActiveStepIndex(requestedStepIndex);
   };
 
+  const handleDirectorySelection = (files: FileList | null) => {
+    if (!files) return;
+    setDirectoryFiles((current) => {
+      const byKey = new Map(current.map((file) => [directoryFileKey(file), file]));
+      for (const file of Array.from(files) as DirectoryFile[]) {
+        byKey.set(directoryFileKey(file), file);
+      }
+      return [...byKey.values()];
+    });
+    setSourceError('');
+  };
+
   const handleSubmit = async () => {
     // Final defence — the wizard already validated each step, but the user
     // could still have backtracked and left something invalid.
-    for (const idx of [0, 1]) {
+    for (const idx of [0, 1, 2]) {
       if (!validateStep(idx)) {
         setActiveStepIndex(idx);
         return;
@@ -102,25 +146,70 @@ export default function CreateApplicationPage() {
 
     setSubmitting(true);
     setSubmitError('');
+    setUploadProgress(0);
+    setUploadStatus('Creating application workspace');
     try {
-      // validateStep(1) above guarantees the draft is a valid BusinessContext.
-      const app = await createApplication({
-        name: name.trim(),
-        projectPath: projectPath.trim(),
-        businessContext: businessContext as BusinessContext,
-      });
-      router.push(`/applications/${app.id}`);
+      // validateStep(2) above guarantees the draft is a valid BusinessContext.
+      let appId = createdApplicationIdRef.current;
+      if (appId === null) {
+        const app = await createApplication({
+          name: name.trim(),
+          projectPath: '',
+          businessContext: businessContext as BusinessContext,
+        });
+        appId = app.id;
+        createdApplicationIdRef.current = appId;
+      }
+
+      const projectFiles = [...sourceFiles];
+      if (directoryFiles.length > 0) {
+        const cachedArchive = directoryArchiveRef.current;
+        const archive =
+          cachedArchive !== null &&
+          cachedArchive.inputs.length === directoryFiles.length &&
+          cachedArchive.inputs.every((file, index) => file === directoryFiles[index])
+            ? cachedArchive.archive
+            : await archiveDirectoryFiles(directoryFiles);
+        directoryArchiveRef.current = { inputs: directoryFiles, archive };
+        projectFiles.push(archive);
+      }
+
+      const totalBytes = projectFiles.reduce((total, file) => total + file.size, 0);
+      let completedBytes = 0;
+      for (const file of projectFiles) {
+        const existing = uploadedArtifactsRef.current.get(file);
+        if (existing) {
+          completedBytes += file.size;
+          setUploadProgress(Math.round((completedBytes / totalBytes) * 100));
+          continue;
+        }
+        setUploadStatus(`Uploading ${file.name}`);
+        const result = await uploadApplicationArtifact(appId, file, {
+          onProgress: ({ bytesUploaded }) => {
+            setUploadProgress(
+              Math.round(((completedBytes + bytesUploaded) / totalBytes) * 100),
+            );
+          },
+        });
+        uploadedArtifactsRef.current.set(file, result.artifact.artifact_id);
+        completedBytes += file.size;
+      }
+
+      setUploadProgress(100);
+      setUploadStatus('Project source is ready');
+      router.push(`/applications/${appId}`);
     } catch (err) {
-      // 409 bubbles up as the repository's error message — usually enough
-      // for the user to reconcile. Steer them back to the right step.
       const message = (err as Error).message || '';
-      setSubmitError(message || 'Failed to create application.');
-      if (/name/i.test(message)) {
+      setSubmitError(
+        createdApplicationIdRef.current === null
+          ? message || 'Failed to create application.'
+          : `The application was created, but its source upload did not finish. ${
+              message || 'Retry to continue the upload.'
+            }`,
+      );
+      if (createdApplicationIdRef.current === null && /name/i.test(message)) {
         setActiveStepIndex(0);
         setNameError(message);
-      } else if (/project_path|path/i.test(message)) {
-        setActiveStepIndex(0);
-        setPathError(message);
       }
     } finally {
       setSubmitting(false);
@@ -131,40 +220,110 @@ export default function CreateApplicationPage() {
     {
       title: 'Identity',
       description:
-        'Name this application and point ThreatForest at the repository it should analyse.',
+        'Name the application that ThreatForest should analyse.',
       content: (
         <Container header={<Header variant="h2">Identity</Header>}>
-          <SpaceBetween size="l">
-            <FormField
-              label="Application name"
-              description="Displayed throughout the console. Case-insensitively unique across all applications."
-              errorText={nameError}
+          <FormField
+            label="Application name"
+            description="Displayed throughout the console. Case-insensitively unique across your applications."
+            errorText={nameError}
+          >
+            <Input
+              value={name}
+              onChange={({ detail }) => {
+                setName(detail.value);
+                if (detail.value.trim()) setNameError('');
+              }}
+              placeholder="e.g. Payments API"
+            />
+          </FormField>
+        </Container>
+      ),
+    },
+    {
+      title: 'Project source',
+      description:
+        'Upload files or a directory. ThreatForest stores them in the managed encrypted application workspace.',
+      content: (
+        <Container
+          header={
+            <Header
+              variant="h2"
+              description="Uploads are stored under an isolated per-user and per-application S3 prefix."
             >
-              <Input
-                value={name}
+              Project source
+            </Header>
+          }
+        >
+          <FormField
+            label="Project files and directories"
+            description="Select source code, documents, diagrams, images, archives, or other evidence to analyse."
+            errorText={sourceError}
+          >
+            <SpaceBetween size="s">
+              <FileUpload
+                value={sourceFiles}
                 onChange={({ detail }) => {
-                  setName(detail.value);
-                  if (detail.value.trim()) setNameError('');
+                  setSourceFiles(detail.value);
+                  if (detail.value.length > 0) setSourceError('');
                 }}
-                placeholder="e.g. Payments API"
-              />
-            </FormField>
-
-            <FormField
-              label="Project path"
-              description="The repository folder that will be scanned when you start a run."
-              errorText={pathError}
-            >
-              <DirectoryPicker
-                value={projectPath}
-                onChange={(val) => {
-                  setProjectPath(val);
-                  if (val.trim()) setPathError('');
+                multiple
+                showFileSize
+                tokenLimit={8}
+                constraintText="Files are integrity checked, encrypted, and normalized when the application is created."
+                i18nStrings={{
+                  uploadButtonText: () => 'Choose files',
+                  dropzoneText: () => 'Drop project files to upload',
+                  removeFileAriaLabel: (_index, fileName) => `Remove ${fileName}`,
+                  limitShowFewer: 'Show fewer files',
+                  limitShowMore: 'Show more files',
+                  errorIconAriaLabel: 'Error',
+                  warningIconAriaLabel: 'Warning',
                 }}
-                placeholder="/path/to/repo"
+                data-testid="application-file-upload"
               />
-            </FormField>
-          </SpaceBetween>
+              <div>
+                <input
+                  ref={(element) => {
+                    directoryInputRef.current = element;
+                    element?.setAttribute('webkitdirectory', '');
+                  }}
+                  type="file"
+                  multiple
+                  hidden
+                  data-testid="application-directory-input"
+                  onChange={(event) => {
+                    handleDirectorySelection(event.currentTarget.files);
+                    event.currentTarget.value = '';
+                  }}
+                />
+                <SpaceBetween direction="horizontal" size="xs" alignItems="center">
+                  <Button
+                    iconName="folder-open"
+                    onClick={() => directoryInputRef.current?.click()}
+                    disabled={submitting}
+                  >
+                    Choose directory
+                  </Button>
+                  {directoryFiles.length > 0 && (
+                    <>
+                      <Box color="text-body-secondary">
+                        {directoryFiles.length} directory file
+                        {directoryFiles.length === 1 ? '' : 's'} selected
+                      </Box>
+                      <Button
+                        variant="icon"
+                        iconName="close"
+                        ariaLabel="Clear selected directory"
+                        onClick={() => setDirectoryFiles([])}
+                        disabled={submitting}
+                      />
+                    </>
+                  )}
+                </SpaceBetween>
+              </div>
+            </SpaceBetween>
+          </FormField>
         </Container>
       ),
     },
@@ -213,8 +372,11 @@ export default function CreateApplicationPage() {
                 <div>{name || '—'}</div>
               </div>
               <div>
-                <Box variant="awsui-key-label">Project path</Box>
-                <div>{projectPath || '—'}</div>
+                <Box variant="awsui-key-label">Project source</Box>
+                <div>
+                  {sourceFiles.length + directoryFiles.length} selected file
+                  {sourceFiles.length + directoryFiles.length === 1 ? '' : 's'}
+                </div>
               </div>
               <div>
                 <Box variant="awsui-key-label">Data sensitivity</Box>
@@ -251,6 +413,15 @@ export default function CreateApplicationPage() {
                 <div>{businessContext.description || '—'}</div>
               </div>
             </ColumnLayout>
+            {submitting && uploadStatus && (
+              <ProgressBar
+                value={uploadProgress}
+                label={uploadStatus}
+                description="ThreatForest is preparing the encrypted project workspace."
+                additionalInfo={`${uploadProgress}%`}
+                data-testid="application-upload-progress"
+              />
+            )}
           </SpaceBetween>
         </Container>
       ),

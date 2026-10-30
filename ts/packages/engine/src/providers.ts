@@ -16,7 +16,7 @@
  * bearer token the user intends to use).
  */
 import { type Model } from '@strands-agents/sdk';
-import type { Config } from './config.js';
+import type { EngineConfigSource, ProviderBlock } from './config.js';
 import {
   TemperatureFallbackBedrockModel,
   hasObservedTemperatureDeprecation,
@@ -28,6 +28,60 @@ export type SupportedProvider = 'bedrock' | 'anthropic' | 'openai' | 'gemini';
 export interface CreateModelOptions {
   temperature?: number;
   maxTokens?: number;
+}
+
+interface NormalizedModelParameters {
+  temperature: number | undefined;
+  maxTokens: number | undefined;
+  topP: number | undefined;
+  contextWindowLimit: number | undefined;
+  extra: Record<string, unknown>;
+}
+
+const NORMALIZED_PARAMETER_KEYS = new Set([
+  'model_id',
+  'modelId',
+  'temperature',
+  'max_tokens',
+  'maxTokens',
+  'top_p',
+  'topP',
+  'context_window_limit',
+  'contextWindowLimit',
+]);
+
+function optionalNumber(
+  block: Readonly<ProviderBlock>,
+  keys: readonly string[],
+): number | undefined {
+  for (const key of keys) {
+    const value = block[key];
+    if (value === undefined) continue;
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+      throw new Error(`Model parameter ${JSON.stringify(key)} must be a finite number`);
+    }
+    return value;
+  }
+  return undefined;
+}
+
+function normalizeModelParameters(
+  block: Readonly<ProviderBlock>,
+): NormalizedModelParameters {
+  const extra: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(block)) {
+    if (!NORMALIZED_PARAMETER_KEYS.has(key)) extra[key] = value;
+  }
+  return {
+    temperature: optionalNumber(block, ['temperature']),
+    maxTokens: optionalNumber(block, ['maxTokens', 'max_tokens']),
+    topP: optionalNumber(block, ['topP', 'top_p']),
+    contextWindowLimit: optionalNumber(block, [
+      'contextWindowLimit',
+      'context_window_limit',
+    ]),
+    extra,
+  };
 }
 
 /**
@@ -88,18 +142,21 @@ function shouldSendTemperature(modelId: string): boolean {
  * unless a non-Bedrock provider block is the first one configured, in which case
  * the caller must have the matching peer dep installed and we lazy-load it.
  */
-export async function createModel(config: Config, opts: CreateModelOptions = {}): Promise<Model> {
-  const temperature = opts.temperature ?? 0;
+export async function createModel(
+  config: EngineConfigSource,
+  opts: CreateModelOptions = {},
+): Promise<Model> {
   // Default output-token budget. The legacy Python Bedrock provider allowed very
   // large outputs (up to 65_536 for opus-4-7); a 4096 default was far too small
   // and made the mitigation agent's large `store_mitigations` tool-call JSON hit
   // "Model reached maximum token limit" mid-call. 32k is a safe headroom for the
   // structured tool outputs in this pipeline without pinning the absolute max.
-  const maxTokens = opts.maxTokens ?? 32_768;
-
   if (config.bedrock?.model_id) {
     bedrockAuthSanityHint();
     const modelId = config.bedrock.model_id;
+    const parameters = normalizeModelParameters(config.bedrock);
+    const temperature = parameters.temperature ?? opts.temperature ?? 0;
+    const maxTokens = parameters.maxTokens ?? opts.maxTokens ?? 32_768;
     // Newer Claude models reject a request carrying `temperature`, which kills
     // the scanner agent on its first call and fails the whole run in <1s. The
     // predicate skips it for families we know about; the model subclass catches
@@ -107,10 +164,15 @@ export async function createModel(config: Config, opts: CreateModelOptions = {})
     // a future release cannot reintroduce the instant-failure bug. See
     // temperature.ts.
     return new TemperatureFallbackBedrockModel({
+      ...parameters.extra,
       modelId,
       region: config.awsRegion,
       ...(shouldSendTemperature(modelId) ? { temperature } : {}),
       maxTokens,
+      ...(parameters.topP === undefined ? {} : { topP: parameters.topP }),
+      ...(parameters.contextWindowLimit === undefined
+        ? {}
+        : { contextWindowLimit: parameters.contextWindowLimit }),
       clientConfig: {
         // Raise the inter-chunk inactivity budget above the SDK's 120s default,
         // which silently truncates long-thinking streams. See the constant.
@@ -122,9 +184,12 @@ export async function createModel(config: Config, opts: CreateModelOptions = {})
   if (config.anthropic?.model_id) {
     const { AnthropicModel } = await import('@strands-agents/sdk/models/anthropic');
     const modelId = config.anthropic.model_id;
-    // The whole pipeline depends on temperature=0 for deterministic, reproducible
-    // threat models; omitting it here let the SDK default (~1.0) through, silently
-    // breaking determinism + Python parity for the Anthropic provider. The newer
+    const parameters = normalizeModelParameters(config.anthropic);
+    const temperature = parameters.temperature ?? opts.temperature ?? 0;
+    const maxTokens = parameters.maxTokens ?? opts.maxTokens ?? 32_768;
+    // Use the configured sampling preference when supported. Stable metadata
+    // comes from the storage contract; temperature does not guarantee identical
+    // analysis content across invocations or providers. The newer
     // Claude models deprecate `temperature` over the Anthropic API too (same
     // model behaviour as Bedrock), so reuse the same predicate. NOTE: only the
     // Bedrock path has the retry-without-temperature safety net; here an
@@ -132,27 +197,51 @@ export async function createModel(config: Config, opts: CreateModelOptions = {})
     // peer dep this package does not subclass.
     const supportsTemperature = shouldSendTemperature(modelId);
     return new AnthropicModel({
+      ...parameters.extra,
       modelId,
       maxTokens,
       ...(supportsTemperature ? { temperature } : {}),
+      ...(parameters.topP === undefined ? {} : { topP: parameters.topP }),
+      ...(parameters.contextWindowLimit === undefined
+        ? {}
+        : { contextWindowLimit: parameters.contextWindowLimit }),
     }) as unknown as Model;
   }
 
   if (config.openai?.model_id) {
     const { OpenAIModel } = await import('@strands-agents/sdk/models/openai');
+    const parameters = normalizeModelParameters(config.openai);
+    const temperature = parameters.temperature ?? opts.temperature ?? 0;
+    const maxTokens = parameters.maxTokens ?? opts.maxTokens ?? 32_768;
     return new OpenAIModel({
+      ...parameters.extra,
       modelId: config.openai.model_id,
       maxTokens,
       temperature,
+      ...(parameters.topP === undefined ? {} : { topP: parameters.topP }),
+      ...(parameters.contextWindowLimit === undefined
+        ? {}
+        : { contextWindowLimit: parameters.contextWindowLimit }),
     }) as unknown as Model;
   }
 
   if (config.gemini?.model_id) {
     const { GoogleModel } = await import('@strands-agents/sdk/models/google');
+    const parameters = normalizeModelParameters(config.gemini);
+    const temperature = parameters.temperature ?? opts.temperature ?? 0;
+    const maxTokens = parameters.maxTokens ?? opts.maxTokens ?? 32_768;
     // Gemini takes generation params via `params`, not a top-level field.
     return new GoogleModel({
       modelId: config.gemini.model_id,
-      params: { temperature },
+      params: {
+        ...parameters.extra,
+        temperature,
+        maxOutputTokens: maxTokens,
+        ...(parameters.topP === undefined ? {} : { topP: parameters.topP }),
+      },
+      ...(parameters.contextWindowLimit === undefined
+        ? {}
+        : { contextWindowLimit: parameters.contextWindowLimit }),
     }) as unknown as Model;
   }
 
@@ -164,7 +253,7 @@ export async function createModel(config: Config, opts: CreateModelOptions = {})
 }
 
 /** The active provider name, for display/logging (mirrors default_bedrock_model intent). */
-export function activeProvider(config: Config): SupportedProvider | null {
+export function activeProvider(config: EngineConfigSource): SupportedProvider | null {
   if (config.bedrock?.model_id) return 'bedrock';
   if (config.anthropic?.model_id) return 'anthropic';
   if (config.openai?.model_id) return 'openai';

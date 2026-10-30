@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import AuthBoundary from '@/auth/AuthBoundary';
 
 // Cloudscape global styles. Importing the global stylesheet once at the root
 // layout applies the design-system reset + typography to the whole app, mirroring
@@ -22,7 +23,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <AuthBoundary>{children}</AuthBoundary>
+      </body>
     </html>
   );
 }

@@ -43,10 +43,26 @@ Built for **security teams, architects, and DevSecOps engineers** who want to br
 
 > **Privacy:** ThreatForest sends project context to your configured LLM provider. AWS Bedrock is recommended for production workloads.
 
-## Quick Start
+## Deploy into AWS
+
+For the hosted AgentCore application, follow the
+[AWS deployment guide](docs/deploy-to-aws.md). It includes account selection,
+automatic CDK bootstrapping, prerequisites, first login, and verification.
 
 ```bash
-git clone https://github.com/aws-samples/sample-agentic-attack-tree-generator.git
+git clone --branch agentcore-hosted https://github.com/aws-samples/sample-agentic-attack-tree-generator.git
+cd sample-agentic-attack-tree-generator
+
+export AWS_PROFILE=my-target-account
+export TF_ACCOUNT_ID=123456789012     # your destination account ID
+export TF_ADMIN_EMAIL=you@example.com
+bash ts/scripts/deploy/deploy.sh
+```
+
+## Quick Start (local development)
+
+```bash
+git clone --branch agentcore-hosted https://github.com/aws-samples/sample-agentic-attack-tree-generator.git
 cd sample-agentic-attack-tree-generator
 
 # 1. Embeddings / MITRE TTP matching run in a small Python service

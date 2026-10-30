@@ -93,13 +93,19 @@ export class MlServiceClient {
    */
   async matchSteps(
     steps: string[],
-    opts: { topK?: number; minSimilarity?: number | null; frameworks?: string[] | null } = {},
+    opts: {
+      topK?: number;
+      minSimilarity?: number | null;
+      frameworks?: string[] | null;
+      embeddingsModel?: string;
+    } = {},
   ): Promise<StepMatch[]> {
     const raw = await this.post('/match_steps', {
       steps,
       top_k: opts.topK ?? 3,
       min_similarity: opts.minSimilarity ?? null,
       frameworks: opts.frameworks ?? null,
+      embedding_model: opts.embeddingsModel ?? null,
     });
     return MatchStepsResponseSchema.parse(raw).results;
   }

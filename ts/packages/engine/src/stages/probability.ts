@@ -87,7 +87,6 @@ export function factorPrior(step: StepLike): [number, string] {
 // --- posterior.py ----------------------------------------------------------
 const TTP_SIMILARITY_SLOPE = 3.0;
 const TTP_SIMILARITY_CLIP = 1.5;
-const MITIGATION_PRIORITY_LAMBDA: Record<number, number> = { 1: -1.2, 2: -0.7, 3: -0.3 };
 const FEASIBILITY_NOTE_LAMBDA = -0.9;
 const TECH_STACK_MISMATCH_LAMBDA = -1.5;
 
@@ -104,7 +103,7 @@ export function updatePosterior(
     techStackMismatch?: boolean;
   } = {},
 ): [number, string] {
-  const { ttpSimilarity = null, mitigationPriority = null, feasibilityNote = '', techStackMismatch = false } = opts;
+  const { ttpSimilarity = null, feasibilityNote = '', techStackMismatch = false } = opts;
   let lg = logit(prior);
   const parts: string[] = [];
 
@@ -117,13 +116,8 @@ export function updatePosterior(
     }
   }
 
-  if (mitigationPriority !== null && mitigationPriority !== undefined) {
-    const adj = MITIGATION_PRIORITY_LAMBDA[Math.trunc(mitigationPriority)] ?? 0.0;
-    if (adj !== 0.0) {
-      lg += adj;
-      parts.push(`mitigation_priority=${mitigationPriority} (${signedFixed(adj, 2)})`);
-    }
-  }
+  // A recommendation is not an implemented, verified control. Keep the input
+  // compatible with old callers, but never reduce current risk from priority.
 
   if (feasibilityNote) {
     lg += FEASIBILITY_NOTE_LAMBDA;
@@ -208,7 +202,7 @@ export interface TreeLike {
 export function computeProbabilities(
   trees: TreeLike[],
   ttpByStep: Record<string, { similarity_score?: unknown }>,
-  mitigationsByStep: Record<string, { priority?: unknown }>,
+  _mitigationsByStep: Record<string, { priority?: unknown }>,
   techStack = '',
 ): void {
   for (const tree of trees) {
@@ -224,14 +218,11 @@ export function computeProbabilities(
 
       const ttp = ttpByStep[step.id ?? ''] ?? {};
       const sim = ttp.similarity_score;
-      const mit = mitigationsByStep[step.id ?? ''] ?? {};
-      const mitPriority = mit.priority;
 
       const mismatch = detectTechStackMismatch(step.description ?? '', techStack);
 
       const [posterior, postRationale] = updatePosterior(prior, {
         ttpSimilarity: typeof sim === 'number' ? sim : null,
-        mitigationPriority: typeof mitPriority === 'number' && Number.isInteger(mitPriority) ? mitPriority : null,
         feasibilityNote: step.feasibility_note ?? '',
         techStackMismatch: mismatch,
       });

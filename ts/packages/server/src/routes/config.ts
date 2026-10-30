@@ -82,6 +82,7 @@ function loadConfigFromYaml(path: string): ConfigResponse {
   let modelProvider = DEFAULT_CONFIG.model_provider;
   let modelId = DEFAULT_CONFIG.model_id;
   let awsProfile: string | null = null;
+  let apiKeyConfigured = false;
 
   for (const [yamlKey, providerName] of Object.entries(KEY_TO_PROVIDER)) {
     if (yamlKey in raw) {
@@ -91,9 +92,13 @@ function loadConfigFromYaml(path: string): ConfigResponse {
       modelProvider = providerName;
       modelId = (section.model_id as string | undefined) ?? DEFAULT_CONFIG.model_id;
       awsProfile = (section.aws_profile as string | undefined) ?? null;
+      apiKeyConfigured =
+        typeof (section.apiKey ?? section.api_key) === 'string' &&
+        String(section.apiKey ?? section.api_key).trim().length > 0;
       break;
     }
   }
+  const aws = (raw.aws as Record<string, unknown> | undefined) ?? {};
 
   return {
     model_provider: modelProvider,
@@ -101,6 +106,8 @@ function loadConfigFromYaml(path: string): ConfigResponse {
     embeddings_model: embeddingsModel,
     default_browse_path: process.cwd(),
     aws_profile: awsProfile,
+    aws_region: (aws.default_region as string | undefined) ?? 'us-east-1',
+    api_key_configured: apiKeyConfigured,
   };
 }
 
@@ -114,6 +121,8 @@ function getConfig(): ConfigResponse {
     embeddings_model: DEFAULT_CONFIG.embeddings_model,
     default_browse_path: process.cwd(),
     aws_profile: null,
+    aws_region: 'us-east-1',
+    api_key_configured: false,
   };
 }
 
@@ -218,13 +227,34 @@ configRouter.post('/config/save', (req: Request, res: Response) => {
 
   const configPath = resolveConfigPath();
 
-  const providerSection: Record<string, unknown> = { model_id: request.model_id };
-  if (request.aws_profile) providerSection.aws_profile = request.aws_profile;
-
   let existing: Record<string, unknown> = {};
   if (existsSync(configPath)) {
     existing = (parseYaml(readFileSync(configPath, 'utf-8')) as Record<string, unknown> | null) ?? {};
   }
+  const previousProvider = (
+    existing[yamlKey] && typeof existing[yamlKey] === 'object'
+      ? existing[yamlKey]
+      : {}
+  ) as Record<string, unknown>;
+  const providerSection: Record<string, unknown> = { model_id: request.model_id };
+  if (request.aws_profile) providerSection.aws_profile = request.aws_profile;
+  if (request.api_key) {
+    providerSection.apiKey = request.api_key;
+  } else if (previousProvider.apiKey ?? previousProvider.api_key) {
+    providerSection.apiKey =
+      previousProvider.apiKey ?? previousProvider.api_key;
+  }
+  existing.aws = {
+    ...((existing.aws && typeof existing.aws === 'object'
+      ? existing.aws
+      : {}) as Record<string, unknown>),
+    ...(request.aws_region
+      ? { default_region: request.aws_region }
+      : {}),
+    ...(request.aws_profile
+      ? { default_profile: request.aws_profile }
+      : {}),
+  };
   // Remove all provider keys, then set the new one.
   for (const key of Object.values(PROVIDER_TO_KEY)) {
     delete existing[key];

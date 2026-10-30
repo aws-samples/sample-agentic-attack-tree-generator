@@ -19,7 +19,13 @@ const SCANNER_REQUIRED_FIELDS = [
   'file_guide',
 ];
 
-const MIN_THREATS = 3;
+export interface VerifyThreatOutputOptions {
+  /**
+   * Supplied-threat mode validates extraction/provenance without applying the
+   * generated-mode minimum count, which would pressure retries to invent data.
+   */
+  authoritative?: boolean;
+}
 
 function isEmpty(v: unknown): boolean {
   if (v === undefined || v === null || v === '') return true;
@@ -48,8 +54,11 @@ export function verifyScannerOutput(ws: LocalFilesystemWorkspace): [boolean, str
   return [true, 'Context is complete'];
 }
 
-/** Port of verify_threat_output. */
-export function verifyThreatOutput(ws: LocalFilesystemWorkspace): [boolean, string] {
+/** Port of verify_threat_output, with an authoritative supplied-threat mode. */
+export function verifyThreatOutput(
+  ws: LocalFilesystemWorkspace,
+  options: VerifyThreatOutputOptions = {},
+): [boolean, string] {
   if (!ws.exists('threats.json')) return [false, 'State file does not exist'];
   let data: Record<string, unknown>;
   try {
@@ -57,9 +66,17 @@ export function verifyThreatOutput(ws: LocalFilesystemWorkspace): [boolean, stri
   } catch (e) {
     return [false, `State file is not valid JSON: ${(e as Error).message}`];
   }
-  const threats = (data['threats'] as Array<Record<string, unknown>>) ?? [];
-  if (threats.length < MIN_THREATS) {
-    return [false, `Only ${threats.length} threats generated, need at least ${MIN_THREATS}`];
+  const rawThreats = data['threats'];
+  if (!Array.isArray(rawThreats)) {
+    return [false, "State file field 'threats' must be an array"];
+  }
+  const threats = rawThreats as Array<Record<string, unknown>>;
+  const minimum = 1;
+  if (threats.length < minimum) {
+    if (options.authoritative) {
+      return [false, 'No explicit threats were found in the authoritative input files'];
+    }
+    return [false, 'No supported threats were generated; review the source evidence and scope'];
   }
   for (let i = 0; i < threats.length; i++) {
     const t = threats[i]!;
@@ -76,6 +93,12 @@ export function verifyThreatOutput(ws: LocalFilesystemWorkspace): [boolean, stri
         `Threat '${t['id'] ?? i}' has no priority — must be 'critical', 'high', 'medium', or 'low'`,
       ];
     }
+    if (options.authoritative && t['threat_source'] !== 'user_provided') {
+      return [
+        false,
+        `Threat '${t['id'] ?? i}' is not marked as user_provided authoritative input`,
+      ];
+    }
   }
-  return [true, 'Threats are valid'];
+  return [true, options.authoritative ? 'Authoritative threats are valid' : 'Threats are valid'];
 }

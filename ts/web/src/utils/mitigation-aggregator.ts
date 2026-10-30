@@ -42,6 +42,7 @@ export interface RawAttackStep {
   probability?: number;
   reach_probability?: number;
   probability_rationale?: string;
+  ttp_mappings?: RawTtcMapping[];
   mitigations?: RawMitigation[];
   [key: string]: unknown;
 }
@@ -320,11 +321,18 @@ export function getAffectedComponentsForTree(
   tree: ReportAttackTree | null | undefined,
   threats: ThreatRow[] | null | undefined,
 ): string[] {
+  const match = threatForTree(tree, threats);
+  return match?.affected_components || match?.impactedAssets || [];
+}
+
+export function threatForTree(
+  tree: ReportAttackTree | null | undefined,
+  threats: ThreatRow[] | null | undefined,
+): ThreatRow | undefined {
   const matchId = (tree?.threat_id || '').replace(/ \[AttackTree.*\]/, '');
-  const match = (threats || []).find(
+  return (threats || []).find(
     (t) => (t.id || t.threat_id) === matchId,
   );
-  return match?.affected_components || match?.impactedAssets || [];
 }
 
 /** Mutable accumulator for {@link aggregateAllMitigations}. */

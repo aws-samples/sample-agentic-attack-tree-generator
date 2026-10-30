@@ -18,35 +18,25 @@
  *   new Agent({ model, systemPrompt, tools, printer:false, traceAttributes })
  *   tool({ name, description, inputSchema: z.object({...}), callback })
  */
-import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync, readdirSync } from 'node:fs';
-import { dirname, join, resolve, sep } from 'node:path';
+import { readFileSync, existsSync, statSync, readdirSync } from 'node:fs';
+import { join, resolve, sep } from 'node:path';
 
 import { Agent, tool, type JSONValue } from '@strands-agents/sdk';
 import { z } from 'zod';
 
-import { config } from '../config.js';
+import { config, type EngineConfigSource } from '../config.js';
+import { observeAgent } from '../execution-observability.js';
+import { traceAttrs } from '../tracing.js';
 import { createModel } from '../providers.js';
+import { findMitigationQualityIssues } from '../quality/domain-quality.js';
+import { createSourceEvidenceResolver, type EvidenceResolver } from '../quality/evidence.js';
+import { makeStoreMitigations as makeVerifiedStoreMitigations } from '../tools/sandboxed-file.js';
 import { makeRetryStrategy } from '../retry.js';
 import { LocalFilesystemWorkspace, resolveStateDir } from '../workspace.js';
 import { MITIGATION_SYSTEM_PROMPT } from './mitigation.prompt.js';
 
 export const STATE_FILE = 'mitigations.json';
 const CONTROLS_STATE_FILE = 'control_candidates.json';
-
-// ---------------------------------------------------------------------------
-// tracing — port of agents/tracing_session.py trace_attrs(). The TS session id
-// is process-global like the Python module-level `_session_id`; an orchestrator
-// may set TF_TRACE_SESSION_ID before constructing agents. When unset, returns
-// {} exactly like the Python (which returns {} until init_session() is called).
-// ---------------------------------------------------------------------------
-function traceAttrs(agentName: string): Record<string, string | string[]> {
-  const sessionId = process.env.TF_TRACE_SESSION_ID;
-  if (!sessionId) return {};
-  return {
-    'session.id': sessionId,
-    'langfuse.tags': ['threatforest', agentName],
-  };
-}
 
 // ===========================================================================
 // sandboxed_file tools — port of src/threatforest/tools/sandboxed_file.py
@@ -212,47 +202,13 @@ export function makeSandboxedFileRead(allowedReadPaths: string[]) {
 // OMITS. The verifier reads those fields, so the tool's output must carry them.
 // We do NOT reuse MitigationSchema here for that reason. Field order in the
 // written JSON matches the Pydantic field declaration order.
-const EvidenceInput = z.object({
-  source_type: z.string(),
-  source_ref: z.string(),
-  excerpt: z.string(),
-  relevance: z.string(),
-});
-
-const MitigationInput = z.object({
-  attack_step_id: z.string(),
-  technique_id: z.string(),
-  mitigation_text: z.string(),
-  implementation_guidance: z.string(),
-  remediation_type: z.enum(['quick_win', 'short_term', 'medium_term', 'long_term', 'monitoring']),
-  control_candidates: z.array(z.record(z.string(), z.unknown())).default([]),
-  selected_control_id: z.string().default(''),
-  priority: z.number().int(),
-  evidence: z.array(EvidenceInput),
-  also_applies_to: z.array(z.string()).default([]),
-});
-
 /**
  * Build a `store_mitigations` tool that validates and writes mitigations. Port
  * of `make_store_mitigations`. Writes `{"mitigations": [...]}` with 2-space
  * indent (matches `json.dumps(data, indent=2)`).
  */
-export function makeStoreMitigations(outputPath: string) {
-  return tool({
-    name: 'store_mitigations',
-    description:
-      'Store all mitigations at once. Each mitigation is validated against a schema before ' +
-      'writing. Every field is required and validated.',
-    inputSchema: z.object({
-      mitigations: z.array(MitigationInput).describe('List of mitigation objects.'),
-    }),
-    callback: ({ mitigations }): string => {
-      mkdirSync(dirname(outputPath), { recursive: true });
-      const data = { mitigations };
-      writeFileSync(outputPath, JSON.stringify(data, null, 2), 'utf8');
-      return `Stored ${mitigations.length} mitigations to ${outputPath}`;
-    },
-  });
+export function makeStoreMitigations(outputPath: string, resolveEvidence?: EvidenceResolver) {
+  return makeVerifiedStoreMitigations(outputPath, resolveEvidence);
 }
 
 // ===========================================================================
@@ -264,7 +220,11 @@ export function makeStoreMitigations(outputPath: string) {
  * (plus control_candidates.json when present) and writes mitigations.json via
  * the preconfigured `store_mitigations` tool.
  */
-export async function createMitigationAgent(repoPath: string, runDir?: string | null): Promise<Agent> {
+export async function createMitigationAgent(
+  repoPath: string,
+  runDir?: string | null,
+  engineConfig: EngineConfigSource = config,
+): Promise<Agent> {
   const stateDir = resolveStateDir(repoPath, runDir ?? undefined);
 
   const readFiles = [
@@ -281,7 +241,7 @@ export async function createMitigationAgent(repoPath: string, runDir?: string | 
 
   const outFile = join(stateDir, STATE_FILE);
 
-  const tools = [makeSandboxedFileRead(readFiles), makeStoreMitigations(outFile)];
+  const tools = [makeSandboxedFileRead([...readFiles, repoPath]), makeStoreMitigations(outFile, createSourceEvidenceResolver(repoPath, [stateDir]))];
 
   let systemPrompt = MITIGATION_SYSTEM_PROMPT;
   systemPrompt +=
@@ -292,9 +252,9 @@ export async function createMitigationAgent(repoPath: string, runDir?: string | 
     `- Control candidates (if exists): \`${controlsFile}\`\n` +
     `- Output: call \`store_mitigations\` (path is preconfigured)\n`;
 
-  const model = await createModel(config, { temperature: 0 });
+  const model = await createModel(engineConfig, { temperature: 0 });
 
-  return new Agent({
+  return observeAgent(new Agent({
     id: 'mitigation',
     name: 'Mitigation',
     model,
@@ -303,18 +263,22 @@ export async function createMitigationAgent(repoPath: string, runDir?: string | 
     printer: false,
     retryStrategy: makeRetryStrategy(),
     traceAttributes: traceAttrs('mitigation'),
-  });
+  }), 'mitigation', 'Mitigation');
 }
 
 /**
  * Run the Mitigation Agent and return the state file path. Port of
  * `run_mitigation_agent`.
  */
-export async function runMitigationAgent(repoPath: string, runDir?: string | null): Promise<string> {
-  const agent = await createMitigationAgent(repoPath, runDir);
+export async function runMitigationAgent(
+  repoPath: string,
+  runDir?: string | null,
+  engineConfig: EngineConfigSource = config,
+): Promise<string> {
+  const agent = await createMitigationAgent(repoPath, runDir, engineConfig);
   await agent.invoke(
-    'Read all state files. For each unique technique, synthesize an actionable mitigation with ' +
-      'evidence. Call store_mitigations with the complete list.',
+    'Read all state files and relevant source files. Cover every attack step, including TTP abstentions, ' +
+      'with an actionable mitigation and exact source evidence. Call store_mitigations with the complete list.',
   );
   const stateDir = resolveStateDir(repoPath, runDir ?? undefined);
   return join(stateDir, STATE_FILE);
@@ -425,22 +389,15 @@ const VALID_REMEDIATION_TYPES = new Set([
 ]);
 
 interface MitigationsFile {
-  mitigations?: Array<{
-    attack_step_id?: string;
-    also_applies_to?: string[];
-    mitigation_text?: string;
-    evidence?: unknown[];
-    priority?: unknown;
-    remediation_type?: string;
-  }>;
+  mitigations?: Array<Record<string, unknown>>;
 }
 interface TtpMappingsFile {
-  ttp_mappings?: Array<{ attack_step_id?: string }>;
+  ttp_mappings?: Array<Record<string, unknown>>;
 }
 
 /**
- * Verify mitigations are actionable, specific, and evidenced. Returns
- * `[passed, feedback]`. Faithful port of `verify_mitigation_output`.
+ * Verify mitigations are actionable, specific, and evidenced. Missing evidence
+ * or coverage for an accepted TTP is a hard failure. Returns `[passed, feedback]`.
  *
  * Parity note: Python manually scrubs trailing commas in mitigations.json
  * (`,\n]`→`\n]`, `,]`→`]`) before json.loads. The TS workspace.readJson applies
@@ -466,92 +423,62 @@ export function verifyMitigationOutput(repoPath: string, runDir?: string | null)
     return [false, `Failed to read state files: ${e instanceof Error ? e.message : String(e)}`];
   }
 
+  if (!workspace.exists('ttp_mappings.json')) {
+    return [false, 'ttp_mappings.json does not exist'];
+  }
+  let mappingsData: TtpMappingsFile;
+  try {
+    mappingsData = workspace.readJson<TtpMappingsFile>('ttp_mappings.json');
+  } catch (e) {
+    return [
+      false,
+      `Failed to read ttp_mappings.json: ${e instanceof Error ? e.message : String(e)}`,
+    ];
+  }
+
   const mitigations = mitData.mitigations ?? [];
-
-  // Collect step IDs that have TTP mappings (only these can have mitigations).
-  const allStepIds = new Set<string>();
-  if (workspace.exists('ttp_mappings.json')) {
-    try {
-      const mappingsData = workspace.readJson<TtpMappingsFile>('ttp_mappings.json');
-      for (const m of mappingsData.ttp_mappings ?? []) {
-        const sid = m.attack_step_id ?? '';
-        if (sid) allStepIds.add(sid);
-      }
-    } catch {
-      // Fall back to tree step IDs if mappings unreadable.
-      for (const tree of treesData.attack_trees ?? []) {
-        for (const step of tree.steps ?? []) {
-          allStepIds.add(step.id ?? '');
-        }
-      }
-    }
-  } else {
-    for (const tree of treesData.attack_trees ?? []) {
-      for (const step of tree.steps ?? []) {
-        allStepIds.add(step.id ?? '');
-      }
-    }
-  }
-
-  if (mitigations.length === 0 && allStepIds.size > 0) {
-    return [false, 'No mitigations produced but attack steps exist'];
-  }
-
-  // Hard failures warrant a retry; soft warnings are logged but don't.
-  const hardIssues: string[] = [];
+  const mappings = mappingsData.ttp_mappings ?? [];
+  const hardIssues = findMitigationQualityIssues(mappings, mitigations, {
+    attackTrees: treesData.attack_trees ?? [],
+    resolveEvidence: createSourceEvidenceResolver(repoPath, [workspace.root]),
+  });
   const warnings: string[] = [];
-  const coveredIds = new Set<string>();
-
-  for (let i = 0; i < mitigations.length; i++) {
-    const m = mitigations[i]!;
-    const sid = m.attack_step_id ?? '';
-    if (!sid) {
-      hardIssues.push(`Mitigation ${i}: missing attack_step_id`);
-      continue;
+  for (const mitigation of mitigations) {
+    const sid =
+      typeof mitigation['attack_step_id'] === 'string'
+        ? mitigation['attack_step_id']
+        : '';
+    const text =
+      typeof mitigation['mitigation_text'] === 'string'
+        ? mitigation['mitigation_text']
+        : '';
+    if (
+      text &&
+      BOILERPLATE.has(stripTrailingDots(text.toLowerCase().trim()))
+    ) {
+      warnings.push(`${sid}: boilerplate mitigation - '${text}'`);
     }
-    coveredIds.add(sid);
-    for (const also of m.also_applies_to ?? []) {
-      coveredIds.add(also);
-    }
-
-    const text = m.mitigation_text ?? '';
-    if (!text) {
-      hardIssues.push(`${sid}: empty mitigation_text`);
-    } else if (BOILERPLATE.has(stripTrailingDots(text.toLowerCase().trim()))) {
-      warnings.push(`${sid}: boilerplate mitigation — '${text}'`);
-    }
-
-    const evidence = m.evidence ?? [];
-    if (evidence.length === 0) {
-      warnings.push(`${sid}: no evidence provided`);
-    }
-
-    if (!m.priority) {
+    if (!mitigation['priority']) {
       warnings.push(`${sid}: missing priority`);
     }
-
-    const rtype = m.remediation_type ?? '';
-    if (!rtype) {
+    const remediationType =
+      typeof mitigation['remediation_type'] === 'string'
+        ? mitigation['remediation_type']
+        : '';
+    if (!remediationType) {
       hardIssues.push(`${sid}: missing remediation_type`);
-    } else if (!VALID_REMEDIATION_TYPES.has(rtype)) {
+    } else if (!VALID_REMEDIATION_TYPES.has(remediationType)) {
       hardIssues.push(
-        `${sid}: invalid remediation_type '${rtype}' — must be one of ${formatSet(VALID_REMEDIATION_TYPES)}`,
+        `${sid}: invalid remediation_type '${remediationType}' - must be one of ${formatSet(VALID_REMEDIATION_TYPES)}`,
       );
     }
   }
 
-  const missing = [...allStepIds].filter((id) => !coveredIds.has(id));
-  if (missing.length > 0) {
-    // Coverage gaps are warnings, not hard failures — per-threat verification
-    // inside the parallel pipeline handles retries at the individual threat level.
-    warnings.push(`${missing.length} steps without mitigations`);
-  }
-
   if (hardIssues.length > 0) {
-    return [false, hardIssues.join('; ')];
+    return [false, [...new Set(hardIssues)].join('; ')];
   }
 
-  let feedback = 'All mitigations are actionable and evidenced';
+  let feedback = 'All attack steps have actionable mitigations with verified source evidence';
   if (warnings.length > 0) {
     feedback += ` (${warnings.length} warnings)`;
   }

@@ -278,6 +278,8 @@ export class ApplicationRepository {
         created_at: now,
         updated_at: now,
         run_dir_name: runDirName,
+        imported: false,
+        imported_from: null,
       };
       data[app.id] = this.toRecord(app);
       this.save(data);
@@ -358,6 +360,8 @@ export class ApplicationRepository {
         created_at: current.created_at,
         updated_at: new Date().toISOString(),
         run_dir_name: current.run_dir_name,
+        imported: current.imported,
+        imported_from: current.imported_from,
       };
       data[appId] = this.toRecord(updated);
       this.save(data);
@@ -421,6 +425,10 @@ export function resolveProjectPathForApp(appId: string): string | null {
   } catch {
     return null;
   }
+}
+
+export function resolveBusinessContextForApp(appId: string) {
+  return structuredClone(getRepository().getApplication(appId).business_context);
 }
 
 /**

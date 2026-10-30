@@ -217,6 +217,15 @@ function extractRunDate(versionDir: string): string {
       Date.UTC(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi), Number(s)),
     ).toISOString();
   }
+  const runMetadata = readJsonFile(join(versionDir, 'run_metadata.json'));
+  if (runMetadata !== null) {
+    for (const key of ['started_at', 'created_at', 'run_date']) {
+      const value = runMetadata[key];
+      if (typeof value === 'string' && Number.isFinite(Date.parse(value))) {
+        return new Date(value).toISOString();
+      }
+    }
+  }
   // Fallback: filesystem mtime.
   try {
     return new Date(statSync(versionDir).mtimeMs).toISOString();
@@ -225,12 +234,16 @@ function extractRunDate(versionDir: string): string {
   }
 }
 
-/** List the timestamped run directory names directly under a project dir. */
+/** List safe local or imported run directory names directly under a project dir. */
 function listVersionDirNames(projectDir: string): string[] {
   if (!isDir(projectDir)) return [];
   try {
     return readdirSync(projectDir).filter(
-      (n) => TIMESTAMP_RE.test(n) && isDir(join(projectDir, n)),
+      (n) =>
+        /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(n) &&
+        isDir(join(projectDir, n)) &&
+        (TIMESTAMP_RE.test(n) ||
+          isFile(join(projectDir, n, 'output', 'threatforest_data.json'))),
     );
   } catch {
     return [];

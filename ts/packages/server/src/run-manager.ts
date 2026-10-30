@@ -16,6 +16,7 @@ import {
   type RunConfig,
   type RunState,
   RunStateSchema,
+  runDisplayName,
 } from '@threatforest/types';
 import { ApplicationRegistry } from './registry.js';
 
@@ -169,6 +170,7 @@ export class RunManager {
     const now = new Date().toISOString();
     const state: RunState = RunStateSchema.parse({
       run_id: runId,
+      display_name: runDisplayName(config.project_path.split('/').filter(Boolean).pop(), now),
       status: 'pending',
       config,
       started_at: now,

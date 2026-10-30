@@ -29,8 +29,9 @@
  * `coverage.py` is ported as `verifyTtpCoverage`.
  */
 import * as path from 'node:path';
-import { config } from '../config.js';
+import { config, type EngineConfigSource } from '../config.js';
 import { matchSteps } from '../ml/index.js';
+import { findAttackTreeQualityIssues, findTtpDecisionQualityIssues } from '../quality/domain-quality.js';
 import { LocalFilesystemWorkspace, resolveStateDir } from '../workspace.js';
 
 const STATE_FILE = 'ttp_candidates.json';
@@ -73,9 +74,15 @@ interface TtpCandidate {
  */
 export async function runTtpEmbedding(
   repoPath: string,
-  opts: { topK?: number; runDir?: string } = {},
+  opts: {
+    topK?: number;
+    runDir?: string;
+    frameworks?: string[] | null;
+    engineConfig?: EngineConfigSource;
+  } = {},
 ): Promise<string> {
   const topK = opts.topK ?? 3;
+  const engineConfig = opts.engineConfig ?? config;
   const stateDir = resolveStateDir(repoPath, opts.runDir);
   const workspace = new LocalFilesystemWorkspace(stateDir);
 
@@ -103,7 +110,9 @@ export async function runTtpEmbedding(
   // service as fallback (see ml/index.ts selection).
   const results = await matchSteps(steps, {
     topK,
-    minSimilarity: config.ttcThreshold,
+    minSimilarity: engineConfig.ttcThreshold,
+    frameworks: opts.frameworks ?? null,
+    embeddingsModel: engineConfig.embeddingsModel,
   });
 
   // Build candidates keyed by step DESCRIPTION (mirrors embedding.py exactly).
@@ -148,13 +157,13 @@ export async function runTtpEmbedding(
 }
 
 interface TtpMappingsFile {
-  ttp_mappings?: Array<{ attack_step_id?: string; technique_id?: string; [k: string]: unknown }>;
+  ttp_mappings?: Array<Record<string, unknown>>;
   [k: string]: unknown;
 }
 
 /**
  * Deterministic coverage check — verifies every attack step in every tree has
- * exactly one final TTP mapping. No LLM. Port of `verify_ttp_coverage`.
+ * exactly one accepted or explicitly abstained TTP decision. No LLM.
  *
  * Returns `[passed, feedback]`.
  */
@@ -179,28 +188,21 @@ export function verifyTtpCoverage(repoPath: string, runDir?: string): [boolean, 
     return [false, `Failed to read state files: ${e instanceof Error ? e.message : String(e)}`];
   }
 
-  // Collect all step IDs from trees.
-  const allStepIds = new Set<string>();
-  for (const tree of treesData.attack_trees ?? []) {
-    for (const step of tree.steps ?? []) {
-      allStepIds.add(step.id ?? '');
-    }
+  const issues = findTtpDecisionQualityIssues(
+    (treesData.attack_trees ?? []) as Array<Record<string, unknown>>,
+    mappingsData.ttp_mappings ?? [],
+  );
+  try {
+    const threats = workspace.exists('threats.json')
+      ? workspace.readJson<{ threats: Record<string, unknown>[] }>('threats.json').threats
+      : undefined;
+    issues.push(...findAttackTreeQualityIssues(treesData.attack_trees ?? [], threats));
+  } catch {
+    return [false, 'Failed to read threats.json'];
+  }
+  if (issues.length > 0) {
+    return [false, issues.join('; ')];
   }
 
-  // Collect mapped step IDs (require both step id and technique id).
-  const mappedIds = new Set<string>();
-  for (const m of mappingsData.ttp_mappings ?? []) {
-    const sid = m.attack_step_id ?? '';
-    const tid = m.technique_id ?? '';
-    if (sid && tid) {
-      mappedIds.add(sid);
-    }
-  }
-
-  const missing = [...allStepIds].filter((sid) => !mappedIds.has(sid)).sort();
-  if (missing.length > 0) {
-    return [false, `Steps missing TTP mappings: ${missing.join(', ')}`];
-  }
-
-  return [true, 'All steps have TTP mappings'];
+  return [true, 'Every attack step has exactly one accepted or abstained TTP decision'];
 }

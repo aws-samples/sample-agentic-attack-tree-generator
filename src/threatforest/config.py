@@ -2,7 +2,7 @@
 
 import os
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import yaml
 from dotenv import load_dotenv
@@ -132,11 +132,19 @@ class Config:
         """Get absolute path to graph file in .threatforest/ directory (default ATT&CK)."""
         return self.graph_file_path_for("attack")
 
-    def graph_file_path_for(self, framework_key: str) -> Path:
+    def graph_file_path_for(
+        self,
+        framework_key: str,
+        embedding_model: Optional[str] = None,
+    ) -> Path:
         """Get absolute path to graph cache file for a specific framework."""
         graph_dir = ROOT_DIR / ".threatforest" / "graphs"
         graph_dir.mkdir(parents=True, exist_ok=True)
-        model_name = self.embeddings_model.replace("/", "_").replace("\\", "_")
+        model_name = (
+            (embedding_model or self.embeddings_model)
+            .replace("/", "_")
+            .replace("\\", "_")
+        )
         return graph_dir / f"{framework_key}_graph_{model_name}.json"
 
     @property

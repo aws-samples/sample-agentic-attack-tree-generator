@@ -86,6 +86,10 @@ export const EvidenceSchema = z.object({
   source_ref: z.string().default(''),
   excerpt: z.string().default(''),
   relevance: z.string().default(''),
+  // Computed from the cited source file, never supplied by the model.
+  source_sha256: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  line_start: z.number().int().positive().optional(),
+  line_end: z.number().int().positive().optional(),
 });
 export type Evidence = z.infer<typeof EvidenceSchema>;
 

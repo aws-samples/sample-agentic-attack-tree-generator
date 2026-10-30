@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": false,
+    "noEmit": true,
+    "rootDir": "..",
+    "baseUrl": ".",
+    "paths": {
+      "@threatforest/types": ["../types/src/index.ts"],
+      "@threatforest/control-plane": ["../control-plane/src/index.ts"],
+      "@threatforest/engine": ["../engine/src/index.ts"]
+    }
+  },
+  "references": []
+}

@@ -12,6 +12,7 @@
  */
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { authenticatedFetch } from '../api/authenticated-fetch';
 
 // jspdf-autotable attaches `lastAutoTable` to the jsPDF instance at runtime but
 // its bundled types don't augment the `jsPDF` interface. Declare it here so we
@@ -759,7 +760,7 @@ export async function downloadThreatforestReport({
     ? `/api/applications/${encodeURIComponent(appId)}/versions/${encodeURIComponent(versionId)}/report?${qs}`
     : `/api/applications/${encodeURIComponent(appId)}/report?${qs}`;
 
-  const response = await fetch(url);
+  const response = await authenticatedFetch(url);
   if (!response.ok) {
     // Try to surface the JSON ``detail`` field from FastAPI when present —
     // otherwise fall back to status text so the user has *something*.

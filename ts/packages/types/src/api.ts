@@ -59,6 +59,8 @@ export const ApplicationSchema = z.object({
   created_at: z.string(),
   updated_at: z.string(),
   run_dir_name: z.string(),
+  imported: z.boolean().default(false),
+  imported_from: z.string().nullable().default(null),
 });
 export type Application = z.infer<typeof ApplicationSchema>;
 
@@ -155,11 +157,14 @@ export const ConfigResponseSchema = z.object({
   embeddings_model: z.string(),
   default_browse_path: z.string(),
   aws_profile: z.string().nullable().default(null),
+  aws_region: z.string().min(3).max(64).optional(),
+  api_key_configured: z.boolean().optional(),
 });
 export type ConfigResponse = z.infer<typeof ConfigResponseSchema>;
 
 export const RunStateSchema = z.object({
   run_id: z.string(),
+  display_name: z.string().optional(),
   // pending | running | pausing | paused | stopped | complete | failed
   status: z.string(),
   config: RunConfigSchema,
@@ -236,6 +241,8 @@ export const ConfigSaveRequestSchema = z.object({
   provider: z.string(),
   model_id: z.string(),
   aws_profile: z.string().nullable().default(null),
+  aws_region: z.string().min(3).max(64).nullable().default(null),
+  api_key: z.string().min(1).max(16_384).nullable().default(null),
 });
 export type ConfigSaveRequest = z.infer<typeof ConfigSaveRequestSchema>;
 

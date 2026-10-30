@@ -1,0 +1,3 @@
+embeddings:
+  model: basel/ATTACK-BERT
+  ttc_threshold: 0.3

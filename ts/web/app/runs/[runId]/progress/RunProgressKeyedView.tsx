@@ -14,9 +14,12 @@
  * `<RunProgressPage key={runId} />`.
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { runDisplayName } from '@threatforest/types';
 import { useRealParams } from '@/hooks/useRealParams';
+import { useRunLogs } from '@/hooks/useRunLogs';
+import { compareRunLogs } from '@/utils/run-logs';
 import ProgressBar from '@cloudscape-design/components/progress-bar';
 import StatusIndicator from '@cloudscape-design/components/status-indicator';
 import Alert from '@cloudscape-design/components/alert';
@@ -29,11 +32,12 @@ import Button from '@cloudscape-design/components/button';
 import type { BreadcrumbGroupProps } from '@cloudscape-design/components/breadcrumb-group';
 import AppShell from '@/components/AppShell';
 import StageCard, { type StageStatus, type ThreatProgress, type StageWorker } from '@/components/StageCard';
-import ActivityFeed, { type ActivityEntry, type ActivityEntryType } from '@/components/ActivityFeed';
+import ActivityFeed, { activityFromRunLog, type ActivityEntry, type ActivityEntryType } from '@/components/ActivityFeed';
 import InterviewerPanel, { type InterviewerChatEntry } from '@/components/InterviewerPanel';
 import ThreatReviewPanel, { type ReviewThreat, type ThreatReviewApply } from '@/components/ThreatReviewPanel';
 import type { ScannerData, ScannerReviewEdits } from '@/components/ScannerReviewPanel';
 import {
+  ApiError,
   connectRunWebSocket,
   pauseRun,
   stopRun,
@@ -41,6 +45,7 @@ import {
   submitRunResponse,
   getRun,
   getApplication,
+  getPendingRunInteractions,
   type RunWebSocketController,
 } from '@/api/client';
 
@@ -125,6 +130,27 @@ const INITIAL_STAGES: StageState[] = STAGES.map((name) => ({
 type ScanStatus = 'running' | 'pausing' | 'paused' | 'stopped' | 'complete' | 'failed';
 
 /** Loose WebSocket event payload — the run stream contract is untyped. */
+interface RunEventDetails {
+  phase?: string;
+  interaction_id?: string;
+  revision?: number;
+  threats?: ReviewThreat[];
+  questions?: string[];
+  message?: string;
+  scanner_data?: ScannerData;
+  workers?: StageWorker[];
+  findings?: string[];
+  index?: number;
+  total?: number;
+  threat_id?: string;
+  app_id?: string;
+  low_confidence?: boolean;
+  /** Terminal outcome on the `run_complete` sentinel: complete | failed | stopped. */
+  status?: string;
+  /** Failure reason, present on `error` and on a failed `run_complete`. */
+  error?: string;
+}
+
 interface RunEvent {
   type?: string;
   stage?: string;
@@ -132,24 +158,7 @@ interface RunEvent {
   message?: string;
   sub_step?: string;
   server_ts?: number;
-  details?: {
-    phase?: string;
-    threats?: ReviewThreat[];
-    questions?: string[];
-    message?: string;
-    scanner_data?: ScannerData;
-    workers?: StageWorker[];
-    findings?: string[];
-    index?: number;
-    total?: number;
-    threat_id?: string;
-    app_id?: string;
-    low_confidence?: boolean;
-    /** Terminal outcome on the `run_complete` sentinel: complete | failed | stopped. */
-    status?: string;
-    /** Failure reason, present on `error` and on a failed `run_complete`. */
-    error?: string;
-  };
+  details?: RunEventDetails;
 }
 
 interface ThreatReviewData {
@@ -171,6 +180,8 @@ function RunProgressBody({ runId }: { runId: string }) {
   const [completedAppId, setCompletedAppId] = useState('');
   const [runAppId, setRunAppId] = useState('');
   const [runAppName, setRunAppName] = useState('');
+  const [applicationUnavailable, setApplicationUnavailable] = useState(false);
+  const [runName, setRunName] = useState('Threat model');
   const [lowConfidence, setLowConfidence] = useState(false);
   // "running" | "paused" | "stopped" | "complete" | "failed"
   const [scanStatus, setScanStatus] = useState<ScanStatus>('running');
@@ -179,7 +190,18 @@ function RunProgressBody({ runId }: { runId: string }) {
   // pointing at /paused-runs instead of dead 'running' controls.
   const [runNotFound, setRunNotFound] = useState(false);
   // True while a pause/stop/resume HTTP request is in-flight
+  const executionLogs = useRunLogs(runNotFound ? '' : runId, {
+    live: scanStatus === 'running' || scanStatus === 'pausing',
+    settleAfterCompletion: true,
+  });
+  const displayedActivity = useMemo(() => [
+    ...activityFeed, ...executionLogs.entries.map(activityFromRunLog),
+  ].sort((a, b) => a.executionLog && b.executionLog
+    ? compareRunLogs(a.executionLog, b.executionLog)
+    : (a.timestamp ?? '').localeCompare(b.timestamp ?? '')), [activityFeed, executionLogs.entries]);
   const [controlPending, setControlPending] = useState(false);
+  const [stopRequested, setStopRequested] = useState(false);
+  const reviewRequestGeneration = useRef(0);
   // Interviewer state
   const [showInterviewer, setShowInterviewer] = useState(false);
   const [chatHistory, setChatHistory] = useState<InterviewerChatEntry[]>([]);
@@ -307,8 +329,108 @@ function RunProgressBody({ runId }: { runId: string }) {
   }, [runId]);
 
   const appendActivity = useCallback((message: string, type: ActivityEntryType) => {
-    setActivityFeed((prev) => [...prev, { time: formatTimestamp(), message, type }]);
+    setActivityFeed((prev) => [...prev, { time: formatTimestamp(), timestamp: new Date().toISOString(), message, type }]);
   }, []);
+
+  const displayAwaitingInput = useCallback(
+    (details: RunEventDetails | undefined, fallbackMessage: string) => {
+      const phase = details?.phase || 'interviewer';
+
+      if (phase === 'threat_review') {
+        const trIdx = resolveStageIndex('Threat Review');
+        setThreatReviewData({
+          threats: details?.threats || [],
+          questions: details?.questions || [],
+          message: details?.message || fallbackMessage,
+        });
+        setShowThreatReview(true);
+        setThreatReviewWaiting(false);
+        if (trIdx >= 0) {
+          setStages((prev) =>
+            prev.map((s, i) =>
+              i === trIdx
+                ? {
+                    ...s,
+                    status: 'awaiting-input' as StageStatus,
+                    statusText: 'Waiting for your review',
+                  }
+                : s,
+            ),
+          );
+        }
+        appendActivity('Threat review is waiting for your input.', 'stage-start');
+        return;
+      }
+
+      if (phase === 'scanner_review') {
+        const raIdx = resolveStageIndex('Repository Analysis');
+        const rawData: ScannerData = details?.scanner_data || {};
+        const enriched: ScannerData = {
+          ...rawData,
+          _cloudTokens:
+            typeof rawData.cloud_provider === 'string' &&
+            rawData.cloud_provider.trim()
+              ? rawData.cloud_provider.split(/,\s*/).filter(Boolean)
+              : Array.isArray(rawData.cloud_provider)
+                ? rawData.cloud_provider
+                : [],
+          _techTokens:
+            typeof rawData.tech_stack === 'string' && rawData.tech_stack.trim()
+              ? rawData.tech_stack.split(/,\s*/).filter(Boolean)
+              : Array.isArray(rawData.tech_stack)
+                ? rawData.tech_stack
+                : [],
+        };
+        setScannerReviewData(enriched);
+        setShowScannerReview(true);
+        if (raIdx >= 0) {
+          setStages((prev) =>
+            prev.map((s, i) =>
+              i === raIdx
+                ? {
+                    ...s,
+                    status: 'awaiting-input' as StageStatus,
+                    statusText: 'Waiting for your review',
+                  }
+                : s,
+            ),
+          );
+        }
+        appendActivity(
+          'Scanner review is waiting for your confirmation.',
+          'stage-start',
+        );
+        return;
+      }
+
+      const cvIdx = resolveStageIndex('Context Validation');
+      if (cvIdx >= 0) {
+        setStages((prev) =>
+          prev.map((s, i) =>
+            i === cvIdx
+              ? {
+                  ...s,
+                  status: 'awaiting-input' as StageStatus,
+                  statusText: 'Waiting for your input',
+                }
+              : s,
+          ),
+        );
+      }
+      setChatHistory((prev) => [
+        ...prev,
+        {
+          role: 'agent',
+          message: details?.message || fallbackMessage,
+          questions: details?.questions || [],
+        },
+      ]);
+      setShowInterviewer(true);
+      setInterviewerWaiting(false);
+      appendActivity('Interviewer is waiting for your input.', 'stage-start');
+    },
+    [appendActivity],
+  );
 
   const handlePause = useCallback(async () => {
     setControlPending(true);
@@ -327,19 +449,64 @@ function RunProgressBody({ runId }: { runId: string }) {
     setControlPending(true);
     try {
       await stopRun(runId);
-      if (scanStatus === 'paused') {
-        // Executor has already exited; no WebSocket event is coming, so update
-        // the UI directly from the HTTP response.
-        setScanStatus('stopped');
-        setControlPending(false);
-        appendActivity('Scan stopped.', 'error');
-      }
-      // If running → stopped, wait for the "scan_stopped" WebSocket event.
+      setStopRequested(true);
+      appendActivity('Stop requested. Waiting for confirmation…', 'stage-complete');
     } catch (err) {
       setErrorMessage(`Failed to stop: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
       setControlPending(false);
     }
-  }, [runId, scanStatus, appendActivity]);
+  }, [runId, appendActivity]);
+
+  // Confirm durable state even if the live stream is disconnected or misses
+  // the stop event. An accepted request alone is not a stopped run.
+  useEffect(() => {
+    if (!stopRequested) return;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout>;
+    const deadline = Date.now() + 120_000;
+    async function confirmStop() {
+      try {
+        const run = await getRun(runId);
+        if (cancelled) return;
+        if (['stopped', 'complete', 'failed'].includes(run.status)) {
+          setScanStatus(run.status as ScanStatus);
+          setStopRequested(false);
+          if (run.error) setErrorMessage(run.error);
+          return;
+        }
+      } catch (error) {
+        if (cancelled) return;
+        if (error instanceof ApiError && error.status === 404) {
+          setRunNotFound(true);
+          setStopRequested(false);
+          return;
+        }
+      }
+      if (Date.now() >= deadline) {
+        setStopRequested(false);
+        setErrorMessage('Stop was requested, but confirmation is taking longer than expected. You can retry Stop.');
+        return;
+      }
+      timer = setTimeout(confirmStop, 2000);
+    }
+    void confirmStop();
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [runId, stopRequested]);
+
+  useEffect(() => {
+    if (!['stopped', 'complete', 'failed'].includes(scanStatus)) return;
+    reviewRequestGeneration.current++;
+    setControlPending(false);
+    setStopRequested(false);
+    setShowScannerReview(false);
+    setShowInterviewer(false);
+    setShowThreatReview(false);
+    if (scanStatus === 'complete') {
+      setPipelineComplete(true);
+      setOverallProgress(100);
+    }
+  }, [scanStatus]);
 
   const handleResume = useCallback(async () => {
     setControlPending(true);
@@ -373,6 +540,7 @@ function RunProgressBody({ runId }: { runId: string }) {
 
       switch (type) {
         case 'stage_start': {
+          reviewRequestGeneration.current++;
           if (stageIdx < 0) break;
           // Use server_ts when available for accurate timing (events may queue
           // before the WebSocket connects, making Date.now() inaccurate).
@@ -410,86 +578,56 @@ function RunProgressBody({ runId }: { runId: string }) {
         }
 
         case 'awaiting_input': {
-          const awaitPhase = details?.phase || 'interviewer';
-
-          if (awaitPhase === 'threat_review') {
-            const trIdx = resolveStageIndex('Threat Review');
-            setThreatReviewData({
-              threats: details?.threats || [],
-              questions: details?.questions || [],
-              message: details?.message || message || '',
-            });
-            setShowThreatReview(true);
-            setThreatReviewWaiting(false);
-            if (trIdx >= 0) {
-              setStages((prev) =>
-                prev.map((s, i) =>
-                  i === trIdx
-                    ? { ...s, status: 'awaiting-input' as StageStatus, statusText: 'Waiting for your review' }
-                    : s,
-                ),
-              );
-            }
-            appendActivity('Threat review is waiting for your input.', 'stage-start');
+          const generation = ++reviewRequestGeneration.current;
+          const phase = details?.phase || 'interviewer';
+          const includesContext =
+            (phase === 'scanner_review' && details?.scanner_data !== undefined) ||
+            (phase === 'threat_review' && details?.threats !== undefined) ||
+            (phase === 'interviewer' &&
+              (details?.questions !== undefined ||
+                details?.message !== undefined));
+          if (includesContext) {
+            displayAwaitingInput(details, message || '');
             break;
           }
 
-          if (awaitPhase === 'scanner_review') {
-            // Scanner review — show inline in the Repository Analysis StageCard
-            const raIdx = resolveStageIndex('Repository Analysis');
-            const rawData: ScannerData = details?.scanner_data || {};
-            // Pre-compute token arrays for display
-            const enriched: ScannerData = {
-              ...rawData,
-              _cloudTokens:
-                typeof rawData.cloud_provider === 'string' && rawData.cloud_provider.trim()
-                  ? rawData.cloud_provider.split(/,\s*/).filter(Boolean)
-                  : Array.isArray(rawData.cloud_provider)
-                    ? rawData.cloud_provider
-                    : [],
-              _techTokens:
-                typeof rawData.tech_stack === 'string' && rawData.tech_stack.trim()
-                  ? rawData.tech_stack.split(/,\s*/).filter(Boolean)
-                  : Array.isArray(rawData.tech_stack)
-                    ? rawData.tech_stack
-                    : [],
-            };
-            setScannerReviewData(enriched);
-            setShowScannerReview(true);
-            if (raIdx >= 0) {
-              setStages((prev) =>
-                prev.map((s, i) =>
-                  i === raIdx
-                    ? { ...s, status: 'awaiting-input' as StageStatus, statusText: 'Waiting for your review' }
-                    : s,
-                ),
+          void getPendingRunInteractions(runId)
+            .then(({ interactions }) => {
+              if (generation !== reviewRequestGeneration.current) return;
+              const interaction =
+                interactions.find(
+                  (candidate) =>
+                    candidate.interaction_id === details?.interaction_id &&
+                    (details?.revision === undefined ||
+                      candidate.revision === details.revision),
+                ) ??
+                interactions.find((candidate) => candidate.kind === phase);
+              if (!interaction) {
+                // Historical replay includes reviews that were already answered.
+                return;
+              }
+              const reason = interaction.reason as RunEventDetails;
+              displayAwaitingInput(
+                {
+                  ...reason,
+                  phase:
+                    typeof reason.phase === 'string'
+                      ? reason.phase
+                      : interaction.kind,
+                  interaction_id: interaction.interaction_id,
+                  revision: interaction.revision,
+                },
+                message || '',
               );
-            }
-            appendActivity('Scanner review is waiting for your confirmation.', 'stage-start');
-          } else {
-            // Interviewer — show InterviewerPanel
-            const cvIdx = resolveStageIndex('Context Validation');
-            if (cvIdx >= 0) {
-              setStages((prev) =>
-                prev.map((s, i) =>
-                  i === cvIdx
-                    ? { ...s, status: 'awaiting-input' as StageStatus, statusText: 'Waiting for your input' }
-                    : s,
-                ),
+            })
+            .catch((error) => {
+              if (generation !== reviewRequestGeneration.current) return;
+              setErrorMessage(
+                `Failed to load pending review: ${
+                  error instanceof Error ? error.message : String(error)
+                }`,
               );
-            }
-            setChatHistory((prev) => [
-              ...prev,
-              {
-                role: 'agent',
-                message: details?.message || message || '',
-                questions: details?.questions || [],
-              },
-            ]);
-            setShowInterviewer(true);
-            setInterviewerWaiting(false);
-            appendActivity('Interviewer is waiting for your input.', 'stage-start');
-          }
+            });
           break;
         }
 
@@ -529,6 +667,7 @@ function RunProgressBody({ runId }: { runId: string }) {
         }
 
         case 'stage_complete': {
+          reviewRequestGeneration.current++;
           if (stage === 'complete') {
             const completeTs = data.server_ts || Date.now();
             setStages((prev) =>
@@ -550,14 +689,14 @@ function RunProgressBody({ runId }: { runId: string }) {
             break;
           }
           // Close panels when their stage completes
-          if (stage === 'Context Validation') {
+          if (stageIdx === resolveStageIndex('Context Validation')) {
             setShowInterviewer(false);
             setInterviewerWaiting(false);
           }
-          if (stage === 'Repository Analysis') {
+          if (stageIdx === resolveStageIndex('Repository Analysis')) {
             setShowScannerReview(false);
           }
-          if (stage === 'Threat Review') {
+          if (stageIdx === resolveStageIndex('Threat Review')) {
             setShowThreatReview(false);
             setThreatReviewWaiting(false);
           }
@@ -670,6 +809,12 @@ function RunProgressBody({ runId }: { runId: string }) {
             setScanStatus('stopped');
             setShowInterviewer(false);
             setShowThreatReview(false);
+          } else if (outcome === 'complete' || outcome === 'completed') {
+            setScanStatus('complete');
+            setPipelineComplete(true);
+            setOverallProgress(100);
+            setShowInterviewer(false);
+            setShowThreatReview(false);
           }
           break;
         }
@@ -704,7 +849,7 @@ function RunProgressBody({ runId }: { runId: string }) {
           break;
       }
     },
-    [appendActivity],
+    [appendActivity, displayAwaitingInput, runId],
   );
 
   // WebSocket lifecycle — depends only on runId (stable).
@@ -753,24 +898,36 @@ function RunProgressBody({ runId }: { runId: string }) {
       .then((data) => {
         if (cancelled) return;
         setRunNotFound(false);
+        setRunName(data.display_name || runDisplayName(null, data.started_at));
         const status = data?.status;
         if (status && status !== 'pending') {
           setScanStatus(status as ScanStatus);
         }
         const id = data?.config?.app_id || '';
         if (id) {
-          setRunAppId(id);
           return getApplication(id).then((app) => {
-            if (!cancelled) setRunAppName(app?.name || '');
+            if (!cancelled) {
+              setRunAppId(id);
+              setRunAppName(app?.name || '');
+            }
+          }).catch((error: unknown) => {
+            if (cancelled) return;
+            if (error instanceof ApiError && error.status === 404) {
+              setApplicationUnavailable(true);
+            } else {
+              setErrorMessage('Application details could not be loaded. Run controls are still available.');
+            }
           });
         }
         return undefined;
       })
-      .catch(() => {
-        // GET /runs/:id 404s when the run is gone from the server's in-memory
-        // store (typically after a restart). Flag it so the UI offers recovery
-        // via /paused-runs rather than showing dead 'running' controls.
-        if (!cancelled) setRunNotFound(true);
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        if (error instanceof ApiError && error.status === 404) {
+          setRunNotFound(true);
+        } else {
+          setErrorMessage(`Failed to load run: ${error instanceof Error ? error.message : String(error)}`);
+        }
       });
     return () => {
       cancelled = true;
@@ -790,8 +947,7 @@ function RunProgressBody({ runId }: { runId: string }) {
         { text: 'Progress', href: `/runs/${runId}/progress` },
       ];
 
-  // A human-in-the-loop gate is open — Pause/Stop can't take effect until it's
-  // answered, so the controls are hidden while any review panel is showing.
+  // Pause/resume are unavailable during a review; Stop remains available.
   const gateOpen = showInterviewer || showScannerReview || showThreatReview;
 
   return (
@@ -799,27 +955,22 @@ function RunProgressBody({ runId }: { runId: string }) {
       <SpaceBetween size="l">
         <Header
           variant="h1"
-          description={`Run ID: ${runId}`}
+          description={runName}
           actions={
             <SpaceBetween direction="horizontal" size="xs">
-              {/* While a human-in-the-loop gate is open the run is suspended
-                  inside a node and can't honor a cooperative pause/stop until
-                  the gate is answered — so hide Pause/Stop and let the user
-                  respond to (or skip) the gate first. */}
               {!runNotFound && scanStatus === 'running' && !gateOpen && (
-                <Button onClick={handlePause} loading={controlPending} disabled={controlPending}>
+                <Button onClick={handlePause} loading={controlPending} disabled={controlPending || stopRequested}>
                   Pause
                 </Button>
               )}
-              {!runNotFound && (scanStatus === 'paused' || scanStatus === 'pausing') && (
-                <Button variant="primary" onClick={handleResume} loading={controlPending} disabled={controlPending}>
+              {!runNotFound && !gateOpen && (scanStatus === 'paused' || scanStatus === 'pausing') && (
+                <Button variant="primary" onClick={handleResume} loading={controlPending} disabled={controlPending || stopRequested}>
                   Resume
                 </Button>
               )}
               {!runNotFound &&
-                (scanStatus === 'running' || scanStatus === 'paused' || scanStatus === 'pausing') &&
-                !gateOpen && (
-                  <Button onClick={handleStop} disabled={controlPending}>
+                (scanStatus === 'running' || scanStatus === 'paused' || scanStatus === 'pausing') && (
+                  <Button onClick={handleStop} loading={stopRequested} disabled={controlPending || stopRequested}>
                     Stop
                   </Button>
                 )}
@@ -831,6 +982,15 @@ function RunProgressBody({ runId }: { runId: string }) {
         >
           Run Progress
         </Header>
+
+        {applicationUnavailable && (
+          <Alert type="info">
+            This run&rsquo;s application is no longer available. Its run history and Stop control remain available.
+          </Alert>
+        )}
+        {stopRequested && (
+          <Alert type="info">Stop requested. Waiting for the run to confirm it has stopped.</Alert>
+        )}
 
         {/* Run no longer in the server's live store (e.g. after a restart). The
             live controls/stream can't recover it; a paused run is still on disk
@@ -998,8 +1158,14 @@ function RunProgressBody({ runId }: { runId: string }) {
         )}
 
         {/* Activity Feed */}
-        <Container header={<Header variant="h2">Activity Feed</Header>}>
-          <ActivityFeed entries={activityFeed} />
+        <Container header={<Header variant="h2" actions={
+          <Button onClick={executionLogs.refresh} loading={executionLogs.loading} iconName="refresh">Refresh logs</Button>
+        }>Activity Feed</Header>}>
+          <SpaceBetween size="s">
+            {executionLogs.error && <Alert type="warning" header="Execution logs could not be refreshed">{executionLogs.error}</Alert>}
+            {executionLogs.loadingMore && <StatusIndicator type="loading">Loading earlier execution logs…</StatusIndicator>}
+            <ActivityFeed entries={displayedActivity} maxHeight="640px" showFilters />
+          </SpaceBetween>
         </Container>
       </SpaceBetween>
     </AppShell>

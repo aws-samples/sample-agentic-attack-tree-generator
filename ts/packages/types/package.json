@@ -14,12 +14,15 @@
   },
   "scripts": {
     "build": "tsc -b",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx/esm --test \"src/**/*.test.ts\""
   },
   "dependencies": {
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@types/node": "^22.19.21",
+    "tsx": "^4.19.2",
     "typescript": "^5.7.0"
   }
 }

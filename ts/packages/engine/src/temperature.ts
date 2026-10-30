@@ -96,7 +96,7 @@ export function isTemperatureRejection(error: unknown): boolean {
     // this model."
     if (
       /temperature/i.test(current.message) &&
-      /(deprecat|not supported|unsupported|unexpected|invalid|cannot be)/i.test(current.message)
+      /(deprecat|not supported|unsupported|does(?:n't| not) support|unexpected|invalid|cannot be)/i.test(current.message)
     ) {
       return true;
     }

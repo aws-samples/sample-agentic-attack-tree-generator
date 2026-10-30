@@ -13,7 +13,7 @@ import { runGraph, LocalFilesystemWorkspace } from '@threatforest/engine';
 import type { SimpleInterrupt, InteractionResponse } from '@threatforest/engine';
 import type { RunConfig } from '@threatforest/types';
 import type { OrchestratorExecutor, ProgressEvent, ScanControl } from './run-manager.js';
-import { resolveProjectPathForApp, resolveRunDirNameForApp } from './applications.js';
+import { resolveProjectPathForApp, resolveRunDirNameForApp, resolveBusinessContextForApp } from './applications.js';
 import { PAUSE_STATE_KEY } from './registry.js';
 import { createRunDirectory } from './registry.js';
 
@@ -145,6 +145,9 @@ export function createOrchestratorExecutor(_opts: ExecutorOptions = {}): Orchest
 
       const result = await runGraph(projectPath, {
         runDir,
+        businessContext: config.app_id && !config.resume_run_dir
+          ? resolveBusinessContextForApp(config.app_id)
+          : undefined,
         frameworks: config.frameworks,
         interactionFn: engineInteractionFn,
         // Cooperative pause/stop: the engine polls this at each node boundary and

@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": ".",
+    "composite": true,
+    "types": ["node"]
+  },
+  "references": [
+    { "path": "../types" },
+    { "path": "../control-plane" },
+    { "path": "../engine" }
+  ],
+  "include": ["src/**/*.ts", "test/**/*.ts"]
+}

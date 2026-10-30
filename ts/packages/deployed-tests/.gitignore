@@ -1,0 +1,4 @@
+.env.deployed
+cdk-outputs.json
+deployment-outputs.json
+deployments/

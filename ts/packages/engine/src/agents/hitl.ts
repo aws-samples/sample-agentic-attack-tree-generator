@@ -96,11 +96,12 @@ import {
 } from '@strands-agents/sdk/multiagent';
 import { z } from 'zod';
 
-import { config } from '../config.js';
+import { config, type EngineConfigSource } from '../config.js';
 import { createModel } from '../providers.js';
 import { makeRetryStrategy } from '../retry.js';
 import { makeSandboxedFileRead } from '../tools/sandboxed-file.js';
 import { traceAttrs } from '../tracing.js';
+import { observeAgent } from '../execution-observability.js';
 import { LocalFilesystemWorkspace, resolveStateDir } from '../workspace.js';
 import { INTERVIEWER_PROMPT } from './interviewer.prompt.js';
 
@@ -247,6 +248,14 @@ export function applyScannerReviewEdits(
   }
 
   ctx['scanner_review_applied'] = true;
+  const businessContext = ctx['business_context'];
+  if (businessContext !== null && typeof businessContext === 'object' && !Array.isArray(businessContext)) {
+    ctx['business_context'] = {
+      ...businessContext,
+      ...('data_sensitivity' in edits ? { data_sensitivity: edits['data_sensitivity'] } : {}),
+      ...('compliance_requirements' in edits ? { regulatory_frameworks: edits['compliance_requirements'] } : {}),
+    };
+  }
   workspace.writeJson(key, ctx);
 }
 
@@ -510,6 +519,7 @@ const ASK_USER_SKIP_INSTRUCTION =
 export function createInterviewerAgent(
   repoPath: string,
   runDir?: string,
+  engineConfig: EngineConfigSource = config,
 ): { agent: Promise<Agent>; bridge: AskUserBridge; workspace: LocalFilesystemWorkspace; stateKey: string } {
   const stateDir = resolveStateDir(repoPath, runDir);
   const workspace = new LocalFilesystemWorkspace(stateDir);
@@ -576,15 +586,17 @@ export function createInterviewerAgent(
     `- Repository path: \`${repoPath}\`\n`;
 
   const agent = (async (): Promise<Agent> => {
-    const model = await createModel(config, { temperature: 0.3 });
-    return new Agent({
+    const model = await createModel(engineConfig, { temperature: 0.3 });
+    return observeAgent(new Agent({
+      id: 'interviewer',
+      name: 'Interviewer',
       model,
       systemPrompt,
       tools: [makeSandboxedFileRead([repoPath, stateDir]), askUser, finalizeInterview],
       printer: false,
       retryStrategy: makeRetryStrategy(),
       traceAttributes: traceAttrs('interviewer'),
-    });
+    }), 'interviewer', 'Context validation');
   })();
 
   return { agent, bridge, workspace, stateKey };
@@ -840,12 +852,42 @@ function safeParse(raw: unknown): Record<string, unknown> {
  *   - on free-text feedback, re-invokes the threat agent with a revision prompt
  *   - on exit, appends a structured recap to scanner_context.json:interviewer_summary
  */
+export function buildThreatRevisionPrompt(feedback: string, authoritative = false): string {
+  if (authoritative) {
+    return (
+      'The user is reviewing an authoritative supplied-threat set. Read the existing ' +
+      'threats.json working set, the scanner context, and the authoritative input files. ' +
+      'Apply only the explicit user feedback below. Preserve every current threat unless ' +
+      'the user explicitly asks to remove or change it. Add a threat only when the user ' +
+      'explicitly describes that new threat; never discover, infer, or invent additional ' +
+      'threats. Do not restore a supplied threat that the current threats.json no longer ' +
+      'contains, because an earlier structured review edit may have removed it. Store the ' +
+      'complete revised list with user_provided provenance.\n\n' +
+      `User feedback:\n${feedback}`
+    );
+  }
+  return (
+    'The user has reviewed your previously generated threats and provided ' +
+    'feedback. Read the existing threats.json file (it already contains ' +
+    'your previous output), then revise the threat list according to the ' +
+    "user's feedback below. Preserve each threat's existing priority " +
+    '(unless the user explicitly asks to change it) and keep existing ' +
+    'threats unless the user explicitly asks to remove them. Add any new ' +
+    'threats the user describes. Use the next available TS00X id for ' +
+    'added threats. Write the complete revised threat list back to the ' +
+    'state file.\n\n' +
+    `User feedback:\n${feedback}`
+  );
+}
+
 export class ThreatReviewNode extends Node {
   override readonly type = 'threatReviewNode';
   private readonly workspace: LocalFilesystemWorkspace;
   private readonly repoPath: string;
   private readonly runDir: string | undefined;
   private readonly interactionFn: InteractionFn | null;
+  private readonly authoritativeThreatInputPaths: readonly string[];
+  private readonly engineConfig: EngineConfigSource;
 
   constructor(
     stateDir: string,
@@ -853,12 +895,16 @@ export class ThreatReviewNode extends Node {
     runDir: string | undefined,
     interactionFn: InteractionFn | null,
     nodeId = 'threat_review',
+    authoritativeThreatInputPaths: readonly string[] = [],
+    engineConfig: EngineConfigSource = config,
   ) {
-    super(nodeId, { description: 'HITL: review generated threats, loop until proceed' });
+    super(nodeId, { description: 'HITL: review threats, loop until proceed' });
     this.workspace = new LocalFilesystemWorkspace(stateDir);
     this.repoPath = repoPath;
     this.runDir = runDir;
     this.interactionFn = interactionFn;
+    this.authoritativeThreatInputPaths = [...authoritativeThreatInputPaths];
+    this.engineConfig = engineConfig;
   }
 
   async *handle(
@@ -882,10 +928,11 @@ export class ThreatReviewNode extends Node {
     for (;;) {
       rounds += 1;
       const current = threatsPayload(this.workspace);
+      const authoritative = this.authoritativeThreatInputPaths.length > 0;
       const payload: Record<string, unknown> = {
         phase: 'threat_review',
         message:
-          'Review the generated threats. Change priorities, remove false ' +
+          `Review the ${authoritative ? 'supplied' : 'generated'} threats. Change priorities, remove false ` +
           "positives, or describe any additional threats you'd like added.",
         questions: QUESTIONS,
         threats: current.map((t) => summarizeThreatForUi(t)),
@@ -967,25 +1014,30 @@ export class ThreatReviewNode extends Node {
    */
   private async rerunThreatAgentWithFeedback(feedback: string): Promise<void> {
     const mod = (await import('./threat.js').catch(() => null)) as
-      | { createThreatAgent?: (repoPath: string, runDir?: string) => Agent | Promise<Agent> }
+      | {
+          createThreatAgent?: (
+            repoPath: string,
+            runDir?: string,
+            options?: {
+              authoritativeThreatInputPaths?: readonly string[] | null;
+              includeExistingThreatState?: boolean;
+              engineConfig?: EngineConfigSource;
+            },
+          ) => Agent | Promise<Agent>;
+        }
       | null;
     if (!mod || typeof mod.createThreatAgent !== 'function') {
       throw new Error(
         'createThreatAgent not available (threat agent not yet ported); skipping revision round.',
       );
     }
-    const agent = await mod.createThreatAgent(this.repoPath, this.runDir);
-    const prompt =
-      'The user has reviewed your previously generated threats and provided ' +
-      'feedback. Read the existing threats.json file (it already contains ' +
-      'your previous output), then revise the threat list according to the ' +
-      "user's feedback below. Preserve each threat's existing priority " +
-      '(unless the user explicitly asks to change it) and keep existing ' +
-      'threats unless the user explicitly asks to remove them. Add any new ' +
-      'threats the user describes. Use the next available TS00X id for ' +
-      'added threats. Write the complete revised threat list back to the ' +
-      'state file.\n\n' +
-      `User feedback:\n${feedback}`;
-    await agent.invoke(prompt);
+    const agent = await mod.createThreatAgent(this.repoPath, this.runDir, {
+      authoritativeThreatInputPaths: this.authoritativeThreatInputPaths,
+      includeExistingThreatState: true,
+      engineConfig: this.engineConfig,
+    });
+    await agent.invoke(
+      buildThreatRevisionPrompt(feedback, this.authoritativeThreatInputPaths.length > 0),
+    );
   }
 }

@@ -11,10 +11,13 @@
  */
 import { Agent, type Model } from '@strands-agents/sdk';
 import { join } from 'node:path';
-import { config } from '../config.js';
+import { readFileSync } from 'node:fs';
+import { config, type EngineConfigSource } from '../config.js';
+import { observeAgent } from '../execution-observability.js';
 import { createModel } from '../providers.js';
 import { makeRetryStrategy } from '../retry.js';
-import { makeSandboxedFileRead, makeSandboxedFileWrite } from '../tools/sandboxed-file.js';
+import { makeSandboxedFileRead } from '../tools/sandboxed-file.js';
+import { makeStoreAttackTrees } from '../tools/store-attack-trees.js';
 import { makeStructuralAnalyzer } from '../tools/structural-analyzer.js';
 import { traceAttrs } from '../tracing.js';
 import { resolveStateDir } from './scanner.js';
@@ -23,7 +26,11 @@ import { TREE_SYSTEM_PROMPT } from './tree.prompt.js';
 export const STATE_FILE = 'attack_trees.json';
 
 /** Create a Tree Generator Agent scoped to the given repository. */
-export async function createTreeAgent(repoPath: string, runDir?: string): Promise<Agent> {
+export async function createTreeAgent(
+  repoPath: string,
+  runDir?: string,
+  engineConfig: EngineConfigSource = config,
+): Promise<Agent> {
   const stateDir = resolveStateDir(repoPath, runDir);
 
   const scannerState = join(stateDir, 'scanner_context.json');
@@ -32,7 +39,7 @@ export async function createTreeAgent(repoPath: string, runDir?: string): Promis
 
   const tools = [
     makeSandboxedFileRead([scannerState, threatsState, repoPath]),
-    makeSandboxedFileWrite([treeState]),
+    makeStoreAttackTrees(treeState, () => JSON.parse(readFileSync(threatsState, 'utf8')).threats),
     makeStructuralAnalyzer(repoPath),
   ];
 
@@ -43,9 +50,9 @@ export async function createTreeAgent(repoPath: string, runDir?: string): Promis
     `- Threats: \`${threatsState}\`\n` +
     `- Write output to: \`${treeState}\`\n`;
 
-  const model: Model = await createModel(config, { temperature: 0 });
+  const model: Model = await createModel(engineConfig, { temperature: 0 });
 
-  return new Agent({
+  return observeAgent(new Agent({
     id: 'tree',
     name: 'Tree',
     model,
@@ -54,12 +61,16 @@ export async function createTreeAgent(repoPath: string, runDir?: string): Promis
     printer: false,
     retryStrategy: makeRetryStrategy(),
     traceAttributes: traceAttrs('tree'),
-  });
+  }), 'tree', 'Attack tree');
 }
 
 /** Run the Tree Generator and return the state file path. */
-export async function runTree(repoPath: string, runDir?: string): Promise<string> {
-  const agent = await createTreeAgent(repoPath, runDir);
+export async function runTree(
+  repoPath: string,
+  runDir?: string,
+  engineConfig: EngineConfigSource = config,
+): Promise<string> {
+  const agent = await createTreeAgent(repoPath, runDir, engineConfig);
   await agent.invoke(
     'Read the threats and scanner context, then generate attack trees. Write them to the state file.',
   );

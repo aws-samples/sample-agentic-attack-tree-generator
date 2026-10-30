@@ -156,6 +156,10 @@ export function adaptToReactFlow(
   const attackSteps = (attackTree && Array.isArray(attackTree.attack_steps)) ? attackTree.attack_steps : [];
   const ttcMappings = (attackTree && Array.isArray(attackTree.ttc_mappings)) ? attackTree.ttc_mappings : [];
   const mitigations = (attackTree && Array.isArray(attackTree.mitigations)) ? attackTree.mitigations : [];
+  const normalizeStepReference = (value: unknown): string =>
+    typeof value === 'string'
+      ? value.toLowerCase().replace(/\s+/g, ' ').trim()
+      : '';
 
   // Build lookup maps for enrichment
   const stepMap: Record<string, string> = {};
@@ -181,27 +185,87 @@ export function adaptToReactFlow(
   const rfNodes: AttackTreeFlowNode[] = parserNodes.map((node) => {
     const desc = stepMap[node.id] || '';
     const label = (node.label || '').replace(/\\n/g, ' ').replace(/\n/g, ' ');
+    const nodeReferences = new Set(
+      [node.id, label, desc].map(normalizeStepReference).filter(Boolean),
+    );
+    const matchesNodeReference = (value: unknown): boolean =>
+      nodeReferences.has(normalizeStepReference(value));
+    const nodeTreeMitigations = mitigations.filter(
+      (mitigation) =>
+        matchesNodeReference(mitigation.attack_step) ||
+        matchesNodeReference(mitigation.attack_step_id),
+    );
+    const matchedStep = attackSteps.find(
+      (step) =>
+        step.node_id === node.id ||
+        step.label === label ||
+        step.description === desc,
+    );
     // Match ttc_mappings by node ID, label, or description
-    const nodeMappings = ttcMappings.filter((m) =>
-      m.attack_step === node.id || m.attack_step === label || m.attack_step === desc,
+    const matchingTreeMappings = ttcMappings.filter(
+      (mapping) =>
+        matchesNodeReference(mapping.node_id) ||
+        matchesNodeReference(mapping.attack_step_id) ||
+        matchesNodeReference(mapping.attack_step) ||
+        (typeof mapping.technique_id === 'string' &&
+          mapping.technique_id !== '' &&
+          nodeTreeMitigations.some(
+            (mitigation) => mitigation.technique_id === mapping.technique_id,
+          )),
+    );
+    const nodeMappings = [
+      ...(matchedStep?.ttp_mappings ?? []),
+      ...matchingTreeMappings,
+    ].filter(
+      (mapping, index, mappings) =>
+        mappings.findIndex(
+          (candidate) =>
+            candidate.technique_id === mapping.technique_id &&
+            candidate.attack_step === mapping.attack_step,
+        ) === index,
     ).map((m) => {
       // Strip reasoning field and duplicate data to keep popover clean
       const { reasoning, ...clean } = m;
       return clean;
     });
-    // Collect mitigations from tree-level AND from inside each matched ttc_mapping
-    const nodeMitigations: RawMitigation[] = mitigations.filter((m) =>
-      m.attack_step === node.id || m.attack_step === label || m.attack_step === desc,
+    // Collect mitigations from the explicit attack-step association, tree-level
+    // compatibility data, and nested TTP mappings.
+    const nodeMitigations: RawMitigation[] = [];
+    const addMitigations = (items: RawMitigation[] | null | undefined) => {
+      for (const mitigation of items ?? []) {
+        const key =
+          mitigation.mitigation_text ||
+          mitigation.name ||
+          mitigation.mitigation ||
+          JSON.stringify(mitigation);
+        if (
+          !nodeMitigations.some(
+            (existing) =>
+              (existing.mitigation_text ||
+                existing.name ||
+                existing.mitigation ||
+                JSON.stringify(existing)) === key,
+          )
+        ) {
+          nodeMitigations.push(mitigation);
+        }
+      }
+    };
+    addMitigations(matchedStep?.mitigations);
+    addMitigations(nodeTreeMitigations);
+    addMitigations(
+      mitigations.filter(
+        (mitigation) =>
+          typeof mitigation.technique_id === 'string' &&
+          mitigation.technique_id !== '' &&
+          nodeMappings.some(
+            (mapping) => mapping.technique_id === mitigation.technique_id,
+          ),
+      ),
     );
-    // Also pull mitigations nested inside ttc_mappings
     for (const mapping of nodeMappings) {
       if (Array.isArray(mapping.mitigations)) {
-        for (const mit of mapping.mitigations) {
-          // Avoid duplicates by name
-          if (!nodeMitigations.some((existing) => existing.name === mit.name)) {
-            nodeMitigations.push(mit);
-          }
-        }
+        addMitigations(mapping.mitigations);
       }
     }
     const prob = stepProbabilityMap[node.id] || { probability: null, reachProbability: null, rationale: '' };

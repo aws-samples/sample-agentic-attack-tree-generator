@@ -24,6 +24,9 @@ import {
   resolveStateDir,
   resolveOutputDir,
 } from '../workspace.js';
+import { evaluateDomainOutputQuality } from '../quality/domain-quality.js';
+import { createSourceEvidenceResolver } from '../quality/evidence.js';
+import { OUTPUT_CONTRACT_VERSION } from '../output-contract.js';
 
 const OUTPUT_FILE = 'threat_model_report.md';
 
@@ -536,7 +539,7 @@ function stepsToMermaid(steps: JsonObj[], rootGoal: string): string {
 function buildAttackTreesForUi(stateWs: LocalFilesystemWorkspace, threats: JsonObj[]): JsonObj[] {
   const trees: JsonObj[] = [];
   const mappingsByStep: Record<string, JsonObj> = {};
-  const mitigationsByStep: Record<string, JsonObj> = {};
+  const mitigationsByStep: Record<string, JsonObj[]> = {};
 
   // attack_trees.json — Python uses read_json (no manual scrub); on error → [].
   let treeData: JsonObj[] = [];
@@ -564,9 +567,13 @@ function buildAttackTreesForUi(stateWs: LocalFilesystemWorkspace, threats: JsonO
     const parsed = JSON.parse(raw) as JsonObj;
     for (const m of get<JsonObj[]>(parsed, 'mitigations', [])) {
       const sid = get<string>(m, 'attack_step_id', '');
-      mitigationsByStep[sid] = m;
+      if (sid) {
+        mitigationsByStep[sid] = [...(mitigationsByStep[sid] ?? []), m];
+      }
       for (const also of get<string[]>(m, 'also_applies_to', [])) {
-        mitigationsByStep[also] = m;
+        if (also) {
+          mitigationsByStep[also] = [...(mitigationsByStep[also] ?? []), m];
+        }
       }
     }
   } catch {
@@ -579,14 +586,6 @@ function buildAttackTreesForUi(stateWs: LocalFilesystemWorkspace, threats: JsonO
     const tid = 'id' in t ? get<string>(t, 'id', '') : get<string>(t, 'threat_id', '');
     if (tid) threatMap[tid] = t;
   }
-
-  // Count trees per threat_id so we can disambiguate duplicates (Python Counter).
-  const treeCountByThreat: Record<string, number> = {};
-  for (const t of treeData) {
-    const k = get<string>(t, 'threat_id', '');
-    treeCountByThreat[k] = (treeCountByThreat[k] ?? 0) + 1;
-  }
-  const treeIndexByThreat: Record<string, number> = {};
 
   for (const tree of treeData) {
     const threatId = get<string>(tree, 'threat_id', '');
@@ -608,12 +607,25 @@ function buildAttackTreesForUi(stateWs: LocalFilesystemWorkspace, threats: JsonO
       const safeId = idMap[sid] ?? sid;
       const desc = get(step, 'description', '');
       const mapping = mappingsByStep[sid] ?? {};
-      const mit = mitigationsByStep[sid];
+      const stepMitigations = (mitigationsByStep[sid] ?? []).map((mit) => ({
+        name: get(mit, 'mitigation_text', ''),
+        mitigation_text: get(mit, 'mitigation_text', ''),
+        description: get(mit, 'implementation_guidance', ''),
+        implementation_guidance: get(mit, 'implementation_guidance', ''),
+        attack_step: safeId,
+        attack_step_id: sid,
+        priority: get(mit, 'priority', 3),
+        technique_id: get(mit, 'technique_id', ''),
+        remediation_type: get(mit, 'remediation_type', ''),
+        evidence: get(mit, 'evidence', []),
+      }));
 
       // Build attack_step entry. Python: title or desc.
       const title = get<unknown>(step, 'title', '');
       const stepEntry: JsonObj = {
         node_id: safeId,
+        attack_step_id: sid,
+        parent_id: get(step, 'parent_id', ''),
         label: title || desc,
         description: desc,
         category: get(step, 'category', ''),
@@ -621,18 +633,9 @@ function buildAttackTreesForUi(stateWs: LocalFilesystemWorkspace, threats: JsonO
         probability: pyFloat(get(step, 'probability', 0.0)),
         reach_probability: pyFloat(get(step, 'reach_probability', 0.0)),
         probability_rationale: get(step, 'probability_rationale', ''),
+        mitigations: stepMitigations,
       };
-      if (mit) {
-        treeMitigations.push({
-          name: get(mit, 'mitigation_text', ''),
-          description: get(mit, 'implementation_guidance', ''),
-          attack_step: safeId,
-          priority: get(mit, 'priority', 3),
-          technique_id: get(mit, 'technique_id', ''),
-          remediation_type: get(mit, 'remediation_type', ''),
-          evidence: get(mit, 'evidence', []),
-        });
-      }
+      treeMitigations.push(...stepMitigations);
       attackStepsUi.push(stepEntry);
 
       // Build TTC mapping entry (only when technique_id present).
@@ -655,17 +658,19 @@ function buildAttackTreesForUi(stateWs: LocalFilesystemWorkspace, threats: JsonO
           similarity: simField,
           reasoning,
         });
+        stepEntry['ttp_mappings'] = [
+          {
+            attack_step: desc,
+            attack_step_id: sid,
+            node_id: safeId,
+            technique_id: get(mapping, 'technique_id', ''),
+            technique_name: get(mapping, 'technique_name', ''),
+            confidence: simField,
+            similarity: simField,
+            reasoning,
+          },
+        ];
       }
-    }
-
-    // Build a unique display threat_id when a threat has multiple trees.
-    let displayThreatId: string;
-    if ((treeCountByThreat[threatId] ?? 0) > 1) {
-      const idx = (treeIndexByThreat[threatId] ?? 0) + 1;
-      treeIndexByThreat[threatId] = idx;
-      displayThreatId = `${threatId} [AttackTree - ${idx}]`;
-    } else {
-      displayThreatId = threatId;
     }
 
     // threat_category: threat.get("category") or .get("title") or .get("name") or .get("description","")[:80]
@@ -682,7 +687,8 @@ function buildAttackTreesForUi(stateWs: LocalFilesystemWorkspace, threats: JsonO
     const priority = get<unknown>(threat, 'priority', undefined) || get(threat, 'severity', 'medium');
 
     trees.push({
-      threat_id: displayThreatId,
+      threat_id: threatId,
+      tree_id: get(tree, 'id', ''),
       threat_category: threatCategory,
       threat_description: get(threat, 'description', ''),
       threat_statement: get(threat, 'description', ''),
@@ -813,6 +819,7 @@ function generateDataBundle(repoPath: string, runDir?: string): void {
     metadata: {
       generator: 'ThreatForest',
       version: '2.0',
+      output_contract_version: OUTPUT_CONTRACT_VERSION,
     },
     project_info: {
       application_name: projectName,
@@ -835,6 +842,14 @@ function generateDataBundle(repoPath: string, runDir?: string): void {
     threats,
     attack_trees: buildAttackTreesForUi(stateWs, threats),
     scanner_context: scannerCtx,
+    risk_assessment: stateWs.exists('attack_trees.json')
+      ? get(stateWs.readJson<JsonObj>('attack_trees.json'), 'risk_assessment', null)
+      : null,
+    evidence_assessment: {
+      provenance_validation: 'source_excerpt_digest_and_location',
+      semantic_support: 'not_independently_reviewed',
+      note: 'Source excerpts and digests are checked. Their presence does not establish that an attack claim is true or that a recommended control is implemented.',
+    },
   };
 
   // Count total mappings across all UI attack trees.
@@ -891,6 +906,27 @@ export function verifyReportOutput(repoPath: string, runDir?: string): [boolean,
   const missing = REQUIRED_SECTIONS.filter((s) => !lower.includes(s.toLowerCase()));
   if (missing.length > 0) {
     return [false, `Missing sections: ${missing.join(', ')}`];
+  }
+
+  try {
+    const state = new LocalFilesystemWorkspace(resolveStateDir(repoPath, runDir));
+    const readRecords = (name: string): Record<string, unknown>[] => {
+      const value = state.readJson<Record<string, unknown>>(`${name}.json`)[name];
+      if (!Array.isArray(value) || value.some((item) => item === null || typeof item !== 'object' || Array.isArray(item))) {
+        throw new Error(`${name}.json must contain an array of objects`);
+      }
+      return value;
+    };
+    const quality = evaluateDomainOutputQuality({
+      threats: readRecords('threats'),
+      attackTrees: readRecords('attack_trees'),
+      ttpMappings: readRecords('ttp_mappings'),
+      mitigations: readRecords('mitigations'),
+      resolveEvidence: createSourceEvidenceResolver(repoPath, [state.root, outputDir]),
+    });
+    if (!quality.gatePassed) return [false, quality.issues.join('; ')];
+  } catch (error) {
+    return [false, `Output quality validation failed: ${error instanceof Error ? error.message : String(error)}`];
   }
 
   return [true, 'Report is complete'];

@@ -9,6 +9,11 @@ threatforest-env
 **/*.pyo
 **/.pytest_cache
 **/.mypy_cache
+**/*.tsbuildinfo
+**/*.log
+**/cdk.out
+.aws
+exports
 
 # Engine output / state
 .threatforest

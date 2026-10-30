@@ -205,7 +205,7 @@ export default function ImportReportButton({ onImported }: ImportReportButtonPro
             </Alert>
           )}
 
-          <details key="drop-folder">
+          {!info?.hosted && <details key="drop-folder">
             <summary>
               <span style={{ fontSize: '0.9em' }}>
                 Or drop the file directly in the imports folder
@@ -244,7 +244,7 @@ export default function ImportReportButton({ onImported }: ImportReportButtonPro
                 ) : null}
               </SpaceBetween>
             </Box>
-          </details>
+          </details>}
         </SpaceBetween>
       </Modal>
     </>

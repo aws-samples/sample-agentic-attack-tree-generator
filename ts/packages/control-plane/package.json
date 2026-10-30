@@ -1,0 +1,30 @@
+{
+  "name": "@threatforest/control-plane",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Durable hosted control-plane persistence for ThreatForest.",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -p tsconfig.check.json",
+    "test": "node --import tsx/esm --test \"test/**/*.test.ts\""
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.1087.0",
+    "@aws-sdk/lib-dynamodb": "^3.1087.0",
+    "@threatforest/types": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.21",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.0"
+  }
+}

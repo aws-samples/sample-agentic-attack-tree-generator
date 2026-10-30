@@ -7,6 +7,7 @@
  * legacy in-process `TTCMatcher.match_steps` output.
  */
 import { z } from 'zod';
+import { TtpFrameworkIdSchema } from './ttp-frameworks.js';
 
 export const EmbedRequestSchema = z.object({
   texts: z.array(z.string()).default([]),
@@ -22,7 +23,8 @@ export const MatchStepsRequestSchema = z.object({
   steps: z.array(z.string()).default([]),
   top_k: z.number().int().default(3),
   min_similarity: z.number().nullable().default(null),
-  frameworks: z.array(z.string()).nullable().default(null),
+  frameworks: z.array(TtpFrameworkIdSchema).nullable().default(null),
+  embedding_model: z.string().min(1).nullable().default(null),
 });
 export type MatchStepsRequest = z.infer<typeof MatchStepsRequestSchema>;
 
@@ -34,7 +36,7 @@ export const TechniqueMatchSchema = z.object({
   kill_chain_phases: z.array(z.string()),
   similarity: z.number(),
   confidence: z.enum(['high', 'medium', 'low']),
-  framework: z.string(),
+  framework: TtpFrameworkIdSchema,
 });
 export type TechniqueMatch = z.infer<typeof TechniqueMatchSchema>;
 

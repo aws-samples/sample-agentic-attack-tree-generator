@@ -9,7 +9,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { describeNodeError } from './graph.js';
+import {
+  describeNodeError,
+  isGraphCancellationError,
+} from './graph.js';
 
 test('surfaces the cause chain, not just the outer message', () => {
   // The real shape of the bug this fixes.
@@ -58,4 +61,17 @@ test('falls back cleanly for a missing or non-Error value', () => {
   assert.equal(describeNodeError(undefined), 'failed');
   assert.equal(describeNodeError('a string'), 'failed');
   assert.equal(describeNodeError(new Error('   ')), 'failed');
+});
+
+test('recognizes the plain external-cancellation error emitted by Strands', () => {
+  assert.equal(
+    isGraphCancellationError(
+      new Error('graph_id=<threat-model> | graph cancelled by external signal'),
+    ),
+    true,
+  );
+  assert.equal(
+    isGraphCancellationError(new Error('Bedrock request failed during shutdown')),
+    false,
+  );
 });

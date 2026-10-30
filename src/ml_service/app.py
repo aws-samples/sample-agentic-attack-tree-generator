@@ -14,10 +14,13 @@ from __future__ import annotations
 
 import logging
 import os
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+from threading import BoundedSemaphore
 from functools import lru_cache
 from typing import Optional
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 # Disable HF Hub telemetry before any sentence-transformers import path runs
@@ -32,7 +35,7 @@ logger = logging.getLogger("ml_service")
 # Request / response models (thin Pydantic contract — mirrored as Zod in TS)
 # --------------------------------------------------------------------------- #
 class EmbedRequest(BaseModel):
-    texts: list[str] = Field(default_factory=list)
+    texts: list[str] = Field(default_factory=list, max_length=256)
 
 
 class EmbedResponse(BaseModel):
@@ -40,13 +43,16 @@ class EmbedResponse(BaseModel):
 
 
 class MatchStepsRequest(BaseModel):
-    steps: list[str] = Field(default_factory=list)
-    top_k: int = 3
+    steps: list[str] = Field(default_factory=list, max_length=256)
+    top_k: int = Field(default=3, ge=1, le=50)
     # When omitted, the matcher falls back to config.ttc_threshold (same as the
     # in-process call site in agents/ttp/embedding.py).
-    min_similarity: Optional[float] = None
+    min_similarity: Optional[float] = Field(default=None, ge=0, le=1)
     # None => all frameworks defined in config (matches TTCMatcher default).
     frameworks: Optional[list[str]] = None
+    # None => the service's local config. Hosted runs always send their durable
+    # per-run selection so concurrent users do not share a mutable model choice.
+    embedding_model: Optional[str] = None
 
 
 class TechniqueMatch(BaseModel):
@@ -69,26 +75,50 @@ class MatchStepsResponse(BaseModel):
 
 
 # --------------------------------------------------------------------------- #
-# Warm singletons — model + STIX graphs load once per (frameworks, threshold).
+# Warm singletons — model + STIX graphs load once per
+# (normalized frameworks, embedding model). One inference worker keeps native
+# model/index initialization serial and leaves the HTTP event loop responsive.
 # --------------------------------------------------------------------------- #
+_inference = ThreadPoolExecutor(max_workers=1, thread_name_prefix="threatforest-inference")
+_inference_slots = BoundedSemaphore(8)
+
+
+async def _infer(work):
+    if not _inference_slots.acquire(blocking=False):
+        raise HTTPException(status_code=503, detail="Inference capacity is busy; retry later")
+    future = _inference.submit(work)
+    future.add_done_callback(lambda _: _inference_slots.release())
+    return await asyncio.wrap_future(future)
 def _default_threshold() -> float:
     from threatforest.config import config
 
     return config.ttc_threshold
 
 
-@lru_cache(maxsize=8)
-def _get_matcher(frameworks_key: Optional[tuple[str, ...]], min_similarity: float):
+def _default_embedding_model() -> str:
+    from threatforest.config import config
+
+    return config.embeddings_model
+
+
+@lru_cache(maxsize=16)
+def _get_matcher(
+    frameworks_key: Optional[tuple[str, ...]],
+    embedding_model: str,
+):
     """Return a cached, initialized TTCMatcher.
 
-    Cached on (frameworks tuple, threshold) so repeated requests reuse the loaded
-    embedding model and STIX vector indexes. ``lru_cache`` requires hashable args,
-    hence the frameworks tuple.
+    Cached on (frameworks tuple, embedding model) so repeated requests
+    reuse loaded indexes without leaking one run's model selection into another.
+    ``lru_cache`` requires hashable args, hence the frameworks tuple.
     """
     from threatforest.modules.workflow.ttc_mappings.matcher import TTCMatcher
 
     frameworks = list(frameworks_key) if frameworks_key is not None else None
-    matcher = TTCMatcher(min_similarity=min_similarity, frameworks=frameworks)
+    matcher = TTCMatcher(
+        frameworks=frameworks,
+        embedding_model=embedding_model,
+    )
     # Force eager load so the first real request isn't penalized and /health can
     # report readiness.
     matcher._ensure_initialized()  # noqa: SLF001 — intentional warm-up
@@ -98,11 +128,8 @@ def _get_matcher(frameworks_key: Optional[tuple[str, ...]], min_similarity: floa
 @lru_cache(maxsize=1)
 def _get_embedding_service():
     from threatforest.config import config
-    from threatforest.embedding.service import EmbeddingService
-
-    svc = EmbeddingService(config.embeddings_model)
-    svc._load_model()  # noqa: SLF001 — eager warm-up
-    return svc
+    from threatforest.modules.graph.embedding_service import get_embedding_service
+    return get_embedding_service(config.embeddings_model)
 
 
 def create_app(*, warm: bool = False) -> FastAPI:
@@ -118,8 +145,9 @@ def create_app(*, warm: bool = False) -> FastAPI:
     async def _startup() -> None:  # pragma: no cover - exercised at runtime
         if warm:
             logger.info("Warming ML service (loading embedding model + STIX graphs)...")
-            _get_embedding_service()
-            _get_matcher(None, _default_threshold())
+            await asyncio.get_running_loop().run_in_executor(_inference, _get_embedding_service)
+            await asyncio.get_running_loop().run_in_executor(
+                _inference, _get_matcher, None, _default_embedding_model())
             logger.info("ML service warm.")
 
     @app.get("/health")
@@ -132,19 +160,23 @@ def create_app(*, warm: bool = False) -> FastAPI:
 
     @app.post("/embed", response_model=EmbedResponse)
     async def embed(req: EmbedRequest) -> EmbedResponse:
-        svc = _get_embedding_service()
-        vectors = svc.get_batch_embeddings(req.texts, show_progress=False)
-        return EmbedResponse(vectors=vectors)
+        def infer():
+            vectors = _get_embedding_service().get_batch_embeddings(req.texts, show_progress=False)
+            if len(vectors) != len(req.texts) or any(not vector for vector in vectors):
+                raise RuntimeError("Embedding inference failed")
+            return EmbedResponse(vectors=vectors)
+        return await _infer(infer)
 
     @app.post("/match_steps", response_model=MatchStepsResponse)
     async def match_steps(req: MatchStepsRequest) -> MatchStepsResponse:
         threshold = req.min_similarity if req.min_similarity is not None else _default_threshold()
-        fw_key = tuple(req.frameworks) if req.frameworks is not None else None
-        matcher = _get_matcher(fw_key, threshold)
-        raw = matcher.match_steps(req.steps, top_k=req.top_k)
-        # `raw` is already in the {attack_step, matches:[...]} shape; Pydantic
-        # validates/normalizes it into the response model.
-        return MatchStepsResponse(results=raw)
+        fw_key = tuple(sorted(set(req.frameworks))) if req.frameworks is not None else None
+        embedding_model = req.embedding_model or _default_embedding_model()
+        def infer():
+            matcher = _get_matcher(fw_key, embedding_model)
+            raw = matcher.match_steps(req.steps, top_k=req.top_k, min_similarity=threshold)
+            return MatchStepsResponse(results=raw)
+        return await _infer(infer)
 
     return app
 

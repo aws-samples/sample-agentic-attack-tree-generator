@@ -1,0 +1,39 @@
+{
+  "name": "@threatforest/ingestion",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Hosted upload validation, normalization, and encrypted S3 workspace for ThreatForest.",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    },
+    "./lambda/worker": {
+      "types": "./dist/src/lambda/worker.d.ts",
+      "default": "./dist/src/lambda/worker.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -p tsconfig.json --noEmit --composite false",
+    "test": "node --import tsx/esm --test \"test/**/*.test.ts\"",
+    "test:sample-corpus": "node --import tsx/esm --test test/sample-corpus.integration.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.1113.0",
+    "@aws-sdk/client-s3": "^3.1113.0",
+    "@aws-sdk/client-textract": "^3.1113.0",
+    "@aws-sdk/lib-dynamodb": "^3.1113.0",
+    "saxes": "6.0.0",
+    "yaml": "^2.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.21",
+    "fflate": "^0.8.3",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.0"
+  }
+}

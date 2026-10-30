@@ -7,7 +7,7 @@
  * tolerant fallback so legacy/numeric priorities still bucket sensibly.
  */
 
-import type { ReportAttackTree, ThreatRow } from './mitigation-aggregator';
+import { threatForTree, type ReportAttackTree, type ThreatRow } from './mitigation-aggregator';
 
 export type Severity = 'high' | 'medium' | 'low';
 export type RiskLevel = 'critical' | 'high' | 'medium' | 'low' | 'none';
@@ -95,8 +95,9 @@ export function topThreats(
   limit = 3,
 ): TopThreat[] {
   const rank: Record<Severity, number> = { high: 0, medium: 1, low: 2 };
+  const seen = new Set<string>();
   const rows = (attackTrees || []).map((tree, index) => {
-    const threat = threats?.[index];
+    const threat = threatForTree(tree, threats);
     const severity = toSeverity(
       (threat as { priority?: unknown } | undefined)?.priority ?? tree.priority,
     );
@@ -113,6 +114,11 @@ export function topThreats(
     return { id, index, title, severity };
   });
   return rows
+    .filter(row => {
+      if (seen.has(row.id)) return false;
+      seen.add(row.id);
+      return true;
+    })
     .sort((a, b) => rank[a.severity] - rank[b.severity])
     .slice(0, limit);
 }

@@ -9,6 +9,7 @@
   "scripts": {
     "build": "tsc -b",
     "typecheck": "tsc --noEmit",
+    "test": "node --import tsx/esm --test \"src/**/*.test.ts\"",
     "start": "node --import tsx/esm src/main.ts"
   },
   "dependencies": {

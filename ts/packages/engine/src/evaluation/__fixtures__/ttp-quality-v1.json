@@ -1,0 +1,131 @@
+{
+  "schemaVersion": "1.0.0",
+  "datasetId": "synthetic-metric-regression-v1",
+  "evaluationSplit": "test",
+  "provenance": {
+    "heldOut": true,
+    "trainingRecordIds": ["train-api-001"],
+    "trainingSourceIds": ["training-corpus-2026-07"],
+    "trainingAttackStepHashes": [
+      "44add5ddc0b45d7e2246fc812bd408c9f1140b846d698e75c4540800545e328b"
+    ]
+  },
+  "records": [
+    {
+      "id": "eval-api-001",
+      "sourceId": "payments-api-v3",
+      "split": "test",
+      "attackStep": "Exploit the unauthenticated public API endpoint to execute attacker-controlled requests.",
+      "acceptedTechniqueIds": ["T1190"],
+      "abstained": false,
+      "predictions": [
+        { "rank": 1, "techniqueId": "T1190", "modelConfidence": 0.92, "similarity": 0.88 },
+        { "rank": 2, "techniqueId": "T1210", "modelConfidence": 0.51, "similarity": 0.72 }
+      ]
+    },
+    {
+      "id": "eval-cloud-002",
+      "sourceId": "analytics-data-lake",
+      "split": "test",
+      "attackStep": "Use stolen cloud credentials to download sensitive records from the object storage bucket.",
+      "acceptedTechniqueIds": ["T1530"],
+      "abstained": false,
+      "predictions": [
+        { "rank": 1, "techniqueId": "T1530", "modelConfidence": 0.84, "similarity": 0.86 },
+        { "rank": 2, "techniqueId": "T1555", "modelConfidence": 0.42, "similarity": 0.65 }
+      ]
+    },
+    {
+      "id": "eval-iam-003",
+      "sourceId": "identity-control-plane",
+      "split": "test",
+      "attackStep": "Create a new access key on the compromised administrator identity to retain access.",
+      "acceptedTechniqueIds": ["T1098.001"],
+      "abstained": false,
+      "predictions": [
+        { "rank": 1, "techniqueId": "T1098.001", "modelConfidence": 0.78, "similarity": 0.83 },
+        { "rank": 2, "techniqueId": "T1136.003", "modelConfidence": 0.56, "similarity": 0.71 }
+      ]
+    },
+    {
+      "id": "eval-ai-004",
+      "sourceId": "fraud-model-service",
+      "split": "test",
+      "attackStep": "Submit crafted inference samples that cause the fraud model to misclassify malicious transactions.",
+      "acceptedTechniqueIds": ["AML.T0043"],
+      "abstained": false,
+      "predictions": [
+        { "rank": 1, "techniqueId": "AML.T0043", "modelConfidence": 0.73, "similarity": 0.81 },
+        { "rank": 2, "techniqueId": "AML.T0015", "modelConfidence": 0.47, "similarity": 0.68 }
+      ]
+    },
+    {
+      "id": "eval-secret-005",
+      "sourceId": "build-pipeline",
+      "split": "test",
+      "attackStep": "Read deployment credentials committed to the source repository history.",
+      "acceptedTechniqueIds": ["T1552.001"],
+      "abstained": false,
+      "predictions": [
+        { "rank": 1, "techniqueId": "T1552.001", "modelConfidence": 0.71, "similarity": 0.79 },
+        { "rank": 2, "techniqueId": "T1213.003", "modelConfidence": 0.43, "similarity": 0.64 }
+      ]
+    },
+    {
+      "id": "eval-c2-006",
+      "sourceId": "worker-fleet",
+      "split": "test",
+      "attackStep": "Tunnel command traffic from a compromised worker over an encrypted web protocol.",
+      "acceptedTechniqueIds": ["T1071.001"],
+      "abstained": false,
+      "predictions": [
+        { "rank": 1, "techniqueId": "T1071.001", "modelConfidence": 0.68, "similarity": 0.76 },
+        { "rank": 2, "techniqueId": "T1573", "modelConfidence": 0.54, "similarity": 0.7 }
+      ]
+    },
+    {
+      "id": "eval-container-007",
+      "sourceId": "orders-cluster",
+      "split": "test",
+      "attackStep": "Deploy a privileged workload in the cluster to escape the container boundary.",
+      "acceptedTechniqueIds": ["container-escape"],
+      "abstained": false,
+      "predictions": [
+        { "rank": 1, "techniqueId": "T1611", "modelConfidence": 0.76, "similarity": 0.74 },
+        { "rank": 2, "techniqueId": "container-escape", "modelConfidence": 0.66, "similarity": 0.72 }
+      ]
+    },
+    {
+      "id": "eval-model-008",
+      "sourceId": "model-registry",
+      "split": "test",
+      "attackStep": "Replace the approved model artifact in the registry with a backdoored serialized model.",
+      "acceptedTechniqueIds": ["AML.T0010"],
+      "abstained": false,
+      "predictions": [
+        { "rank": 1, "techniqueId": "T1554", "modelConfidence": 0.62, "similarity": 0.69 },
+        { "rank": 2, "techniqueId": "AML.T0010", "modelConfidence": 0.58, "similarity": 0.67 }
+      ]
+    },
+    {
+      "id": "eval-ambiguous-009",
+      "sourceId": "architecture-notes",
+      "split": "test",
+      "attackStep": "Influence the downstream processing path through an unspecified integration.",
+      "acceptedTechniqueIds": ["T1565"],
+      "abstained": true,
+      "abstentionReason": "The step does not identify the affected data or control mechanism.",
+      "predictions": []
+    },
+    {
+      "id": "eval-ambiguous-010",
+      "sourceId": "legacy-sequence-diagram",
+      "split": "test",
+      "attackStep": "Obtain access to the internal component using an undocumented mechanism.",
+      "acceptedTechniqueIds": ["T1210"],
+      "abstained": true,
+      "abstentionReason": "The diagram omits the access vector needed for a relevant mapping.",
+      "predictions": []
+    }
+  ]
+}
